@@ -1,0 +1,28 @@
+[package]
+name = "xtask"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+publish = false
+
+[[bin]]
+name = "xtask"
+path = "src/main.rs"
+
+# xtask is a build-tool binary (CLI output tool); println!/eprintln! are
+# legitimate here, so we do NOT inherit workspace lints wholesale.
+# Instead we explicitly list the lints we want to enforce.
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+unwrap_used = "warn"
+expect_used = "warn"
+too_many_lines = "warn"
+# print_stdout / print_stderr intentionally omitted — xtask is a CLI tool
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+proc-macro2 = { version = "1", features = ["span-locations"] }

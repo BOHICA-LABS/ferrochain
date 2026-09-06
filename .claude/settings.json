@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -f \"$CLAUDE_PROJECT_DIR/.factory/hooks/ensure-heartbeat.sh\" ] && bash \"$CLAUDE_PROJECT_DIR/.factory/hooks/ensure-heartbeat.sh\" || true"
+          }
+        ]
+      }
+    ]
+  }
+}

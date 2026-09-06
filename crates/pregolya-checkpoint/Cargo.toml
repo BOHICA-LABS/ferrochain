@@ -1,0 +1,33 @@
+[package]
+name = "pregolya-checkpoint"
+version.workspace = true
+edition.workspace = true
+description = "Durable per-task checkpointing, monotonic clock, fork lineage, encryption"
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[features]
+default = ["checkpoint-sqlite"]
+checkpoint-sqlite = ["dep:rusqlite"]
+checkpoint-postgres = ["dep:tokio-postgres"]
+checkpoint-memory = []
+
+[dependencies]
+pregolya-core = { path = "../pregolya-core" }
+async-trait = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+rmp-serde = "1"
+rusqlite = { version = "0.31", features = ["bundled"], optional = true }
+tokio-postgres = { version = "0.7", optional = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+
+[lints]
+workspace = true

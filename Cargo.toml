@@ -1,0 +1,82 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/pregolya-macros",
+    "crates/pregolya-core",
+    "crates/pregolya-splitters",
+    "crates/pregolya-sandbox",
+    "crates/pregolya-checkpoint",
+    "crates/pregolya-memory",
+    "crates/pregolya-tools",
+    "crates/pregolya-graph",
+    "crates/pregolya-server",
+    "crates/pregolya-openai-sdk",
+    "crates/pregolya-anthropic-sdk",
+    "crates/pregolya-ollama-sdk",
+    "crates/pregolya-prompts",
+    "crates/pregolya-vectorstores",
+    "crates/pregolya-openai",
+    "crates/pregolya-anthropic",
+    "crates/pregolya-ollama",
+    "crates/pregolya-standard-tests",
+    "crates/pregolya-mcp",
+    "crates/pregolya",
+    "crates/pregolya-community",
+    "xtask",
+]
+
+[workspace.package]
+edition = "2024"
+version = "0.1.0"
+authors = ["pregolya contributors"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/BOHICA-LABS/pregolya"
+
+[workspace.dependencies]
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Logging / tracing
+tracing = "0.1"
+
+# Error handling
+thiserror = "2"
+
+# Async traits
+async-trait = "0.1"
+
+# UUIDs
+uuid = { version = "1", features = ["v4", "serde"] }
+
+# HTTP client — rustls-tls mandatory; native-tls forbidden workspace-wide
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "http2", "json", "stream"] }
+
+# HTTP server
+axum = { version = "0.8", features = ["json"] }
+tower = "0.5"
+
+# Testing
+proptest = "1.4"
+
+# JSON Schema derivation — ADR-004 mandates schemars 1.x (0.8 is the anti-pattern)
+schemars = "1"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Workspace-wide lints (B4/B5)
+# Note: "warn" here is intentional — individual CI steps add -D warnings which
+# promotes these warns to errors.  Using "deny" at workspace level would cause
+# compile errors on `cargo check` which is too aggressive for scaffolding.
+# ─────────────────────────────────────────────────────────────────────────────
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+unwrap_used = "warn"
+expect_used = "warn"
+print_stdout = "warn"
+print_stderr = "warn"
+too_many_lines = "warn"

@@ -1,0 +1,27 @@
+[package]
+name = "pregolya-standard-tests"
+version.workspace = true
+edition.workspace = true
+description = "Shared conformance test suite and LLM judge for all provider crates"
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+pregolya-core = { path = "../pregolya-core" }
+async-trait = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+
+# Provider crates are dev-dependencies: pregolya-standard-tests is a test-support
+# crate; providers are exercised under test, not shipped as runtime deps.
+[dev-dependencies]
+pregolya-openai = { path = "../pregolya-openai" }
+pregolya-anthropic = { path = "../pregolya-anthropic" }
+pregolya-ollama = { path = "../pregolya-ollama" }
+
+[lints]
+workspace = true

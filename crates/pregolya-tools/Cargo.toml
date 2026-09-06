@@ -1,0 +1,24 @@
+[package]
+name = "pregolya-tools"
+version.workspace = true
+edition.workspace = true
+description = "First-party file I/O, bash execution, and text-search tools for pregolya"
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+pregolya-core = { path = "../pregolya-core" }
+pregolya-sandbox = { path = "../pregolya-sandbox" }
+pregolya-macros = { path = "../pregolya-macros" }
+async-trait = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+regex = "1"
+similar = "3"
+
+[lints]
+workspace = true

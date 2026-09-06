@@ -1,0 +1,24 @@
+[package]
+name = "pregolya-server"
+version.workspace = true
+edition.workspace = true
+description = "Axum HTTP server, resource CRUD, cron scheduler, security defaults"
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+pregolya-core = { path = "../pregolya-core" }
+pregolya-graph = { path = "../pregolya-graph" }
+pregolya-checkpoint = { path = "../pregolya-checkpoint" }
+async-trait = { workspace = true }
+axum = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tower = { workspace = true }
+tracing = { workspace = true }
+
+[lints]
+workspace = true

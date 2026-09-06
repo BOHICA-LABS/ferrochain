@@ -1,0 +1,22 @@
+[package]
+name = "pregolya-openai"
+version.workspace = true
+edition.workspace = true
+description = "OpenAI provider — BaseChatModel, EmbeddingsOpenAI implementations"
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+pregolya-core = { path = "../pregolya-core" }
+pregolya-openai-sdk = { path = "../pregolya-openai-sdk" }
+async-trait = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+reqwest = { workspace = true }
+
+[lints]
+workspace = true

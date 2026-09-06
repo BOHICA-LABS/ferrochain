@@ -1,0 +1,22 @@
+[package]
+name = "pregolya-anthropic"
+version.workspace = true
+edition.workspace = true
+description = "Anthropic provider — BaseChatModel (ChatAnthropic) implementation"
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+pregolya-core = { path = "../pregolya-core" }
+pregolya-anthropic-sdk = { path = "../pregolya-anthropic-sdk" }
+async-trait = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+reqwest = { workspace = true }
+
+[lints]
+workspace = true

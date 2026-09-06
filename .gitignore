@@ -8,6 +8,8 @@
 .envrc
 .env
 *.env.*
+# But track the example template (no secrets, just variable names)
+!.env.example
 
 # Rust build artifacts
 target/

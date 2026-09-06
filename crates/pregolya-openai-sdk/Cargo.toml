@@ -1,0 +1,22 @@
+[package]
+name = "pregolya-openai-sdk"
+version.workspace = true
+edition.workspace = true
+description = "OpenAI wire client — HTTP, SSE, types — no pregolya-core dep"
+license.workspace = true
+repository.workspace = true
+publish = false
+
+# D17-Q5: This crate has NO pregolya-core dep — reqwest + serde only.
+# CI enforces: cargo check -p pregolya-openai-sdk must succeed without pregolya-core in Cargo.lock.
+
+[dependencies]
+reqwest = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = "2"
+tokio = { workspace = true }
+tracing = { workspace = true }
+
+[lints]
+workspace = true

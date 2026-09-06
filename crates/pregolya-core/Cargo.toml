@@ -1,0 +1,21 @@
+[package]
+name = "pregolya-core"
+version.workspace = true
+edition.workspace = true
+description = "Core types, traits, and error taxonomy for pregolya"
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+pregolya-macros = { path = "../pregolya-macros" }
+async-trait = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+schemars = { workspace = true }
+
+[lints]
+workspace = true

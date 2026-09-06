@@ -1,0 +1,7 @@
+too-many-lines-threshold = 150
+# Exempt test code from panic/print lints — these become hard errors via -D warnings in CI.
+# Production code remains covered; only #[cfg(test)] blocks and test binaries are exempted.
+allow-unwrap-in-tests = true
+allow-expect-in-tests = true
+allow-panic-in-tests = true
+allow-print-in-tests = true

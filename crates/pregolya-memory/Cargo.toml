@@ -1,0 +1,22 @@
+[package]
+name = "pregolya-memory"
+version.workspace = true
+edition.workspace = true
+description = "Long-horizon memory persistence — KV + vector, GDPR erasure, search"
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+pregolya-core = { path = "../pregolya-core" }
+async-trait = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+
+[lints]
+workspace = true

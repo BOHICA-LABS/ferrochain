@@ -1,0 +1,26 @@
+[package]
+name = "pregolya-mcp"
+version.workspace = true
+edition.workspace = true
+description = "MCP client/server, tool adapters, graph-as-tool wrapping"
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+pregolya-core = { path = "../pregolya-core" }
+pregolya-graph = { path = "../pregolya-graph" }
+async-trait = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+reqwest = { workspace = true }
+schemars = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+
+[lints]
+workspace = true

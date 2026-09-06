@@ -257,6 +257,8 @@ These project-specific operational rules layer onto the canonical principle and 
 - **TD-FACTORY-HOOK-BYPASS-001 P0** — Use Edit/Write tools ONLY for `.factory/` mutations. NEVER use Python/sed/echo bypass.
 - **POL-14 — Auto-promotion at merge.** When a story's PR merges, BCs in `behavioral_contracts` frontmatter auto-promote `draft → active`. State-manager runs this transition.
 
+- **Heartbeat Auto-Recovery (standing operating procedure; D-318, 2026-08-29).** A durable recurring cron (job `60fc8eb8`, schedule `8,23,38,53 * * * *`, ~15 min cadence) fires while the REPL is idle to detect dead/stalled agents and keep the convergence loop running without a human present. Standing policy: **AUTO-RECOVER + DRIVE TO CONVERGENCE** — the heartbeat re-dispatches dead or stalled agents and drives to convergence autonomously; it STOPS + alerts ONLY at human-approval phase gates and true blockers (missing repo, unresolvable conflict, force-push required, budget exhaustion). Composes with DIRECTIVE 1 (keep going to convergence) and DIRECTIVE 2 (fix-in-scope default). Authoritative protocol: `.factory/rules/heartbeat-recovery-protocol.md`. Portable reproduction guide: `.factory/rules/heartbeat-setup-guide.md`. Teardown: `CronDelete 60fc8eb8`.
+
 ---
 
 ## Code Conventions

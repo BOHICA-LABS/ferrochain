@@ -1,0 +1,19 @@
+# File size allowlist for cargo xtask check-file-size
+#
+# Entries require: path + reason + approver + date
+# Each entry must be reviewed in a PR.
+#
+# Generated code (OUT_DIR/, *.gen.rs) and tests/fixtures/ are auto-excluded by glob.
+# Inline opt-out comments are NOT permitted — this file is the only opt-out path.
+#
+# Thresholds (tokei Code metric — blanks, comments, cfg(test) blocks excluded):
+#   Production files: soft 500 / hard 750 code-lines
+#   Test files:       soft 1000 / hard 1500 code-lines
+#
+# Example entry:
+# [[allow]]
+# path = "crates/pregolya-core/src/big_module.rs"
+# reason = "Cohesive state machine — splitting would break invariants"
+# approver = "architect"
+# date = "2026-09-01"
+

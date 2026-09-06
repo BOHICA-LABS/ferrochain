@@ -1,0 +1,24 @@
+[package]
+name = "pregolya-sandbox"
+version.workspace = true
+edition.workspace = true
+description = "Sandbox execution backends for pregolya — WASM, container, path guard"
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[features]
+default = []
+sandbox-container = []
+# sandbox-wasm feature is reserved for Phase 3 implementation; wasmtime version
+# will be chosen by the implementer when sandbox WASM functionality is built.
+# Do NOT add wasmtime here speculatively — wasmtime 27 has 17 RUSTSEC advisories.
+
+[dependencies]
+pregolya-core = { path = "../pregolya-core" }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+tokio = { workspace = true }
+
+[lints]
+workspace = true

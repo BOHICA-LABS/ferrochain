@@ -1,0 +1,27 @@
+[package]
+name = "pregolya"
+version.workspace = true
+edition.workspace = true
+description = "pregolya — a Rust framework for building LLM-powered agentic applications"
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+pregolya-core = { path = "../pregolya-core" }
+pregolya-graph = { path = "../pregolya-graph" }
+pregolya-checkpoint = { path = "../pregolya-checkpoint" }
+pregolya-server = { path = "../pregolya-server" }
+pregolya-splitters = { path = "../pregolya-splitters" }
+pregolya-sandbox = { path = "../pregolya-sandbox" }
+pregolya-memory = { path = "../pregolya-memory" }
+pregolya-prompts = { path = "../pregolya-prompts" }
+pregolya-vectorstores = { path = "../pregolya-vectorstores" }
+pregolya-tools = { path = "../pregolya-tools" }
+pregolya-openai = { path = "../pregolya-openai" }
+pregolya-anthropic = { path = "../pregolya-anthropic" }
+pregolya-ollama = { path = "../pregolya-ollama" }
+pregolya-mcp = { path = "../pregolya-mcp" }
+
+[lints]
+workspace = true
