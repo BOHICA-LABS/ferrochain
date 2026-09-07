@@ -11,7 +11,6 @@ purpose: >
   comparison, and analyzes what a pregolya dev console reuses vs. needs net-new given the
   existing StreamEvent grammar and pregolya-server SSE transport.
 inputs:
-  - .reference/adk-rust/adk-server/  (Corpus 5, adk-rust v1.0.0, SHA a6c79b6)
   - .reference/adk-rust/docs/official_docs/studio/studio.md
   - .factory/specs/architecture/decisions/ADR-006-streaming-event-taxonomy.md
   - .factory/specs/architecture/decisions/ADR-028-server-run-lifecycle-semantics.md
@@ -19,8 +18,12 @@ inputs:
   - .factory/specs/behavioral-contracts/ss-06/BC-2.06.006.md
   - .factory/holdout-scenarios/HS-C-001-flowloom-embedding-host-end-to-end.md
   - .factory/semport/reference-manifest.md
-input-hash: "0000000"
-input-hash-status: PENDING-RECOMPUTE  # placeholder (research-agent has no exec access); state-manager runs compute-input-hash devconsole-adk-research.md --update at burst close
+input-hash: "788c5d0"
+# F-PDC01-05 delta (DC-01 fix-burst, 2026-09-06): Removed `.reference/adk-rust/adk-server/` from inputs.
+# That path is gitignored (Corpus 5 read-only reference tree) and unhashable by compute-input-hash.
+# Corpus provenance is fully captured by the already-listed `.factory/semport/reference-manifest.md`
+# which pins adk-rust v1.0.0 SHA a6c79b6 — the same version read during research.
+# Input-hash is now recomputable from tracked files only.
 traces_to: .factory/specs/architecture/api-surface.md
 confidence: medium-high
 ---

@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.004
-version: "1.0"
+version: "1.1"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -19,6 +19,7 @@ di_anchors: [DI-014]
 vp_seed: false
 red_gate: false
 changelog:
+  - "1.1 (D-356-fix/DC-01/2026-09-06, product-owner): F-PDC01-01 Story Anchor corrected: was S-console-05, now S-console-06. Verified against S-console-06 frontmatter behavioral_contracts: [BC-2.24.004]. F-PDC01-02 PC-001 StreamEvent variant list corrected: removed phantom run_error, added missing step_start and tool_stream, reordered to canonical 16 per ADR-006 — count is now exactly 16 distinct variants."
   - "1.0 (D-356/2026-09-06, product-owner): Initial BC — D-356 dev-console scope expansion. Run inspection event timeline and live monitoring panel."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-043
@@ -61,7 +62,9 @@ is a pure SSE+REST client — no new server additions are required for this capa
 
 ## Postconditions
 
-1. {PC-001} **Event timeline rendered:** All `StreamEvent` variants for the run are displayed in the timeline, ordered by emission sequence. Minimum supported variants (all 16 per ADR-006): `run_start`, `node_start`, `node_end`, `run_end`, `run_error`, `tool_start`, `tool_end`, `run_stream`, `node_stream`, `graph_interrupt`, `step_end`, `tool_approval_request`, `tool_approval_resolved`, `guardrail_decision`, `compaction_event`, and any future variants (consumer must not hard-fail on unknown variants per `#[non_exhaustive]`).
+1. {PC-001} **Event timeline rendered:** All `StreamEvent` variants for the run are displayed in the timeline, ordered by emission sequence. Minimum supported variants (all 16 per ADR-006): `run_start`, `run_stream`, `run_end`, `step_start`, `step_end`, `node_start`, `node_stream`, `node_end`, `tool_start`, `tool_stream`, `tool_end`, `guardrail_decision`, `tool_approval_request`, `tool_approval_resolved`, `graph_interrupt`, `compaction_event`, and any future variants (consumer must not hard-fail on unknown variants per `#[non_exhaustive]`).
+
+   > **D-356 adversary fix DC-01 (2026-09-06, product-owner).** PC-001 StreamEvent variant enumeration corrected (F-PDC01-02): removed phantom `run_error` (errors ride in `run_end`/RunEndData — no RunError variant in ss-06); added missing `step_start` and `tool_stream`; reordered to match the canonical 16 per ADR-006 causal ordering. Count is now exactly 16 distinct variants with no duplicates.
 2. {PC-002} **Expandable payloads:** Each event row is expandable. Expanded view shows:
    - `node_start` / `node_end`: input/output state diff at that node boundary.
    - `tool_start` / `tool_end`: tool name, input args (JSON), output result (JSON).
@@ -123,7 +126,9 @@ is a pure SSE+REST client — no new server additions are required for this capa
 
 ## Story Anchor
 
-S-console-05 (Wave 3 — run inspection panel + live node highlighting)
+S-console-06 (Wave 3 — run inspection panel + live node highlighting)
+
+> **D-356 adversary fix DC-01 (2026-09-06, product-owner).** Story Anchor corrected S-console-05 → S-console-06. story-writer split BC-2.24.002 across S-console-02+03 and added S-console-05 (SPA build, no BC), shifting the numbering. Verified: S-console-06 frontmatter carries `behavioral_contracts: [BC-2.24.004]`.
 
 ## VP Anchors
 

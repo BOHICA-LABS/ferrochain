@@ -2,7 +2,7 @@
 document_type: architecture-section
 level: L3
 section: verification-architecture
-version: "2.39"
+version: "2.40"
 status: active
 producer: architect
 timestamp: 2026-09-06T00:00:00Z
@@ -32,6 +32,7 @@ input-hash: "5bc819a"
 traces_to: ARCH-INDEX.md
 decisions: [D17, D21, D23, D356]
 changelog:
+  - "2.40 (D-356/DC-01/2026-09-06, architect): F-PDC01-03+F-PDC01-04 — VP-2.24.002-A/B repointed to console::ring_buffer / pregolya-console (RingBuffer<SpanData> Pure Core; ADR-031 Decision 5 + S-console-02). Tool reconciled vs BC Proof Methods for 8 rows: 001-A/B integration/proptest→unit; 001-C integration→compile-fail; 002-B integration→proptest (module/crate also fixed); 003-A proptest→unit; 003-C integration→unit; 007-A integration→unit; 008-B integration→unit. Total line updated: proptest ×10, integration ×12, unit ×7, compile-fail ×1 (40 VPs total unchanged). input-hash pending-recompute."
   - "2.39 (D-356/2026-09-06, architect): F3 — 19 VP-2.24.* placeholder rows added to Provable Properties Catalog for SS-24 Developer Console (BC-2.24.001–008). Tool breakdown: integration ×15, proptest ×3, Kani ×1. All P1, draft, Phase 3 except VP-2.24.003-B (Kani Phase 6). Total 21→40 VPs; P1 15→34; Kani 9→10; proptest 8→11; integration 3→18; unit unchanged at 1. Preamble narrative updated twenty-one→forty. input-hash pending-recompute."
   - "2.38 (round-65/F-P2A237-02/2026-09-01): F-P2A237-02 [MED] §VP-020 narrative corrected to canonical VP-020.md (source-of-truth per CLAUDE.md rule 4): (a) Property description rewritten from apply-twice-idempotency to the actual five-property statement ({INV-001} no-duplicate, {INV-002} reducer-determinism, {PC-002} promote-dedup-idempotent, {PC-004} retire-idempotent, order-sensitivity); (b) {INV-001} gloss corrected from promote-dedup-no-op description ({PC-002}) to 'the active set contains no duplicate entry_id values at any time'; (c) Formal statement replaced from non-canonical apply_ops-twice form with VP-020.md §Formal Invariant five-property form (fold-from-empty, no-duplicate, determinism, promote-dedup, retire-idempotent, order-sensitivity); (d) Op shape corrected from Promote(id)/Retire(id) to PromoteRetireOp::Promote(T) (full entry T) / Retire(String) (entry_id) per VP-020.md §Formal Invariant and ADR-030 §Decision 3. Note for state-manager: pre-existing input-hash drift (stored 8837490 != computed 721a6e7); run compute-input-hash verification-architecture.md --update."
   - "2.37 (round-63/F-P2A235-03+F-P2A235-08/2026-09-01): F-P2A235-03 [MED] §VP-019 stale completed-directive blockquote deleted — replaced with one-line completed note; VP-019.md is at the two-crash-point per-run DELETE model (v1.4); live directive was incorrect. F-P2A235-08 [MED] §VP-020 formal invariants {INV-002} bullet corrected from retire-idempotency gloss to reducer-determinism ({INV-002} is REDUCER DETERMINISM — deterministic output under task-identity ordering; {PC-004} is Retire idempotency; anchor IDs unchanged)."
@@ -105,27 +106,27 @@ Forty VPs committed before v1.0 release — VP-001..005 (original five) plus VP-
 | VP-018 | BC-2.04.011 {INV-001} | DI-002 | `checkpoint::trajectory` | proptest | 3 | P1 |
 | VP-019 | BC-2.04.011 {INV-003} | DI-002 | `checkpoint::trajectory` | integration | 6 | P1 |
 | VP-020 | BC-2.02.009 {INV-001}+{INV-002} | DI-001 | `graph::channels` | proptest | 3 | P1 |
-| VP-2.24.001-A | BC-2.24.001 | DI-014 | `console::server` | integration | 3 | P1 |
-| VP-2.24.001-B | BC-2.24.001 | DI-014 | `console::server` | proptest | 3 | P1 |
-| VP-2.24.001-C | BC-2.24.001 | DI-014 | `console::server` | integration | 3 | P1 |
-| VP-2.24.002-A | BC-2.24.002 | DI-014 | `server::debug_routes` | proptest | 3 | P1 |
-| VP-2.24.002-B | BC-2.24.002 | DI-014 | `server::debug_routes` | integration | 3 | P1 |
+| VP-2.24.001-A | BC-2.24.001 | DI-014 | `console::server` | unit | 3 | P1 |
+| VP-2.24.001-B | BC-2.24.001 | DI-014 | `console::server` | unit | 3 | P1 |
+| VP-2.24.001-C | BC-2.24.001 | DI-014 | `console::server` | compile-fail | 3 | P1 |
+| VP-2.24.002-A | BC-2.24.002 | DI-014 | `console::ring_buffer` | proptest | 3 | P1 |
+| VP-2.24.002-B | BC-2.24.002 | DI-014 | `console::ring_buffer` | proptest | 3 | P1 |
 | VP-2.24.002-C | BC-2.24.002 | DI-014 | `server::debug_routes` | integration | 3 | P1 |
-| VP-2.24.003-A | BC-2.24.003 | DI-014 | `graph::descriptor` | proptest | 3 | P1 |
+| VP-2.24.003-A | BC-2.24.003 | DI-014 | `graph::descriptor` | unit | 3 | P1 |
 | VP-2.24.003-B | BC-2.24.003 | DI-014 | `graph::descriptor` | Kani | 6 | P1 |
-| VP-2.24.003-C | BC-2.24.003 | DI-014 | `server::debug_routes` | integration | 3 | P1 |
+| VP-2.24.003-C | BC-2.24.003 | DI-014 | `server::debug_routes` | unit | 3 | P1 |
 | VP-2.24.004-A | BC-2.24.004 | DI-014 | `console::server` | integration | 3 | P1 |
 | VP-2.24.004-B | BC-2.24.004 | DI-014 | `console::server` | integration | 3 | P1 |
 | VP-2.24.005-A | BC-2.24.005 | DI-002 | `console::server` | integration | 3 | P1 |
 | VP-2.24.005-B | BC-2.24.005 | DI-002 | `console::server` | integration | 3 | P1 |
 | VP-2.24.006-A | BC-2.24.006 | DI-014 | `console::server` | integration | 3 | P1 |
 | VP-2.24.006-B | BC-2.24.006 | DI-014 | `console::server` | integration | 3 | P1 |
-| VP-2.24.007-A | BC-2.24.007 | DI-014 | `console::server` | integration | 3 | P1 |
+| VP-2.24.007-A | BC-2.24.007 | DI-014 | `console::server` | unit | 3 | P1 |
 | VP-2.24.007-B | BC-2.24.007 | DI-014 | `console::server` | integration | 3 | P1 |
 | VP-2.24.008-A | BC-2.24.008 | DI-014 | `console::server` | integration | 3 | P1 |
-| VP-2.24.008-B | BC-2.24.008 | DI-014 | `console::server` | integration | 3 | P1 |
+| VP-2.24.008-B | BC-2.24.008 | DI-014 | `console::server` | unit | 3 | P1 |
 
-**Total: 40 VPs — 6 P0 / 34 P1 | Tool breakdown: Kani ×10, proptest ×11, integration ×18, unit ×1**
+**Total: 40 VPs — 6 P0 / 34 P1 | Tool breakdown: Kani ×10, proptest ×10, integration ×12, unit ×7, compile-fail ×1**
 
 > **D-273 VP-015 tool-type fix (GAP-01/2026-08-26):** VP-015 tool corrected from 'integration' to 'unit' — VP-015.md frontmatter is authoritative per CLAUDE.md rule 4 (VP file supersedes architecture doc).
 > **SEC-003 VP-006-B (SEC-review-adjudication/2026-08-26):** VP-006-B proptest P1 added for multi-pair few-shot injection mandate. Total 16→17 VPs; P1 10→11; proptest 4→5.
@@ -135,6 +136,7 @@ Forty VPs committed before v1.0 release — VP-001..005 (original five) plus VP-
 > **round-54 VP-017 DI correction (F-P2A224-02/2026-09-01):** VP-017 DI anchor corrected DI-014 → DI-001 in §preamble narrative sentence and Provable Properties Catalog VP table row. Authoritative value confirmed: VP-INDEX + ADR-030 §VP + VP-017.md body all carry DI-001. The round-53 re-anchor (D-332) updated BC-INDEX / VP-INDEX / ARCH-INDEX / ADR-030 §VP / VP-017 body but missed these two sibling sites. Historical entries above (DI-014 at ADR-030 Stage 1 / round-50) are grandfathered per POL-46 as records of the original authored value.
 > **round-62 VP-020 (F-P2A234-05/2026-09-01):** VP-020 proptest P1 added for PromoteRetireChannel idempotency (BC-2.02.009 {INV-001}+{INV-002}; DI-001; graph::channels; Phase 3; harness `promote_retire_channel_idempotency`). Closes BC-2.02.009 unit-test-only coverage gap; structurally analogous to VP-017. Total 20→21; P1 14→15; proptest 7→8. VP-019 §Should Prove updated: four-crash-point staging-table model retired; replaced with two-crash-point per-run DELETE model per ADR-030 §Compaction Atomicity Decision F-P2A234-01 redesign.
 > **D-356 VP-2.24.* SEED registrations (2026-09-06, architect):** 19 VP-2.24.* placeholder rows added for SS-24 Developer Console (BC-2.24.001–008). SEED status — body .md files not required until Phase 3 Wave 3. Tool breakdown: integration ×15, proptest ×3, Kani ×1. VP-2.24.003-B is the Kani candidate (graph::descriptor Pure Core, extractable before Phase 6). Total 21→40; P1 15→34; Kani 9→10; proptest 8→11; integration 3→18.
+> **D-356 adversary fix DC-01 (2026-09-06, architect).** F-PDC01-03: VP-2.24.002-A/B module repointed to `console::ring_buffer` / `pregolya-console` — `RingBuffer<SpanData>` is Pure Core in pregolya-console (ADR-031 Decision 5 + S-console-02 target_module); harness_fn updated (`ring_buffer_bounded_invariant`, `ring_buffer_fifo_invariant`). F-PDC01-04: 8 rows reconciled against BC Proof Methods: 001-A/B integration/proptest→unit; 001-C integration→compile-fail (BC-2.24.001 AC-007 compile-fail test; new tool category); 002-B integration→proptest; 003-A proptest→unit; 003-C integration→unit; 007-A integration→unit; 008-B integration→unit. Updated tool breakdown: Kani ×10, proptest ×10, integration ×12, unit ×7, compile-fail ×1.
 
 ## Provable Properties Catalog
 

@@ -2,7 +2,7 @@
 document_type: architecture-section
 level: L3
 section: verification-coverage-matrix
-version: "3.35"
+version: "3.36"
 status: active
 producer: architect
 timestamp: 2026-09-06T00:00:00Z
@@ -11,9 +11,10 @@ inputs:
   - .factory/specs/verification-properties/VP-INDEX.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/module-criticality.md
-input-hash: "7c7471a"
+input-hash: "3b38559"
 traces_to: ARCH-INDEX.md
 changelog:
+  - "3.36 (D-356/DC-01/2026-09-06, architect): F-PDC01-03+F-PDC01-04 — VP-2.24.002-A/B rows repointed to console::ring_buffer / pregolya-console (RingBuffer<SpanData> Pure Core; ADR-031 Decision 5 + S-console-02). 8 row titles/tools corrected per BC Proof Methods: 001-A/B unit, 001-C compile-fail, 002-B proptest, 003-A unit, 003-C unit, 007-A unit, 008-B unit. Totals corrected: proptest 11→10, integration 18→12, unit 1→7, compile-fail 0→1. input-hash recomputed 3b38559 (DC-01 fix-burst, state-manager)."
   - "3.35 (D-356/2026-09-06, architect): F3 — 19 VP-2.24.* rows added to VP-to-Module table for SS-24 Developer Console (BC-2.24.001–008). Tool breakdown: integration ×15, proptest ×3, Kani ×1. Totals updated: 21→40 VPs; Kani 9→10; proptest 8→11; integration 3→18; unit unchanged at 1. Arithmetic invariant preamble updated. input-hash pending-recompute."
   - "3.34 (round-62/F-P2A234-05/2026-09-01): VP-020 added — PromoteRetireChannel idempotency proptest P1 (BC-2.02.009 {INV-001}+{INV-002}; graph::channels; pregolya-graph; DI-001; Phase 3; harness promote_retire_channel_idempotency). VP-to-Module table: add VP-020 row. Totals: 20→21 VPs, proptest 7→8. Per-Module Coverage Status: graph::channels row updated — VP-020 proptest P1 added (BC-2.02.009 idempotency, ADR-030 §Decision 3). Coverage by Criticality Tier HIGH: proptest 8 of 28 → 9 of 28 (graph::channels/VP-020). Arithmetic: total (21) = P0 (6) + P1 (15) = Kani (9) + proptest (8) + integration (3) + unit (1). input-hash updated (VP-INDEX.md v1.40 propagation)."
   - "3.33 (round-54/F-P2A224-02/2026-09-01): VP-017 DI anchor corrected DI-014 → DI-001 in Per-Module Coverage Status §graph::channels Notes column (VP-017 proptest P1 {DI-014} → {DI-001}). Sibling site missed by round-53 D-332 re-anchor. Authoritative value confirmed: VP-INDEX + ADR-030 §VP + VP-017 body all carry DI-001. Historical changelog entry v3.29 (original add with DI-014) grandfathered per POL-46. VP/module census UNCHANGED: 20 VPs. input-hash refreshed."
@@ -77,7 +78,7 @@ changelog:
 ## [Section Content]
 
 > **VP-INDEX.md is the authoritative VP catalog.** This matrix derives from it.
-> Arithmetic invariant: VP total (40) = P0 (6) + P1 (34) = Kani (10) + proptest (11) + integration (18) + unit (1). Status is updated per gate.
+> Arithmetic invariant: VP total (40) = P0 (6) + P1 (34) = Kani (10) + proptest (10) + integration (12) + unit (7) + compile-fail (1). Status is updated per gate.
 
 ## VP-to-Module Mapping
 
@@ -104,29 +105,30 @@ changelog:
 | VP-018 | Trajectory Compaction Retention Integrity | checkpoint::trajectory | pregolya-checkpoint | proptest | BC-2.04.011 {INV-001} | 3 | draft |
 | VP-019 | Trajectory Compaction Crash Isolation | checkpoint::trajectory | pregolya-checkpoint | integration | BC-2.04.011 {INV-003} | 6 | draft |
 | VP-020 | PromoteRetireChannel Idempotency | graph::channels | pregolya-graph | proptest | BC-2.02.009 {INV-001}+{INV-002} | 3 | draft |
-| VP-2.24.001-A | Console Server Lifecycle (integration) | console::server | pregolya-console | integration | BC-2.24.001 | 3 | draft |
-| VP-2.24.001-B | Console Server Config Invariant (proptest) | console::server | pregolya-console | proptest | BC-2.24.001 | 3 | draft |
-| VP-2.24.001-C | Console Server Startup/Shutdown (integration) | console::server | pregolya-console | integration | BC-2.24.001 | 3 | draft |
-| VP-2.24.002-A | Debug Exporter Ring Buffer Invariant (proptest) | server::debug_routes | pregolya-server | proptest | BC-2.24.002 | 3 | draft |
-| VP-2.24.002-B | Debug Trace Session Endpoint (integration) | server::debug_routes | pregolya-server | integration | BC-2.24.002 | 3 | draft |
-| VP-2.24.002-C | Debug Trace Event Endpoint (integration) | server::debug_routes | pregolya-server | integration | BC-2.24.002 | 3 | draft |
-| VP-2.24.003-A | Graph Descriptor Serialization Roundtrip (proptest) | graph::descriptor | pregolya-graph | proptest | BC-2.24.003 | 3 | draft |
+| VP-2.24.001-A | Console Server Lifecycle (unit) | console::server | pregolya-console | unit | BC-2.24.001 | 3 | draft |
+| VP-2.24.001-B | Console Server Zero-Cap Error (unit) | console::server | pregolya-console | unit | BC-2.24.001 | 3 | draft |
+| VP-2.24.001-C | Console Server Type Safety (compile-fail) | console::server | pregolya-console | compile-fail | BC-2.24.001 | 3 | draft |
+| VP-2.24.002-A | Ring Buffer Bounded Invariant (proptest) | console::ring_buffer | pregolya-console | proptest | BC-2.24.002 | 3 | draft |
+| VP-2.24.002-B | Ring Buffer FIFO Invariant (proptest) | console::ring_buffer | pregolya-console | proptest | BC-2.24.002 | 3 | draft |
+| VP-2.24.002-C | Debug Trace Session Endpoint (integration) | server::debug_routes | pregolya-server | integration | BC-2.24.002 | 3 | draft |
+| VP-2.24.003-A | Graph Descriptor Serialization (unit) | graph::descriptor | pregolya-graph | unit | BC-2.24.003 | 3 | draft |
 | VP-2.24.003-B | Graph Descriptor Pure Termination (Kani) | graph::descriptor | pregolya-graph | Kani | BC-2.24.003 | 6 | draft |
-| VP-2.24.003-C | Graph Endpoint Integration (integration) | server::debug_routes | pregolya-server | integration | BC-2.24.003 | 3 | draft |
+| VP-2.24.003-C | Graph Endpoint Unit (unit) | server::debug_routes | pregolya-server | unit | BC-2.24.003 | 3 | draft |
 | VP-2.24.004-A | Runtime Config Injection (integration) | console::server | pregolya-console | integration | BC-2.24.004 | 3 | draft |
 | VP-2.24.004-B | SPA Asset Serving (integration) | console::server | pregolya-console | integration | BC-2.24.004 | 3 | draft |
 | VP-2.24.005-A | Span Exporter Ring Buffer Relay (integration) | console::server | pregolya-console | integration | BC-2.24.005 | 3 | draft |
 | VP-2.24.005-B | Span Exporter Arc-DI Injection (integration) | console::server | pregolya-console | integration | BC-2.24.005 | 3 | draft |
 | VP-2.24.006-A | Debug API Key Auth Enforcement (integration) | console::server | pregolya-console | integration | BC-2.24.006 | 3 | draft |
 | VP-2.24.006-B | Debug Endpoint Feature Gate OFF (integration) | console::server | pregolya-console | integration | BC-2.24.006 | 3 | draft |
-| VP-2.24.007-A | Dev-Mode Co-Launch (integration) | console::server | pregolya-console | integration | BC-2.24.007 | 3 | draft |
+| VP-2.24.007-A | Dev-Mode Co-Launch (unit) | console::server | pregolya-console | unit | BC-2.24.007 | 3 | draft |
 | VP-2.24.007-B | Console Config Lifecycle (integration) | console::server | pregolya-console | integration | BC-2.24.007 | 3 | draft |
 | VP-2.24.008-A | Console Localhost Bind (integration) | console::server | pregolya-console | integration | BC-2.24.008 | 3 | draft |
-| VP-2.24.008-B | Console TLS-Less Loopback (integration) | console::server | pregolya-console | integration | BC-2.24.008 | 3 | draft |
+| VP-2.24.008-B | Console TLS-Less Loopback (unit) | console::server | pregolya-console | unit | BC-2.24.008 | 3 | draft |
 
 > **D-356 consistency fix (2026-09-06, architect).** 19 VP-2.24.* SEED rows added for SS-24 Developer Console. All P1 draft. SEED status — body .md files authored at Phase 3 Wave 3.
+> **D-356 adversary fix DC-01 (2026-09-06, architect).** F-PDC01-03: VP-2.24.002-A/B repointed to `console::ring_buffer` / `pregolya-console` (`RingBuffer<SpanData>` Pure Core; ADR-031 Decision 5 + S-console-02). F-PDC01-04: 8 rows reconciled against BC Proof Methods; compile-fail added as tool category. Totals corrected: proptest 10, integration 12, unit 7, compile-fail 1.
 
-**Totals: 40 VPs | Kani: 10 | proptest: 11 | fuzz: 0 | integration: 18 | unit: 1**
+**Totals: 40 VPs | Kani: 10 | proptest: 10 | fuzz: 0 | integration: 12 | unit: 7 | compile-fail: 1**
 
 ## Per-Module Coverage Status
 

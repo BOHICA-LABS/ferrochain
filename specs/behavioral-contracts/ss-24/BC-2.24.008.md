@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.008
-version: "1.0"
+version: "1.1"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -19,6 +19,7 @@ di_anchors: [DI-012, DI-014]
 vp_seed: false
 red_gate: false
 changelog:
+  - "1.1 (D-356-fix/DC-01/2026-09-06, product-owner): F-PDC01-01 Story Anchor corrected: was S-console-09, now S-console-10. Verified against S-console-10 frontmatter behavioral_contracts: [BC-2.24.008]."
   - "1.0 (D-356/2026-09-06, product-owner): Initial BC — D-356 dev-console scope expansion. Guardrail/security decision review panel (Fail/Transform only; Pass not shown per F-P99-01)."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-047
@@ -120,7 +121,9 @@ visibility during untrusted-tool-result ingestion).
 
 ## Story Anchor
 
-S-console-09 (Wave 3 — guardrail/security decision review panel)
+S-console-10 (Wave 3 — guardrail/security decision review panel)
+
+> **D-356 adversary fix DC-01 (2026-09-06, product-owner).** Story Anchor corrected S-console-09 → S-console-10. story-writer split BC-2.24.002 across S-console-02+03 and added S-console-05 (SPA build, no BC), shifting the numbering. Verified: S-console-10 frontmatter carries `behavioral_contracts: [BC-2.24.008]`.
 
 ## VP Anchors
 

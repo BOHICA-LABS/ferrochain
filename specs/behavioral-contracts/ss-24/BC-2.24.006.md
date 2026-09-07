@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.006
-version: "1.0"
+version: "1.1"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -19,6 +19,7 @@ di_anchors: [DI-003, DI-014]
 vp_seed: false
 red_gate: false
 changelog:
+  - "1.1 (D-356-fix/DC-01/2026-09-06, product-owner): F-PDC01-01 Story Anchor corrected: was S-console-06, now S-console-08. Verified against S-console-08 frontmatter behavioral_contracts: [BC-2.24.006]."
   - "1.0 (D-356/2026-09-06, product-owner): Initial BC — D-356 dev-console scope expansion. HITL approval dialog and resume dispatch."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-045
@@ -121,7 +122,9 @@ subscribes to the new run stream (BC-2.24.004 live monitoring).
 
 ## Story Anchor
 
-S-console-06 (Wave 3 — HITL console resume dialog)
+S-console-08 (Wave 3 — HITL console resume dialog)
+
+> **D-356 adversary fix DC-01 (2026-09-06, product-owner).** Story Anchor corrected S-console-06 → S-console-08. story-writer split BC-2.24.002 across S-console-02+03 and added S-console-05 (SPA build, no BC), shifting the numbering. Verified: S-console-08 frontmatter carries `behavioral_contracts: [BC-2.24.006]`.
 
 ## VP Anchors
 

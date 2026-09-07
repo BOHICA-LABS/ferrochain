@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.003
-version: "1.0"
+version: "1.1"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -19,6 +19,7 @@ di_anchors: [DI-014]
 vp_seed: false
 red_gate: false
 changelog:
+  - "1.1 (D-356-fix/DC-01/2026-09-06, product-owner): F-PDC01-01 Story Anchor corrected: was S-console-03, now S-console-04. Verified against S-console-04 frontmatter behavioral_contracts: [BC-2.24.003]."
   - "1.0 (D-356/2026-09-06, product-owner): Initial BC — D-356 dev-console scope expansion. Graph-descriptor structural contract for GET /assistants/{id}/graph endpoint."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-042
@@ -131,7 +132,9 @@ AssistantNotFound`.
 
 ## Story Anchor
 
-S-console-03 (Wave 3 — graph::descriptor Pure Core module + GET /assistants/{id}/graph endpoint)
+S-console-04 (Wave 3 — graph::descriptor Pure Core module + GET /assistants/{id}/graph endpoint)
+
+> **D-356 adversary fix DC-01 (2026-09-06, product-owner).** Story Anchor corrected S-console-03 → S-console-04. story-writer split BC-2.24.002 across S-console-02+03 and added S-console-05 (SPA build, no BC), shifting the numbering. Verified: S-console-04 frontmatter carries `behavioral_contracts: [BC-2.24.003]`.
 
 ## VP Anchors
 

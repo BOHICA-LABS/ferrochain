@@ -246,7 +246,7 @@ R6 namespace reservation: publish-all.sh must cover all 21 currently-published c
 
 ## Verification Properties (VP-INDEX)
 
-40 VPs total (6 Kani P0 + 4 Kani P1 + 11 proptest P1 + 18 integration P1 + 1 unit P1 — see VP-INDEX; mirror of VP-INDEX, kept in sync via POL-9):
+40 VPs total (6 Kani P0 + 4 Kani P1 + 10 proptest P1 + 12 integration P1 + 7 unit P1 + 1 compile-fail P1 — see VP-INDEX; mirror of VP-INDEX, kept in sync via POL-9):
 
 | VP | BC Anchor | Module | Tool | Priority | Status |
 |----|-----------|--------|------|----------|--------|
@@ -271,25 +271,25 @@ R6 namespace reservation: publish-all.sh must cover all 21 currently-published c
 | VP-018 | BC-2.04.011 {INV-001} (TrajectoryCompactor retention-integrity; DI-002) | `checkpoint::trajectory` | proptest | P1 | draft |
 | VP-019 | BC-2.04.011 {INV-003} (trajectory compaction crash-isolation — SQLite atomicity under SIGKILL; DI-002) | `checkpoint::trajectory` | integration | P1 | draft |
 | VP-020 | BC-2.02.009 {INV-001}+{INV-002} (PromoteRetireChannel idempotency/ordering; DI-001) | `graph::channels` | proptest | P1 | draft |
-| VP-2.24.001-A | BC-2.24.001 (console::server lifecycle — integration) | `console::server` | integration | P1 | draft |
-| VP-2.24.001-B | BC-2.24.001 (console::server config invariant — proptest) | `console::server` | proptest | P1 | draft |
-| VP-2.24.001-C | BC-2.24.001 (console::server startup/shutdown — integration) | `console::server` | integration | P1 | draft |
-| VP-2.24.002-A | BC-2.24.002 (debug exporter ring buffer invariant — proptest) | `server::debug_routes` | proptest | P1 | draft |
-| VP-2.24.002-B | BC-2.24.002 (debug trace session endpoint — integration) | `server::debug_routes` | integration | P1 | draft |
-| VP-2.24.002-C | BC-2.24.002 (debug trace event endpoint — integration) | `server::debug_routes` | integration | P1 | draft |
-| VP-2.24.003-A | BC-2.24.003 (graph descriptor serialization roundtrip — proptest) | `graph::descriptor` | proptest | P1 | draft |
+| VP-2.24.001-A | BC-2.24.001 (console::server lifecycle — unit) | `console::server` | unit | P1 | draft |
+| VP-2.24.001-B | BC-2.24.001 (console::server zero-cap error — unit) | `console::server` | unit | P1 | draft |
+| VP-2.24.001-C | BC-2.24.001 (console::server type safety — compile-fail) | `console::server` | compile-fail | P1 | draft |
+| VP-2.24.002-A | BC-2.24.002 (ring buffer bounded invariant — proptest) | `console::ring_buffer` | proptest | P1 | draft |
+| VP-2.24.002-B | BC-2.24.002 (ring buffer FIFO invariant — proptest) | `console::ring_buffer` | proptest | P1 | draft |
+| VP-2.24.002-C | BC-2.24.002 (debug trace session endpoint — integration) | `server::debug_routes` | integration | P1 | draft |
+| VP-2.24.003-A | BC-2.24.003 (graph descriptor serialization — unit) | `graph::descriptor` | unit | P1 | draft |
 | VP-2.24.003-B | BC-2.24.003 (graph descriptor pure termination — Kani) | `graph::descriptor` | Kani | P1 | draft |
-| VP-2.24.003-C | BC-2.24.003 (graph endpoint integration) | `server::debug_routes` | integration | P1 | draft |
+| VP-2.24.003-C | BC-2.24.003 (graph endpoint unit) | `server::debug_routes` | unit | P1 | draft |
 | VP-2.24.004-A | BC-2.24.004 (runtime config injection — integration) | `console::server` | integration | P1 | draft |
 | VP-2.24.004-B | BC-2.24.004 (SPA asset serving — integration) | `console::server` | integration | P1 | draft |
 | VP-2.24.005-A | BC-2.24.005 (span exporter ring buffer relay — integration; DI-002) | `console::server` | integration | P1 | draft |
 | VP-2.24.005-B | BC-2.24.005 (span exporter Arc-DI injection — integration; DI-002) | `console::server` | integration | P1 | draft |
 | VP-2.24.006-A | BC-2.24.006 (debug API key auth enforcement — integration) | `console::server` | integration | P1 | draft |
 | VP-2.24.006-B | BC-2.24.006 (debug endpoint feature gate OFF — integration) | `console::server` | integration | P1 | draft |
-| VP-2.24.007-A | BC-2.24.007 (dev-mode co-launch — integration) | `console::server` | integration | P1 | draft |
+| VP-2.24.007-A | BC-2.24.007 (dev-mode co-launch — unit) | `console::server` | unit | P1 | draft |
 | VP-2.24.007-B | BC-2.24.007 (console config lifecycle — integration) | `console::server` | integration | P1 | draft |
 | VP-2.24.008-A | BC-2.24.008 (console localhost bind — integration) | `console::server` | integration | P1 | draft |
-| VP-2.24.008-B | BC-2.24.008 (console TLS-less loopback — integration) | `console::server` | integration | P1 | draft |
+| VP-2.24.008-B | BC-2.24.008 (console TLS-less loopback — unit) | `console::server` | unit | P1 | draft |
 
 > **D-356 VP-2.24.* SEED registrations (2026-09-06, architect):** 19 VP-2.24.* placeholder rows added for SS-24 Developer Console (BC-2.24.001–008). SEED status — body .md files authored at Phase 3 Wave 3. VP-2.24.003-B (Kani, graph::descriptor Pure Core) is the Phase 6 formal-proof candidate. Total VP 21→40.
 
