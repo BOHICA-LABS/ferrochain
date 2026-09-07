@@ -1,14 +1,15 @@
 ---
 document_type: verification-property-index
 level: L3
-version: "1.40"
+version: "1.41"
 status: active
 producer: architect
-timestamp: 2026-09-01T14:00:00Z
+timestamp: 2026-09-06T00:00:00Z
 phase: 1b
 input-hash: "[live-index]"
 traces_to: ARCH-INDEX.md
 changelog:
+  - "1.41 (D-356/2026-09-06, architect): F3 — 19 VP-2.24.* SEED rows registered for SS-24 Developer Console (BC-2.24.001–008). Tool breakdown of 19 new VPs: integration ×15, proptest ×3, Kani ×1. All P1, draft, Phase 3 except VP-2.24.003-B (Kani, Phase 6). Arithmetic: total 21→40 (P0 6 unchanged, P1 15→34); Kani 9→10; proptest 8→11; integration 3→18; unit 1; fuzz 0; draft 21→40."
   - "1.40 (round-62/F-P2A234-05/2026-09-01): VP-020 added — PromoteRetireChannel idempotency proptest P1 (BC-2.02.009 {INV-001}+{INV-002}; graph::channels; pregolya-graph; DI-001; Phase 3; harness promote_retire_channel_idempotency; file vp-020-promote-retire-channel-idempotency.md). Structurally analogous to VP-017 LedgerChannel; covers BC-2.02.009 which had only unit-test coverage. Records-tier historic count-abbreviation patterns in old changelogs (v1.7, v1.4, v1.0) rephrased from 'N VPs' to 'total N' form (count-propagation hook hygiene). Arithmetic: total 20→21 (P0 6 unchanged, P1 14→15); proptest 7→8; Kani/integration/unit unchanged."
   - "1.39 (round-57/D-336/2026-09-01): VP-017 §Feasibility revised (F-P2A228-03 [LOW]: §Feasibility Assessment replaced forbidden IndexSet exemplar with mandated Vec linear scan + HashSet oracle, consistent with §Formal Invariant and proof harness). VP-017 input-hash corrected (pre-existing drift: ADR-030 §Decision-3 had been revised in round-56 without input-hash refresh). VP census UNCHANGED: 20 total. VP-017 DI-001 / VP-018 DI-002 / VP-019 DI-002 cross-doc consistency confirmed."
   - "1.38 (round-56/D-335/2026-09-01): VP-019 §BC-Contradictions-Flagged (formal-verifier; §BC-Contradictions-Flagged marked RESOLVED — VP-019 no longer conflicts with VP-018 staging model; input-hash 6579f43; F-P2A227-03). VP-017/VP-018 DI anchors confirmed consistent (VP-017 DI-001, VP-018 DI-002, VP-019 DI-002). BC-INDEX §VP Seed BCs VP-018 DI cell corrected DI-002+DI-004→DI-002 (O-P2A227-A). VP census UNCHANGED: 20 total."
@@ -59,7 +60,7 @@ changelog:
 > (Provable Properties Catalog + P0 list) and `verification-coverage-matrix.md`
 > (VP-to-Module table + Totals row) in the same burst.
 >
-> Arithmetic invariant: total (21) = P0 (6) + P1 (15) = Kani (9) + proptest (8) + integration (3) + unit (1).
+> Arithmetic invariant: total (40) = P0 (6) + P1 (34) = Kani (10) + proptest (11) + integration (18) + unit (1).
 >
 > **VP Priority vs BC Priority (OBS-P156-B):** The `Priority` column here is the
 > **verification-priority axis** — it reflects proof criticality (how urgently this property
@@ -79,15 +80,15 @@ changelog:
 
 | Metric | Count |
 |--------|-------|
-| Total VPs | 21 |
+| Total VPs | 40 |
 | Priority P0 (verification-priority) | 6 |
-| Priority P1 (verification-priority) | 15 |
-| Kani | 9 |
-| proptest | 8 |
+| Priority P1 (verification-priority) | 34 |
+| Kani | 10 |
+| proptest | 11 |
 | fuzz | 0 |
-| integration | 3 |
+| integration | 18 |
 | unit | 1 |
-| Status: draft | 21 |
+| Status: draft | 40 |
 | Status: active | 0 |
 | Status: passed | 0 |
 
@@ -116,3 +117,22 @@ changelog:
 | VP-018 | BC-2.04.011 {INV-001} | checkpoint::trajectory | proptest | 3 | P1 | draft | DI-002 | pregolya-checkpoint | `trajectory_compaction_retention_integrity` | vp-018-trajectory-compaction-retention-integrity.md |
 | VP-019 | BC-2.04.011 {INV-003} | checkpoint::trajectory | integration | 6 | P1 | draft | DI-002 | pregolya-checkpoint | n/a (integration test) | vp-019-trajectory-compaction-crash-isolation.md |
 | VP-020 | BC-2.02.009 {INV-001}+{INV-002} | graph::channels | proptest | 3 | P1 | draft | DI-001 | pregolya-graph | `promote_retire_channel_idempotency` | vp-020-promote-retire-channel-idempotency.md |
+| VP-2.24.001-A | BC-2.24.001 | console::server | integration | 3 | P1 | draft | DI-014 | pregolya-console | n/a (integration test) | SEED |
+| VP-2.24.001-B | BC-2.24.001 | console::server | proptest | 3 | P1 | draft | DI-014 | pregolya-console | `console_server_config_invariant` | SEED |
+| VP-2.24.001-C | BC-2.24.001 | console::server | integration | 3 | P1 | draft | DI-014 | pregolya-console | n/a (integration test) | SEED |
+| VP-2.24.002-A | BC-2.24.002 | server::debug_routes | proptest | 3 | P1 | draft | DI-014 | pregolya-server | `debug_exporter_ring_buffer_invariant` | SEED |
+| VP-2.24.002-B | BC-2.24.002 | server::debug_routes | integration | 3 | P1 | draft | DI-014 | pregolya-server | n/a (integration test) | SEED |
+| VP-2.24.002-C | BC-2.24.002 | server::debug_routes | integration | 3 | P1 | draft | DI-014 | pregolya-server | n/a (integration test) | SEED |
+| VP-2.24.003-A | BC-2.24.003 | graph::descriptor | proptest | 3 | P1 | draft | DI-014 | pregolya-graph | `graph_descriptor_serialization_roundtrip` | SEED |
+| VP-2.24.003-B | BC-2.24.003 | graph::descriptor | Kani | 6 | P1 | draft | DI-014 | pregolya-graph | `graph_descriptor_pure_termination_harness` | SEED |
+| VP-2.24.003-C | BC-2.24.003 | server::debug_routes | integration | 3 | P1 | draft | DI-014 | pregolya-server | n/a (integration test) | SEED |
+| VP-2.24.004-A | BC-2.24.004 | console::server | integration | 3 | P1 | draft | DI-014 | pregolya-console | n/a (integration test) | SEED |
+| VP-2.24.004-B | BC-2.24.004 | console::server | integration | 3 | P1 | draft | DI-014 | pregolya-console | n/a (integration test) | SEED |
+| VP-2.24.005-A | BC-2.24.005 | console::server | integration | 3 | P1 | draft | DI-002 | pregolya-console | n/a (integration test) | SEED |
+| VP-2.24.005-B | BC-2.24.005 | console::server | integration | 3 | P1 | draft | DI-002 | pregolya-console | n/a (integration test) | SEED |
+| VP-2.24.006-A | BC-2.24.006 | console::server | integration | 3 | P1 | draft | DI-014 | pregolya-console | n/a (integration test) | SEED |
+| VP-2.24.006-B | BC-2.24.006 | console::server | integration | 3 | P1 | draft | DI-014 | pregolya-console | n/a (integration test) | SEED |
+| VP-2.24.007-A | BC-2.24.007 | console::server | integration | 3 | P1 | draft | DI-014 | pregolya-console | n/a (integration test) | SEED |
+| VP-2.24.007-B | BC-2.24.007 | console::server | integration | 3 | P1 | draft | DI-014 | pregolya-console | n/a (integration test) | SEED |
+| VP-2.24.008-A | BC-2.24.008 | console::server | integration | 3 | P1 | draft | DI-014 | pregolya-console | n/a (integration test) | SEED |
+| VP-2.24.008-B | BC-2.24.008 | console::server | integration | 3 | P1 | draft | DI-014 | pregolya-console | n/a (integration test) | SEED |

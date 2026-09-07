@@ -1,15 +1,16 @@
 ---
 document_type: bc-index
 level: L3
-version: "4.22"
+version: "4.23"
 status: active
 producer: state-manager
-timestamp: 2026-09-02T14:00:00Z
+timestamp: 2026-09-06T00:00:00Z
 project: pregolya
 cycle: v1.0.0-greenfield
 input-hash: "[live-index]"
 traces_to: .factory/specs/prd.md
 changelog:
+  - "4.23 (D-356/2026-09-06): SS-24 Developer Console registered — 8 new BCs (BC-2.24.001..008; CAP-041..047 anchors; wave 3; draft; P1). BC-to-Story SS-24 section added. Summary: BC 140→148 (+8); P1 86→94 (+8); Subsection groups 23→24. VP-2.24.* seed anchors listed per VP-INDEX v1.41. Census: BC 148 / VP 40 / EC 143 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24."
   - "4.22 (round-67 reconciliation/D-346/2026-09-02): BC-2.14.005 row Notes column updated v1.4→v1.5 per product-owner multi-anchor adjudication Decision (a): BC-2.14.005 is a legitimate multi-anchor contract co-anchored to S-1.02 (primary; credential newtypes in pregolya-core/src/credentials.rs) + S-2.06 (co-anchor; SDK crates cannot depend on pregolya-core per BC-2.08.006 PC-001; SDK crates define independent credential newtypes governed by BC-2.14.005 workspace-wide policy). S-2.06 AC-006 traces to BC-2.14.005 {PC-002}. STORY-INDEX §BC-to-Story anchor map BC-2.14.005 row: S-1.02→S-1.02, S-2.06 (v1.51). sprint-state.yaml S-2.06 bcs: [BC-2.08.006]→[BC-2.08.006, BC-2.14.005]. Census UNCHANGED: BC 140 / VP 21 / EC 143 / TV 795 canonical / stories 42 / pts 316 / ADR 30 / holdout 24 (must-pass 17/24=70.8%) / NFR 15."
   - "4.21 (round-65/D-343/2026-09-01): BC-2.02.009 §Traceability Test Types corrected 'U (unit)'→'U (unit), P (property)' (F-P2A237-03[MED]; VP-020 proptest P1 coverage now reflected in Test Types cell; aligned with sibling BC-2.02.007 canonical form). Census UNCHANGED: BC 140 / VP 21 / EC 143 / TV 795 canonical / stories 42 / pts 316 / ADR 30 / holdout 24 (must-pass 17/24=70.8%) / NFR 15."
   - "4.20 (round-63/D-341/2026-09-01): ADR-030 §SQLite Topology single per-run-DELETE mechanism (contradictory directive removed; F-P2A235-01). BC-2.04.011 §Architecture Anchors segment-swap residue fixed (F-P2A235-02). verification-architecture §VP-019 stale directive deleted; §VP-020 {INV-002} gloss corrected reducer-determinism (F-P2A235-03/F-P2A235-08). nfr-catalog §NFR-015 P1→P0 (parity with NFR-002; ADR-030 §NFR-015 directive; F-P2A235-04). BC-2.04.009 §EC-006 AES-GCM auth failure + TV-007 (BC-local edge case raises E-TRAJ-006; global EC census UNCHANGED at 143; F-P2A235-05). ADR-030 §E-TRAJ-006 + BC-2.04.009 §description STATIC message reconciled (F-P2A235-06). input-hashes refreshed via compute-input-hash --update: BC-2.02.007/008/009 + BC-2.04.009/010/011 + VP-017/018/019/020 (ADR-030 dependents; F-P2A235-07). ADR-030 §{INV-002} gloss corrected reducer-determinism (F-P2A235-08). BC-2.04.009 §EC-006 (bumped round-63); BC-2.04.011 §Architecture Anchors (bumped round-63). TV 794→795 canonical (BC-2.04.009 +TV-007 AES-GCM tamper → E-TRAJ-006). Census: BC 140 / VP 21 / EC 143 / TV 795 canonical / stories 42 / pts 316 / ADR 30 / holdout 24 (must-pass 17/24=70.8%) / NFR 15."
@@ -164,13 +165,13 @@ changelog:
 
 | Metric | Count |
 |--------|-------|
-| Total BCs | 140 |
+| Total BCs | 148 |
 | Priority P0 | 51 |
-| Priority P1 | 86 |
+| Priority P1 | 94 |
 | Priority P2 | 3 |
 | Red Gate BCs | 11 |
 | VP Seed BCs | 18 unique VPs (20 BC rows; VP-014 dual-anchors BC-2.01.005+BC-2.01.006; VP-017 dual-anchors BC-2.02.007+BC-2.02.008; VP-006-B companion to VP-006 on BC-2.18.004 {PC-005}; VP-020 seeds BC-2.02.009) |
-| Subsection groups | 23 (SS-01 – SS-23) |
+| Subsection groups | 24 (SS-01 – SS-24) |
 
 ## Red Gate BCs
 
@@ -359,6 +360,14 @@ _VP-004 and VP-005 are integration VPs (from BC-2.09.004/005); registered in VP-
 | BC-2.23.004 | ListDirTool — PathGuard-Confined Directory Listing; ReadOnly; E-TOOLS-001/008; DirEntry Struct | CAP-036 | | DI-014 | P1 | | | ss-23/BC-2.23.004.md |
 | BC-2.23.005 | BashTool — Sandboxed Shell Execution; Non-Lowerable Medium Risk Floor; BashOutput; 256 KiB Output Cap; 30 s Timeout; E-TOOLS-004/007 (VP-013 Kani Seed) | CAP-037 | | DI-014,DI-015 | P1 | | **VP-013** | ss-23/BC-2.23.005.md |
 | BC-2.23.006 | GrepTool — In-Process Regex Search; Linear-Time `regex` Crate; max_results 100 Cap; Hermetic; PathGuard Scope; E-TOOLS-001/008/009 | CAP-038 | | DI-014 | P1 | | | ss-23/BC-2.23.006.md |
+| BC-2.24.001 | `pregolya-console` Startup, Asset Serving, and `ConsoleConfig` (CAP-041) | CAP-041 | | DI-014 | P1 | | VP-2.24.001-A/B/C | ss-24/BC-2.24.001.md |
+| BC-2.24.002 | `DebugSpanExporter` Retention-Capped Ring Buffer and Trace-Read Debug Endpoints (CAP-042) | CAP-042 | | DI-014 | P1 | | VP-2.24.002-A/B/C | ss-24/BC-2.24.002.md |
+| BC-2.24.003 | Graph-Descriptor Structural Contract — `GET /assistants/{id}/graph` (CAP-042) | CAP-042 | | DI-014 | P1 | | VP-2.24.003-A/B/C | ss-24/BC-2.24.003.md |
+| BC-2.24.004 | Run Inspection Event Timeline and Live Monitoring Panel (CAP-043) | CAP-043 | | DI-014 | P1 | | VP-2.24.004-A/B | ss-24/BC-2.24.004.md |
+| BC-2.24.005 | Checkpoint History Browser and Fork-from-Checkpoint Trajectory Replay (CAP-044) | CAP-044 | | DI-002, DI-004, DI-014 | P1 | | VP-2.24.005-A/B | ss-24/BC-2.24.005.md |
+| BC-2.24.006 | HITL Approval Dialog and Resume Dispatch (CAP-045) | CAP-045 | | DI-003, DI-014 | P1 | | VP-2.24.006-A/B | ss-24/BC-2.24.006.md |
+| BC-2.24.007 | Token/Context Budget Monitoring Panel (CAP-046) | CAP-046 | | DI-014 | P1 | | VP-2.24.007-A/B | ss-24/BC-2.24.007.md |
+| BC-2.24.008 | Guardrail/Security Decision Review Panel (CAP-047) | CAP-047 | | DI-012, DI-014 | P1 | | VP-2.24.008-A/B | ss-24/BC-2.24.008.md |
 
 ## Carry-Forward Notes (RESOLVED at Phase 1 Step D, 2026-07-14)
 
@@ -377,6 +386,7 @@ _VP-004 and VP-005 are integration VPs (from BC-2.09.004/005); registered in VP-
 
 | Version | Date | Change | Source |
 |---------|------|--------|--------|
+| 4.23 | 2026-09-06 | D-356 dev-console scope expansion: SS-24 Developer Console registered — 8 new BCs (BC-2.24.001..008; all P1; CAP-041..047; DI-014; pregolya-console crate Wave 3 ROADMAP-ONLY). VP Seed BCs table +8 rows (VP-2.24.001-A/B/C + VP-2.24.002-A/B/C + VP-2.24.003-A/B/C + VP-2.24.004-A/B + VP-2.24.005-A/B + VP-2.24.006-A/B + VP-2.24.007-A/B + VP-2.24.008-A/B = 19 new VP entries; VP 21→40). Subsystem groups 23→24 (SS-24 added). Census: BC 140→148 (51 P0 / 94 P1 / 3 P2) / VP 21→40 / EC 143 / TV 795 / stories 42→52 / pts 316→372 / ADR 30→31 / holdout 24 / NFR 15. | D-356 |
 | 4.22 | 2026-09-02 | round-67 reconciliation/D-346: BC-2.14.005 row Notes annotation updated v1.4→v1.5 — multi-anchor S-1.02+S-2.06 adjudication (product-owner Decision (a)). STORY-INDEX anchor map BC-2.14.005 S-1.02→S-1.02, S-2.06 (v1.51). sprint-state.yaml S-2.06 bcs synced. Census UNCHANGED: BC 140 / VP 21 / EC 143 / TV 795. | round-67 reconciliation D-346 |
 | 4.21 | 2026-09-01 | round-65/D-343/F-P2A237-03: BC-2.02.009 §Traceability Test Types corrected 'U (unit)' → 'U (unit), P (property)' — VP-020 proptest P1 coverage now reflected; aligned with sibling BC-2.02.007. Census UNCHANGED: BC 140 / VP 21 / EC 143 / TV 795. | round-65 D-343 |
 | 4.20 | 2026-09-01 | round-63/D-341: ADR-030 §SQLite Topology single per-run-DELETE (F-P2A235-01). BC-2.04.011 §Architecture Anchors segment-swap fix (F-P2A235-02). verification-architecture §VP-019 stale directive deleted + §VP-020 {INV-002} gloss reducer-determinism (F-P2A235-03/08). nfr-catalog §NFR-015 P1→P0 (F-P2A235-04). BC-2.04.009 §EC-006 AES-GCM + TV-007 (BC-local; F-P2A235-05). STATIC E-TRAJ-006 message reconciled (F-P2A235-06). input-hashes refreshed BC-2.02.007/008/009 + BC-2.04.009/010/011 + VP-017/018/019/020 (F-P2A235-07). TV 794→795. Census: BC 140 / VP 21 / EC 143 / TV 795 canonical / stories 42 / pts 316 / ADR 30 / NFR 15. | round-63 D-341 |

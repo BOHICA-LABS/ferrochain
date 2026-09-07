@@ -2,11 +2,12 @@
 document_type: domain-spec-section
 level: L2
 section: entities-server
-version: "1.17"
+version: "1.18"
 status: active
 producer: business-analyst
-timestamp: 2026-07-27T00:00:00Z
+timestamp: 2026-09-06T00:00:00Z
 changelog:
+  - "1.18 (D-356/2026-09-06, business-analyst): D-356 dev-console scope expansion — Actors/Roles section added (§Actors / Roles). Introduces the developer-operator as an explicit first-class actor with persona breakdown (P1–P5) and need→WF→CAP chain. Cross-references CAP-041–CAP-047 (capabilities-p1-p2.md §P1 — Developer Console). Research memo (.factory/planning/devconsole-adk-research.md) added to inputs; input-hash set to PENDING-RECOMPUTE. D356 added to decisions list. Roadmap-only delta: no existing content modified."
   - "1.17 (burst-315/F-AUD-C-02/2026-08-17): §PregolyaError category field: append EXEC as 13th Category variant. Prior text listed 12 codes (VAL | AUTH | RATE | TIMEOUT | TRANSPORT | INTERNAL | DURABILITY | POLICY | TOOL | CONCURRENCY | SECURITY | TENANCY); EXEC was added burst-302b/D-170 per ADR-010 §Category Axis Expansion but was not propagated to this L2 entity definition. Fix: appended '| EXEC' so all 13 taxonomy codes are present. Authority: error-taxonomy §Error Categories (EXEC row) + ADR-010 §Category Axis Expansion (D26)."
   - "1.16 (2026-07-29): Error-construction notation correction per ADR-010 §Error-Construction Notation Canon. 1 CLASS3_UNICODE_ELLIPSIS_VIOLATION corrected: replaced `…` (U+2026) in field-elision position with `..` in PregolyaError { category: TOOL, … } (MCPTool §Error, DEC-012 reference). The `…` appeared after `, ` (comma-whitespace), placing it in field-elision position per the discriminator."
   - "1.15 (2026-07-27): F-P173-211 — source field corrected from Box<dyn StdError> to Arc<dyn std::error::Error + Send + Sync> (Box does not implement Clone, causing E0277 on #[derive(Clone)] in pregolya-core error type; Arc refcount-clone resolves this without requiring inner error to be Clone). message constraint added: MUST NOT contain credentials (DI-010). source constraint added: MUST NOT be exposed in HTTP responses. Naming adjudications: (1) component field retains L2 domain name PregolyaComponent with explicit Rust cross-ref to Component; (2) category variants aligned from PascalCase English (third-rendering) to taxonomy codes per casing canon, type name corrected from ErrorCategory to Category."
@@ -28,9 +29,10 @@ phase: 1a
 inputs:
   - .factory/specs/product-brief.md
   - .factory/comparative/COMPARATIVE-ASSESSMENT.md
-input-hash: "17e75c3"
+  - .factory/planning/devconsole-adk-research.md
+input-hash: "87bd0e1"
 traces_to: L2-INDEX.md
-decisions: [D11, D13, D17]
+decisions: [D11, D13, D17, D356]
 ---
 
 # Domain Entities — Server, Policy/Governance, and Provider
@@ -174,6 +176,75 @@ A Tool whose schema and invocation semantics are discovered from an external MCP
 - **Fields:** server_id: String, tool_name: String, description: String, input_schema: JsonSchema, transport: MCPTransport (Stdio | HTTP | WebSocket)
 - **Behavior:** MCPTool implements the Tool Runnable interface. ToolResult produced by MCPTool is always tagged as untrusted ingress.
 - **Error:** Bare ToolException from MCP server must be preserved and wrapped as `PregolyaError { category: TOOL, .. }` (DEC-012).
+
+---
+
+## Actors / Roles (D-356 Dev Console Scope Expansion)
+
+> **D-356 dev-console scope expansion (2026-09-06, business-analyst).** This section is a
+> dated delta. The domain spec did not previously contain an explicit Actors/Roles section;
+> pregolya's runtime actors were implicit in the holdout domain descriptions (product-brief.md,
+> domain-a through domain-e). This delta makes the primary human actors explicit for the
+> developer console surface. Append-only: all existing entity definitions above are unchanged.
+
+### Existing Implicit Actors (Acknowledged)
+
+Prior to D-356, two actors were implicit in the holdout domain descriptions and product brief:
+
+**SDK Integrator** — A pregolya library consumer who builds and wires StateGraphs in
+application code. The SDK integrator is the actor whose perspective drives CAP-001 through
+CAP-040: authoring correct graphs, composing Runnables, configuring providers, and deploying
+agent applications. All existing capabilities are grounded in this actor's needs.
+
+**Embedding Host** — An external system or application that consumes the pregolya-server
+REST+SSE API in production. Validated by HS-C-001 (holdout scenario: FlowLoom embedding-host
+end-to-end). The embedding host is programmatic and production-facing; it consumes the
+StreamEvent grammar over the existing SSE endpoint to build downstream products.
+
+### Developer-Operator (Net-New, D-356)
+
+A human actor who runs pregolya locally in a development or debug context and uses the dev
+console to inspect, trace, replay, and approve agent runs.
+
+**Is this a distinct behavioral cluster?** Yes. The console-facing workflows (inspect event
+timeline, browse checkpoint history, drive HITL approval from a UI, watch live streaming
+events with node-highlighting, monitor token budget) are not expressible through the SDK
+integrator or embedding-host behavioral clusters. A dedicated actor is warranted even though
+the same human may wear multiple hats in a small team.
+
+**Distinction from SDK integrator:** The SDK integrator's concern is *authoring* correct
+graphs. The developer-operator's concern is *observing and diagnosing* running or completed
+graphs. The developer-operator is typically the same human in a different phase of their
+workflow — the hat they wear when they run `pregolya console` rather than when they write
+`StateGraph::new().add_node(...)` code.
+
+**Distinction from embedding host:** The embedding host is programmatic and production-facing.
+The developer-operator is human and local-dev-facing. The developer-operator uses the console
+UI; the embedding host consumes the API programmatically.
+
+**Five developer-operator sub-personas (grounded in research memo §5):**
+
+| Sub-Persona | Primary Concern | Primary Console Capabilities |
+|-------------|----------------|------------------------------|
+| P1 — Graph Author | See the graph I wired, run it interactively, watch which node fires when | CAP-042 (graph descriptor), CAP-043 (live run + node highlighting) |
+| P2 — Run Debugger | Open a specific run_id, step through event timeline, expand per-event payloads, read spans | CAP-043 (run inspector), CAP-042 (span detail) |
+| P3 — Trajectory Replayer / HITL Operator | Browse checkpoint history, resume interrupted run, fork from earlier checkpoint | CAP-044 (trajectory replay), CAP-045 (HITL console resume) |
+| P4 — Budget/Context Watcher | Watch token budget, see when compaction fires, how much it reclaimed | CAP-046 (budget panel) |
+| P5 — Security Reviewer | Watch guardrail_decision events in real time, review Fail/Transform outcomes | CAP-047 (guardrail panel) |
+
+P6 (Eval Analyst) is DEFERRED — see CAP-048.
+
+**Need → WF → CAP chain (D-356 capabilities):**
+Developer-operator need: *observe and diagnose agent runs locally* →
+Workflow clusters: run-inspection, trajectory-replay, HITL-resume, graph-visualization,
+budget-watch, guardrail-watch →
+Capabilities: CAP-041 (console layer), CAP-042 (debug infra), CAP-043 (run inspection +
+live monitoring), CAP-044 (trajectory replay), CAP-045 (HITL console resume), CAP-046
+(budget panel), CAP-047 (guardrail panel).
+
+**Grounding:** research memo §5 personas P1–P6 (devconsole-adk-research.md); product-brief.md
+§In Scope pregolya-server; HS-C-001 embedding-host holdout (validates the actor boundary —
+the console is a client of the same wire contract as the embedding host).
 
 ---
 

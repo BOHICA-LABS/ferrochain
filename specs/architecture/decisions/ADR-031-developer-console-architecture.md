@@ -1,0 +1,425 @@
+---
+document_type: adr
+level: L3
+adr_id: "031"
+slug: developer-console-architecture
+title: "Developer Console Architecture: pregolya-console Crate, Debug Endpoints, SSE Transport Reconciliation (D-356)"
+status: accepted
+date: "2026-09-06"
+producer: architect
+timestamp: 2026-09-06T00:00:00Z
+version: "1.0"
+phase: 1b
+traces_to: ARCH-INDEX.md
+decisions: [D356]
+supersedes: null
+superseded_by: null
+subsystems_affected: ["SS-24", "SS-12"]
+inputs:
+  - .factory/planning/devconsole-adk-research.md
+  - .factory/specs/domain-spec/capabilities-p1-p2.md
+  - .factory/specs/architecture/api-surface.md
+  - .factory/specs/architecture/decisions/ADR-006-streaming-event-taxonomy.md
+  - .factory/specs/architecture/decisions/ADR-021-server-config-surface-runnable-config-configurable.md
+  - .factory/specs/architecture/decisions/ADR-028-server-run-lifecycle-semantics.md
+  - .factory/specs/architecture/ARCH-INDEX.md
+input-hash: "5880d78"
+changelog:
+  - "1.0 (D-356/2026-09-06, architect): Initial ADR — developer console scope expansion. Six decisions: (1) pregolya-console new binary crate (Wave 3, roadmap); (2) debug-endpoints feature-gated on pregolya-server; (3) SSE transport confirmed, WebSocket-vs-SSE discrepancy closed; (4) SPA framework deferred to Wave 3; (5) purity boundary: console::server Effectful Shell, console::span_exporter Boundary, server::debug_routes Effectful Shell; (6) NFR/security deltas: localhost-bind, no external auth in dev mode, debug-endpoints OFF by default."
+---
+
+# ADR-031: Developer Console Architecture
+
+> **D-356 dev-console scope expansion (2026-09-06, architect).** Roadmap-only delta.
+> `pregolya-console` and `debug-endpoints` are **not built in the current cycle** —
+> spec and storyboard now; build in Wave 3.
+
+**Status:** Accepted — D-356 human-authorized scope expansion
+
+---
+
+## Context
+
+D-356 (2026-09-06) authorized an ADK-style local developer console for pregolya. The
+business-analyst authored CAP-041 through CAP-047 (plus deferred CAP-048) in
+`capabilities-p1-p2.md`. The research memo (`devconsole-adk-research.md`) established
+five load-bearing findings:
+
+1. The reference is `adk web` (Google ADK run-debug console), not ADK Studio (visual
+   builder — out of scope, extracted to a separate repo not in the corpus).
+2. Both reference implementations (`adk-rust`, LangGraph Studio) and the upstream
+   `adk web` all stream over **REST + SSE**, never WebSocket. ADR-006 and api-surface.md
+   already specify SSE. The task brief's "over WebSocket" premise was incorrect.
+3. The pregolya server surface (SS-12) is already a superset of the adk-rust console
+   backend for runs, threads, state, history, and HITL. The existing 16-variant
+   `StreamEvent` grammar is richer than the reference (includes `GuardrailDecision` and
+   `CompactionEvent` variants). HS-C-001 holdout already proves an external host can
+   consume the stream.
+4. Net-new backend additions are modest: `/debug/trace/*` span-read endpoints (plus an
+   in-memory OTel span exporter) and a graph-descriptor endpoint. Everything else the
+   console needs already exists in the public wire contract.
+5. Three-component split is recommended: headless `pregolya-server` (transport authority,
+   no change), `pregolya-console` (new binary crate: embeds SPA, dev-server launch, span
+   exporter host), and web SPA (separate build artifact, own wave).
+
+This ADR makes six binding decisions and formally closes the WebSocket-vs-SSE discrepancy.
+
+---
+
+## Decision
+
+Six binding decisions are made in this ADR, grouped as numbered subsections.
+
+### Decision 1 — `pregolya-console` Crate
+
+Add `pregolya-console` as a **new binary crate** (crate #22 in the Canonical Crate Roster,
+Wave 3, roadmap — not built in the current Phase 3 implementation cycle).
+
+**Responsibilities:**
+- Embeds the compiled web SPA via `rust_embed` (`#[folder = "assets/webui"]`). Serves
+  the SPA at `/ui/` with fallback to `index.html` for SPA routing (pattern: adk-rust
+  `web_ui.rs`).
+- Injects `runtime-config.json` at `/ui/assets/config/runtime-config.json` with
+  `{ "apiBaseUrl": "/api" }` so the SPA resolves the backend relative to the same host.
+- Exposes a `pregolya console` CLI subcommand (added to the `pregolya` facade crate).
+  Flags: `--host` (default `127.0.0.1`), `--port` (default `7437`), `--dev`
+  (co-launch in-process server).
+- In `--dev` mode: co-launches an in-process `pregolya-server` on the same address/port.
+  The combined Axum router serves `/api/*` (server routes) and `/ui/*` (SPA assets)
+  from a single listener on `127.0.0.1:7437`.
+- Hosts the `DebugSpanExporter` — an in-memory span exporter (bounded ring buffer)
+  injected into the co-launched pregolya-server as a configured OTel span exporter. The
+  `/debug/trace/*` endpoints (Decision 2) read from this exporter.
+
+**Dependency boundary:** `pregolya-console` MUST NOT import from `pregolya-graph`
+internals, executor internals, or any crate-private module. It drives the engine
+exclusively through the public pregolya-server REST+SSE contract — the same contract
+used by the HS-C-001 embedding-host holdout. This is a structural crate-level invariant,
+enforced by the `Cargo.toml` dependency graph.
+
+**Public surface (limited):**
+- `ConsoleConfig` struct (host, port, dev_mode, span_retention_cap)
+- `run_console(config: ConsoleConfig) -> Result<(), PregolyaError>` async entry point
+
+CAP anchor: CAP-041.
+
+### Decision 2 — Debug Endpoints on `pregolya-server` (Feature-Gated)
+
+Add three endpoints to `pregolya-server` compiled in ONLY when the `debug-endpoints`
+Cargo feature is enabled. Default: **OFF**. Production deployments that do not enable
+this feature compile out all debug routing with zero overhead.
+
+**Endpoint paths (exact):**
+
+| Method | Path | Description | CAP |
+|--------|------|-------------|-----|
+| GET | `/debug/trace/session/{session_id}` | Ordered `SpanData` list for a session | CAP-042 |
+| GET | `/debug/trace/{event_id}` | `SpanData` for a single event | CAP-042 |
+| GET | `/assistants/{id}/graph` | StateGraph JSON node/edge descriptor + optional `dot_src` | CAP-042 |
+
+**Trace/span shape (`SpanData`):** `span_id`, `trace_id`, `start_time_ms`, `end_time_ms`,
+`attributes` (JSON object), `llm_request` (nullable JSON), `llm_response` (nullable JSON).
+Matches the shape produced by adk-rust `convert_to_span_data()` for the `adk-web`
+frontend `Trace.ts` SpanData type (research memo §2.2 table row 5). Spans sourced from
+`DebugSpanExporter`; when no exporter is configured, endpoints return
+`503 Service Unavailable` with `E-SERVER-023 DebugExporterNotConfigured`.
+
+**Graph descriptor shape:**
+```json
+{
+  "nodes": [{ "name": "<node_name>", "kind": "node|start|end|branch" }],
+  "edges": [{ "source": "<node_name>", "target": "<node_name>", "condition": "<label_or_null>" }],
+  "dot_src": "<graphviz_dot_source_or_null>"
+}
+```
+`dot_src` is populated when the `dot` binary is in PATH (optional); `null` when absent.
+The descriptor is a static structural snapshot of the compiled graph — it carries no
+runtime state. Returns `404` with existing `E-SERVER-009 AssistantNotFound` when the assistant
+does not exist.
+
+**Security interaction:** Debug endpoints are subject to `SecurityConfig.debug_api_key`
+(BC-2.12.005 — the existing opt-in debug-key gate). CORS policy follows `SecurityConfig`.
+
+**Pure-core extraction required:** The `CompiledStateGraph → GraphDescriptor`
+serialization is a pure, deterministic transformation. It MUST be extracted as a free
+function `fn compile_graph_descriptor(graph: &CompiledStateGraph) -> GraphDescriptor`
+in module `graph::descriptor` (pregolya-graph, Pure Core) before Phase 6. This is
+required by Purity Enforcement Rule 3; a VP may be authored for graph descriptor
+structural invariants (e.g., no self-loops, connected start node).
+
+**Error codes:**
+- `E-SERVER-023 DebugExporterNotConfigured` (SERVER, VAL — minted in error-taxonomy.md v1.72 per product-owner; no further action)
+- `E-SERVER-009 AssistantNotFound` (existing code — already covers this case; no new mint needed per product-owner reconciliation 2026-09-06)
+
+> **D-356 error-code reconciliation (2026-09-06, architect).** Original Decision 2 specified E-SERVER-020 for DebugExporterNotConfigured and E-SERVER-021 for AssistantNotFound. Product-owner reconciled against error-taxonomy.md: E-SERVER-020 was already assigned; correct code is E-SERVER-023 (minted in error-taxonomy.md v1.72). E-SERVER-021 is unnecessary — existing E-SERVER-009 AssistantNotFound covers this case. BCs BC-2.24.002 (cites E-SERVER-023) and BC-2.24.003 (cites E-SERVER-009) are already consistent. Source-of-truth precedence: error-taxonomy.md (PRD supplement) supersedes ADR prose per CLAUDE.md §Source-of-Truth Precedence rule 3.
+
+CAP anchor: CAP-042.
+
+### Decision 3 — Transport: SSE Confirmed, WebSocket Closed
+
+**SSE is the sole streaming transport for the developer console.** No WebSocket endpoint
+will be added to `pregolya-server` or `pregolya-console` in this scope or as a follow-on
+from D-356.
+
+ADR-006 is authoritative: the `StreamEvent` grammar is framed over SSE
+(`data: <json>\n\n` framing on `GET /threads/{id}/runs/{run_id}/stream`). The research
+memo §4.0 confirmed this is consistent with both reference implementations. The `ag_ui`
+protocol-native transport in adk-rust changes the SSE event *envelope*, not the transport
+(still SSE).
+
+**BC audit required (product-owner action):** Audit all BC files for the string
+"WebSocket" (`grep -ri "websocket" .factory/specs/behavioral-contracts/`). Any
+occurrence describing the run-streaming transport must be corrected to "SSE." This is a
+product-owner action; the architect does NOT edit BCs.
+
+### Decision 4 — Web SPA Framework: Explicitly Deferred to Wave 3
+
+The SPA framework choice (SolidJS, Svelte, React, or other) is **deferred** to the Wave
+3 story decomposition phase. The framework choice has zero impact on `pregolya-server` or
+`pregolya-console` crate design; all three frameworks produce a static bundle compatible
+with `rust_embed`.
+
+**Non-negotiable constraints that apply regardless of framework (Wave 3 binding):**
+1. Must support native browser `EventSource` for SSE without a WebSocket polyfill.
+2. Must produce a static embeddable bundle (`HTML + JS + CSS`) for `rust_embed`
+   `#[folder = "assets/webui"]`.
+3. Bundle size target: < 500 KB gzip (to be confirmed in Wave 3 NFR definition).
+4. No SSR — pure client-side SPA.
+5. Pure REST+SSE client of the existing wire contract; no new server-side component.
+
+### Decision 5 — Purity Boundary
+
+New modules introduced by this ADR. All are **[PLANNED]** (Wave 3). Module-decomposition.md
+and verification-coverage-matrix.md will be updated at Wave 3 planning.
+
+| Module | Crate | Classification | Rationale |
+|--------|-------|----------------|-----------|
+| `console::server` | pregolya-console | **Effectful Shell** | Axum HTTP server: binds network port, serves assets over I/O, manages in-process server lifecycle, async tokio runtime |
+| `console::span_exporter` | pregolya-console | **Boundary** | Pure part: `RingBuffer<SpanData>` deterministic read/write, index arithmetic — extractable for Kani. Effectful part: `opentelemetry::sdk::export::SpanExporter` async trait impl, registers into OTel SDK global |
+| `server::debug_routes` [feature `debug-endpoints`] | pregolya-server | **Effectful Shell** | HTTP handlers: reads from `DebugSpanExporter` (shared state I/O), queries AssistantStore (async I/O); feature-gated, excluded from production builds by default |
+| `graph::descriptor` [Pure Core, extracted] | pregolya-graph | **Pure Core** | `fn compile_graph_descriptor(graph: &CompiledStateGraph) -> GraphDescriptor` — deterministic, no I/O, no global state; required extraction before Phase 6 (Purity Enforcement Rule 3) |
+
+### Decision 6 — NFR and Security Deltas
+
+These are **additive exceptions** to the workspace-wide NFR catalog for the console surface:
+
+- **D6-1 TLS:** `pregolya-console` binds to `127.0.0.1` (loopback) by default. TLS NOT
+  required for loopback-bound dev-tool operation (same posture as adk-web, LangGraph Dev
+  Server). Operator's responsibility if exposed beyond localhost (unsupported in v1).
+- **D6-2 Auth:** No auth layer on `/ui/` asset routes. Loopback bind is the security
+  boundary. `SecurityConfig.debug_api_key` (BC-2.12.005) governs `/debug/*` endpoints
+  when co-launched with pregolya-server.
+- **D6-3 debug-endpoints default OFF:** `debug-endpoints` feature MUST default to `false`
+  in `pregolya-server/Cargo.toml`. CI gate `check-debug-endpoints-default` verifies this
+  (authored at Wave 3 workspace setup).
+- **D6-4 Retention cap:** `DebugSpanExporter` ring buffer cap MUST be configurable
+  (`span_retention_cap: usize` in `ConsoleConfig`). Default: 10,000 spans (matching
+  adk-rust `trace_capacity`). FIFO eviction on overflow; unbounded growth prohibited.
+- **D6-5 reqwest:** `pregolya-console` is a server, not an HTTP client. The 30s timeout
+  and `rustls-tls` NFRs apply to any future reqwest usage in the console crate; the Axum
+  server listener is exempt from the outbound-client timeout rule.
+- **D6-6 No println! in console library modules:** `console::server` and
+  `console::span_exporter` use `tracing::*!` per workspace convention. The `main.rs`
+  CLI entrypoint may use `println!` for UX output (port announcement).
+
+---
+
+## Rationale
+
+### Why a separate `pregolya-console` crate
+
+Bolting UI concerns onto `pregolya-server` would couple unrelated responsibilities,
+violate file-size/cohesion rules (CLAUDE.md), and pollute the headless server's
+dependency graph with `rust_embed` and SPA build artifacts. The production-grade default
+(CLAUDE.md Rule 1) requires correct separation. The adk-rust reference implements
+exactly this split (`adk-server` + separate binary that embeds the SPA). The purity
+boundary (Decision 5) requires the effectful Axum server layer and the span-exporter to
+live in the console crate, not in pregolya-server's pure-core domain.
+
+### Why `debug-endpoints` on pregolya-server rather than pregolya-console
+
+Trace/span and graph-descriptor endpoints are **library-consumer-useful beyond the
+browser UI** — CI pipelines, tooling integrations, and integration tests benefit from
+reading graph structure and execution traces programmatically. Research memo §4.3
+explicitly argues: "those belong in the server, gated behind a console/debug-endpoints
+cargo feature so production deployments can compile them out." Placing them in
+`pregolya-console` would make them inaccessible to tooling consumers running headless.
+
+### Why SSE over WebSocket
+
+1. ADR-006 already decided SSE for the `StreamEvent` grammar; reopening that decision
+   requires a superseding ADR with a concrete forcing function. No forcing function exists.
+2. Both reference implementations (adk-rust, LangGraph SDK) converge on SSE. WebSocket
+   was adk-rust `adk-realtime` (voice/live transport — out of scope for a run-debug console).
+3. SSE is unidirectional (server → client) and exactly matches the use case: the console
+   reads a stream of engine events; it does not need bidirectional protocol negotiation.
+4. The browser `EventSource` API is natively available without polyfills. WebSocket would
+   require custom reconnection logic and add complexity for no benefit.
+
+### Why SPA framework is deferred
+
+Per the production-grade default, decisions should not be made before they are needed
+(CLAUDE.md Rule 1 prohibits "ship fast and iterate" but does NOT require deciding Wave 3
+implementation details during Phase 1 architecture). The framework choice does not affect
+any current-cycle artifact. When the Wave 3 SPA story is scoped, the team will have
+current ecosystem data (bundle sizes, DX, contributor familiarity) to make a
+better-informed choice. The binding constraints (Decision 4) are sufficient to gate the
+choice without pre-deciding it.
+
+### Why purity boundary classification matters for the console
+
+The console's pure core — the `RingBuffer<SpanData>` data structure and the
+`compile_graph_descriptor` transformation — can be subjected to Kani or proptest
+verification. The effectful shell (Axum server, OTel exporter registration) cannot.
+Drawing the boundary correctly now means VP-XXX (if authored at Phase 6 for the console)
+target the right functions and have viable proof strategies.
+
+---
+
+## Consequences
+
+### Positive
+
+- `pregolya console --dev` becomes a single-command local development entry point
+  (analogue to `adk web`, `langgraph dev`) — no separate terminal for server + UI.
+- Graph-descriptor endpoint (`GET /assistants/{id}/graph`) fills the gap adk-rust left
+  as `501 NOT_IMPLEMENTED` — pregolya implements it fully.
+- SSE transport confirmation eliminates ambiguity from the brief's "over WebSocket"
+  framing and protects downstream artifacts from introducing a WebSocket path.
+- `debug-endpoints` feature gate ensures production builds are never inadvertently
+  instrumented — correctness by construction, not by operator discipline.
+- Purity boundary classification of `graph::descriptor` Pure Core opens a path for
+  formal verification of graph structural invariants (no self-loops, connected start
+  node) before Phase 6.
+- The console is architecturally a client — it consumes the same public wire contract
+  as the HS-C-001 holdout, validating the contract's external-host usability.
+
+### Negative / Trade-offs
+
+- Wave 3 adds a new binary crate (`pregolya-console`) to the workspace, increasing the
+  build graph. It is blocked behind a `pregolya-server` dependency and will not affect
+  earlier-wave build times.
+- The SPA build pipeline (webpack/vite/rollup step + `rust_embed`) is a non-Rust build
+  step that must be integrated into the `just`/CI recipes at Wave 3.
+- `DebugSpanExporter` ring-buffer retention cap introduces a state management concern in
+  `pregolya-console`: the exporter must be shared between the console server and the
+  pregolya-server debug routes via `Arc`. This is Arc-DI wiring (required by CLAUDE.md
+  Arc-DI convention) but adds constructor complexity at `--dev` launch time.
+- The graph descriptor `dot_src` field depends on the Graphviz `dot` binary being in
+  PATH. This is an optional runtime dependency with no compile-time detection. The `null`
+  return when absent must be documented clearly to avoid consumer confusion.
+
+### Status as of v1.0
+
+Roadmap-only. No implementation in the current cycle (Phase 3, Wave 1–2). ADR is
+accepted; all six decisions are binding for Wave 3 planning. ARCH-INDEX.md, api-surface.md,
+and purity-boundary-map.md updated in the same D-356 burst.
+
+---
+
+## Alternatives Considered
+
+- **Alt A — Embed console functionality directly in `pregolya-server` (rejected).** Would
+  couple the headless server with UI concerns (asset serving, `rust_embed` dep, SPA build
+  pipeline), violating file-size/cohesion rules and the pure-core/effectful-shell boundary.
+  Production deployments wanting a headless server would still compile in UI code.
+  Rejected in favor of a separate binary crate.
+
+- **Alt B — WebSocket transport for the console (rejected).** No BC or forcing function
+  requires WebSocket; ADR-006 already decided SSE. WebSocket is bidirectional; run-event
+  streaming is unidirectional. Adding WebSocket would introduce a second transport to
+  maintain alongside SSE. Rejected — SSE confirmed.
+
+- **Alt C — Serve debug endpoints from `pregolya-console` rather than `pregolya-server`
+  (rejected).** Would make trace/span and graph data inaccessible to non-browser tooling
+  (CI pipelines, integration tests, programmatic consumers). These endpoints are
+  library-consumer-useful beyond the console UI. Rejected; they belong in pregolya-server
+  behind a feature gate.
+
+- **Alt D — Commit to a SPA framework now (rejected).** Choosing React, Svelte, or SolidJS
+  now provides no benefit to the current implementation cycle and forecloses an informed
+  decision. The constraints that matter (Decision 4) are specified. Decision deferred to
+  Wave 3.
+
+- **Alt E — Inline `graph::descriptor` logic in `server::debug_routes` (partially
+  accepted, extracted required at Phase 6).** The transformation function is currently
+  co-located with the HTTP handler. This is acceptable for Wave 3 scaffolding. However,
+  Purity Enforcement Rule 3 requires extraction to a Pure Core module before Phase 6 so
+  the function can be targeted by formal verification. Inline-for-now with required
+  extraction is the chosen approach.
+
+---
+
+## Source / Origin
+
+- **D-356 human authorization** (2026-09-06) — developer console scope expansion.
+- **Research memo** `devconsole-adk-research.md` — feature inventory, adk-rust source
+  analysis, LangGraph Studio comparison, reuse analysis (§4.1), component boundary
+  recommendation (§4.3), transport reconciliation (§4.0).
+- **CAP-041 through CAP-047** (`capabilities-p1-p2.md`) — business-analyst authored
+  behavioral requirements for the console surface.
+- **ADR-006** `decisions/ADR-006-streaming-event-taxonomy.md` — SSE transport authority
+  (Decision 3 grounds).
+- **BC-2.12.005** — `SecurityConfig.debug_api_key` gate (Decision 2 security interaction).
+- **HS-C-001** (`holdout-scenarios/HS-C-001-flowloom-embedding-host-end-to-end.md`) —
+  proves an external host consuming the public wire contract works; validates the
+  console-as-client architecture posture.
+- **adk-rust corpus** (`.reference/adk-rust/adk-server/`, pinned v1.0.0 SHA a6c79b6) —
+  `web_ui.rs`, `debug.rs`, `rest/mod.rs` examined directly for reference architecture
+  alignment.
+
+---
+
+## Traceability
+
+| Architecture Element | CAP Anchors | SS |
+|----------------------|-------------|----|
+| `pregolya-console` crate | CAP-041 | SS-24 |
+| `DebugSpanExporter` + `/debug/trace/*` | CAP-042 | SS-24 |
+| `GET /assistants/{id}/graph` | CAP-042, CAP-003 | SS-24, SS-02 |
+| Run inspection + live monitoring panel | CAP-043 | SS-24 |
+| Checkpoint history browser + trajectory replay | CAP-044 | SS-24, SS-04 |
+| HITL console resume dialog | CAP-045 | SS-24, SS-05 |
+| Token/context budget panel | CAP-046 | SS-24, SS-10 |
+| Guardrail review panel | CAP-047 | SS-24, SS-11 |
+| SSE transport confirmation | (ADR-006) | SS-06, SS-12 |
+
+---
+
+## What Product-Owner and Story-Writer Must Anchor To
+
+### Product-owner actions (before Wave 3 story decomposition)
+
+1. Author BC-2.24.001 through BC-2.24.NNN for SS-24 using CAP-041..047 as specification
+   source. Initial BC map:
+   - BC-2.24.001 — `pregolya-console` startup and asset-serving contract (console::server)
+   - BC-2.24.002 — `DebugSpanExporter` retention + trace-read (console::span_exporter + server::debug_routes)
+   - BC-2.24.003 — Graph-descriptor structural contract (server::debug_routes)
+   - BC-2.24.004 — Run inspection event timeline (CAP-043)
+   - BC-2.24.005 — Checkpoint history browser + fork-from-checkpoint (CAP-044)
+   - BC-2.24.006 — HITL approval dialog + resume dispatch (CAP-045)
+   - BC-2.24.007 — Budget panel compaction event rendering (CAP-046)
+   - BC-2.24.008 — Guardrail security feed (CAP-047)
+2. **RESOLVED (2026-09-06):** Error codes reconciled — `E-SERVER-023 DebugExporterNotConfigured`
+   already minted in error-taxonomy.md v1.72; `E-SERVER-009 AssistantNotFound` is an existing
+   code that covers this case. No new mints needed. BCs already consistent.
+3. **Audit all BC files for "WebSocket"** (Decision 3). Command:
+   `grep -ri "websocket" .factory/specs/behavioral-contracts/`. Correct any occurrence
+   describing the run-streaming transport to "SSE."
+
+### Story-writer actions (Wave 3, after BC authoring)
+
+Wave 3 stories (not exhaustive; derive final list from BCs):
+- `pregolya-console` crate init (Cargo workspace member, `rust_embed` dep, ConsoleConfig)
+- `DebugSpanExporter` implementation + `debug-endpoints` feature on pregolya-server
+- `graph::descriptor` Pure Core module + `GET /assistants/{id}/graph` endpoint
+- Web SPA project setup (framework selection, build pipeline, runtime-config.json)
+- Run inspection panel + live node highlighting
+- HITL console resume dialog
+- Checkpoint history browser + fork-from-checkpoint
+- Token/context budget monitoring panel
+- Guardrail security review panel
+- CI gate for `debug-endpoints` default-off invariant
+
+**Suggested story ordering:** console crate init → DebugSpanExporter → graph descriptor →
+SPA setup → panel stories (parallelizable after SPA setup is scaffolded).

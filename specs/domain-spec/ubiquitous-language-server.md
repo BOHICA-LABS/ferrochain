@@ -2,19 +2,21 @@
 document_type: domain-spec-section
 level: L2
 section: ubiquitous-language-server
-version: "1.6"
+version: "1.7"
 status: active
 producer: business-analyst
-timestamp: 2026-08-16T00:00:00Z
+timestamp: 2026-09-06T00:00:00Z
 phase: 1a
 inputs:
   - .factory/specs/product-brief.md
   - .factory/comparative/COMPARATIVE-ASSESSMENT.md
   - .factory/semport/reference-manifest.md
-input-hash: "febc364"
+  - .factory/planning/devconsole-adk-research.md
+input-hash: "be93076"
 traces_to: L2-INDEX.md
-decisions: [D2, D13, D17]
+decisions: [D2, D13, D17, D356]
 changelog:
+  - "1.7 (D-356/2026-09-06, business-analyst): D-356 dev-console scope expansion — Dev Console Terms section added (§Dev Console Terms). New terms: Developer Console, Developer-Operator, Graph Descriptor, Trajectory Replay, Console Run Inspector. Research memo (.factory/planning/devconsole-adk-research.md) added to inputs; input-hash set to pending-recompute (state-manager updates). D356 added to decisions list."
   - "1.6 (burst-291/D-134/2026-08-16): §-anchor phantom sweep — §TrustLevel (line 77 context) is a phantom anchor (TrustLevel is a bold term entry within '## Prompts, Serialization, and Retrieval Terms (D21 Additions)' in ubiquitous-language-core.md; no ## or ### TrustLevel heading exists). Corrected to ubiquitous-language-core.md §Prompts, Serialization, and Retrieval Terms."
   - "1.5 (fix-burst-276/F-P173-505/2026-07-27): D-28 banner added to body ## Changelog section, declaring Form A (frontmatter changelog:) authoritative; body table preserved as historical record."
   - "1.4 (2026-07-21): F-P131-05 adjudication (burst-226) — §ProvenanceTag: disambiguation note added clarifying that ProvenanceTag (SS-11, no trust-level dimension) is distinct from TrustLevel (SS-18, pregolya-prompts: prompts::template; ADR-015 §Decision 3). Changelog table updated. TD-VSDD-060 sweep: no ProvenanceTag trust-variant residue in this file."
@@ -152,6 +154,72 @@ not retriable.
 
 ---
 
+## Dev Console Terms (D-356)
+
+> **D-356 dev-console scope expansion (2026-09-06, business-analyst).** Append-only delta.
+> Terms below are net-new to the pregolya ubiquitous language. All prior terms above are
+> unchanged. These terms are specific to the developer console surface (CAP-041 through
+> CAP-048 in capabilities-p1-p2.md §P1 — Developer Console).
+
+**Developer Console**
+The local development and debugging UI served by the `pregolya-console` crate and launched
+via `pregolya console` (CAP-041). A pure SSE+REST client of the existing pregolya-server wire
+contract: it renders the compiled StateGraph visually, streams live run events with node
+highlighting, enables checkpoint browsing and trajectory replay, surfaces HITL approval
+dialogs, and provides token-budget and guardrail event feeds. It is an inspection surface, not
+an execution engine — the same posture as `adk web` (Google ADK) and LangGraph Studio.
+The console consumes only the public wire contract (same as an embedding host); it does NOT
+reach into engine internals. Analogous reference implementations: `adk web` / `adk-server`
+(adk-rust v1.0.0); LangGraph Studio. Transport: REST+SSE (no WebSocket — confirmed by
+research memo §4.0 premise correction; ADR-006 SSE transport is already the reference).
+
+**Developer-Operator**
+The human actor who runs `pregolya console` locally to inspect, debug, and approve agent
+runs. See entities-server.md §Actors / Roles (D-356) for the full behavioral cluster
+definition and sub-persona breakdown (P1 — Graph Author through P5 — Security Reviewer).
+Distinct from the SDK integrator (authoring graphs) and the embedding host (programmatic
+production consumer).
+
+**Graph Descriptor**
+A server-produced document describing the compiled `StateGraph` as a structured node/edge
+list. Emitted by the graph-descriptor endpoint (CAP-042, `GET /assistants/{id}/graph`).
+Format: JSON node/edge object plus optional Graphviz DOT source (`dotSrc: String`).
+Each node entry carries its name and kind (regular node vs. conditional-edge router); each
+edge entry carries source, target, and an optional condition label. Used by the console
+frontend to render the DAG view and drive live node-highlighting during runs
+(nodes matched by name against incoming `node_start`/`node_end` StreamEvents). The Graph
+Descriptor is a static structural snapshot of the compiled graph; it does NOT carry runtime
+execution state (that lives in the checkpoint + event stream).
+
+**Trajectory Replay**
+The developer-operator workflow of browsing a thread's checkpoint history
+(`GET /threads/{id}/history`), inspecting state at any checkpoint step
+(`GET /threads/{id}/state?checkpoint_id=<id>`), and optionally forking a new run from an
+earlier checkpoint to explore alternative execution paths. Backed by the CAP-005 checkpoint
+substrate; the console is a thin UI client over the existing history API. Enabled by
+CAP-044 (Checkpoint History Browser and Trajectory Replay). The term "replay" means: read
+state and re-execute from a prior point via the existing HITL resume machinery, not a
+separate replay engine.
+**Disambiguation from TrajectoryRecord (CAP-040):** `TrajectoryRecord` is an audit-grade
+durable record for the research orchestrator pattern (`checkpoint::trajectory` module,
+ADR-030). Trajectory Replay is the human-facing dev console workflow that browses the
+standard checkpoint history via the Thread history endpoint. Both use the word "trajectory"
+but refer to distinct mechanisms: CAP-040's records live in a storage slice isolated from
+compaction; Trajectory Replay reads the rolling checkpoint history that IS subject to
+compaction boundary effects. The two must not be conflated.
+
+**Console Run Inspector**
+The console panel that renders a sorted event timeline for any `run_id` — from stored events
+(completed runs) or live SSE stream (in-progress runs). Provides expandable per-event
+payloads (node input/output state, tool args/result, guardrail boundary and outcome) and
+integrates with the Trace/Span backend (CAP-042) for sub-event span latency detail.
+For live runs, drives real-time node highlighting on the StateGraph visualization by matching
+incoming `node_start`/`node_end` events to Graph Descriptor nodes. A frontend surface only —
+it is not an engine component and does not modify execution. Enabled by CAP-043 (Run
+Inspection and Live Monitoring Panel).
+
+---
+
 ## Changelog
 
 > **Historical record — superseded by frontmatter `changelog:` (Form A).**
@@ -159,6 +227,7 @@ not retriable.
 
 | Version | Date | Change | Source |
 |---------|------|--------|--------|
+| 1.7 | 2026-09-06 | D-356 dev-console scope expansion — §Dev Console Terms section added (Developer Console, Developer-Operator, Graph Descriptor, Trajectory Replay, Console Run Inspector). Research memo added to inputs. | D-356 |
 | 1.4 | 2026-07-21 | F-P131-05 (burst-226) — §ProvenanceTag: disambiguation note added. ProvenanceTag (SS-11, 3-field ingress-boundary audit struct) has no trust-level dimension. Template-composition trust is handled by `TrustLevel` (`pregolya-prompts: prompts::template`; ADR-015 §Decision 3). Two axes must not be conflated. | F-P131-05 |
 | 1.3 | 2026-07-19 | F-P117-01 — add `summary_halt` to Run status lifecycle. Terminal set: completed \| failed \| cancelled \| summary_halt. `summary_halt` is a first-class terminal state reached via in_progress on the OnCeiling::Summarize path (BC-2.12.003 PC7/PC8). | F-P117-01 |
 | 1.2 | 2026-07-15 | F-P58-03 — §ProvenanceTag and §GuardrailHook updated to BC-authoritative terminology. ProvenanceTag: `source_type`/`tool_name?`/`invocation_id?`/`timestamp` → `boundary_type` (ToolResult\|RAGRetrieval\|MemoryIngress), `ingress_id`, `sequence_position`; User/Model removed per BC-2.11.001 EC-004. GuardrailHook: Accept/Reject/Redact retired → `Pass`/`Fail{reason,severity}`/`Transform{new_content}` with `GuardrailResult`; callable signature updated to match interface-definitions.md v2.13. | F-P58-03 |

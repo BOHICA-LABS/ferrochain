@@ -1,10 +1,10 @@
 ---
 document_type: domain-spec-index
 level: L2
-version: "1.29"
+version: "1.30"
 status: active
 producer: business-analyst
-timestamp: 2026-08-18T00:00:00Z
+timestamp: 2026-09-06T00:00:00Z
 phase: 1a
 inputs:
   - .factory/specs/product-brief.md
@@ -31,8 +31,9 @@ sections:
   - ubiquitous-language-core.md
   - ubiquitous-language-server.md
   - bounded-contexts.md
-decisions: [D1, D2, D3, D4, D6, D7, D8, D11, D12, D13, D17, D19, D20, D21, D23]
+decisions: [D1, D2, D3, D4, D6, D7, D8, D11, D12, D13, D17, D19, D20, D21, D23, D356]
 changelog:
+  - "v1.30 (D-356/2026-09-06): D-356 dev-console scope expansion. ID Registry: CAP-NNN 39→48 (+CAP-040 from D-327 previously missed + CAP-041..048 from D-356: developer-console surface, ROADMAP-ONLY). Priority Distribution: P1 27→36 (CAP-040 P1 + CAP-041..048 all P1). Document Map: capabilities-p1-p2.md row description extended (CAP-040..048; Developer-Operator actor entry). entities-server.md row description extended (Developer-Operator actor). ubiquitous-language-server.md row description extended (Developer-Operator term). D356 added to decisions. CAP count correction note: L2-INDEX v1.28 registered CAP count 38→39 (CAP-039); D-327 (2026-08-31) added CAP-040 to capabilities-p1-p2.md but was not propagated to L2-INDEX at the time; this entry closes both the D-327 gap and the D-356 additions atomically."
   - "v1.29 (burst-325/D-196/2026-08-18): input-hash refreshed (metadata hygiene; D-196 ruling: input-hash refresh is bookkeeping metadata, not normative spec content). Hash was stale since v1.3 authoring; holdout domain input files have been updated since then. No normative content changed. Phase-1 gate-closure burst."
   - "v1.28 (burst-302b/D-171/2026-08-17): ID Registry CAP count 38→39 (CAP-039 LCEL Map/Passthrough Composition: RunnableParallel and RunnablePassthrough, authored business-analyst); DI count 15→16 (DI-016 RunnableParallel Key-Completeness and Branch-Failure Propagation, authored business-analyst). Priority Distribution: P1 26→27 (CAP-039 P1). Document Map: capabilities-p1-p2.md description extended (CAP-039). LCEL scope expansion D-170/D-171."
   - "v1.27 (F-178-01, burst-289, 2026-08-16): Document Map events.md row: StreamEvent taxonomy count corrected 15→16 variants (BC-2.06.001 §Postconditions PC2 authority — burst-288 added StreamEvent::Error as 16th variant). Sibling-sweep: capabilities-p0.md and events.md updated identically in this burst."
@@ -88,9 +89,9 @@ expressed as a Rust async-native port of the LangChain v1 semantic surface.
 | Section | File | Size | Primary Consumer | Purpose |
 |---------|------|------|-----------------|---------|
 | Capabilities — P0 | capabilities-p0.md | M | product-owner, architect, story-writer | CAP-001–008 (Wave 0/1) + CAP-012, CAP-013, CAP-016 (D17-elevated to P0; cross-cutting Wave 0/1); CAP-002 revised v1.7 (D21 reversal) |
-| Capabilities — P1/P2 | capabilities-p1-p2.md | XL | product-owner, architect, story-writer | P1: CAP-009–011, CAP-014–015, CAP-017–018 (D23 Wave 1 promotions), CAP-020–038 (D21 + D23 additions), CAP-039 (D-170 LCEL scope expansion); P2: CAP-019 only |
+| Capabilities — P1/P2 | capabilities-p1-p2.md | XL | product-owner, architect, story-writer | P1: CAP-009–011, CAP-014–015, CAP-017–018 (D23 Wave 1 promotions), CAP-020–038 (D21 + D23 additions), CAP-039 (D-170 LCEL scope expansion), CAP-040 (D-327 praxist research-orchestrator), CAP-041–048 (D-356 developer-console ROADMAP-ONLY; CAP-048 deferred); P2: CAP-019 only |
 | Entities — Core/Graph/Checkpoint/Retrieval/Serialization/VectorStore/Embeddings/HITL/Compaction | entities-graph.md | L | architect, product-owner | Core primitives, graph, checkpoint + D21: Document, PromptValue, TrustLevel, Serialized, VectorStore, Embeddings, MetadataFilter, SearchType + D23: PreToolCallHook, PreToolDecision, ToolCallPreview, ToolApprovalRequest, CompactionTrigger, CompactionPolicy, ConversationSnapshot, CompactionSummary |
-| Entities — Server/Policy/Provider | entities-server.md | M | architect, product-owner | Server, governance, and provider entities |
+| Entities — Server/Policy/Provider | entities-server.md | M | architect, product-owner | Server, governance, and provider entities; Developer-Operator actor (D-356) |
 | Domain Invariants | invariants.md | M | product-owner, architect | DI-NNN business rules (16 invariants) |
 | Domain Events | events.md | M | architect | Processing stages, triggers, preconditions; StreamEvent taxonomy 16 variants (D23 + burst-288 error terminal event); ToolApprovalRaised/Resolved + CompactionExecuted domain events (D23) |
 | Edge Cases | edge-cases.md | M | story-writer, test-writer | DEC-NNN domain-level edge cases (13 cases) |
@@ -99,7 +100,7 @@ expressed as a Rust async-native port of the LangChain v1 semantic surface.
 | Failure Modes | failure-modes.md | M | architect, test-writer | FM-NNN runtime failure catalog (19 modes) |
 | Differentiators | differentiators.md | S | product-owner | Competitive differentiator → CAP-NNN traceability |
 | Ubiquitous Language — Core/Graph/D21/D23 | ubiquitous-language-core.md | L | all agents | Core and graph term definitions + D21 (16 terms) + D23 (13 terms: PreToolCallHook, PreToolDecision, CompactionTrigger, CompactionPolicy, ConversationSnapshot, CompactionSummary, ReadFileTool, WriteFileTool, EditFileTool, ListDirTool, BashTool, BashOutput, GrepTool) |
-| Ubiquitous Language — Server/Policy | ubiquitous-language-server.md | M | all agents | Server, policy/safety, error terms + reconciliation table |
+| Ubiquitous Language — Server/Policy | ubiquitous-language-server.md | M | all agents | Server, policy/safety, error terms + reconciliation table; Developer-Operator term (D-356) |
 | Bounded Contexts | bounded-contexts.md | L | architect | Crate-level subsystem boundaries |
 
 ## Cross-References
@@ -118,7 +119,7 @@ expressed as a Rust async-native port of the LangChain v1 semantic surface.
 
 | ID Format | Count | Section |
 |-----------|-------|---------|
-| CAP-NNN | 39 | capabilities-p0.md (CAP-001–008, CAP-012, CAP-013, CAP-016) + capabilities-p1-p2.md (CAP-009–011, CAP-014–015, CAP-017–039) |
+| CAP-NNN | 48 | capabilities-p0.md (CAP-001–008, CAP-012, CAP-013, CAP-016) + capabilities-p1-p2.md (CAP-009–011, CAP-014–015, CAP-017–040 + CAP-041–048 D-356 developer-console ROADMAP-ONLY) |
 | DI-NNN | 16 | invariants.md |
 | DEC-NNN | 13 | edge-cases.md |
 | ASM-NNN | 9 | assumptions.md |
@@ -132,7 +133,7 @@ expressed as a Rust async-native port of the LangChain v1 semantic surface.
 | Priority | Count | Capabilities |
 |----------|-------|-------------|
 | P0 (must-have) | 11 | CAP-001, CAP-002, CAP-003, CAP-004, CAP-005, CAP-006, CAP-007, CAP-008, CAP-012, CAP-013, CAP-016 |
-| P1 (should-have) | 27 | CAP-009, CAP-010, CAP-011, CAP-014, CAP-015, CAP-017 (D23), CAP-018 (D23), CAP-020, CAP-021, CAP-022, CAP-023, CAP-024, CAP-025, CAP-026, CAP-027, CAP-028, CAP-029, CAP-030, CAP-031, CAP-032, CAP-033, CAP-034, CAP-035, CAP-036, CAP-037, CAP-038, CAP-039 (D-170) |
+| P1 (should-have) | 36 | CAP-009, CAP-010, CAP-011, CAP-014, CAP-015, CAP-017 (D23), CAP-018 (D23), CAP-020, CAP-021, CAP-022, CAP-023, CAP-024, CAP-025, CAP-026, CAP-027, CAP-028, CAP-029, CAP-030, CAP-031, CAP-032, CAP-033, CAP-034, CAP-035, CAP-036, CAP-037, CAP-038, CAP-039 (D-170), CAP-040 (D-327), CAP-041 (D-356), CAP-042 (D-356), CAP-043 (D-356), CAP-044 (D-356), CAP-045 (D-356), CAP-046 (D-356), CAP-047 (D-356), CAP-048 (D-356, deferred) |
 | P2 (nice-to-have) | 1 | CAP-019 |
 
 > **Priority note (ADV-P1D-PASS-21):** CAP-012, CAP-013, and CAP-016 were elevated from P1 to P0

@@ -1,7 +1,7 @@
 ---
 document_type: prd
 level: L3
-version: "1.32"
+version: "1.33"
 status: active
 producer: product-owner
 timestamp: 2026-07-28T00:00:00Z
@@ -17,7 +17,7 @@ inputs:
   - .factory/specs/domain-spec/differentiators.md
   - .factory/specs/domain-spec/assumptions.md
   - .factory/comparative/COMPARATIVE-ASSESSMENT.md
-input-hash: "3d9e447"
+input-hash: "267f99e"
 traces_to: domain-spec/L2-INDEX.md
 decisions: [D1, D2, D3, D4, D5, D6, D7, D8, D9, D11, D12, D13, D17, D19, D20, D21, D22, D23]
 supplements:
@@ -29,6 +29,7 @@ supplements:
   - prd-supplements/test-vectors.md
   - prd-supplements/observability.md
 changelog:
+  - "v1.33 (D-356/2026-09-06, product-owner): SS-24 Developer Console scope expansion — roadmap-only, Wave 3. §2.24 added (8 BCs: BC-2.24.001..008, CAP-041..047, all P1, DI-002/DI-003/DI-004/DI-012/DI-014). §5b BC file count 140→148. §7 RTM +8 rows pending state-manager (51 P0 / 86+8=94 P1 / 3 P2 → total 148). E-SERVER-023 DebugExporterNotConfigured minted in error-taxonomy.md v1.71→v1.72 (E-SERVER-020/021 were already assigned; E-SERVER-009 already covers AssistantNotFound; next available sequential ID was 023). WebSocket SSE audit performed: zero corrections needed (sole WebSocket reference in BC-2.09.001 describes MCP transport options, not run-streaming transport per ADR-031 Decision 3 scope). input-hash updated (4a26898) — capabilities-p1-p2.md added CAP-041..047 and ADR-031 added as input for the 8 BC files that seed this delta."
   - "v1.32 (round-55/F-P2A225-01/2026-09-01): DI-014→DI-001 correction for BC-2.02.007 and BC-2.02.009 per architect ADR-030 §VP ruling — both reducers are pure infallible Vec<T> functions with no Result/Err/None path; DI-014 (error propagation) is inapplicable; DI-001 (BSP Reducer Determinism) is the correct anchor. §2.02 rows: BC-2.02.007 DI-014/DI-001 → DI-001; BC-2.02.009 DI-014/DI-001 → DI-001. §7 RTM rows: BC-2.02.007 CAP-040/DI-014/DI-001 → CAP-040/DI-001; BC-2.02.009 CAP-040/DI-014/DI-001 → CAP-040/DI-001. §12.4 rows: BC-2.02.007 DI-014/DI-001 → DI-001; BC-2.02.009 DI-014/DI-001 → DI-001."
   - "v1.31 (ADR-030-Stage2b/2026-08-31): PromoteRetireChannel subsystem ruling applied (architect ADR-030 §Decision 3). BC-2.04.011 (PromoteRetireChannel) renamed to BC-2.02.009 (SS-02, pregolya-graph) — BC-2.02.009 row added to §2.02; old anomaly note removed from §2.04 header; §7 RTM BC-2.02.009 row added. BC-2.04.011 reused for new 6th additive BC: Trajectory Compaction Isolation (SS-04, pregolya-checkpoint, P1, DI-002/DI-004/DI-014, Wave 2) — row added to §2.04; §7 RTM BC-2.04.011 updated (module pregolya-checkpoint; test types U, I). §5b BC file count 139→140. §7 RTM totals 139→140 (51 P0 / 85→86 P1 / 3 P2). §12.4 BC-2.04.011 row updated to Trajectory Compaction Isolation. §12.5 differentiator row updated. §12.6 cross-subsystem anomaly note removed."
   - "v1.30 (ADR-030-Stage2a/2026-08-31): CAP-040 research orchestrator primitives propagated to PRD. §2.02 header updated (CAP-003 → CAP-003/CAP-040); BC-2.02.007 (LedgerChannel dedup-idempotent append, P1, DI-014/DI-001) and BC-2.02.008 (LedgerChannel first-appearance ordering, P1, DI-001) added. §2.04 header updated (CAP-005 → CAP-005/CAP-040); BC-2.04.009 (TrajectoryWriter::put_record durability, P1, DI-002/DI-014), BC-2.04.010 (TrajectoryReader::replay ascending step_idx order, P1, DI-004/DI-014), and BC-2.04.011 (PromoteRetireChannel promote/retire lifecycle, P1, DI-014) added. §5b BC file count 134→139. §7 RTM +5 rows; totals 134→139 (51 P0 / 80→85 P1 / 3 P2). §12 Use-Case Composition Reference: Autonomous Research Orchestrator added. input-hash updated (capabilities-p1-p2.md added CAP-040). Clean-room behavioral inspiration from the praxist-pattern research orchestrator; no code or documentation copied."
@@ -498,6 +499,38 @@ become first-class BCs, CI lint gates, or ADRs (see Section 9).
 | BC-2.23.004 | ListDirTool — PathGuard-confined directory listing; ReadOnly ActionRisk; DirEntry struct; E-TOOLS-001 | P1 | DI-014 | ss-23/BC-2.23.004.md |
 | BC-2.23.005 | BashTool — sandboxed shell execution; non-lowerable Medium risk floor; BashOutput; 256 KiB output cap; 30 s timeout; E-TOOLS-004/005/007 (VP-013 Kani seed) | P1 | DI-014, DI-015 | ss-23/BC-2.23.005.md |
 | BC-2.23.006 | GrepTool — in-process regex search; linear-time `regex` crate; max_results 100 cap; hermetic; PathGuard scope; E-TOOLS-001/006 | P1 | DI-014 | ss-23/BC-2.23.006.md |
+
+---
+
+### 2.24 Developer Console (CAP-041..047) — P1 [ROADMAP-ONLY, Wave 3]
+
+> **D-356 dev-console scope expansion (2026-09-06, product-owner).** Append-only delta.
+> All BCs below are ROADMAP-ONLY: spec and storyboard authored now; build target is Wave 3.
+> No existing BCs are modified. The console is a pure CONSUMER of the existing
+> pregolya-server REST+SSE wire contract — it does not introduce new engine internals.
+> Actor: developer-operator (entities-server.md §Actors). Subsystem: SS-24
+> (`pregolya-console` binary crate). Three net-new backend additions (feature-gated): the
+> `DebugSpanExporter` ring buffer, two trace-read endpoints, and the graph-descriptor
+> endpoint (`GET /assistants/{id}/graph`). The web SPA is the dominant new effort and the
+> natural Wave 3 anchor (SPA framework deferred to Wave 3 per ADR-031 Decision 4).
+> New error code: E-SERVER-023 `DebugExporterNotConfigured` (VAL, broken, 503, Never).
+> E-SERVER-009 `AssistantNotFound` covers the graph-descriptor 404 path (no new code).
+>
+> **Holdout note:** No holdout scenario is authored for this cycle — the console is
+> roadmap-only and not built. A sealed holdout will be added when it enters an active
+> build wave (per VSDD policy: holdout scenarios are authored at wave entry, not at spec
+> time, to preserve evaluator information asymmetry).
+
+| BC ID | Title | Priority | DI | File |
+|-------|-------|----------|----|------|
+| BC-2.24.001 | `pregolya-console` Startup, Asset Serving, and `ConsoleConfig` — `run_console()`, `127.0.0.1:7437` default bind, SPA `/ui/`, `runtime-config.json` injection, `--dev` co-launch | P1 | DI-014 | ss-24/BC-2.24.001.md |
+| BC-2.24.002 | `DebugSpanExporter` Retention-Capped Ring Buffer and Trace-Read Debug Endpoints — FIFO 10,000-span cap; `GET /debug/trace/session/{id}`; `GET /debug/trace/{event_id}`; SpanData shape; E-SERVER-023 when absent | P1 | DI-014 | ss-24/BC-2.24.002.md |
+| BC-2.24.003 | Graph-Descriptor Structural Contract — `GET /assistants/{id}/graph`; nodes/edges/dot_src JSON; pure-core `graph::descriptor` extraction; E-SERVER-009 on 404 | P1 | DI-014 | ss-24/BC-2.24.003.md |
+| BC-2.24.004 | Run Inspection Event Timeline and Live Monitoring Panel — all 16 StreamEvent variants; expandable payloads; live SSE subscription (EventSource); live node highlighting; SSE-only transport | P1 | DI-014 | ss-24/BC-2.24.004.md |
+| BC-2.24.005 | Checkpoint History Browser and Fork-from-Checkpoint Trajectory Replay — `/threads/{id}/history`; step_idx monotone order; per-checkpoint state view; fork via `POST /threads/{id}/runs` | P1 | DI-002, DI-004, DI-014 | ss-24/BC-2.24.005.md |
+| BC-2.24.006 | HITL Approval Dialog and Resume Dispatch — interrupt detection; ToolCallPreview/scratchpad display; Approve/Deny/Edit decisions; FIFO multi-interrupt ordering (DI-003); `POST .../resume` dispatch | P1 | DI-003, DI-014 | ss-24/BC-2.24.006.md |
+| BC-2.24.007 | Token/Context Budget Monitoring Panel — `compaction_event`-driven gauge; `tokens_remaining_after` proportional indicator; timeline annotation; EvidenceJournal PolicyDecision history for completed runs | P1 | DI-014 | ss-24/BC-2.24.007.md |
+| BC-2.24.008 | Guardrail/Security Decision Review Panel — `guardrail_decision` Fail/Transform feed (Pass not shown per F-P99-01); boundary_type/severity/reason fields; real-time SSE; DI-012 complete-feed invariant | P1 | DI-012, DI-014 | ss-24/BC-2.24.008.md |
 
 ---
 

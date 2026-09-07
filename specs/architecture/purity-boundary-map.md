@@ -2,18 +2,20 @@
 document_type: architecture-section
 level: L3
 section: purity-boundary-map
-version: "1.42"
+version: "1.44"
 status: active
 producer: architect
-timestamp: 2026-08-31T00:00:00Z
+timestamp: 2026-09-06T00:00:00Z
 phase: 1b
 inputs:
   - .factory/specs/domain-spec/invariants.md
   - .factory/specs/prd.md
-input-hash: "12ac4b8"
+input-hash: "b632a51"
 traces_to: ARCH-INDEX.md
-decisions: [D17, D21, D23]
+decisions: [D17, D21, D23, D356]
 changelog:
+  - "1.44 (D-356/2026-09-06, architect): F2 consistency fix — corrected stale error codes in `server::debug_routes` Effectful Shell row Notes cell and v1.43 changelog entry: E-SERVER-020→E-SERVER-023 (DebugExporterNotConfigured, minted error-taxonomy.md v1.72); E-SERVER-021→E-SERVER-009 (AssistantNotFound, existing code). Both sites are D-356 this-burst content (not grandfathered). input-hash pending-recompute."
+  - "1.43 (D-356/ADR-031/2026-09-06): D-356 dev-console scope expansion — add 4 [PLANNED] Wave 3 purity rows for developer console modules. (1) `graph::descriptor` Pure Core (pregolya-graph; pure `compile_graph_descriptor` serialization; no I/O; CAP-042 / SS-24 / ADR-031 Decision 2; Purity Enforcement Rule 3 extraction required before Phase 6). (2) `console::server` Effectful Shell (pregolya-console; Axum SPA server; localhost-bind 127.0.0.1:7437; CAP-041 / SS-24 / ADR-031 Decision 1). (3) `server::debug_routes` Effectful Shell (pregolya-server; feature-gated debug-endpoints, default OFF; reads DebugSpanExporter ring buffer; delegates to graph::descriptor; E-SERVER-023/E-SERVER-009; CAP-042 / SS-24 / ADR-031 Decision 2). (4) `console::span_exporter` Boundary (pregolya-console; pure FIFO ring buffer capacity enforcement + effectful OTel exporter async mutation; Arc-DI injection into co-launched pregolya-server; CAP-042 / SS-24 / ADR-031 Decision 1). Intro counts updated: 92→96 total rows (38→39 Pure Core / 41→43 Effectful Shell / 13→14 Boundary). Iron Law satisfied: all D-356 modules classified before Phase 3 Wave 3 build."
   - "1.42 (ADR-030 Stage 1/2026-08-31): Add `core::trajectory` Pure Core definitions-only row (pregolya-core; SS-04; TrajectoryRecord/TrajectoryWriter/TrajectoryReader type definitions only; no execution logic; ADR-030 Decision 2). Add `checkpoint::trajectory` Effectful Shell row (pregolya-checkpoint; SS-04; async SQLite/backend I/O; TrajectoryWriter+TrajectoryReader execution; ADR-030 Decision 2). Fix stale intro counts (v1.41 added core::invocation_context Pure Core row but did not update intro): 81→84 module-decomposition modules (75→76 tiered / 6→8 definitions-only/exempt); 89→92 total rows (36→38 Pure Core / 40→41 Effectful Shell / Boundary unchanged at 13). Combined fix for v1.41 invocation_context omission + ADR-030 additions."
   - "1.41 (round-49/F-P2A207-02-sibling/2026-08-31): module-canonicality sync — add `core::invocation_context` Pure Core definitions-only row following core::guardrail; canonical path `pregolya-core/src/invocation_context.rs`; SS-11; BC-2.11.001–006 {PRE-001} (ADR-014 Decision 6 / DI-012). Mirrors module-decomposition.md round-49 addition."
   - "1.40 (R37/F-P2A159-01/2026-08-29): F-P2A159-01 LOW (POL-4 semantic_anchoring_integrity) — mcp::registry Boundary row Effectful Part: 'inbound dispatch; BC-2.09.006 {PC-002}' corrected to split attribution: tools/list dispatch → BC-2.09.006 {PC-002}; tools/call dispatch → BC-2.09.007 {PC-001}. Sibling sweep: module-decomposition.md and verification-coverage-matrix.md corrected in the same burst. input-hash unchanged — no BC input changes."
@@ -73,7 +75,7 @@ no I/O, Kani-provable), **Effectful Shell** (I/O, network, or async runtime, not
 or **Boundary Modules** (pure validation/routing layer that delegates I/O to an injected
 effectful dependency). All 84 module-decomposition modules (76 tiered + 8 definitions-only/exempt) plus
 structural and definitions-only modules are enumerated in `## Purity Classification` below
-(92 total rows: 38 Pure Core + 41 Effectful Shell + 13 Boundary).
+(96 total rows: 39 Pure Core + 43 Effectful Shell + 14 Boundary; includes 4 [PLANNED] Wave 3 rows from D-356/ADR-031).
 Enforcement invariants follow in `## Purity Enforcement Rules`.
 
 ## Purity Classification
@@ -123,6 +125,9 @@ side effects. Kani proofs operate here.
 | `tools::config` | pregolya-tools | `ToolConfig` — shared per-tool framework configuration; `override_risk(self, risk: ActionRisk) -> Result<ToolConfig, PregolyaError>` builder-consuming validator: compares `risk` against the tool's floor (for BashTool, `risk < ActionRisk::Medium` → `Err(E-TOOLS-007)`); `#[non_exhaustive]`; zero I/O, no async, no state — pure enum comparison at construction time per VP-013 §Source Contract (ADR-020 Decision 3 / BC-2.23.005 / SS-23) | — |
 | `mcp::exception` | pregolya-mcp | Bare ToolException re-raise detection; type-identity preservation via McpError downcast; pure synchronous error source chain pattern match: `err.source().downcast_ref::<McpError>()` + `matches!(e, McpError::ToolExecution { .. })`; no I/O, no async, no global state (R11 / BC-2.09.004 / SS-09) | VP-004 (integration-tested; integration harness required for mock MCP server setup; module logic is pure) |
 | `mcp::sanitize` | pregolya-mcp | `redact_credentials(text: &str) -> Cow<str>` and `sanitize_internal_ids(text: &str) -> Cow<str>` pure credential/ID-redaction functions: pattern-based substitution of provider API key patterns (OpenAI `sk-*`, Anthropic `sk-ant-*`, generic 64+ char token) and internal UUID-shaped IDs before any error message is transmitted to external MCP clients; deterministic string transformation; CWE-532 prevention at pure layer; no I/O, no async, no global state; consumers: `mcp::server`, `mcp::graph_tool` (BC-2.09.007 / INV-003 / SS-09 / DI-010) | VP-015 (unit P1; module logic is pure) |
+| `graph::descriptor` [PLANNED] | pregolya-graph | `fn compile_graph_descriptor(graph: &CompiledStateGraph) -> GraphDescriptor` — pure serialization of compiled graph topology to `{nodes:[{name,kind}], edges:[{source,target,condition}], dot_src}` shape; deterministic given fixed graph; no I/O, no async, no global state; required extraction before Phase 6 per ADR-031 Decision 2 and Purity Enforcement Rule 3 (CAP-042 / SS-24 / ADR-031) | — |
+
+> **D-356 dev-console scope expansion (2026-09-06, architect).** `graph::descriptor` added as Pure Core [PLANNED] Wave 3 per ADR-031 Decision 5. Extraction from `server::debug_routes` required before Phase 6 per Purity Enforcement Rule 3; isolation enables future Kani harness on the descriptor transform.
 
 **Kani constraint:** Kani model checking operates on finite, bounded loops. `graph::channels`
 reducer loop must be bounded by the number of tasks per super-step. `sandbox::path_guard`
@@ -177,6 +182,12 @@ Kani is not applicable here.
 | `tools::shell` | pregolya-tools | subprocess execution via pregolya-sandbox WASM or container backend; stdout/stderr/exit-code capture; wall-clock timeout (tokio timer); observable process-tree state (ADR-020 / SS-23) | Integration |
 | `tools::search` | pregolya-tools | in-process `regex` crate pattern matching over OS filesystem; directory traversal is I/O (readdir syscall chain); CPU-bound regex matching sits atop effectful directory walk; `PathGuard` validation before traversal (ADR-020 / SS-23) | Integration |
 | `eval::judge` | pregolya-standard-tests | async LLM judge invocation over HTTP for conformance scoring; emits `eval.judge_infra_error` structured event on failure; `JudgeError` → `PregolyaError` propagation; async I/O bound to judge LLM provider (BC-2.08.008 / SS-08) | Integration (DTU) |
+| `console::server` [PLANNED] | pregolya-console | Axum HTTP server serving SPA assets via `rust_embed`; `runtime-config.json` injection endpoint; localhost-bind (`127.0.0.1:7437` default); optionally co-launches pregolya-server in-process (`--dev` mode); `ConsoleConfig` lifecycle management; no TLS required for loopback per ADR-031 D6-1; no auth on `/ui/` assets per ADR-031 D6-2; binary crate surface exposed via `run_console(config: ConsoleConfig) -> Result<(), PregolyaError>` (CAP-041 / SS-24 / ADR-031 Decision 1) | Integration |
+| `server::debug_routes` [PLANNED] | pregolya-server | Feature-gated (`debug-endpoints`, default OFF) Axum route handlers: `GET /debug/trace/session/{session_id}`, `GET /debug/trace/{event_id}`, `GET /assistants/{id}/graph`; reads from `DebugSpanExporter` ring buffer injected via Arc-DI; delegates graph serialization to `graph::descriptor` (Pure Core); errors: `E-SERVER-023 DebugExporterNotConfigured`, `E-SERVER-009 AssistantNotFound` per ADR-031 Decision 2; compile-time gate — excluded from production builds when feature disabled (CAP-042 / SS-24 / ADR-031 Decision 2) | Integration |
+
+> **D-356 dev-console scope expansion (2026-09-06, architect).** `console::server` and `server::debug_routes` added as Effectful Shell [PLANNED] Wave 3 per ADR-031 Decisions 1 and 2.
+
+> **D-356 consistency fix (2026-09-06, architect).** Error codes in the `server::debug_routes` row corrected: `E-SERVER-023 DebugExporterNotConfigured` (minted error-taxonomy.md v1.72) and `E-SERVER-009 AssistantNotFound` (existing code). Stale codes E-SERVER-020 and E-SERVER-021 were removed; source-of-truth precedence rule 3 applies (error-taxonomy.md supersedes prose).
 
 ### Boundary Modules (Pure Logic + Effectful Dispatch)
 
@@ -199,6 +210,9 @@ dispatch is integration-tested.
 | `vectorstores::store` | pregolya-vectorstores | Pure part: `VectorStore` trait definition + `MetadataFilter` validation logic; `as_retriever()` returns concrete `VectorStoreRetriever` (pure construction) | Effectful part: `add_documents`, `similarity_search`, `delete` and all other async instance methods dispatch to the concrete backend impl (e.g., `vectorstores::memory`, or a community adapter) (ADR-014 / SS-21) |
 | `core::retriever` | pregolya-core | Pure part: `Retriever` trait definition (zero-LOC pure interface); `GuardedDocuments` newtype (pure data wrapper — `Vec<Document>` private field, no public constructor, `#[non_exhaustive]` on inner); `GuardedDocuments::rag_ingress(docs: Vec<Document>, guardrail: &dyn GuardrailHook) -> Result<GuardedDocuments, PregolyaError>` **`async fn`** — per-document routing gate: for each Document calls `guardrail.evaluate(IngressContent::RagChunk(serde_json::to_value(&doc)?), ProvenanceTag { boundary_type: BoundaryType::RAGRetrieval, ingress_id, sequence_position: i }).await`; N documents → N evaluate calls (BC-2.11.003 PC5); dispatches on GuardrailResult: Pass → include; Fail Critical severity → propagate Err(E-CORE-008) batch aborts (BC-2.11.005 PC4); Fail non-Critical severity → substitute error-entry Document at position i, batch continues (BC-2.11.005 PC5); Transform → include deserialized replacement Document (BC-2.11.003 PC4) | Effectful part: `guardrail.evaluate()` dispatches to an injected `&dyn GuardrailHook` implementation — impls may log, call external policy services, or scan content; DI-012 enforcement by type: graph nodes that inject retrieved docs into context accept `&GuardedDocuments`, making bypass a compile-time type error (ADR-014 Decision 6 / BC-2.20.002 / DI-012) |
 | `graph::hitl` (pre-tool dispatch) | pregolya-graph | Pure extraction target (Kani): `route_pre_tool_decision` + `shield_hook_result` — extracted sync functions from `pre_tool_dispatch`; extraction required before Phase 6 (VP-011, Kani P0). `route_pre_tool_decision`: pure pattern-match on `PreToolDecision` variant; fail-closed (Deny → never invokes tool); `Edit` → substitutes modified_args (pure struct replacement); `Approve` → passes through unchanged; deterministic given the PreToolDecision value (ADR-018 Decision 3). Note: `pre_tool_dispatch` itself is the Boundary function — it calls async `pre_invoke` before routing and is NOT Kani-verifiable directly. | Effectful part: `PreToolCallHook::pre_invoke(&self, preview: &ToolCallPreview, run_ctx: &RunContext) -> PreToolDecision` — user-injected async hook impl may present UI, call external approval service, read policy store, or emit `tool_approval_request` streaming event; `PendingHumanApproval` variant dispatches `interrupt(ToolApprovalRequest{..})` reusing BC-2.05.001 machinery (ADR-018 Decisions 1 and 4) |
+| `console::span_exporter` [PLANNED] | pregolya-console | Pure part: `DebugSpanExporter` span-accumulation logic — FIFO ring buffer capacity enforcement (default cap 10,000 spans per ADR-031 D6-4), span filtering/validation; returns `WriteResult` synchronously | Effectful part: OTel span exporter trait implementation (`fn export(&self, batch: Vec<SpanData>)`) — async mutation of `Arc<Mutex<VecDeque<SpanData>>>` ring buffer; injected into co-launched pregolya-server at construction time via Arc-DI wiring; oldest span evicted on overflow (FIFO) (CAP-042 / SS-24 / ADR-031 Decision 1) |
+
+> **D-356 dev-console scope expansion (2026-09-06, architect).** `console::span_exporter` added as Boundary [PLANNED] Wave 3 per ADR-031 Decisions 1 and 5. Arc-DI injection from pregolya-console into co-launched pregolya-server follows the established Arc-DI wiring discipline.
 
 > **Storage-trait Boundary pattern:** `checkpoint::saver` (SS-04) and `memory::store` (SS-15)
 > both follow the same canonical pattern: the trait module defines pure validation logic + an

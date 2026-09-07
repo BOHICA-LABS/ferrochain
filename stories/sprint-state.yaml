@@ -565,6 +565,130 @@ stories:
     merged_sha: ~
 
   # -----------------------------------------------------------------------
+  # Wave 3 — Developer Console (E-console) — ROADMAP-ONLY (D-356)
+  # -----------------------------------------------------------------------
+
+  - story_id: S-console-01
+    wave: 3
+    status: roadmap
+    bcs: [BC-2.24.001]
+    vps: [VP-2.24.001-A, VP-2.24.001-B, VP-2.24.001-C]
+    points: 5
+    tdd_mode: strict
+    priority: P1
+    crate: [pregolya-console]
+    pr_url: ~
+    merged_sha: ~
+
+  - story_id: S-console-02
+    wave: 3
+    status: roadmap
+    bcs: [BC-2.24.001, BC-2.24.002]
+    vps: [VP-2.24.002-A, VP-2.24.002-B, VP-2.24.002-C]
+    points: 5
+    tdd_mode: strict
+    priority: P1
+    crate: [pregolya-console]
+    pr_url: ~
+    merged_sha: ~
+
+  - story_id: S-console-03
+    wave: 3
+    status: roadmap
+    bcs: [BC-2.24.002]
+    vps: [VP-2.24.002-C]
+    points: 5
+    tdd_mode: strict
+    priority: P1
+    crate: [pregolya-console]
+    pr_url: ~
+    merged_sha: ~
+
+  - story_id: S-console-04
+    wave: 3
+    status: roadmap
+    bcs: [BC-2.24.003]
+    vps: [VP-2.24.003-A, VP-2.24.003-B, VP-2.24.003-C]
+    points: 5
+    tdd_mode: strict
+    priority: P1
+    crate: [pregolya-console]
+    pr_url: ~
+    merged_sha: ~
+
+  - story_id: S-console-05
+    wave: 3
+    status: roadmap
+    bcs: [BC-2.24.001]
+    vps: [VP-2.24.001-A]
+    points: 8
+    tdd_mode: strict
+    priority: P1
+    crate: [pregolya-console]
+    pr_url: ~
+    merged_sha: ~
+
+  - story_id: S-console-06
+    wave: 3
+    status: roadmap
+    bcs: [BC-2.24.004]
+    vps: [VP-2.24.004-A, VP-2.24.004-B]
+    points: 8
+    tdd_mode: strict
+    priority: P1
+    crate: [pregolya-console]
+    pr_url: ~
+    merged_sha: ~
+
+  - story_id: S-console-07
+    wave: 3
+    status: roadmap
+    bcs: [BC-2.24.005]
+    vps: [VP-2.24.005-A, VP-2.24.005-B]
+    points: 5
+    tdd_mode: strict
+    priority: P1
+    crate: [pregolya-console]
+    pr_url: ~
+    merged_sha: ~
+
+  - story_id: S-console-08
+    wave: 3
+    status: roadmap
+    bcs: [BC-2.24.006]
+    vps: [VP-2.24.006-A, VP-2.24.006-B]
+    points: 5
+    tdd_mode: strict
+    priority: P1
+    crate: [pregolya-console]
+    pr_url: ~
+    merged_sha: ~
+
+  - story_id: S-console-09
+    wave: 3
+    status: roadmap
+    bcs: [BC-2.24.007]
+    vps: [VP-2.24.007-A, VP-2.24.007-B]
+    points: 5
+    tdd_mode: strict
+    priority: P1
+    crate: [pregolya-console]
+    pr_url: ~
+    merged_sha: ~
+
+  - story_id: S-console-10
+    wave: 3
+    status: roadmap
+    bcs: [BC-2.24.008]
+    vps: [VP-2.24.008-A, VP-2.24.008-B]
+    points: 5
+    tdd_mode: strict
+    priority: P1
+    crate: [pregolya-console]
+    pr_url: ~
+    merged_sha: ~
+
+  # -----------------------------------------------------------------------
   # Wave 6 — Formal Verification (E-22)
   # -----------------------------------------------------------------------
 

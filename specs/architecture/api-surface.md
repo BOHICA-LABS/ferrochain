@@ -2,11 +2,13 @@
 document_type: architecture-section
 level: L3
 section: api-surface
-version: "1.28"
+version: "1.30"
 status: active
 producer: architect
-timestamp: 2026-08-22T00:00:00Z
+timestamp: 2026-09-06T00:00:00Z
 changelog:
+  - "1.30 (D-356/2026-09-06, architect): F1 consistency fix — three debug endpoint error codes corrected: E-SERVER-020→E-SERVER-023 (DebugExporterNotConfigured, minted error-taxonomy.md v1.72) on GET /debug/trace/session/{session_id} and GET /debug/trace/{event_id}; E-SERVER-021→E-SERVER-009 (AssistantNotFound, existing code) on GET /assistants/{id}/graph. Per source-of-truth precedence rule 3: error-taxonomy.md supersedes prose for error code assignments. input-hash pending-recompute."
+  - "1.29 (D-356/2026-09-06, architect): D-356 dev-console scope expansion — three new debug endpoints added (feature-gated debug-endpoints, default OFF): GET /debug/trace/session/{session_id}, GET /debug/trace/{event_id}, GET /assistants/{id}/graph. debug-endpoints Cargo feature added (Security-annotated, NO default). SSE transport formally confirmed for run streaming (ADR-031 §Decision 3 — no WebSocket). input-hash refreshed from pre-existing drift d55270a→c34f721."
   - "1.28 (R44/F-P2A184-03/2026-08-30): F-P2A184-03 [MED] §Public Rust Traits DynTool blockquote — stale 'impl Stream return' description corrected. OLD: 'which exposes `stream()` (opaque `impl Stream` return)'. NEW: 'which exposes `stream()` (RPITIT `impl Future` return — opaque, non-dyn-compatible)'. Post-R43, `Runnable::stream` returns an RPITIT `impl Future` whose output boxes the stream via `Pin<Box<dyn Stream...>>`; describing it as 'impl Stream return' is inaccurate. The E0038 non-object-safety conclusion for `dyn Tool` is unchanged. input-hash refreshed."
   - "1.27 (round-25/F-P2A111-01+F-P2A111-02/2026-08-28): §Crates with No Public Traits — `pregolya-mcp` description updated to reflect the nine-module canonical structure established by the round-25 module→file mapping decision. Listed by role: invocation stack (mcp::client/session/interceptor), tool adaptation (mcp::discovery with canonical `pregolya-mcp/src/discovery.rs`), security seam (mcp::ingress DI-012 HIGH with `ingress.rs`), error handling (mcp::exception), server-side (mcp::sanitize/graph_tool/server). Consumer types updated: `DynTool` and `GuardrailHook` from pregolya-core (not `Tool` — Tool is non-object-safe E0038; DynTool is the wire type; GuardrailHook is the ingress seam). input-hash refreshed."
   - "1.26 (fix-burst-P2A026/P2A026-02/2026-08-22): Move StreamEvent row from §pregolya-graph Public Types to §pregolya-core Public Types. Canonical home is pregolya-core (`core::events`) per ADR-006 §Consequences ('StreamEvent is a public type in pregolya-core') and module-decomposition.md §F-P2A017-02 fix (v1.45 corrected the erroneous graph-defines-StreamEvent claim). Presenting it under §pregolya-graph Public Types mis-stated crate ownership. Inclusion criterion note extended to document StreamEvent's criterion (b) rationale. Sweep: all four §pregolya-graph Public Types rows verified — StateGraph (SS-02/graph::definition), GraphConfig (SS-03/graph::scheduler), Command (SS-05/graph::hitl) are correctly attributed; only StreamEvent was misattributed. No other cross-section misattributions found."
@@ -40,7 +42,7 @@ phase: 1b
 inputs:
   - .factory/specs/prd.md
   - .factory/specs/prd-supplements/interface-definitions.md
-input-hash: "d55270a"
+input-hash: "2771075"
 traces_to: ARCH-INDEX.md
 decisions: [D13, D17]
 ---
@@ -270,6 +272,34 @@ cross-thread aggregate query for schedule-fired runs only.
 
 **Security:** `SecurityConfig::default()` denies CORS. Debug route requires opt-in key (BC-2.12.005).
 
+### Debug Endpoints (feature `debug-endpoints`, default OFF)
+
+> **D-356 dev-console scope expansion (2026-09-06, architect).** These three endpoints are
+> compiled into `pregolya-server` ONLY when the `debug-endpoints` Cargo feature is enabled
+> (default: OFF). Production deployments that do not enable this feature compile out all debug
+> routing with zero overhead. All three endpoints are subject to
+> `SecurityConfig.debug_api_key` (BC-2.12.005). Authoritative decisions: ADR-031 §Decision 2.
+
+| Method | Path | Description | CAP Anchor |
+|--------|------|-------------|------------|
+| GET | `/debug/trace/session/{session_id}` | Ordered `SpanData` list for a session — sourced from in-memory `DebugSpanExporter` (hosted by `pregolya-console`); `503` with `E-SERVER-023 DebugExporterNotConfigured` when no exporter is configured | CAP-042 |
+| GET | `/debug/trace/{event_id}` | `SpanData` for a single event — same exporter source; `503` with `E-SERVER-023` when not configured | CAP-042 |
+| GET | `/assistants/{id}/graph` | Compiled `StateGraph` as JSON node/edge descriptor + optional `dot_src: String` (Graphviz DOT; `null` when `dot` binary absent); `404` with `E-SERVER-009 AssistantNotFound` when assistant does not exist | CAP-042, CAP-003 |
+
+**`SpanData` shape:** `{ span_id, trace_id, start_time_ms, end_time_ms, attributes: JSON,
+llm_request: JSON|null, llm_response: JSON|null }`. Matches adk-rust `convert_to_span_data()`
+→ `Trace.ts` SpanData shape (research memo §2.2 table row 5) for frontend interoperability.
+
+**Graph descriptor shape:** `{ nodes: [{name, kind}], edges: [{source, target, condition}],
+dot_src: String|null }`. Static structural snapshot of the compiled graph; carries no runtime
+state. Served by the `server::debug_routes` module (Effectful Shell); pure serialization
+extracted to `graph::descriptor` (Pure Core, pregolya-graph) before Phase 6 per ADR-031
+§Decision 5.
+
+**Transport note (ADR-031 §Decision 3):** SSE remains the sole streaming transport for
+run events (`GET /threads/{id}/runs/{run_id}/stream`, BC-2.12.007). No WebSocket endpoint
+is added by D-356. The debug endpoints are unary REST (JSON request/response), not streaming.
+
 ## Cargo Feature Flags
 
 | Feature | Default | Description | BC Anchor |
@@ -284,6 +314,7 @@ cross-thread aggregate query for schedule-fired runs only.
 | `mcp` | NO | pregolya-mcp adapter | BC-2.09.001 |
 | `budget` | YES | Budget governance policy primitive | BC-2.10.001 |
 | `guardrail` | YES | Content provenance + guardrail hook | BC-2.11.001 |
+| `debug-endpoints` | **NO** | **Security-annotated.** Feature-gates `/debug/trace/*` + `/assistants/{id}/graph` endpoints. Off by default — production builds MUST NOT enable unless behind `SecurityConfig.debug_api_key` (BC-2.12.005) and explicitly scoped to developer/staging. Compiled out entirely when off. CI gate `check-debug-endpoints-default` (authored at Wave 3) verifies this feature is absent from `[features].default`. See ADR-031 §Decision 2 and §Decision 6 D6-3. | CAP-042 (D-356/ADR-031) |
 
 ## Error Type
 

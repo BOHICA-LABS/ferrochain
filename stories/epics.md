@@ -1,16 +1,16 @@
 ---
 document_type: epics
-version: "1.7"
+version: "1.8"
 status: active
 producer: story-writer
-timestamp: 2026-09-02T00:00:00Z
+timestamp: 2026-09-06T00:00:00Z
 phase: 2
 traces_to: .factory/specs/architecture/ARCH-INDEX.md
 ---
 
 # Epics — pregolya Phase 2
 
-> **22 epics spanning 42 stories across Wave 1 (28), Wave 2 (12), Wave 6 (1). One maintenance story (S-MAINT-001) is outside the wave schedule.**
+> **23 epics spanning 52 stories across Wave 1 (28), Wave 2 (12), Wave 3 roadmap (10), Wave 6 (1). One maintenance story (S-MAINT-001) is outside the wave schedule.**
 > Epic IDs are stable references. Stories within each epic share a primary subsystem.
 
 ## Epic Catalog
@@ -39,6 +39,7 @@ traces_to: .factory/specs/architecture/ARCH-INDEX.md
 | E-20 | Embeddings Trait and Providers | 2 | S-2.09 | 8 | SS-22 | pregolya-core, pregolya-openai, pregolya-ollama |
 | E-21 | MCP Tool Adapter | 2 | S-2.10, S-2.11 | 16 | SS-09 | pregolya-mcp |
 | E-22 | Formal Verification Pipeline | 6 | S-6.01 | 8 | SS-17 | xtask, pregolya-graph, pregolya-checkpoint, pregolya-sandbox |
+| E-console | Developer Console | 3 (roadmap) | S-console-01, S-console-02, S-console-03, S-console-04, S-console-05, S-console-06, S-console-07, S-console-08, S-console-09, S-console-10 | 56 | SS-24 | pregolya-console, pregolya-server, pregolya-graph |
 | EPIC-MAINT | Maintenance and Self-Improvement | out-of-wave | S-MAINT-001 | 5 | N/A | all crates |
 
 ## Epic Summaries
@@ -206,8 +207,66 @@ mutation gate. This story formally executes the 9 Kani harness proofs only; prop
 and unit VPs (including VP-006-B, VP-015, VP-016) are validated in their Phase-3 anchor stories,
 not in S-6.01's pipeline. Gated until all Wave 1 + Wave 2 implementation stories are merged.
 
+### E-console — Developer Console (Wave 3 roadmap, 56 pts)
+
+> **D-356 dev-console scope expansion (2026-09-06, story-writer).**
+
+Browser-based developer console for `pregolya-server` that exposes run inspection,
+checkpoint history, HITL approval, budget governance, and guardrail review through a
+lightweight SPA embedded in a new `pregolya-console` binary crate. All console functionality
+is feature-gated (`debug-endpoints` Cargo feature defaults `false`) and scoped to
+`127.0.0.1:7437` for local developer use — no production data path is affected.
+
+**Architecture** (ADR-031):
+- `pregolya-console` binary: Axum HTTP server + `rust_embed` SPA; `ConsoleConfig` with `#[non_exhaustive]`
+- `DebugSpanExporter`: OTel `SpanExporter` impl; bounded FIFO ring buffer (`default 10 000 spans`); shared via `Arc<DebugSpanExporter>`; Pure Core ring buffer, Effectful Shell OTel adapter
+- `debug-endpoints` feature on `pregolya-server`: trace-read routes `/debug/sessions`, `/debug/events/{id}`, `/debug/graph/{assistant_id}` — zero overhead in production
+- `compile_graph_descriptor` Pure Core function in `pregolya-graph` (candidate for Kani verification)
+- SSE (`text/event-stream`) is the sole streaming transport (ADR-031 Decision 3; WebSocket closed)
+- SPA: native browser `EventSource`, no WebSocket polyfill, <500 KB gzip budget; framework deferred to Wave 3
+
+**Subsystems:** SS-24 (Developer Console)
+
+**Behavioral Contracts:** BC-2.24.001 (ConsoleConfig), BC-2.24.002 (DebugSpanExporter ring buffer + trace-read endpoints), BC-2.24.003 (GraphDescriptor), BC-2.24.004 (run inspection panel), BC-2.24.005 (checkpoint history panel), BC-2.24.006 (HITL resume panel), BC-2.24.007 (token budget panel), BC-2.24.008 (guardrail review panel)
+
+**CAP coverage:** CAP-041 (console scaffold), CAP-042 (span exporter), CAP-043 (graph descriptor), CAP-044 (run inspection), CAP-045 (checkpoint history), CAP-046 (HITL resume), CAP-047 (budget + guardrail panels)
+
+**ADR traceability:** ADR-031 (Developer Console Architecture) — 6 decisions; purity boundary table; story ordering S-console-01..10
+
+**Key error codes:** `E-SERVER-023` (DebugExporterNotConfigured), `E-SERVER-009` (AssistantNotFound)
+
+**Wave 3 topological sub-waves:**
+
+| Sub-Wave | Stories | Notes |
+|----------|---------|-------|
+| 3A | S-console-01 | pregolya-console scaffold (ConsoleConfig, Axum bind, SPA embed skeleton) |
+| 3B | S-console-02, S-console-05 | DebugSpanExporter ring buffer; SPA build pipeline (parallel) |
+| 3C | S-console-03, S-console-07 | debug-endpoints Cargo feature; checkpoint history panel (parallel) |
+| 3D | S-console-04 | graph-descriptor endpoint + `compile_graph_descriptor` Pure Core |
+| 3E | S-console-06 | Run inspection panel (all 16 StreamEvent variants, SSE EventSource) |
+| 3F | S-console-08, S-console-09, S-console-10 | HITL, budget, guardrail panels (parallel) |
+
+**Verification properties:** VP-2.24.001-A/B/C through VP-2.24.008-A/B (20 VPs, all P1, Phase 3 target)
+
+**Story points breakdown:**
+
+| Story | Title | Points |
+|-------|-------|--------|
+| S-console-01 | pregolya-console scaffold | 5 |
+| S-console-02 | DebugSpanExporter ring buffer | 5 |
+| S-console-03 | debug-endpoints Cargo feature | 5 |
+| S-console-04 | graph-descriptor endpoint | 5 |
+| S-console-05 | SPA build pipeline | 8 |
+| S-console-06 | Run inspection panel | 8 |
+| S-console-07 | Checkpoint history panel | 5 |
+| S-console-08 | HITL resume panel | 5 |
+| S-console-09 | Token budget panel | 5 |
+| S-console-10 | Guardrail review panel | 5 |
+| **Total** | | **56** |
+
 ## Changelog
 
+- **1.8 (D-356/2026-09-06):** E-console epic added (Wave 3 roadmap, SS-24, 10 stories, 56 pts, ADR-031). Epic Catalog row added. Epic summary section added with architecture narrative, BC/CAP/VP traceability, topological sub-wave table, and story-point breakdown. State-manager to sync census header: 22→23 product epics, 42→52 stories, 316→372 product points.
 - 1.7 (Round-66/F-P2A238-01/F-P2A238-03/2026-09-02): E-05 §S-2.12 — retired staging-table model (trajectory_records_staging, four-crash-point matrix) replaced with per-run single-transaction DELETE and two-crash-point matrix (before-COMMIT, after-COMMIT) per BC-2.04.011 {INV-003}/VP-019 (round-62 redesign, F-P2A234-01). E-TRAJ-006 (DURABILITY, AES-GCM integrity check failed) added to error code set per BC-2.04.009 {INV-001}/EC-006 (round-62/63). E-07 §S-1.28 — VP-020 (proptest P1, BC-2.02.009 {INV-001}/{INV-002}, harness promote_retire_channel_idempotency) added to verification narrative (round-62 mint, F-P2A234-05).
 - 1.6 (Round-53-Phase-2-fix-burst/2026-08-31): E-05 §S-2.12 updated — staging-table swap model (trajectory_records_staging → trajectory_records) for compaction; VP-018 anchor corrected to retention-integrity invariants (BC-2.04.011 {INV-001}/{INV-002}); VP-019 four-crash-point matrix cited; error code set corrected to E-TRAJ-001..003+005 (E-TRAJ-004 RETIRED). E-07 §S-1.28 updated — module path corrected to channels/ directory; Channel trait impl added (Accumulator=Vec<T>, BSP dispatch, BC-2.02.007 {INV-004}); VP-017 dual-anchor corrected to BC-2.02.007 {INV-001}/{INV-002} + BC-2.02.008 {INV-001}/{INV-003}.
 - 1.5 (Stage-3/CAP-040/2026-08-31): E-07 extended with S-1.28 — LedgerChannel (BC-2.02.007/008) and PromoteRetireChannel (BC-2.02.009) pure channel reducers; VP-017 proptest P1 anchored to S-1.28. E-05 extended with S-2.12 — TrajectoryWriter/Reader/Compactor (BC-2.04.009/010/011); VP-018 proptest P1 anchored to S-2.12. E-07 points 13→18; E-05 points 16→24; product-epic point total 303→316. Story count 39→41 product stories; wave counts W1 27→28, W2 11→12.

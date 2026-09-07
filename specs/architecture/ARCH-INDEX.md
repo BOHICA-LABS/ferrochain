@@ -1,10 +1,10 @@
 ---
 document_type: architecture-index
 level: L3
-version: "1.69"
+version: "1.71"
 status: active
 producer: architect
-timestamp: 2026-09-02T12:00:00Z
+timestamp: 2026-09-06T00:00:00Z
 phase: 1b
 inputs:
   - .factory/specs/prd.md
@@ -15,8 +15,10 @@ inputs:
 input-hash: "[live-index]"
 traces_to: prd.md
 deployment_topology: single-service
-decisions: [D4, D6, D9, D11, D13, D17, D20, D21, D23]
+decisions: [D4, D6, D9, D11, D13, D17, D20, D21, D23, D356]
 changelog:
+  - "1.71 (D-356/2026-09-06, architect): F3+F4 consistency fix — SS-24 BC range corrected BC-2.24.001–TBD→BC-2.24.001–008 (8 BCs authored by product-owner); VP census updated 21→40 (19 VP-2.24.* SEED rows registered); §Verification Properties summary updated 21→40 VPs; §SS-24 blockquote updated; v1.70 census VP 21→40."
+  - "1.70 (D-356/ADR-031/2026-09-06): D-356 dev-console scope expansion — SS-24 (Developer Console) added to Subsystem Registry (primary crate pregolya-console, PRD section 2.24, Wave 3 roadmap; BC-2.24.001–008 authored). pregolya-console added to Canonical Crate Roster as crate #22 (Wave 3 roadmap; not built this cycle; D356/ADR-031). ADR-031 added to ADR Registry (Developer Console Architecture: pregolya-console crate, debug-endpoints feature gate, SSE transport reconciliation, SPA framework deferral, purity boundary classification, NFR deltas; accepted D-356 human-authorized). Document Map ADR count updated 30→31 files (ADR-001 to ADR-031). SS count 23→24. Crate Roster entries 21→22 (+1 roadmap). Census note: BC 140 / VP 40 / EC 143 / TV 795 canonical / stories 42 / pts 316 / ADR 31 / SS 24 / crates 22 (21 published + 1 roadmap) / holdout 24 (must-pass 17/24=70.8%) / NFR 15."
   - "1.69 (round-67/D-345/2026-09-02): P2A-239 fix-burst census reconciliation — F-P2A239-02[MED] CLOSED. Full cross-index census verification performed: BC-INDEX §Changelog / STORY-INDEX §Changelog / VP-INDEX §Changelog / test-vectors.md §Changelog / ARCH-INDEX §Changelog all confirmed at BC 140 / VP 21 / EC 143 / TV 795 canonical / stories 42 / pts 316 / ADR 30 / holdout 24 (must-pass 17/24=70.8%) / NFR 15 — fully consistent. At frozen HEAD 69ec78d (adversary P2A-239 review scope), ARCH-INDEX was at v1.67 which carried TV 794 canonical (pre-round-63); v1.68 committed D-341 already carried TV 795 canonical; this entry formally closes F-P2A239-02 and records the cross-index reconciliation sweep. sprint-state.yaml S-6.01 vps VP-015 spurious entry removed (F-P2A239-01[MED]; state-manager — story frontmatter source of truth = 12 VPs, no VP-015). Census UNCHANGED: BC 140 / VP 21 / EC 143 / TV 795 canonical / stories 42 / pts 316 / ADR 30 / holdout 24 (must-pass 17/24=70.8%) / NFR 15."
   - "1.68 (round-63/D-341/2026-09-01): ADR-030 §SQLite Topology single per-run-DELETE mechanism (contradictory directive removed; F-P2A235-01). ADR-030 §NFR-015 P0 directive (NFR-015 parity with NFR-002; F-P2A235-04). ADR-030 §E-TRAJ-006 STATIC message reconciled (F-P2A235-06). ADR-030 §{INV-002} gloss corrected reducer-determinism (F-P2A235-08). verification-architecture §VP-019 stale directive deleted + §VP-020 {INV-002} gloss fixed (F-P2A235-03/F-P2A235-08). Census: BC 140 / VP 21 / EC 143 / TV 795 canonical / stories 42 / pts 316 / ADR 30 / holdout 24 (must-pass 17/24=70.8%) / NFR 15."
   - "1.67 (round-62/D-340/2026-09-01): VP-020 added — PromoteRetireChannel idempotency/ordering proptest P1 (BC-2.02.009 {INV-001}+{INV-002}; graph::channels; pregolya-graph; DI-001; harness promote_retire_channel_idempotency). §Verification Properties summary updated: 20→21 VPs; proptest P1 ×7→×8. Census: 140 BCs / 21 VP / 143 EC / 794 TV canonical / 42 stories / 316 pts / 30 ADR / 24 holdout (must-pass 17/24=70.8%) / NFR 15."
@@ -107,7 +109,7 @@ changelog:
 | Tooling Selection | tooling-selection.md | formal-verifier | Kani, cargo-fuzz, cargo-mutants, proptest versions + config |
 | Verification Coverage Matrix | verification-coverage-matrix.md | consistency-validator | VP-to-module coverage status |
 
-**ADRs:** `.factory/specs/architecture/decisions/` — 30 files (ADR-001 to ADR-030)
+**ADRs:** `.factory/specs/architecture/decisions/` — 31 files (ADR-001 to ADR-031)
 
 **Module Criticality:** `.factory/specs/module-criticality.md`
 
@@ -154,6 +156,9 @@ changelog:
 | SS-21 | VectorStore Abstraction | 2.21 | pregolya-vectorstores | BC-2.21.001–004 | 2 |
 | SS-22 | Embeddings | 2.22 | pregolya-core, pregolya-openai, pregolya-ollama | BC-2.22.001–003 | 2 |
 | SS-23 | First-Party Tool Library | 2.23 | pregolya-tools | BC-2.23.001–006 | 1 |
+| SS-24 | Developer Console | 2.24 | pregolya-console | BC-2.24.001–008 | 3 |
+
+> **D356 Capability Additions (v1.70):** SS-24 (Developer Console) via ADR-031 — pregolya-console new binary crate #22 (Wave 3 roadmap); debug-endpoints feature gate on pregolya-server; graph::descriptor Pure Core extraction required pre-Phase 6. CAP-041 (console composition layer), CAP-042 (debug infra endpoints), CAP-043 (run inspection/live monitoring), CAP-044 (checkpoint history/trajectory replay), CAP-045 (HITL console resume), CAP-046 (token/context budget panel), CAP-047 (guardrail/security review panel). BC-2.24.001–008 authored by product-owner (Wave 3). Transport clarification: SSE confirmed (ADR-006 authoritative; no WebSocket endpoint added).
 
 > **D20 Capability Additions (v1.2):** SS-09 adds CAP-021 (MCP server role) per ADR-013 — introduces `mcp::server` execution module in pregolya-mcp; BC range extended from 001–005 to 001–007. SS-15 adds CAP-020 (self-improvement primitives) per ADR-012 — includes `SkillStore`, `MemoryWriteGuard` execution modules and `ContextMutationConfig` definitions; BC range extended from 001–003 to 001–006.
 
@@ -171,7 +176,7 @@ changelog:
 
 > **Authoritative.** All other documents (ADR-007, system-overview, dependency-graph) derive
 > from this table. Derivation: D6 base (9) + D1 (mcp, standard-tests) + D13 (server)
-> + P2-05 (sandbox, memory) + ADR-008 (macros) + D17-Q5 (3 × -sdk) + D21 (prompts, vectorstores) + D23 (tools) = **21 published crates**.
+> + P2-05 (sandbox, memory) + ADR-008 (macros) + D17-Q5 (3 × -sdk) + D21 (prompts, vectorstores) + D23 (tools) = **21 published crates** + D356 (console — Wave 3 roadmap, not yet published) = **22 crate entries**.
 
 | # | Crate | Origin | Wave | Published |
 |---|-------|--------|------|-----------|
@@ -196,9 +201,12 @@ changelog:
 | 19 | pregolya-prompts | D21/ADR-015 | 2 | YES |
 | 20 | pregolya-vectorstores | D21/ADR-014 | 2 | YES |
 | 21 | pregolya-tools | D23/ADR-020 | 1 | YES |
+| 22 | pregolya-console | D356/ADR-031 | 3 (roadmap) | YES (roadmap; not built this cycle) |
 | — | xtask | D12 | — | NO (workspace binary) |
 
-R6 namespace reservation: publish-all.sh must cover all 21 published crates before public announcement.
+R6 namespace reservation: publish-all.sh must cover all 21 currently-published crates before public announcement; pregolya-console will be added to the reservation list at Wave 3 kickoff per ADR-031.
+
+> **D-356 dev-console scope expansion (2026-09-06, architect).** pregolya-console crate #22 added as roadmap/Wave 3 entry per ADR-031 Decision 1. NOT built in Phase 3. Publish flag YES is aspirational (roadmap); actual publication is gated on Wave 3 delivery and crates.io name reservation at that time.
 
 ## ADR Registry
 
@@ -234,10 +242,11 @@ R6 namespace reservation: publish-all.sh must cover all 21 published crates befo
 | ADR-028 | Server Run Lifecycle Semantics: multitask_strategy interrupt/rollback/enqueue, delete_threads cascade atomicity, idempotency-key TTL basis (P2A-BC-scan/2026-08-25) | accepted — architect adjudication of 5 Phase 2 BC completeness gaps in SS-12 | SS-12 |
 | ADR-029 | Agent-as-MCP-Tool (GraphAgentTool) Wrapping — StateGraph Registration in ToolRegistry for MCP Exposure (GAP-01/2026-08-26) | accepted — human-approved v1 scope addition; new BC-2.09.008 + VP-016 + E-MCP-010 | SS-09 |
 | ADR-030 | Research Orchestrator Composition Reference Architecture (praxist-inspired, clean-room behavioral; ADR-030 Stage 1/2026-08-31; v1.1 ruling: BC-2.02.009 added for PromoteRetireChannel) | accepted — human-approved scope addition; composition-only use case (no new product crate); two additive primitives: TrajectoryRecord/TrajectoryWriter/TrajectoryReader (SS-04) + LedgerEntry/LedgerChannel/PromoteRetireOp/PromoteRetireChannel (SS-02); new VP-017 proptest P1; BC IDs BC-2.02.007/008/009 (SS-02) + BC-2.04.009/010/011 (SS-04) reserved for product-owner Stage 2 | SS-02, SS-04 |
+| ADR-031 | Developer Console Architecture: pregolya-console crate, debug-endpoints feature gate, SSE transport reconciliation, SPA framework deferral, purity boundary classification, NFR deltas (D-356) | accepted — D-356 human-authorized scope expansion; roadmap-only (Wave 3, not built this cycle); new binary crate pregolya-console #22; Cargo feature debug-endpoints (default OFF) on pregolya-server; SSE confirmed as sole streaming transport (ADR-006 authoritative; no WebSocket); SPA framework deferred to Wave 3; 4 new purity rows (graph::descriptor Pure Core, console::server/server::debug_routes Effectful Shell, console::span_exporter Boundary) | SS-24 |
 
 ## Verification Properties (VP-INDEX)
 
-21 VPs total (6 Kani P0 + 3 Kani P1 + 8 proptest P1 + 3 integration P1 + 1 unit P1 — see VP-INDEX; mirror of VP-INDEX, kept in sync via POL-9):
+40 VPs total (6 Kani P0 + 4 Kani P1 + 11 proptest P1 + 18 integration P1 + 1 unit P1 — see VP-INDEX; mirror of VP-INDEX, kept in sync via POL-9):
 
 | VP | BC Anchor | Module | Tool | Priority | Status |
 |----|-----------|--------|------|----------|--------|
@@ -262,5 +271,26 @@ R6 namespace reservation: publish-all.sh must cover all 21 published crates befo
 | VP-018 | BC-2.04.011 {INV-001} (TrajectoryCompactor retention-integrity; DI-002) | `checkpoint::trajectory` | proptest | P1 | draft |
 | VP-019 | BC-2.04.011 {INV-003} (trajectory compaction crash-isolation — SQLite atomicity under SIGKILL; DI-002) | `checkpoint::trajectory` | integration | P1 | draft |
 | VP-020 | BC-2.02.009 {INV-001}+{INV-002} (PromoteRetireChannel idempotency/ordering; DI-001) | `graph::channels` | proptest | P1 | draft |
+| VP-2.24.001-A | BC-2.24.001 (console::server lifecycle — integration) | `console::server` | integration | P1 | draft |
+| VP-2.24.001-B | BC-2.24.001 (console::server config invariant — proptest) | `console::server` | proptest | P1 | draft |
+| VP-2.24.001-C | BC-2.24.001 (console::server startup/shutdown — integration) | `console::server` | integration | P1 | draft |
+| VP-2.24.002-A | BC-2.24.002 (debug exporter ring buffer invariant — proptest) | `server::debug_routes` | proptest | P1 | draft |
+| VP-2.24.002-B | BC-2.24.002 (debug trace session endpoint — integration) | `server::debug_routes` | integration | P1 | draft |
+| VP-2.24.002-C | BC-2.24.002 (debug trace event endpoint — integration) | `server::debug_routes` | integration | P1 | draft |
+| VP-2.24.003-A | BC-2.24.003 (graph descriptor serialization roundtrip — proptest) | `graph::descriptor` | proptest | P1 | draft |
+| VP-2.24.003-B | BC-2.24.003 (graph descriptor pure termination — Kani) | `graph::descriptor` | Kani | P1 | draft |
+| VP-2.24.003-C | BC-2.24.003 (graph endpoint integration) | `server::debug_routes` | integration | P1 | draft |
+| VP-2.24.004-A | BC-2.24.004 (runtime config injection — integration) | `console::server` | integration | P1 | draft |
+| VP-2.24.004-B | BC-2.24.004 (SPA asset serving — integration) | `console::server` | integration | P1 | draft |
+| VP-2.24.005-A | BC-2.24.005 (span exporter ring buffer relay — integration; DI-002) | `console::server` | integration | P1 | draft |
+| VP-2.24.005-B | BC-2.24.005 (span exporter Arc-DI injection — integration; DI-002) | `console::server` | integration | P1 | draft |
+| VP-2.24.006-A | BC-2.24.006 (debug API key auth enforcement — integration) | `console::server` | integration | P1 | draft |
+| VP-2.24.006-B | BC-2.24.006 (debug endpoint feature gate OFF — integration) | `console::server` | integration | P1 | draft |
+| VP-2.24.007-A | BC-2.24.007 (dev-mode co-launch — integration) | `console::server` | integration | P1 | draft |
+| VP-2.24.007-B | BC-2.24.007 (console config lifecycle — integration) | `console::server` | integration | P1 | draft |
+| VP-2.24.008-A | BC-2.24.008 (console localhost bind — integration) | `console::server` | integration | P1 | draft |
+| VP-2.24.008-B | BC-2.24.008 (console TLS-less loopback — integration) | `console::server` | integration | P1 | draft |
+
+> **D-356 VP-2.24.* SEED registrations (2026-09-06, architect):** 19 VP-2.24.* placeholder rows added for SS-24 Developer Console (BC-2.24.001–008). SEED status — body .md files authored at Phase 3 Wave 3. VP-2.24.003-B (Kani, graph::descriptor Pure Core) is the Phase 6 formal-proof candidate. Total VP 21→40.
 
 > **D23 VPs SEEDED (burst-232):** VP-011/012/013 minted with BC anchors, Kani harness skeletons, and input-hashes. VP-011 (graph::hitl / PreToolCallHook fail-closed — Kani P0); VP-012 (core-budget / OnWatermark arithmetic — Kani P1); VP-013 (tools-shell / BashTool risk floor — Kani P1). BC-2.23.005 category RESOLVED: BC-2.23.005 §Postconditions (PC-4) category amended to VAL in burst-232 (error-taxonomy.md §Component: TOOLS; consistent with VP-013 harness).

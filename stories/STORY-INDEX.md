@@ -1,11 +1,12 @@
 ---
 document_type: story-index
 level: L3
-version: "1.59"
+version: "1.60"
 status: active
 producer: state-manager
-timestamp: 2026-09-02T23:59:00Z
+timestamp: 2026-09-06T00:00:00Z
 changelog:
+  - "1.60 (D-356/2026-09-06): SS-24 Developer Console registered — Wave 3 ROADMAP-ONLY section added (10 stories: S-console-01..10; E-console epic; 56 pts; all P1; pregolya-console crate). BC-to-Story Coverage Map §SS-24 added (8 BCs: BC-2.24.001..008). VP-to-Story Anchor Map +19 rows (VP-2.24.001-A/B/C through VP-2.24.008-A/B). Census: stories 42→52 / pts 316→372 / BCs 140→148 / VPs 21→40 / product-epics 22→23 / total-epics 23→24 / stories-with-VP-anchor 15→25."
   - "1.59 (Phase-2-gate/D-354/2026-09-02): STORY-S-MAINT-001 v1.2→v1.3 (C-2 fix; story-writer; 9 live BC-corpus count references updated 134→140 to reflect final BC census; input-hash refreshed 9d09df5→21647fd; §Changelog v1.3 added). Phase-2 CONVERGED + gate APPROVED (D-354, 2026-09-02): 3/3 CLEAN(strict) on frozen anchor 81d16ca (P2A-252/253/254, rounds 80/81/82; axis-diverse: parity/semantics/completeness); consistency-validator PERIMETER-CONSISTENT; human gate APPROVED. 4 deferrals recorded: C-1 VP naming pre-Phase-6; PG-1 multi-anchor mirror hook pre-Phase-3-wave-close; PG-2 story-changelog machine-coverage hook; PG-3 BC H1 angle-bracket normalization pre-Phase-6. Census UNCHANGED: BC 140 / VP 21 / EC 143 / TV 795 / stories 42 / pts 316 / ADR 30 / holdout 24 (must-pass 17/24=70.8%) / NFR 15."
   - "1.58 (round-79 fix-burst/D-353/2026-09-02): Corpus-wide verbatim-H1 BC-table title sweep (story-writer; F-P2A251-02[LOW] ~30 spec files / ~90 title cells corrected to byte-exact BC canonical H1 per orchestrator Option A human-confirmed ruling). F-P2A251-01[LOW] S-1.09 NE-02 anchor mis-label corrected. Story version bumps: S-1.02→v1.2, S-1.07→v1.6, S-1.08→v1.4, S-1.09→v1.3, S-1.10→v1.4, S-1.11→v1.4, S-1.12→v1.3, S-1.13→v1.4, S-1.14→v1.8, S-1.15→v1.4, S-1.16→v1.2, S-1.17→v1.6, S-1.18→v1.3, S-1.19→v1.10, S-1.20→v1.4, S-1.21→v1.4, S-1.22→v1.3, S-1.23→v1.7, S-1.24→v1.7, S-1.25→v1.5, S-1.26→v1.13, S-1.27→v1.10, S-2.03→v1.7, S-2.04→v1.7, S-2.06→v1.11, S-2.07→v1.4, S-2.08→v1.3, S-2.09→v1.5, S-2.10→v1.6, S-6.01→v1.3. §Conventions note updated: verbatim-H1 is now enforced for story BC-table title cells corpus-wide (D-353; replaces former paraphrase convention). L-276 codified (3-part lesson). STORY-INDEX input-hash: 0bcc4f8 UNCHANGED (index inputs not modified). Census UNCHANGED: BC 140 / VP 21 / EC 143 / TV 795 canonical / stories 42 / pts 316 / ADR 30 / holdout 24 (must-pass 17/24=70.8%) / NFR 15."
   - "1.57 (round-77 fix-burst/D-352/2026-09-02): dependency-graph.md §Changelog (v1.7→v1.8) (story-writer; F-P2A249-01[MED] VP-017 BC anchor corrected BC-2.02.007→BC-2.02.007 + BC-2.02.008 per VP-INDEX §VP Catalog dual-anchor form; F-P2A249-02[MED] VP-006-B Additional-Stories corrected S-6.01→— per S-6.01 frontmatter verification_properties exclusion; full 21-row VP-to-Stories Matrix re-derived from VP-INDEX source-of-truth; clause tags synced on VP-015/VP-016/VP-018/VP-006-B). dependency-graph.md input-hash 2dd0b6f→36ce19e. STORY-INDEX input-hash: 0bcc4f8 UNCHANGED (index inputs not modified). Census UNCHANGED: BC 140 / VP 21 / EC 143 / TV 795 canonical / stories 42 / pts 316 / ADR 30 / holdout 24 (must-pass 17/24=70.8%) / NFR 15."
@@ -73,31 +74,32 @@ inputs:
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/domain-spec/L2-INDEX.md
   - .factory/specs/verification-properties/VP-INDEX.md
-input-hash: "0bcc4f8"
+input-hash: "5135b35"
 ---
 
 # STORY-INDEX: pregolya Phase 2 Story Inventory
 
-> **42 stories total — 28 Wave 1 / 12 Wave 2 / 1 Wave 6 / 1 Maint (S-MAINT-001 housekeeping, out-of-wave)**
-> **Product-story census: 41 (28 Wave 1 / 12 Wave 2 / 1 Wave 6). S-MAINT-001 is maintenance, not a product feature.**
-> **BC coverage: 140 BCs — 51 P0 / 86 P1 / 3 P2 — all covered**
+> **52 stories total — 28 Wave 1 / 12 Wave 2 / 10 Wave 3 / 1 Wave 6 / 1 Maint (S-MAINT-001 housekeeping, out-of-wave)**
+> **Product-story census: 51 (28 Wave 1 / 12 Wave 2 / 10 Wave 3 / 1 Wave 6). S-MAINT-001 is maintenance, not a product feature.**
+> **BC coverage: 148 BCs — 51 P0 / 94 P1 / 3 P2 — all covered**
 > **Story files:** Individual STORY-NNN specs live in `.factory/stories/stories/`
 
 ## Census
 
 | Metric | Count |
 |--------|-------|
-| Total Story Files | 42 |
-| Product Stories | 41 |
+| Total Story Files | 52 |
+| Product Stories | 51 |
 | Wave 1 stories | 28 |
 | Wave 2 stories | 12 |
+| Wave 3 stories | 10 |
 | Wave 6 stories | 1 |
 | Maintenance Stories | 1 |
-| Product Epics | 22 |
+| Product Epics | 23 |
 | Maintenance Epics | 1 |
-| Total Epics | 23 |
-| BCs covered | 140 / 140 |
-| Stories with VP anchor | 15 |
+| Total Epics | 24 |
+| BCs covered | 148 / 148 |
+| Stories with VP anchor | 25 |
 | Stories with Red-Gate obligations | 10 |
 
 ## Story Inventory
@@ -224,6 +226,25 @@ input-hash: "0bcc4f8"
 | ID | Title | Behavioral Contracts | Subsystem | Target Crate | Pri | Pts | depends_on | Status |
 |----|-------|---------------------|-----------|-------------|-----|-----|------------|--------|
 | S-6.01 | Formal Verification Pipeline — Kani Harness Obligations and cargo-fuzz Targets | BC-2.17.001, BC-2.17.002 | SS-17 | xtask, pregolya-graph, pregolya-checkpoint, pregolya-sandbox, pregolya-core, pregolya-vectorstores, pregolya-prompts, pregolya-tools, fuzz | P2 | 8 | [S-1.16, S-1.10, S-1.09, S-2.01, S-2.03, S-1.23, S-1.25, S-1.05, S-2.09, S-2.05, S-1.22] | draft |
+
+---
+
+### Wave 3 — Developer Console (ROADMAP-ONLY — specced at Phase 1 / D-356; built in Wave 3)
+
+> All 10 Wave-3 stories target **pregolya-console** (crate #22; SS-24). Status: `roadmap` — not yet scheduled for implementation. No Wave-1/2 story depends on any S-console story.
+
+| ID | Title | Behavioral Contracts | Subsystem | Target Crate | Pri | Pts | depends_on | Status |
+|----|-------|---------------------|-----------|-------------|-----|-----|------------|--------|
+| S-console-01 | `pregolya-console` Crate Scaffolding | BC-2.24.001 | SS-24 | pregolya-console | P1 | 5 | [] | roadmap |
+| S-console-02 | `DebugSpanExporter` FIFO Ring Buffer | BC-2.24.001, BC-2.24.002 | SS-24 | pregolya-console | P1 | 5 | [S-console-01] | roadmap |
+| S-console-03 | `debug-endpoints` Cargo Feature and Trace-Read HTTP Endpoints | BC-2.24.002 | SS-24 | pregolya-console | P1 | 5 | [S-console-02] | roadmap |
+| S-console-04 | `graph::descriptor` Pure Core Module and `GET /assistants/{id}/graph` Endpoint | BC-2.24.003 | SS-24 | pregolya-console | P1 | 5 | [S-console-03] | roadmap |
+| S-console-05 | Web SPA Build Pipeline | BC-2.24.001 | SS-24 | pregolya-console | P1 | 8 | [S-console-01] | roadmap |
+| S-console-06 | Run Inspection Event Timeline and Live SSE Monitoring Panel | BC-2.24.004 | SS-24 | pregolya-console | P1 | 8 | [S-console-03, S-console-04, S-console-05] | roadmap |
+| S-console-07 | Checkpoint History Browser and Fork-from-Checkpoint Trajectory Replay | BC-2.24.005 | SS-24 | pregolya-console | P1 | 5 | [S-console-05] | roadmap |
+| S-console-08 | HITL Approval Dialog and Resume Dispatch | BC-2.24.006 | SS-24 | pregolya-console | P1 | 5 | [S-console-06] | roadmap |
+| S-console-09 | Token/Context Budget Monitoring Panel | BC-2.24.007 | SS-24 | pregolya-console | P1 | 5 | [S-console-06] | roadmap |
+| S-console-10 | Guardrail/Security Decision Review Panel | BC-2.24.008 | SS-24 | pregolya-console | P1 | 5 | [S-console-06] | roadmap |
 
 ---
 
@@ -525,6 +546,19 @@ input-hash: "0bcc4f8"
 | BC-2.23.005 | BashTool — Non-Lowerable Medium Risk Floor (VP-013) | S-1.22 | P1 |
 | BC-2.23.006 | GrepTool — In-Process Regex; Linear-Time DFA | S-1.22 | P1 |
 
+### SS-24 Developer Console (8 BCs — Wave 3 ROADMAP-ONLY)
+
+| BC ID | Title (abbreviated) | Story | Priority |
+|-------|---------------------|-------|---------|
+| BC-2.24.001 | `pregolya-console` Startup, Asset Serving, and `ConsoleConfig` | S-console-01, S-console-02, S-console-05 | P1 |
+| BC-2.24.002 | `DebugSpanExporter` Retention-Capped Ring Buffer and Trace-Read Debug Endpoints | S-console-02, S-console-03 | P1 |
+| BC-2.24.003 | Graph-Descriptor Structural Contract — `GET /assistants/{id}/graph` | S-console-04 | P1 |
+| BC-2.24.004 | Run Inspection Event Timeline and Live Monitoring Panel | S-console-06 | P1 |
+| BC-2.24.005 | Checkpoint History Browser and Fork-from-Checkpoint Trajectory Replay | S-console-07 | P1 |
+| BC-2.24.006 | HITL Approval Dialog and Resume Dispatch | S-console-08 | P1 |
+| BC-2.24.007 | Token/Context Budget Monitoring Panel | S-console-09 | P1 |
+| BC-2.24.008 | Guardrail/Security Decision Review Panel | S-console-10 | P1 |
+
 ---
 
 ## VP to Story Anchor Map
@@ -552,3 +586,22 @@ input-hash: "0bcc4f8"
 | VP-018 | BC-2.04.011 {INV-001} | S-2.12 | P1 | pregolya-checkpoint |
 | VP-019 | BC-2.04.011 {INV-003} | S-2.12 | P1 | pregolya-checkpoint |
 | VP-020 | BC-2.02.009 {INV-001}+{INV-002} | S-1.28 | P1 | pregolya-graph |
+| VP-2.24.001-A | BC-2.24.001 | S-console-01 | P1 | pregolya-console |
+| VP-2.24.001-B | BC-2.24.001 | S-console-01 | P1 | pregolya-console |
+| VP-2.24.001-C | BC-2.24.001 | S-console-01 | P1 | pregolya-console |
+| VP-2.24.002-A | BC-2.24.002 | S-console-02 | P1 | pregolya-console |
+| VP-2.24.002-B | BC-2.24.002 | S-console-02 | P1 | pregolya-console |
+| VP-2.24.002-C | BC-2.24.002 | S-console-03 | P1 | pregolya-console |
+| VP-2.24.003-A | BC-2.24.003 | S-console-04 | P1 | pregolya-console |
+| VP-2.24.003-B | BC-2.24.003 | S-console-04 | P1 | pregolya-console |
+| VP-2.24.003-C | BC-2.24.003 | S-console-04 | P1 | pregolya-console |
+| VP-2.24.004-A | BC-2.24.004 | S-console-06 | P1 | pregolya-console |
+| VP-2.24.004-B | BC-2.24.004 | S-console-06 | P1 | pregolya-console |
+| VP-2.24.005-A | BC-2.24.005 | S-console-07 | P1 | pregolya-console |
+| VP-2.24.005-B | BC-2.24.005 | S-console-07 | P1 | pregolya-console |
+| VP-2.24.006-A | BC-2.24.006 | S-console-08 | P1 | pregolya-console |
+| VP-2.24.006-B | BC-2.24.006 | S-console-08 | P1 | pregolya-console |
+| VP-2.24.007-A | BC-2.24.007 | S-console-09 | P1 | pregolya-console |
+| VP-2.24.007-B | BC-2.24.007 | S-console-09 | P1 | pregolya-console |
+| VP-2.24.008-A | BC-2.24.008 | S-console-10 | P1 | pregolya-console |
+| VP-2.24.008-B | BC-2.24.008 | S-console-10 | P1 | pregolya-console |

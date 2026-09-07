@@ -1,9 +1,9 @@
 ---
 document_type: dependency-graph
-version: "1.8"
+version: "1.9"
 status: active
 producer: story-writer
-timestamp: 2026-09-01T00:00:00Z
+timestamp: 2026-09-06T00:00:00Z
 phase: 2
 traces_to: .factory/stories/STORY-INDEX.md
 ---
@@ -12,6 +12,12 @@ traces_to: .factory/stories/STORY-INDEX.md
 
 > **Acyclicity validation:** Topological sort completed. Graph is a DAG.
 > No story has a circular dependency.
+>
+> **D-356 delta (2026-09-06):** 10 Wave-3 roadmap stories (S-console-01..10) added.
+> Zero-cycle finding confirmed for the augmented graph: S-console stories have no
+> edges into Wave-1/2 nodes, and Wave-1/2 nodes have no `depends_on` edges into
+> S-console nodes. The S-console sub-graph is itself a DAG (topological sub-waves A–F
+> below). The full augmented graph remains a DAG.
 
 ## Inter-Story Dependency DAG
 
@@ -233,6 +239,55 @@ S-2.12 (Durable Audit Trajectory)
   blocks: [none in v1 stories]
 ```
 
+### Wave 3 — Developer Console (E-console, Roadmap — not built this cycle)
+
+> **D-356 dev-console scope expansion (2026-09-06, story-writer).**
+> These stories are specced now (Wave 3 roadmap) but built in a later cycle.
+> No Wave-1/2 story has a `depends_on` edge into any S-console story;
+> no S-console story blocks any Wave-1/2 story. The S-console sub-graph is a DAG.
+
+```
+S-console-01 (pregolya-console scaffold — ConsoleConfig, Axum bind, SPA embed)
+  depends_on: []
+  blocks: S-console-02, S-console-05
+
+S-console-02 (DebugSpanExporter ring buffer + dev-mode wiring)
+  depends_on: [S-console-01]
+  blocks: S-console-03
+
+S-console-03 (debug-endpoints Cargo feature — trace-read HTTP endpoints)
+  depends_on: [S-console-02]
+  blocks: S-console-04, S-console-06
+
+S-console-04 (graph-descriptor endpoint — compile_graph_descriptor Pure Core)
+  depends_on: [S-console-03]
+  blocks: S-console-06
+
+S-console-05 (SPA build pipeline — rust_embed, native EventSource, <500KB gzip)
+  depends_on: [S-console-01]
+  blocks: S-console-06, S-console-07
+
+S-console-06 (run inspection panel — 16 StreamEvent variants, SSE EventSource)
+  depends_on: [S-console-03, S-console-04, S-console-05]
+  blocks: S-console-08, S-console-09, S-console-10
+
+S-console-07 (checkpoint history panel — timeline, fork-from-checkpoint)
+  depends_on: [S-console-05]
+  blocks: []
+
+S-console-08 (HITL resume panel — PreToolDecision, FIFO DI-003)
+  depends_on: [S-console-06]
+  blocks: []
+
+S-console-09 (token budget panel — compaction markers, EvidenceJournal)
+  depends_on: [S-console-06]
+  blocks: []
+
+S-console-10 (guardrail review panel — Fail/Transform, F-P99-01 DI-012)
+  depends_on: [S-console-06]
+  blocks: []
+```
+
 ### Crate-Level Dependency Edges
 
 > Runtime crate dependencies introduced by story decisions that add cross-crate build edges.
@@ -241,10 +296,14 @@ S-2.12 (Durable Audit Trajectory)
 | From Crate | To Crate | Rationale | ADR / BC Source |
 |-----------|----------|-----------|----------------|
 | `pregolya-mcp` | `pregolya-graph` | `GraphAgentTool` wraps `Arc<CompiledStateGraph>` (non-generic; `from_graph` is a non-generic constructor) — introduced by BC-2.09.008 and formalized in ADR-029 §Consequences. The `mcp::graph_tool` module depends on `CompiledStateGraph` and `GraphRunner` types from `pregolya-graph`. | ADR-029 §Consequences, BC-2.02.001 {PC-001}, BC-2.09.008 {PC-001} |
+| `pregolya-console` | `pregolya-server` | Console binary co-launches `pregolya-server` in dev mode (ADR-031 Decision 1); `ConsoleConfig.server_config` passes `ServerConfig` across the crate boundary. The `debug-endpoints` Cargo feature on `pregolya-server` is activated by the console's dev-mode launch. | ADR-031 §Decision 1, BC-2.24.001 {PC-004}, BC-2.24.002 {PC-003} |
 
 > **DAG-acyclicity confirmation:** Adding `pregolya-mcp → pregolya-graph` does not create a
 > cycle. `pregolya-graph` has no dependency on `pregolya-mcp` (one-directional). At the story
 > level, S-1.14 (Wave 1 batch 1d) is upstream of S-2.11 (Wave 2 batch 2d) — no cycle.
+> Adding `pregolya-console → pregolya-server` does not create a cycle: `pregolya-server` has
+> no build dependency on `pregolya-console` (console is the binary consumer, server is the
+> library). S-console-01 is the root of the E-console sub-graph with no Wave-1/2 edges.
 > Topological sort assertion continues to hold: Graph is a DAG.
 
 ### Wave 6 — Formal Verification (E-22)
@@ -292,6 +351,22 @@ S-6.01 (Kani + cargo-fuzz)
 |-------|---------|-----------|
 | 6a | S-6.01 | Terminal node; all Wave 1+2 merged |
 
+### Wave 3 — Developer Console Topological Batches (Roadmap — not built this cycle)
+
+> **D-356 dev-console scope expansion (2026-09-06, story-writer).**
+> Topological sub-waves A–F derived from the S-console DAG above.
+> Stories in the same sub-wave have no inter-story dependencies and can be
+> dispatched in parallel when Wave 3 is activated.
+
+| Sub-Wave | Stories | Rationale |
+|----------|---------|-----------|
+| 3A | S-console-01 | Root: no dependencies |
+| 3B | S-console-02, S-console-05 | Both depend only on S-console-01 (3A); no intra-batch edges |
+| 3C | S-console-03, S-console-07 | S-console-03 dep S-console-02 (3B); S-console-07 dep S-console-05 (3B); no intra-batch edges |
+| 3D | S-console-04 | Dep S-console-03 (3C) |
+| 3E | S-console-06 | Dep S-console-03 (3C) + S-console-04 (3D) + S-console-05 (3B); all satisfied by 3B–3D |
+| 3F | S-console-08, S-console-09, S-console-10 | All dep S-console-06 (3E); no intra-batch edges |
+
 ---
 
 ## Traceability Matrices
@@ -325,6 +400,13 @@ S-6.01 (Kani + cargo-fuzz)
 | SS-21 VectorStore | BC-2.21.001–004 | S-2.03 | Full |
 | SS-22 Embeddings | BC-2.22.001–003 | S-2.09 | Full |
 | SS-23 Tools | BC-2.23.001–006 | S-1.21, S-1.22 | Full |
+| SS-24 Developer Console | BC-2.24.001–008 | S-console-01 (BC-2.24.001), S-console-02 (BC-2.24.001+002), S-console-03 (BC-2.24.002), S-console-04 (BC-2.24.003), S-console-05 (BC-2.24.001), S-console-06 (BC-2.24.004), S-console-07 (BC-2.24.005), S-console-08 (BC-2.24.006), S-console-09 (BC-2.24.007), S-console-10 (BC-2.24.008) | Full (Wave 3 roadmap) |
+
+> **D-356 dev-console scope expansion (2026-09-06, story-writer).** SS-24 row added.
+> Wave-3 roadmap stories; coverage is full at the spec level (all 8 BCs anchored).
+> Count delta: +8 BCs (BC-2.24.001–008), +10 stories (S-console-01..10);
+> census header update (140 BCs / 41 stories → 148 BCs / 52 stories) is pending
+> state-manager STATE.md sync.
 
 ### VP to Stories Matrix
 
@@ -351,6 +433,29 @@ S-6.01 (Kani + cargo-fuzz)
 | VP-019 | BC-2.04.011 {INV-003} | integration | 6 | P1 | S-2.12 | — |
 | VP-020 | BC-2.02.009 {INV-001}+{INV-002} | proptest | 3 | P1 | S-1.28 | — |
 | VP-006-B | BC-2.18.004 {PC-005} | proptest | 3 | P1 | S-2.05 | — |
+| VP-2.24.001-A | BC-2.24.001 {PC-001} | unit | 3 | P1 | S-console-01 | — |
+| VP-2.24.001-B | BC-2.24.001 {PC-004} | integration | 3 | P1 | S-console-02 | — |
+| VP-2.24.001-C | BC-2.24.001 {INV-001} | unit | 3 | P1 | S-console-01 | — |
+| VP-2.24.002-A | BC-2.24.002 {PC-002} | unit | 3 | P1 | S-console-02 | — |
+| VP-2.24.002-B | BC-2.24.002 {PC-003} | integration | 3 | P1 | S-console-03 | — |
+| VP-2.24.002-C | BC-2.24.002 {INV-002} | unit | 3 | P1 | S-console-02 | — |
+| VP-2.24.003-A | BC-2.24.003 {PC-002} | unit | 3 | P1 | S-console-04 | — |
+| VP-2.24.003-B | BC-2.24.003 {PC-003} | integration | 3 | P1 | S-console-04 | — |
+| VP-2.24.003-C | BC-2.24.003 {INV-001} | unit | 3 | P1 | S-console-04 | — |
+| VP-2.24.004-A | BC-2.24.004 {PC-001} | integration | 3 | P1 | S-console-06 | — |
+| VP-2.24.004-B | BC-2.24.004 {INV-002} | unit | 3 | P1 | S-console-06 | — |
+| VP-2.24.005-A | BC-2.24.005 {PC-001} | integration | 3 | P1 | S-console-07 | — |
+| VP-2.24.005-B | BC-2.24.005 {INV-002} | unit | 3 | P1 | S-console-07 | — |
+| VP-2.24.006-A | BC-2.24.006 {PC-001} | integration | 3 | P1 | S-console-08 | — |
+| VP-2.24.006-B | BC-2.24.006 {INV-001} | unit | 3 | P1 | S-console-08 | — |
+| VP-2.24.007-A | BC-2.24.007 {PC-001} | integration | 3 | P1 | S-console-09 | — |
+| VP-2.24.007-B | BC-2.24.007 {INV-003} | unit | 3 | P1 | S-console-09 | — |
+| VP-2.24.008-A | BC-2.24.008 {PC-001} | integration | 3 | P1 | S-console-10 | — |
+| VP-2.24.008-B | BC-2.24.008 {INV-001} | unit | 3 | P1 | S-console-10 | — |
+
+> **D-356 dev-console scope expansion (2026-09-06, story-writer).** VP-2.24.001-A/B/C
+> through VP-2.24.008-A/B added (20 new VPs for SS-24). All P1 priority, Phase 3 target.
+> VP-INDEX sync pending state-manager.
 
 ### NFR to Stories Matrix
 
@@ -434,6 +539,7 @@ S-6.01 (Kani + cargo-fuzz)
 
 ## Changelog
 
+- **1.9 (D-356/2026-09-06):** Wave-3 developer console roadmap cluster integrated. New DAG section: 10 S-console-01..10 stories with 9 dependency edges and zero inter-wave edges to Wave-1/2/6 nodes. Crate-Level Dependency Edges: `pregolya-console → pregolya-server` row added (ADR-031 §Decision 1; BC-2.24.001 {PC-004}, BC-2.24.002 {PC-003}). Topological sort: Wave-3 sub-waves 3A–3F added (parallel batches within E-console). BC-to-Stories Matrix: SS-24 row added covering BC-2.24.001–008 across 10 stories (full spec coverage). VP-to-Stories Matrix: 20 new VP-2.24 rows added (VP-2.24.001-A/B/C through VP-2.24.008-A/B; all P1, Phase 3). DAG acyclicity confirmed: S-console sub-graph is a DAG; no cross-wave edges introduced; full augmented graph remains a DAG. Census delta (state-manager to propagate): +8 BCs, +10 stories, +1 epic.
 - **1.8 (round-77/F-P2A249-01+F-P2A249-02/2026-09-02):** Full VP-to-Stories Matrix re-derivation from source-of-truth (VP-INDEX.md §VP Catalog BC-Anchor column + STORY-INDEX §VP-to-Story Anchor Map + S-6.01 frontmatter `verification_properties`). (F-P2A249-01 MED) VP-017 BC anchor corrected `BC-2.02.007` → `BC-2.02.007 + BC-2.02.008` (dual anchor; VP-INDEX §VP Catalog VP-017 row, VP-017 body frontmatter `bc_anchor`, and STORY-INDEX §VP-to-Story Anchor Map all confirm dual form). (F-P2A249-02 MED) VP-006-B Additional-Stories corrected `S-6.01` → `—` (S-6.01 frontmatter `verification_properties: [VP-001...VP-014]` does not include VP-006-B; sibling Phase-3 proptests VP-016/017/018/020 all show `—` consistently). Clause tags synced to VP-INDEX exact BC-Anchor form in four additional rows: VP-015 `BC-2.09.007` → `BC-2.09.007 {INV-003}`; VP-016 `BC-2.09.008` → `BC-2.09.008 {INV-001}`; VP-018 `BC-2.04.011` → `BC-2.04.011 {INV-001}`; VP-006-B `BC-2.18.004` → `BC-2.18.004 {PC-005}`. All other 15 rows confirmed correct (no additional drift). Total changes: 6 cells across 5 rows.
 - **1.7 (round-62/D-340/2026-09-01):** VP-020 row added to VP-to-Stories Matrix (BC-2.02.009 {INV-001}+{INV-002} / proptest / 3 / P1 / S-1.28 / —); matrix now enumerates all 21 VPs. Version bump for census parity with VP-INDEX §VP-020.
 - **1.6 (round-60/F-P2A232-03+F-P2A232-04/2026-09-01):** (F-P2A232-03) S-1.10 `blocks:` extended to include S-2.12 — reverse-edge fix for S-2.12 `depends_on: [S-1.10]` asymmetry (sibling of v1.5 S-1.14→S-1.28 fix). Full DAG reverse-edge sweep performed: all other `depends_on`↔`blocks` pairs confirmed symmetric; no additional asymmetries found. (F-P2A232-04) VP-to-Stories Matrix: VP-019 row added (`BC-2.04.011 {INV-003} | integration | 6 | P1 | S-2.12 | —`) to match VP-INDEX source of truth; matrix now enumerates all 20 VPs. DAG acyclicity unaffected.

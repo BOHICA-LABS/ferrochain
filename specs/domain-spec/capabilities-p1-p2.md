@@ -2,10 +2,10 @@
 document_type: domain-spec-section
 level: L2
 section: capabilities-p1-p2
-version: "1.31"
+version: "1.32"
 status: active
 producer: business-analyst
-timestamp: 2026-08-21T00:00:00Z
+timestamp: 2026-09-06T00:00:00Z
 phase: 1b
 inputs:
   - .factory/specs/product-brief.md
@@ -13,10 +13,12 @@ inputs:
   - .factory/planning/holdout-domains/domain-c-openclaw.md
   - .factory/planning/holdout-domains/domain-d-hermes-agent.md
   - .factory/planning/holdout-domains/domain-e-agentic-coding-assistant.md
-input-hash: "faffcd7"
+  - .factory/planning/devconsole-adk-research.md
+input-hash: "77a1533"
 traces_to: L2-INDEX.md
-decisions: [D1, D3, D7, D8, D13, D17, D19, D20, D21, D23, D170, D275]
+decisions: [D1, D3, D7, D8, D13, D17, D19, D20, D21, D23, D170, D275, D356]
 changelog:
+  - "1.32 (D-356/2026-09-06, business-analyst): D-356 dev-console scope expansion — new section 'P1 — Developer Console (D-356, Wave 3)' added with CAP-041 through CAP-047 (all P1), and 'P2 — Deferred Dev Console Capability' with CAP-048 (DEFERRED). CAP count 40→48. Research memo (.factory/planning/devconsole-adk-research.md) added to inputs. D356 added to decisions list. Roadmap-only delta: no existing capabilities modified."
   - "1.31 (round-57/F-P2A228-02/2026-09-01): CAP-040 §PromoteRetireChannel body: stale DI-014 parenthetical corrected to DI-001 — pure infallible Vec<T> reducer determinism (BSP reducer determinism = DI-001). Consistent with §Authored BCs footer BC-2.02.009 anchor (DI-001) already fixed in round-55. POL-24 sibling sweep: sole stale DI-014 in PromoteRetireChannel/LedgerChannel/BC-2.02.007/BC-2.02.009 context; no additional stale citations found. Neighboring TrajectoryWriter DI-014 (§error-propagation bullet, §Authored BCs BC-2.04.009/BC-2.04.010/BC-2.04.011) retained — legitimately fallible Result-returning operations."
   - "1.30 (round-55/F-P2A225-01/2026-09-01): CAP-040 §Authored BCs: DI-014 removed from BC-2.02.007 and BC-2.02.009 per architect ADR-030 §VP ruling — both reducers are pure infallible Vec<T> functions; DI-014 inapplicable; DI-001 is the correct anchor. BC-2.02.007: DI-014/DI-001 → DI-001; BC-2.02.009: DI-014/DI-001 → DI-001."
   - "1.29 (Round-25/F-P2A108-02-blast-radius/2026-08-28): F-P2A108-02 notation fix — CAP-039 body: doubled non-resolving notation `pregolya-core::core::runnable` → canonical parenthetical `pregolya-core (core::runnable)` per ADR-023 normalization. Sibling sweep: zero other doubled `<crate>::<shorthand>::<module>` occurrences in live body. TD-VSDD-091: citation by symbol/module-path only."
@@ -939,3 +941,265 @@ security/safety proofs confirmed by architect P0-intent ruling (burst-241 F-P141
 brief's success criteria include VP coverage as a gate metric.
 **Note on phase placement:** VP deliverables belong to Phase 6 (formal hardening). The
 behavioral invariants they prove (DI-001, DI-005, DI-007, DI-014) are Phase-1 BC scope.
+
+---
+
+## P1 — Developer Console (D-356, Wave 3)
+
+> **D-356 dev-console scope expansion (2026-09-06, business-analyst).** Append-only delta.
+> All capabilities below are ROADMAP-ONLY: spec and storyboard now, build in Wave 3 (or later).
+> No existing capabilities above are modified. The console is a CONSUMER of the existing
+> pregolya-server wire contract (REST+SSE, CAP-007 StreamEvent taxonomy, CAP-005/CAP-006
+> checkpoint/HITL substrate) — not a peer of the engine. Net-new server additions are minimal
+> and feature-gated. The web SPA is the dominant new effort and the natural Wave 3 anchor.
+> Actor: developer-operator (see entities-server.md §Actors / Roles (D-356)).
+> Reference implementations: adk-rust `adk-server` (devconsole-adk-research.md §2.2);
+> LangGraph Studio (devconsole-adk-research.md §3).
+
+### CAP-041: Developer Console Composition Layer (`pregolya-console` Crate)
+
+Provide a `pregolya-console` binary crate that embeds the compiled web SPA via `rust_embed`,
+serves it over a configurable local address (default `127.0.0.1:7437`), and injects a
+`runtime-config.json` pointing at the pregolya-server `/api` prefix. In dev mode
+(`pregolya console --dev`), optionally co-launches an in-process `pregolya-server` instance
+so that `pregolya console` starts both server and UI in a single command. The composition
+layer hosts the in-memory span exporter (`DebugSpanExporter`) that the debug trace endpoints
+(CAP-042) read from.
+
+The console is architecturally a client: it drives runs via `POST /threads/{id}/runs`,
+streams events via `GET .../runs/{run_id}/stream` (BC-2.12.007), reads history via
+`GET /threads/{id}/history` (BC-2.12.001), and submits approvals via
+`POST .../resume` (BC-2.05.004). It never reaches into engine internals.
+
+**Grounding:** research memo §4.3 "pregolya-console (new binary crate)" component boundary;
+§2.2 adk-rust `web_ui.rs` architecture (rust_embed + runtime-config.json pattern).
+**Anchor justification:** CAP-041 covers the composition layer because without it none of the
+developer-operator's workflows (CAP-043 through CAP-047) have a launch vehicle. It is the
+foundation of the console surface, grounded in the research memo's recommended split and the
+adk-rust architecture reference. Distinct from `pregolya-server` (headless) and the web SPA
+(frontend build artifact).
+**Trace anchors:** existing pregolya-server REST+SSE wire contract (api-surface.md);
+CAP-007 (StreamEvent taxonomy consumed as-is); CAP-005 (checkpoint history via /threads history endpoint); CAP-006 (HITL resume endpoint).
+**Priority:** P1. **Wave:** 3.
+
+---
+
+### CAP-042: Debug Infrastructure Endpoints (Feature-Gated)
+
+Provide two new read-only debug endpoints on `pregolya-server`, compiled in only when the
+`debug-endpoints` Cargo feature is enabled (production deployments compile them out):
+
+1. **Trace/span read endpoints:**
+   - `GET /debug/trace/session/{session_id}` — returns ordered span list for a session.
+   - `GET /debug/trace/{event_id}` — returns span attributes for a single event.
+   An in-memory `DebugSpanExporter` (hosted in `pregolya-console`, injected into the server
+   as a configured span exporter) retains spans in a retention-capped ring buffer. The
+   adk-rust `convert_to_span_data()` → `Trace.ts` SpanData shape is the UX model
+   (devconsole-adk-research.md §2.2 table row 5).
+
+2. **Graph descriptor endpoint:**
+   `GET /assistants/{id}/graph` — emits the compiled `StateGraph` for the named assistant as
+   a JSON node/edge document plus optional Graphviz DOT source (`dotSrc: String`). Each node
+   entry carries its name and kind; each edge entry carries source, target, and optional
+   condition label. The graph descriptor is a static structural snapshot; it does NOT carry
+   runtime state. These endpoints are library-consumer-useful beyond the console (CI trace
+   inspection, tooling) and therefore belong in `pregolya-server` (not in `pregolya-console`).
+
+**Grounding:** research memo §4.2 gap items "Trace/span endpoints + OTel exporter wiring" and
+"Graph/DAG visualization"; §4.3 "add only the *data* endpoints the console needs that are
+genuinely server-tier." adk-rust `debug.rs` controller is the reference for the trace shape.
+**Anchor justification:** CAP-042 is separated from CAP-041 because the trace/span and
+graph-descriptor endpoints live in `pregolya-server` (not the composition layer) and are
+independently useful to tooling consumers beyond the browser UI. They are gated behind a
+Cargo feature for production safety.
+**Trace anchors:** CAP-003 (StateGraph definition — source of graph descriptor data);
+CAP-007 (StreamEvent taxonomy — spans align with event phases run_start/node_start/etc.);
+existing `tracing` subsystem and Canonical Structured Event Catalog.
+**Priority:** P1. **Wave:** 3.
+
+---
+
+### CAP-043: Run Inspection and Live Monitoring Panel
+
+The console renders a sorted event timeline for any `run_id`: a list of StreamEvents ordered
+by emission sequence, each expandable to show phase-specific payloads — for `node_start/end`:
+input/output state diff; for `tool_start/end`: args and result; for `guardrail_decision`:
+boundary, severity, outcome, reason; for `compaction_event`: which messages were summarized
+and token reclaim. Span latency detail (CAP-042 trace data) is accessible per event.
+
+For **live runs**: subscribes to `GET /threads/{id}/runs/{run_id}/stream` (BC-2.12.007, SSE)
+and renders events in real time. Drives live node highlighting on the StateGraph DAG
+visualization (CAP-042 graph descriptor) by matching incoming `node_start` and `node_end`
+StreamEvents to descriptor nodes by name. Token-level streaming (`run_stream`/`node_stream`)
+is displayed inline as the model generates.
+
+The console is a pure SSE+REST client for this capability — no new server engine additions.
+
+**Grounding:** research memo §5 workflows "Inspect a run" (P2) and "Watch a live run"
+(P1, P2); §1 table rows 1, 4 (interactive run + event inspection); §4.1 "pregolya's backend
+is already a superset" for run/session/event data.
+**Anchor justification:** CAP-043 is the primary value-delivery capability for developer-
+operator personas P1 and P2. It reuses the full existing StreamEvent grammar (CAP-007) and
+the SSE endpoint (BC-2.12.007) without modification — the console adds only the frontend
+presentation surface. Covers both the "inspect completed run" and "watch live run" workflows.
+**Trace anchors:** CAP-007 (all 16 StreamEvent variants consumed and rendered);
+CAP-003 (StateGraph nodes matched by name for live highlighting);
+existing SSE endpoint BC-2.12.007; CAP-042 (span detail per event).
+**Priority:** P1. **Wave:** 3.
+
+---
+
+### CAP-044: Checkpoint History Browser and Trajectory Replay
+
+The console presents a thread's checkpoint history as a browsable ordered timeline: each
+entry shows its `step_idx` (logical clock position per DI-004), a summary of which node
+executed, and a delta of state changes applied. Selecting an entry calls
+`GET /threads/{id}/state?checkpoint_id=<id>` to show the full state snapshot at that point.
+
+**Trajectory replay (fork-from-checkpoint):** from any historical checkpoint, the operator
+can fork a new Run starting from that checkpoint to explore alternative execution paths.
+Forking creates a new Run via `POST /threads/{id}/runs` with the selected checkpoint as
+starting state — reusing the standard run-creation path; no new server machinery.
+
+All data plane operations use existing endpoints: `GET /threads/{id}/history` (BC-2.12.001,
+newest-first, `?limit=N`) and `GET /threads/{id}/state` (latest checkpoint with checkpoint
+history). The console adds only the frontend presentation layer.
+
+**Grounding:** research memo §3 "Time-travel/replay is a checkpointer feature, not a UI
+feature. The console is a thin read/resume client over a durable checkpoint + event history";
+§4.1 "Time-travel / replay substrate" (already present); §5 workflow "Replay a trajectory"
+(P3 persona). LangGraph Studio "Checkpoint / state inspection + Time-travel / replay"
+feature is the UX reference (devconsole-adk-research.md §3).
+**Anchor justification:** CAP-044 is grounded in the research memo's explicit finding that the
+checkpoint-history substrate is already present and makes time-travel a presentation problem,
+not an engine problem. The developer-operator's need to explore "what if this node had
+produced X" is the forcing function; the checkpoint history API is the enabler.
+**Trace anchors:** CAP-005 (three-tier checkpointing — the checkpoint history substrate,
+DI-002/DI-004); CAP-006 (HITL resume machinery — reused for forking from checkpoint);
+existing Thread history endpoint BC-2.12.001.
+**Priority:** P1. **Wave:** 3.
+
+---
+
+### CAP-045: HITL Console Resume (Operator Approval Dialog)
+
+The console detects Runs in `interrupted` status and surfaces the pending approval(s) to
+the developer-operator via an interactive approval dialog. The dialog shows:
+- For node-boundary interrupts (CAP-006 `interrupt()` machinery): the interrupt's
+  `scratchpad` value and node name.
+- For per-tool-call interrupts (CAP-034 `PendingHumanApproval`): the `ToolCallPreview`
+  (tool name, args as JSON, ActionRisk) carried in the `tool_approval_request` StreamEvent.
+
+The operator selects Approve, Deny (with reason text), or Edit (modify args inline). The
+console maps the selection to the appropriate `Command` struct fields and sends
+`POST /threads/{id}/runs/{run_id}/resume` (BC-2.05.004). Multi-interrupt queues are surfaced
+in FIFO arrival order per DI-003. After resume, the console subscribes to the new run stream
+to continue live monitoring (CAP-043).
+
+All operations use existing endpoints; no new server machinery. The console is the first
+human-facing UI that makes the HITL mechanics previously accessible only programmatically
+available interactively.
+
+**Grounding:** research memo §5 workflow "Resume HITL" (P3 persona); §4.1 "HITL resume"
+already in api-surface.md (BC-2.05.004); LangGraph Studio "Interrupts / HITL" feature.
+**Anchor justification:** CAP-045 covers the HITL approval UI because the developer-operator
+persona (P3 — Trajectory Replayer / HITL Operator) is specifically grounded in the D-356
+research. The console does not extend HITL mechanics; it provides a human-operable UI surface
+over the existing POST resume endpoint.
+**Trace anchors:** CAP-006 (HITL interrupt/resume machinery — console drives existing resume endpoint);
+CAP-034 (PreToolCallHook/PreToolDecision — tool approval request events and decision mapping);
+CAP-007 (`tool_approval_request` and `tool_approval_resolved` StreamEvent variants);
+BC-2.05.004 (POST resume endpoint); DI-003 (FIFO resume delivery).
+**Priority:** P1. **Wave:** 3.
+
+---
+
+### CAP-046: Token/Context Budget Monitoring Panel
+
+The console provides a live context-window gauge panel for running or completed runs. The
+gauge is driven by `compaction_event` StreamEvents (CAP-035, 15th variant): the
+`tokens_remaining_after` and `summary_token_count` fields from the `compaction_event` payload
+fill a proportional indicator showing remaining context budget. On each compaction event, the
+panel annotates the event timeline (CAP-043) to mark the compaction boundary and which
+message range was summarized. For completed runs, the panel surfaces the full EvidenceJournal
+decision history (via the Run record's budget evaluation trace) including `PolicyDecision`
+values (Allow/Escalate/Deny) per evaluation point.
+
+No new server machinery is needed; the `compaction_event` variant is already part of the
+StreamEvent grammar and the EvidenceJournal is already a Run entity field.
+
+**Grounding:** research memo §5 workflow "Watch budget/compaction" (P4 persona); §1 table
+row 10 "Token usage / cost display"; §4.1 "Compaction observability: CompactionEvent variant
+with token-impact payload — enables live context-window viz."
+**Anchor justification:** CAP-046 is grounded in the research memo's explicit finding that the
+`CompactionEvent` variant (added by D23/CAP-035) already carries the data needed for a live
+context panel; the console only needs to consume and render it. The P4 developer-operator
+persona's need for budget visibility during long-running agent runs is the forcing function.
+**Trace anchors:** CAP-035 (`compaction_event` StreamEvent, `tokens_remaining_after`,
+`summary_token_count` payload fields); CAP-012 (budget governance — EvidenceJournal,
+PolicyDecision outcomes); CAP-007 (compaction_event as 15th StreamEvent variant).
+**Priority:** P1. **Wave:** 3.
+
+---
+
+### CAP-047: Guardrail/Security Decision Review Panel
+
+The console provides a dedicated security event feed that isolates all `guardrail_decision`
+StreamEvents from a run, surfacing them in a dedicated panel. Each entry shows:
+- `boundary_type`: ToolResult | RAGRetrieval | MemoryIngress (ProvenanceTag field)
+- `GuardrailSeverity`: Critical | High | Medium | Low
+- Outcome: `Fail { reason }` or `Transform` (Pass decisions are NOT shown — they are
+  not streamed per the existing design: "Pass is not streamed", CAP-007, F-P99-01)
+- For `Fail`: the `reason` string from the GuardrailHook result
+
+The feed updates in real time for live runs (via SSE subscription, CAP-043) and reconstructs
+from stored events for completed runs. The Domain A SOC analyst use case (guardrail visibility
+during untrusted-tool-result ingestion) is served by this panel — the same content drives
+both the interactive local-debug workflow and the broader security audit requirement.
+
+No new server machinery needed; `guardrail_decision` events are already emitted.
+
+**Grounding:** research memo §5 workflow "Watch guardrails" (P5 persona); domain-a-soc-analyst
+forcing function (CAP-013 D17-Q8 — real-time guardrail visibility for prompt-injection
+isolation); §4.1 "guardrail observability: GuardrailDecision StreamEvent variant — richer
+than ADK's trace-only model."
+**Anchor justification:** CAP-047 is grounded in the research memo's explicit finding that
+`GuardrailDecision` events are already emitted and richer than the reference implementation's
+trace-only model. The P5 developer-operator persona and the Domain A SOC forcing function
+together justify a dedicated panel.
+**Trace anchors:** CAP-013 (content provenance tagging and guardrail-on-ingress — source
+of the events this panel surfaces); CAP-007 (`guardrail_decision` StreamEvent variant, Fail/Transform
+only per F-P99-01); DI-012 (no guardrail bypass — all qualifying events appear in the feed).
+**Priority:** P1. **Wave:** 3.
+
+---
+
+## P2 — Deferred Dev Console Capability (D-356)
+
+> **D-356 dev-console scope expansion (2026-09-06, business-analyst).** The following
+> capability is explicitly DEFERRED per the research memo finding that the reference
+> implementation (adk-rust) stubs this as `501 NOT_IMPLEMENTED` and pregolya has no eval
+> framework at v1.0.0. It is documented here for completeness so the deferred scope is visible
+> and traceable. It may be promoted to P1 when pregolya adds an eval surface.
+
+### CAP-048: [DEFERRED P2] Eval-Set Runner Console
+
+**Status: DEFERRED.** The console's eval tab would provide: create or import eval sets, run
+an eval set against a registered assistant, view a results table (latency, token usage,
+pass/fail per scenario), and diff two eval runs. Deferred because:
+- adk-rust stubs all eval console endpoints as `501 NOT_IMPLEMENTED`
+  (devconsole-adk-research.md §1 table row 7).
+- pregolya has no eval crate at v1.0.0; the LangGraph eval surface (LangSmith) is an
+  external dependency not in scope.
+- Promoting to P1 requires: (a) a pregolya eval framework surface (new crate or BC surface);
+  (b) eval-runner endpoints on `pregolya-server`; (c) results storage.
+When pregolya adds an eval surface, this CAP can be promoted from P2-DEFERRED to P1 and
+Wave 3+ stories authored.
+
+**Grounding:** research memo §4.2 "Eval runner + results viewer" gap item; §1 table row 7
+adk-rust `501 NOT_IMPLEMENTED`; §5 workflow "Compare eval results" (P6 — Eval Analyst persona).
+**Anchor justification:** CAP-048 is included (rather than omitted) because the P6 persona is
+explicitly documented in the research memo and the scope boundary must be visible. Marking it
+DEFERRED rather than absent avoids silent future scope creep.
+**Trace anchors:** None established at this point; depends on a future pregolya eval surface.
+**Priority:** P2 [DEFERRED]. **Wave:** TBD (post-Wave 3; gated on eval surface existence).
