@@ -1,11 +1,12 @@
 ---
 document_type: story-index
 level: L3
-version: "1.62"
+version: "1.63"
 status: active
 producer: state-manager
 timestamp: 2026-09-07T00:00:00Z
 changelog:
+  - "1.63 (D-356/DC-03 fix-burst/2026-09-07, state-manager): S-console-10 v1.1 (story-writer sibling-sweep corrections; F-PDC03-01/03/04 BC-2.24.008 updates propagated). BC-2.24.005 v1.1 (F-PDC03-02 fork mechanism). BC-2.12.003 v1.20 (supporting; E-CHKPT-011 registered). EC 143→145 (E-CHKPT-011 CheckpointNotFound + E-SERVER-023 gap fix). Census: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.62 (D-356/DC-02 fix-burst/2026-09-07, state-manager): F-PDC02-06 [LOW records] — v1.61 entry description corrected: 'LLM tool-call type list' → 'StreamEvent variant list' (those 16 are StreamEvent variants per BC-2.06.001 §PC-002, not LLM tool-call types). VP census updated: VPs 40→41 (VP-2.24.002-D registered by architect). Census: stories 52 / pts 372 / BCs 148 / VPs 41."
   - "1.61 (D-356/DC-01 fix-burst/2026-09-06, state-manager): STORY-S-console-06 v1.0→v1.1 (story-writer): AC-001 corrected to canonical 16-variant StreamEvent variant list (F-PDC01-04). Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 40."
   - "1.60 (D-356/2026-09-06): SS-24 Developer Console registered — Wave 3 ROADMAP-ONLY section added (10 stories: S-console-01..10; E-console epic; 56 pts; all P1; pregolya-console crate). BC-to-Story Coverage Map §SS-24 added (8 BCs: BC-2.24.001..008). VP-to-Story Anchor Map +19 rows (VP-2.24.001-A/B/C through VP-2.24.008-A/B). Census: stories 42→52 / pts 316→372 / BCs 140→148 / VPs 21→40 / product-epics 22→23 / total-epics 23→24 / stories-with-VP-anchor 15→25."

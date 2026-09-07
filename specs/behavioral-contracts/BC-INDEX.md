@@ -1,7 +1,7 @@
 ---
 document_type: bc-index
 level: L3
-version: "4.25"
+version: "4.26"
 status: active
 producer: state-manager
 timestamp: 2026-09-07T00:00:00Z
@@ -10,6 +10,7 @@ cycle: v1.0.0-greenfield
 input-hash: "[live-index]"
 traces_to: .factory/specs/prd.md
 changelog:
+  - "4.26 (D-356/DC-03 fix-burst/2026-09-07, state-manager): BC-2.24.008 v1.3 (F-PDC03-01 boundary_type→boundary/IngressBoundary/RagChunk/MemoryItem; F-PDC03-03 GuardrailSeverityWire; F-PDC03-04 two→three sites; TV-002/EC-003 severity=None-on-Transform). BC-2.24.005 v1.1 (F-PDC03-02 fork mechanism now cites config.configurable.checkpoint_id; PC-005 wording). BC-2.12.003 v1.20 (E-CHKPT-002 collision fix: code renamed E-CHKPT-011; E-CHKPT-002 is MonotonicClockRegression, already live; delta note + INV-009 + EC-008 + Traceability updated). S-console-10 v1.1 (story-writer sibling-sweep corrections). error-taxonomy.md v1.73: E-CHKPT-011 CheckpointNotFound registered (POLICY; HTTP 422; BC-2.12.003 {EC-008}; CHKPT namespace 10→11 live codes). EC 143→145 (two-gap propagation fix: E-SERVER-023 gap from v1.72 + E-CHKPT-011 new). Census: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24."
   - "4.25 (D-356/DC-02 fix-burst/2026-09-07, state-manager): F-PDC02-06 [LOW records] — v4.24 entry description corrected: 'LLM tool-call type list' → 'StreamEvent variant list' (those 16 are StreamEvent variants per BC-2.06.001 §PC-002, not LLM tool-call types). VP census updated: VP 40→41 (VP-2.24.002-D registered by architect). Census: BC 148 / VP 41 / EC 143 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24."
   - "4.24 (D-356/DC-01 fix-burst/2026-09-06, state-manager): 5 BC Story Anchors repointed (product-owner): BC-2.24.003→S-console-04, BC-2.24.004→S-console-06, BC-2.24.006→S-console-08, BC-2.24.007→S-console-09, BC-2.24.008→S-console-10. BC-2.24.004 PC-001 canonical 16-variant StreamEvent variant list corrected (adversary finding F-PDC01-04). All 5 BC files v1.0→v1.1. Census UNCHANGED: BC 148 / VP 40 / EC 143 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24."
   - "4.23 (D-356/2026-09-06): SS-24 Developer Console registered — 8 new BCs (BC-2.24.001..008; CAP-041..047 anchors; wave 3; draft; P1). BC-to-Story SS-24 section added. Summary: BC 140→148 (+8); P1 86→94 (+8); Subsection groups 23→24. VP-2.24.* seed anchors listed per VP-INDEX v1.41. Census: BC 148 / VP 40 / EC 143 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24."
@@ -388,6 +389,7 @@ _VP-004 and VP-005 are integration VPs (from BC-2.09.004/005); registered in VP-
 
 | Version | Date | Change | Source |
 |---------|------|--------|--------|
+| 4.26 | 2026-09-07 | D-356/DC-03 fix-burst: BC-2.24.008 v1.3 (F-PDC03-01 boundary field rename→IngressBoundary/RagChunk/MemoryItem; F-PDC03-03 GuardrailSeverityWire; F-PDC03-04 two→three sites). BC-2.24.005 v1.1 (F-PDC03-02 fork mechanism config.configurable.checkpoint_id). BC-2.12.003 v1.20 (E-CHKPT-002 collision fix→E-CHKPT-011; {INV-009}+EC-008+TV-014). S-console-10 v1.1. error-taxonomy.md v1.73 (E-CHKPT-011 registered; EC 143→145). Census: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24. | D-356/DC-03 fix-burst |
 | 4.25 | 2026-09-07 | D-356/DC-02 fix-burst: F-PDC02-06 [LOW records] — v4.24 entry description corrected: 'LLM tool-call type list' → 'StreamEvent variant list' (those 16 are StreamEvent variants per BC-2.06.001 §PC-002, not LLM tool-call types). VP census updated: VP 40→41 (VP-2.24.002-D registered by architect). Census: BC 148 / VP 41 / EC 143 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24. | D-356/DC-02 fix-burst |
 | 4.24 | 2026-09-06 | D-356/DC-01 fix-burst: 5 BC Story Anchors repointed (product-owner): BC-2.24.003→S-console-04, BC-2.24.004→S-console-06, BC-2.24.006→S-console-08, BC-2.24.007→S-console-09, BC-2.24.008→S-console-10. BC-2.24.004 PC-001 canonical 16-variant StreamEvent variant list corrected (F-PDC01-04). All 5 BC files v1.0→v1.1. Census UNCHANGED: BC 148 / VP 40 / EC 143 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24. | D-356/DC-01 fix-burst |
 | 4.23 | 2026-09-06 | D-356 dev-console scope expansion: SS-24 Developer Console registered — 8 new BCs (BC-2.24.001..008; all P1; CAP-041..047; DI-014; pregolya-console crate Wave 3 ROADMAP-ONLY). VP Seed BCs table +8 rows (VP-2.24.001-A/B/C + VP-2.24.002-A/B/C + VP-2.24.003-A/B/C + VP-2.24.004-A/B + VP-2.24.005-A/B + VP-2.24.006-A/B + VP-2.24.007-A/B + VP-2.24.008-A/B = 19 new VP entries; VP 21→40). Subsystem groups 23→24 (SS-24 added). Census: BC 140→148 (51 P0 / 94 P1 / 3 P2) / VP 21→40 / EC 143 / TV 795 / stories 42→52 / pts 316→372 / ADR 30→31 / holdout 24 / NFR 15. | D-356 |

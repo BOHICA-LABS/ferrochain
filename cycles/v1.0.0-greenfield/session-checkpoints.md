@@ -4508,3 +4508,19 @@ pregolya Phase-2 CONVERGED+gate-APPROVED (anchor 81d16ca); Phase-3 IN PROGRESS a
 ### DECISION-LOG DELTA (D-356/DC-01 fix-burst)
 D-356/DC-01 (2026-09-06): DC-01 adversary pass fix-burst CLOSED. trajectory-tail →5→0→0→0 (DC-01=5 findings [3H+1M+1L]; ALL CLOSED; DC-02 pending). PG-4: BC→Story reverse-direction hook. PG-5: POL-11 positive-coverage assertion for check-debug-endpoints-default. Census UNCHANGED: BC 148 / VP 40 / stories 52 / pts 372. Phase stays 3.
 
+
+---
+
+## Archived D-356/DC-02 Session Checkpoint (archived D-356/DC-03; 2026-09-07)
+
+### RESUME IN ONE BREATH
+pregolya Phase-2 CONVERGED+gate-APPROVED (anchor 81d16ca); Phase-3 IN PROGRESS at workspace-init. D-356 Phase-1 spec amendment COMPLETE (developer-console ROADMAP-ONLY; census: BC 148 / VP 41 / stories 52 / pts 372). D-356/DC-01+DC-02 fix-bursts COMPLETE: DC-01 5 findings closed (3H+1M+1L); DC-02 6 findings closed (2H+3M+1L) including paper-fix regression catch; input-hashes recomputed, PG-4/PG-5/PG-6 Drift entries added, L-278/L-279/L-280 codified. Streak 0/3 reset by DC-02 fix push; DC-03 adversary pass gates new HEAD. PR #1 (workspace scaffold) is REVIEWED-CLEAN + MERGEABLE at c9712c20 but BLOCKED from agent-merge (self-authored PR) — needs GENUINE HUMAN MERGE.
+
+### HEADS
+- develop: `bfe0592` — LOCAL ONLY (2 commits ahead of origin/develop at `644d1ad`; D-318+D-319 ops bursts); factory-artifacts: HEAD updated by DC-02 fix-burst commit. Main worktree on `chore/phase3-workspace-init`. PR #1: head `c9712c20` (OPEN, MERGEABLE, CI 17/17 green, cycle-13 APPROVE 0-blocking).
+
+### RESUME NEXT-ACTION
+(1) Dispatch DC-03 adversary pass; (2) re-run merge-classifier research; (3) human-merge PR #1; (4) Post-merge: S-1.01 (PregolyaError). Standing directives DIRECTIVE 1/2/3/4. 7 open convergence-close deferrals (C-1/PG-1/PG-2/PG-3/PG-4/PG-5/PG-6).
+
+### DECISION-LOG DELTA (D-356/DC-02 fix-burst)
+D-356/DC-02 (2026-09-07): DC-02 adversary pass fix-burst CLOSED. trajectory-tail →5→6→0→0 (DC-01=5 closed; DC-02=6 ALL CLOSED; DC-01 was paper-fix regression — phantom graph_interrupt caught per POL-23; streak reset 0/3; DC-03 gates new HEAD). PG-6: BC-2.24.006 VP gap (S-console-08 Wave-3, product-owner/formal-verifier). Census: BC 148 / VP 41 / stories 52 / pts 372. Phase stays 3.

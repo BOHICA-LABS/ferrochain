@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.005
-version: "1.0"
+version: "1.1"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -19,6 +19,7 @@ di_anchors: [DI-002, DI-004, DI-014]
 vp_seed: false
 red_gate: false
 changelog:
+  - "1.1 (D-356-fix/DC-03/2026-09-07, product-owner): F-PDC03-02: PC-003 fork mechanism made concrete — specifies config.configurable.checkpoint_id as the fork-start key (idiomatic LangGraph fork-start pattern; executor semantic defined in BC-2.12.003 {INV-009} added in this same fix burst). PC-005 wording corrected: 'no new server machinery' → 'no new server endpoints'; config.configurable.checkpoint_id is new documented server BEHAVIOR on the existing POST /threads/{id}/runs endpoint, not a new endpoint. TV-003 updated to show correct fork request shape."
   - "1.0 (D-356/2026-09-06, product-owner): Initial BC — D-356 dev-console scope expansion. Checkpoint history browser and fork-from-checkpoint trajectory replay."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-044
@@ -27,7 +28,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "fea55e3"
+input-hash: "c630fca"
 extracted_from: null
 modified: []
 deprecated: null
@@ -43,16 +44,15 @@ removal_reason: null
 > **D-356 dev-console scope expansion (2026-09-06, product-owner).** Roadmap-only.
 > Not built in the current cycle — spec and storyboard only. Build in Wave 3.
 
+> **D-356 adversary fix DC-03 (2026-09-07, product-owner).** F-PDC03-02: PC-003 fork mechanism made concrete. Original text cited "the existing run-creation request shape, BC-2.12.003" but BC-2.12.003 PC-001 has no checkpoint-selection field. Resolution: `config.configurable.checkpoint_id` is the fork-start key — idiomatic LangGraph pattern; the executor semantic is now defined in BC-2.12.003 {INV-009} (added in this same D-356-fix/DC-03 burst). PC-005 wording corrected from "no new server machinery" to "no new server endpoints" — the `checkpoint_id` configurable key is new DOCUMENTED server BEHAVIOR on the existing Create-Run endpoint, not a new endpoint. This is within the D-356 human-authorized reopening scope.
+
 ## Description
 
 The checkpoint history panel presents a thread's ordered checkpoint sequence, enabling
 the developer-operator to browse historical execution state and fork a new run from any
 past checkpoint. The panel reads checkpoint history via `GET /threads/{id}/history`
 (BC-2.12.001) and per-checkpoint state via `GET /threads/{id}/state?checkpoint_id=<id>`.
-Fork-from-checkpoint creates a new run via the standard `POST /threads/{id}/runs` with
-the selected checkpoint as starting state. No new server machinery is required — this
-capability reuses the checkpoint + run-creation substrate that LangGraph Studio uses for
-time-travel.
+Fork-from-checkpoint creates a new run via `POST /threads/{id}/runs` with `config.configurable.checkpoint_id` set to the selected checkpoint (BC-2.12.003 {INV-009}). No new server endpoints are required — this capability uses the existing checkpoint substrate and Create-Run endpoint with the fork-start configurable key (idiomatic LangGraph time-travel pattern).
 
 ## Preconditions
 
@@ -68,9 +68,9 @@ time-travel.
    - The node that executed at that step (extracted from checkpoint metadata).
    - A summary of state delta applied at that step.
 2. {PC-002} **Checkpoint state inspection:** Selecting a history entry issues `GET /threads/{id}/state?checkpoint_id=<id>` and renders the full state snapshot (`values`, `checkpoint`, `next`) at that point. The state is rendered as structured JSON with collapsible fields.
-3. {PC-003} **Fork-from-checkpoint:** From any history entry, the operator may initiate a fork: the console sends `POST /threads/{id}/runs` with the selected checkpoint as starting state (using the existing run-creation request shape, BC-2.12.003). A new `run_id` is returned; the console transitions to the live monitoring panel (BC-2.24.004) for the new run.
+3. {PC-003} **Fork-from-checkpoint:** From any history entry, the operator may initiate a fork: the console sends `POST /threads/{id}/runs` with `{ assistant_id: <id>, config: { configurable: { checkpoint_id: "<selected_checkpoint_id>" } } }`. The `config.configurable.checkpoint_id` key instructs the executor to initialize the run's starting state from the specified checkpoint's stored `ChannelValues` rather than the thread's `current_checkpoint` — this is the idiomatic LangGraph fork-start pattern; the executor semantic is defined in BC-2.12.003 {INV-009}. A new `run_id` is returned; the console transitions to the live monitoring panel (BC-2.24.004) for the new run. Existing checkpoints beyond the fork point are NOT deleted (the fork is additive; contrast with `multitask_strategy: "rollback"` which resets the checkpoint chain).
 4. {PC-004} **Pagination:** `GET /threads/{id}/history` accepts `?limit=N`. The console loads history in pages, showing a "load more" control when more checkpoints are available.
-5. {PC-005} **No new server machinery:** All operations use existing endpoints. The console adds only the presentation layer. No new pregolya-server endpoints are introduced.
+5. {PC-005} **No new server endpoints:** All operations use existing endpoints (`GET /threads/{id}/history`, `GET /threads/{id}/state?checkpoint_id=<id>`, `POST /threads/{id}/runs`). The console adds only the presentation layer. The `config.configurable.checkpoint_id` key in the fork request is new documented server BEHAVIOR on the existing Create-Run endpoint (executor semantic defined in BC-2.12.003 {INV-009}); it does not introduce a new endpoint.
 
 ## Invariants
 
@@ -95,7 +95,7 @@ time-travel.
 |---|-------|-----------------|----------|
 | TV-001 | Thread with 3 checkpoints; `GET /threads/t1/history` returns 3 entries | History panel shows 3 entries newest-first; each entry shows `step_idx`, node name, state delta summary | happy-path |
 | TV-002 | Select checkpoint `step_idx=2`; `GET /threads/t1/state?checkpoint_id=ckpt-2` returns state snapshot | Checkpoint state panel renders JSON with `values`, `checkpoint`, `next` fields | state inspection |
-| TV-003 | Fork from `checkpoint_id=ckpt-1`; server returns new `run_id: run-99` | Console transitions to live monitoring panel for `run-99` | fork-from-checkpoint |
+| TV-003 | Fork from checkpoint at `step_idx=1` (`checkpoint_id=ckpt-1`): console sends `POST /threads/t1/runs { assistant_id: "a1", config: { configurable: { checkpoint_id: "ckpt-1" } } }`; server returns `run_id: run-99` | Console transitions to live monitoring panel for `run-99`; new run starts from checkpoint ckpt-1 state; existing checkpoints after step 1 are NOT deleted | fork-from-checkpoint; BC-2.12.003 {INV-009} |
 | TV-004 | Thread with 0 checkpoints | History panel shows "no checkpoints yet" empty state | EC-001 |
 
 ## Verification Properties

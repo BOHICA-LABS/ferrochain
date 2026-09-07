@@ -3,19 +3,20 @@ document_type: story
 level: ops
 story_id: S-console-10
 epic_id: E-console
-version: "1.0"
+version: "1.1"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
 changelog:
   - "1.0 (D-356/2026-09-06, story-writer): Initial story — guardrail/security decision review panel, Fail/Transform filtering, DI-012 completeness, F-P99-01 Pass-not-shown."
+  - "1.1 (D-356/2026-09-07, story-writer): DC-03 adversary fix — corrected BC-2.24.008 wire field/enum names in AC-002, EC-003, and Forbidden Patterns: boundary_type→boundary, BoundaryType→IngressBoundary, RAGRetrieval→RagChunk, MemoryIngress→MemoryItem, GuardrailSeverity→GuardrailSeverityWire; clarified Transform carries severity=None AND reason=None."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.008.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "3956a4b"
+input-hash: "5c3f58d"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-06]
@@ -38,6 +39,8 @@ tdd_mode: strict
 > **D-356 dev-console scope expansion (2026-09-06, story-writer).** Roadmap-only.
 > Wave 3 — not built in the current Phase 3 implementation cycle.
 
+> **D-356 adversary fix DC-03 (2026-09-07, story-writer).** BC-2.24.008 v1.3 boundary field/enum correction propagated to story body per bc_array_changes_propagate_to_body_and_acs. Corrected: `boundary_type`→`boundary`, `BoundaryType`/`ProvenanceTag`→`IngressBoundary`, `RAGRetrieval`→`RagChunk`, `MemoryIngress`→`MemoryItem`, `GuardrailSeverity`→`GuardrailSeverityWire`; clarified that `Transform` carries both severity=`None` and reason=`None` (not just no reason). Affected locations: AC-002, EC-003, Forbidden Patterns. Traceability: guardrail-output subsystem postcondition PC-002 GuardrailDecision bullet (source of truth for wire field names) + ADR-006 §Decision (IngressBoundary enum definition).
+
 ## Narrative
 
 - **As a** developer-operator or SOC analyst reviewing agent behavior on untrusted inputs
@@ -56,7 +59,7 @@ tdd_mode: strict
 The security feed panel displays ONLY `guardrail_decision` StreamEvents where the outcome is `Fail` or `Transform`. Pass decisions are NOT shown — they are not streamed by the server (F-P99-01 design per ADR-006 rev-3) and the console must not attempt to fetch or display them from any source. Verified by `test_BC_2_24_008_only_fail_transform_shown()` (VP-2.24.008-A).
 
 ### AC-002 (traces to BC-2.24.008 postcondition PC-002)
-Each entry in the security feed shows: `boundary_type` (one of `ToolResult`, `RAGRetrieval`, or `MemoryIngress`), `GuardrailSeverity` (`Critical`, `High`, `Medium`, or `Low`), and outcome (`Fail { reason }` or `Transform`). For `Fail` outcomes, the `reason` string is shown. For `Transform` outcomes, no reason string is shown (Transform carries no reason field). Verified by `test_BC_2_24_008_entry_fields_fail()` and `test_BC_2_24_008_entry_fields_transform()`.
+Each entry in the security feed shows: `boundary` (an `IngressBoundary` value — one of `ToolResult`, `RagChunk`, or `MemoryItem`), severity (`GuardrailSeverityWire`: `Critical`, `High`, `Medium`, or `Low`) when present, and outcome (`Fail { reason }` or `Transform`). For `Fail` outcomes, the `reason` string and `GuardrailSeverityWire` severity are both `Some` and shown. For `Transform` outcomes, both severity and reason are `None` — no severity and no reason field is shown. Verified by `test_BC_2_24_008_entry_fields_fail()` and `test_BC_2_24_008_entry_fields_transform()`.
 
 ### AC-003 (traces to BC-2.24.008 postcondition PC-003)
 For in-progress runs, new `guardrail_decision` events are appended to the security feed as they arrive via the shared `EventSource`. The shared SSE subscription from S-console-06 is reused — there is ONE `EventSource` per run. Verified by `test_BC_2_24_008_realtime_append_shared_sse()`.
@@ -97,7 +100,7 @@ High-volume runs with many `guardrail_decision` Fail events (e.g., 50 events for
 |----|----------|-------------------|
 | EC-001 | Only Pass decisions (none streamed) | Empty state "no Fail or Transform decisions" |
 | EC-002 | Burst of 50 Fail events | All 50 appear in feed; virtual scroll for performance |
-| EC-003 | `Transform` decision with no reason | Entry shows boundary/severity/Transform; no reason field |
+| EC-003 | `Transform` decision — severity and reason both absent | Entry shows boundary + Transform outcome only; severity is `None` (not shown), reason is `None` (not shown) |
 | EC-004 | Malformed `guardrail_decision` payload | Placeholder row; no crash; other entries intact |
 | EC-005 | Pass decisions mixed with Fail/Transform | Only Fail/Transform shown; Pass silently excluded (not streamed by server) |
 
@@ -140,7 +143,7 @@ Predecessor: S-console-06 (run inspection panel). The `sse.ts` SSE subscription 
 | Malformed payload renders placeholder, not crash | BC-2.24.008 INV-004 (DI-014) | Test: invalid JSON payload; assert placeholder row, no JS error |
 | No filtering that could silently drop Fail/Transform events | BC-2.24.008 INV-002 | Code review: only outcome-type filter permitted |
 
-**Forbidden patterns:** Opening a new `EventSource` for the guardrail panel (must reuse the run inspection panel's connection). Silently dropping malformed events (must show placeholder). Attempting to fetch or display Pass decisions from any source. Filtering on boundary_type or severity in addition to outcome type.
+**Forbidden patterns:** Opening a new `EventSource` for the guardrail panel (must reuse the run inspection panel's connection). Silently dropping malformed events (must show placeholder). Attempting to fetch or display Pass decisions from any source. Filtering on `boundary` (IngressBoundary value) or severity in addition to outcome type.
 
 ## Library & Framework Requirements (MANDATORY)
 
