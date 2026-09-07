@@ -1,14 +1,17 @@
 ---
 document_type: verification-property-index
 level: L3
-version: "1.43"
+version: "1.46"
 status: active
-producer: architect
-timestamp: 2026-09-06T00:00:00Z
+producer: state-manager
+timestamp: 2026-09-07T00:00:00Z
 phase: 1b
 input-hash: "[live-index]"
 traces_to: ARCH-INDEX.md
 changelog:
+  - "1.46 (D-356/DC-02 fix-burst/2026-09-07, state-manager): DC-02 fix-burst bookkeeping pass. Arithmetic invariant preamble updated 40→41 (P0 6 unchanged, P1 34→35, unit 7→8). Summary table Total VPs 40→41; P1 34→35; unit 7→8; Status:draft 40→41. Census now: Kani 10 / proptest 10 / integration 12 / unit 8 / compile-fail 1 = total 41, P0 6 / P1 35."
+  - "1.45 (D-356/DC-02-addendum/2026-09-07, architect): VP-2.24.002-D registered — SpanData SEC-BOUND-001 sanitization before ring-buffer insertion (unit P1; console::span_exporter; pregolya-console; BC-2.24.002; DI-014; harness test_BC_2_24_002_span_data_sanitization_sec_bound_001). Sanitization location adjudicated: console::span_exporter AT INSERTION (stricter than BC-2.24.002 PC-008 'before serving'; ensures in-memory ring buffer never holds unsanitized llm_request/llm_response/attributes). Census 40→41; unit 7→8; P1 34→35. PO follow-up needed: BC-2.24.002 PC-008 wording should change 'before being served at /debug/trace/*' → 'before ring-buffer insertion'."
+  - "1.44 (D-356/DC-02/2026-09-07, architect): F-PDC02-02+F-PDC02-03 — VP-2.24.002-A/B module repointed console::ring_buffer → console::span_exporter (ADR-031 Decision 5 canonical; DC-01 used non-canonical name). VP-2.24.004-008 A/B module columns corrected from console::server to panel-specific modules: console::run_inspector (004-A/B), console::checkpoint_panel (005-A/B), console::hitl_panel (006-A/B), console::budget_panel (007-A/B), console::guardrail_panel (008-A/B), per BCs. VP census unchanged: 40 total."
   - "1.43 (D-356/DC-01 fix-burst/2026-09-06, state-manager): DC-01 fix-burst bookkeeping pass. Tool census confirmed: Kani 10 / proptest 10 / integration 12 / unit 7 / compile-fail 1 = total 40 (UNCHANGED from v1.42). compile-fail is a confirmed valid tool category (VP-2.24.001-C). No VP rows added or removed this burst."
   - "1.42 (D-356/DC-01/2026-09-06, architect): F-PDC01-03+F-PDC01-04 — VP-2.24.002-A and VP-2.24.002-B repointed to console::ring_buffer / pregolya-console (RingBuffer<SpanData> is Pure Core in pregolya-console; ADR-031 Decision 5 + S-console-02). Tool reconciled against BC Proof Methods for 8 rows: 001-A integration→unit; 001-B proptest→unit (harness test_BC_2_24_001_zero_cap_err per S-console-01 AC-006); 001-C integration→compile-fail (S-console-01 AC-007 compile-fail test); 002-B integration→proptest (BC-2.24.002 Proof Method; also repointed module/crate); 003-A proptest→unit; 003-C integration→unit; 007-A integration→unit; 008-B integration→unit. compile-fail added as new tool category (VP-2.24.001-C). Recomputed census: Kani 10, proptest 10, integration 12, unit 7, compile-fail 1 (total 40)."
   - "1.41 (D-356/2026-09-06, architect): F3 — 19 VP-2.24.* SEED rows registered for SS-24 Developer Console (BC-2.24.001–008). Tool breakdown of 19 new VPs: integration ×15, proptest ×3, Kani ×1. All P1, draft, Phase 3 except VP-2.24.003-B (Kani, Phase 6). Arithmetic: total 21→40 (P0 6 unchanged, P1 15→34); Kani 9→10; proptest 8→11; integration 3→18; unit 1; fuzz 0; draft 21→40."
@@ -62,7 +65,7 @@ changelog:
 > (Provable Properties Catalog + P0 list) and `verification-coverage-matrix.md`
 > (VP-to-Module table + Totals row) in the same burst.
 >
-> Arithmetic invariant: total (40) = P0 (6) + P1 (34) = Kani (10) + proptest (10) + integration (12) + unit (7) + compile-fail (1).
+> Arithmetic invariant: total (41) = P0 (6) + P1 (35) = Kani (10) + proptest (10) + integration (12) + unit (8) + compile-fail (1).
 >
 > **VP Priority vs BC Priority (OBS-P156-B):** The `Priority` column here is the
 > **verification-priority axis** — it reflects proof criticality (how urgently this property
@@ -82,16 +85,16 @@ changelog:
 
 | Metric | Count |
 |--------|-------|
-| Total VPs | 40 |
+| Total VPs | 41 |
 | Priority P0 (verification-priority) | 6 |
-| Priority P1 (verification-priority) | 34 |
+| Priority P1 (verification-priority) | 35 |
 | Kani | 10 |
 | proptest | 10 |
 | fuzz | 0 |
 | integration | 12 |
-| unit | 7 |
+| unit | 8 |
 | compile-fail | 1 |
-| Status: draft | 40 |
+| Status: draft | 41 |
 | Status: active | 0 |
 | Status: passed | 0 |
 
@@ -123,19 +126,24 @@ changelog:
 | VP-2.24.001-A | BC-2.24.001 | console::server | unit | 3 | P1 | draft | DI-014 | pregolya-console | n/a (unit test) | SEED |
 | VP-2.24.001-B | BC-2.24.001 | console::server | unit | 3 | P1 | draft | DI-014 | pregolya-console | `test_BC_2_24_001_zero_cap_err` | SEED |
 | VP-2.24.001-C | BC-2.24.001 | console::server | compile-fail | 3 | P1 | draft | DI-014 | pregolya-console | n/a (compile-fail test) | SEED |
-| VP-2.24.002-A | BC-2.24.002 | console::ring_buffer | proptest | 3 | P1 | draft | DI-014 | pregolya-console | `ring_buffer_bounded_invariant` | SEED |
-| VP-2.24.002-B | BC-2.24.002 | console::ring_buffer | proptest | 3 | P1 | draft | DI-014 | pregolya-console | `ring_buffer_fifo_invariant` | SEED |
+| VP-2.24.002-A | BC-2.24.002 | console::span_exporter | proptest | 3 | P1 | draft | DI-014 | pregolya-console | `ring_buffer_bounded_invariant` | SEED |
+| VP-2.24.002-B | BC-2.24.002 | console::span_exporter | proptest | 3 | P1 | draft | DI-014 | pregolya-console | `ring_buffer_fifo_invariant` | SEED |
 | VP-2.24.002-C | BC-2.24.002 | server::debug_routes | integration | 3 | P1 | draft | DI-014 | pregolya-server | n/a (integration test) | SEED |
+| VP-2.24.002-D | BC-2.24.002 | console::span_exporter | unit | 3 | P1 | draft | DI-014 | pregolya-console | test_BC_2_24_002_span_data_sanitization_sec_bound_001 | SEED |
 | VP-2.24.003-A | BC-2.24.003 | graph::descriptor | unit | 3 | P1 | draft | DI-014 | pregolya-graph | n/a (unit test) | SEED |
 | VP-2.24.003-B | BC-2.24.003 | graph::descriptor | Kani | 6 | P1 | draft | DI-014 | pregolya-graph | `graph_descriptor_pure_termination_harness` | SEED |
 | VP-2.24.003-C | BC-2.24.003 | server::debug_routes | unit | 3 | P1 | draft | DI-014 | pregolya-server | n/a (unit test) | SEED |
-| VP-2.24.004-A | BC-2.24.004 | console::server | integration | 3 | P1 | draft | DI-014 | pregolya-console | n/a (integration test) | SEED |
-| VP-2.24.004-B | BC-2.24.004 | console::server | integration | 3 | P1 | draft | DI-014 | pregolya-console | n/a (integration test) | SEED |
-| VP-2.24.005-A | BC-2.24.005 | console::server | integration | 3 | P1 | draft | DI-002 | pregolya-console | n/a (integration test) | SEED |
-| VP-2.24.005-B | BC-2.24.005 | console::server | integration | 3 | P1 | draft | DI-002 | pregolya-console | n/a (integration test) | SEED |
-| VP-2.24.006-A | BC-2.24.006 | console::server | integration | 3 | P1 | draft | DI-014 | pregolya-console | n/a (integration test) | SEED |
-| VP-2.24.006-B | BC-2.24.006 | console::server | integration | 3 | P1 | draft | DI-014 | pregolya-console | n/a (integration test) | SEED |
-| VP-2.24.007-A | BC-2.24.007 | console::server | unit | 3 | P1 | draft | DI-014 | pregolya-console | n/a (unit test) | SEED |
-| VP-2.24.007-B | BC-2.24.007 | console::server | integration | 3 | P1 | draft | DI-014 | pregolya-console | n/a (integration test) | SEED |
-| VP-2.24.008-A | BC-2.24.008 | console::server | integration | 3 | P1 | draft | DI-014 | pregolya-console | n/a (integration test) | SEED |
-| VP-2.24.008-B | BC-2.24.008 | console::server | unit | 3 | P1 | draft | DI-014 | pregolya-console | n/a (unit test) | SEED |
+| VP-2.24.004-A | BC-2.24.004 | console::run_inspector | integration | 3 | P1 | draft | DI-014 | pregolya-console | n/a (integration test) | SEED |
+| VP-2.24.004-B | BC-2.24.004 | console::run_inspector | integration | 3 | P1 | draft | DI-014 | pregolya-console | n/a (integration test) | SEED |
+| VP-2.24.005-A | BC-2.24.005 | console::checkpoint_panel | integration | 3 | P1 | draft | DI-002 | pregolya-console | n/a (integration test) | SEED |
+| VP-2.24.005-B | BC-2.24.005 | console::checkpoint_panel | integration | 3 | P1 | draft | DI-002 | pregolya-console | n/a (integration test) | SEED |
+| VP-2.24.006-A | BC-2.24.006 | console::hitl_panel | integration | 3 | P1 | draft | DI-014 | pregolya-console | n/a (integration test) | SEED |
+| VP-2.24.006-B | BC-2.24.006 | console::hitl_panel | integration | 3 | P1 | draft | DI-014 | pregolya-console | n/a (integration test) | SEED |
+| VP-2.24.007-A | BC-2.24.007 | console::budget_panel | unit | 3 | P1 | draft | DI-014 | pregolya-console | n/a (unit test) | SEED |
+| VP-2.24.007-B | BC-2.24.007 | console::budget_panel | integration | 3 | P1 | draft | DI-014 | pregolya-console | n/a (integration test) | SEED |
+| VP-2.24.008-A | BC-2.24.008 | console::guardrail_panel | integration | 3 | P1 | draft | DI-014 | pregolya-console | n/a (integration test) | SEED |
+| VP-2.24.008-B | BC-2.24.008 | console::guardrail_panel | unit | 3 | P1 | draft | DI-014 | pregolya-console | n/a (unit test) | SEED |
+
+> **D-356 adversary fix DC-02 (2026-09-07, architect).** F-PDC02-03: VP-2.24.002-A/B module repointed `console::ring_buffer` → `console::span_exporter` (ADR-031 Decision 5 canonical; `console::ring_buffer` was a non-canonical name invented in DC-01). F-PDC02-02: VP-2.24.004-008 A/B module columns corrected from `console::server` to panel-specific modules per BCs: `console::run_inspector` (004-A/B), `console::checkpoint_panel` (005-A/B), `console::hitl_panel` (006-A/B), `console::budget_panel` (007-A/B), `console::guardrail_panel` (008-A/B). VP census 40→41 (DC-02 addendum). See also companion F-PDC02-05 fixes in ADR-031 and api-surface.md (mandatory debug_api_key).
+
+> **D-356 adversary fix DC-02 addendum (2026-09-07, architect).** VP-2.24.002-D registered — SpanData SEC-BOUND-001 sanitization before ring-buffer insertion (unit P1; `console::span_exporter`; `pregolya-console`; BC-2.24.002; DI-014; harness `test_BC_2_24_002_span_data_sanitization_sec_bound_001`). Sanitization-location ruling: AT INSERTION (production-grade choice; in-memory ring buffer must never hold unsanitized `llm_request`/`llm_response`/`attributes` fields). PO follow-up: BC-2.24.002 PC-008 wording "before being served at /debug/trace/*" → "before ring-buffer insertion" to match S-console-02 AC-011. Census 40→41; unit 7→8; P1 34→35. State-manager to reconcile STATE.md VP census 40→41.

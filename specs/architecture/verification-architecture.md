@@ -2,10 +2,10 @@
 document_type: architecture-section
 level: L3
 section: verification-architecture
-version: "2.40"
+version: "2.42"
 status: active
 producer: architect
-timestamp: 2026-09-06T00:00:00Z
+timestamp: 2026-09-07T00:00:00Z
 phase: 1b
 inputs:
   - .factory/specs/domain-spec/invariants.md
@@ -28,10 +28,12 @@ inputs:
   - .factory/specs/behavioral-contracts/ss-01/BC-2.01.006.md
   - .factory/specs/behavioral-contracts/ss-09/BC-2.09.008.md
   - .factory/specs/behavioral-contracts/ss-04/BC-2.04.011.md
-input-hash: "5bc819a"
+input-hash: "472a877"
 traces_to: ARCH-INDEX.md
 decisions: [D17, D21, D23, D356]
 changelog:
+  - "2.42 (D-356/DC-02-addendum/2026-09-07, architect): VP-2.24.002-D registered — SpanData SEC-BOUND-001 sanitization before ring-buffer insertion (unit P1; console::span_exporter; BC-2.24.002; DI-014). Sanitization location: AT INSERTION (stricter than BC PC-008 'before serving'; ensures ring buffer never holds unsanitized llm_request/llm_response/attributes; satisfies PC-008 as a postcondition). Census 40→41; unit ×7→×8; P1 34→35. Preamble Forty→Forty-one. input-hash pending-recompute."
+  - "2.41 (D-356/DC-02/2026-09-07, architect): F-PDC02-02+F-PDC02-03 — VP-2.24.002-A/B module repointed console::ring_buffer → console::span_exporter (ADR-031 Decision 5 canonical; DC-01 had used non-canonical name; console::span_exporter is the Boundary module hosting RingBuffer<SpanData>, per ADR-031 Decision 5 purity table). VP-2.24.004-008 A/B module columns corrected from console::server to SPA panel modules: console::run_inspector (004-A/B), console::checkpoint_panel (005-A/B), console::hitl_panel (006-A/B), console::budget_panel (007-A/B), console::guardrail_panel (008-A/B), per respective BCs. Tool census UNCHANGED: Kani ×10, proptest ×10, integration ×12, unit ×7, compile-fail ×1 (40 total VPs). input-hash pending-recompute."
   - "2.40 (D-356/DC-01/2026-09-06, architect): F-PDC01-03+F-PDC01-04 — VP-2.24.002-A/B repointed to console::ring_buffer / pregolya-console (RingBuffer<SpanData> Pure Core; ADR-031 Decision 5 + S-console-02). Tool reconciled vs BC Proof Methods for 8 rows: 001-A/B integration/proptest→unit; 001-C integration→compile-fail; 002-B integration→proptest (module/crate also fixed); 003-A proptest→unit; 003-C integration→unit; 007-A integration→unit; 008-B integration→unit. Total line updated: proptest ×10, integration ×12, unit ×7, compile-fail ×1 (40 VPs total unchanged). input-hash pending-recompute."
   - "2.39 (D-356/2026-09-06, architect): F3 — 19 VP-2.24.* placeholder rows added to Provable Properties Catalog for SS-24 Developer Console (BC-2.24.001–008). Tool breakdown: integration ×15, proptest ×3, Kani ×1. All P1, draft, Phase 3 except VP-2.24.003-B (Kani Phase 6). Total 21→40 VPs; P1 15→34; Kani 9→10; proptest 8→11; integration 3→18; unit unchanged at 1. Preamble narrative updated twenty-one→forty. input-hash pending-recompute."
   - "2.38 (round-65/F-P2A237-02/2026-09-01): F-P2A237-02 [MED] §VP-020 narrative corrected to canonical VP-020.md (source-of-truth per CLAUDE.md rule 4): (a) Property description rewritten from apply-twice-idempotency to the actual five-property statement ({INV-001} no-duplicate, {INV-002} reducer-determinism, {PC-002} promote-dedup-idempotent, {PC-004} retire-idempotent, order-sensitivity); (b) {INV-001} gloss corrected from promote-dedup-no-op description ({PC-002}) to 'the active set contains no duplicate entry_id values at any time'; (c) Formal statement replaced from non-canonical apply_ops-twice form with VP-020.md §Formal Invariant five-property form (fold-from-empty, no-duplicate, determinism, promote-dedup, retire-idempotent, order-sensitivity); (d) Op shape corrected from Promote(id)/Retire(id) to PromoteRetireOp::Promote(T) (full entry T) / Retire(String) (entry_id) per VP-020.md §Formal Invariant and ADR-030 §Decision 3. Note for state-manager: pre-existing input-hash drift (stored 8837490 != computed 721a6e7); run compute-input-hash verification-architecture.md --update."
@@ -81,7 +83,7 @@ on a `Future` will fail at verification time. Consequences:
 
 ## Committed VP Obligations (D17-Q7 + R11 + D21 + D23)
 
-Forty VPs committed before v1.0 release — VP-001..005 (original five) plus VP-006..010 (D21 ecosystem-parity expansion) plus VP-006-B (SEC-003 multi-pair few-shot mandate) plus VP-011..013 (D23 tools/budget layer) plus VP-014 (burst-302b LCEL composition expansion) plus VP-015 (architect-reconcile-burst MCP credential-redaction) plus VP-016 (GAP-01/ADR-029 GraphAgentTool state-isolation) plus VP-017 (ADR-030 LedgerChannel dedup-idempotency, dual-anchored BC-2.02.007 + BC-2.02.008) plus VP-018 (BC-2.04.011 TrajectoryCompactor retention-integrity) plus VP-019 (BC-2.04.011 {INV-003} trajectory compaction crash-isolation integration P1) plus VP-020 (ADR-030 PromoteRetireChannel idempotency proptest P1, BC-2.02.009 {INV-001}+{INV-002}) plus VP-2.24.001-A through VP-2.24.008-B (D-356 SS-24 Developer Console SEED registrations, BC-2.24.001–008):
+Forty-one VPs committed before v1.0 release — VP-001..005 (original five) plus VP-006..010 (D21 ecosystem-parity expansion) plus VP-006-B (SEC-003 multi-pair few-shot mandate) plus VP-011..013 (D23 tools/budget layer) plus VP-014 (burst-302b LCEL composition expansion) plus VP-015 (architect-reconcile-burst MCP credential-redaction) plus VP-016 (GAP-01/ADR-029 GraphAgentTool state-isolation) plus VP-017 (ADR-030 LedgerChannel dedup-idempotency, dual-anchored BC-2.02.007 + BC-2.02.008) plus VP-018 (BC-2.04.011 TrajectoryCompactor retention-integrity) plus VP-019 (BC-2.04.011 {INV-003} trajectory compaction crash-isolation integration P1) plus VP-020 (ADR-030 PromoteRetireChannel idempotency proptest P1, BC-2.02.009 {INV-001}+{INV-002}) plus VP-2.24.001-A through VP-2.24.008-B (D-356 SS-24 Developer Console SEED registrations, BC-2.24.001–008):
 
 | VP | BC Anchor | DI | Module | Tool | Phase | Priority |
 |----|-----------|-----|--------|------|-------|---------|
@@ -109,24 +111,25 @@ Forty VPs committed before v1.0 release — VP-001..005 (original five) plus VP-
 | VP-2.24.001-A | BC-2.24.001 | DI-014 | `console::server` | unit | 3 | P1 |
 | VP-2.24.001-B | BC-2.24.001 | DI-014 | `console::server` | unit | 3 | P1 |
 | VP-2.24.001-C | BC-2.24.001 | DI-014 | `console::server` | compile-fail | 3 | P1 |
-| VP-2.24.002-A | BC-2.24.002 | DI-014 | `console::ring_buffer` | proptest | 3 | P1 |
-| VP-2.24.002-B | BC-2.24.002 | DI-014 | `console::ring_buffer` | proptest | 3 | P1 |
+| VP-2.24.002-A | BC-2.24.002 | DI-014 | `console::span_exporter` | proptest | 3 | P1 |
+| VP-2.24.002-B | BC-2.24.002 | DI-014 | `console::span_exporter` | proptest | 3 | P1 |
 | VP-2.24.002-C | BC-2.24.002 | DI-014 | `server::debug_routes` | integration | 3 | P1 |
+| VP-2.24.002-D | BC-2.24.002 | DI-014 | `console::span_exporter` | unit | 3 | P1 |
 | VP-2.24.003-A | BC-2.24.003 | DI-014 | `graph::descriptor` | unit | 3 | P1 |
 | VP-2.24.003-B | BC-2.24.003 | DI-014 | `graph::descriptor` | Kani | 6 | P1 |
 | VP-2.24.003-C | BC-2.24.003 | DI-014 | `server::debug_routes` | unit | 3 | P1 |
-| VP-2.24.004-A | BC-2.24.004 | DI-014 | `console::server` | integration | 3 | P1 |
-| VP-2.24.004-B | BC-2.24.004 | DI-014 | `console::server` | integration | 3 | P1 |
-| VP-2.24.005-A | BC-2.24.005 | DI-002 | `console::server` | integration | 3 | P1 |
-| VP-2.24.005-B | BC-2.24.005 | DI-002 | `console::server` | integration | 3 | P1 |
-| VP-2.24.006-A | BC-2.24.006 | DI-014 | `console::server` | integration | 3 | P1 |
-| VP-2.24.006-B | BC-2.24.006 | DI-014 | `console::server` | integration | 3 | P1 |
-| VP-2.24.007-A | BC-2.24.007 | DI-014 | `console::server` | unit | 3 | P1 |
-| VP-2.24.007-B | BC-2.24.007 | DI-014 | `console::server` | integration | 3 | P1 |
-| VP-2.24.008-A | BC-2.24.008 | DI-014 | `console::server` | integration | 3 | P1 |
-| VP-2.24.008-B | BC-2.24.008 | DI-014 | `console::server` | unit | 3 | P1 |
+| VP-2.24.004-A | BC-2.24.004 | DI-014 | `console::run_inspector` | integration | 3 | P1 |
+| VP-2.24.004-B | BC-2.24.004 | DI-014 | `console::run_inspector` | integration | 3 | P1 |
+| VP-2.24.005-A | BC-2.24.005 | DI-002 | `console::checkpoint_panel` | integration | 3 | P1 |
+| VP-2.24.005-B | BC-2.24.005 | DI-002 | `console::checkpoint_panel` | integration | 3 | P1 |
+| VP-2.24.006-A | BC-2.24.006 | DI-014 | `console::hitl_panel` | integration | 3 | P1 |
+| VP-2.24.006-B | BC-2.24.006 | DI-014 | `console::hitl_panel` | integration | 3 | P1 |
+| VP-2.24.007-A | BC-2.24.007 | DI-014 | `console::budget_panel` | unit | 3 | P1 |
+| VP-2.24.007-B | BC-2.24.007 | DI-014 | `console::budget_panel` | integration | 3 | P1 |
+| VP-2.24.008-A | BC-2.24.008 | DI-014 | `console::guardrail_panel` | integration | 3 | P1 |
+| VP-2.24.008-B | BC-2.24.008 | DI-014 | `console::guardrail_panel` | unit | 3 | P1 |
 
-**Total: 40 VPs — 6 P0 / 34 P1 | Tool breakdown: Kani ×10, proptest ×10, integration ×12, unit ×7, compile-fail ×1**
+**Total: 41 VPs — 6 P0 / 35 P1 | Tool breakdown: Kani ×10, proptest ×10, integration ×12, unit ×8, compile-fail ×1**
 
 > **D-273 VP-015 tool-type fix (GAP-01/2026-08-26):** VP-015 tool corrected from 'integration' to 'unit' — VP-015.md frontmatter is authoritative per CLAUDE.md rule 4 (VP file supersedes architecture doc).
 > **SEC-003 VP-006-B (SEC-review-adjudication/2026-08-26):** VP-006-B proptest P1 added for multi-pair few-shot injection mandate. Total 16→17 VPs; P1 10→11; proptest 4→5.
@@ -137,6 +140,8 @@ Forty VPs committed before v1.0 release — VP-001..005 (original five) plus VP-
 > **round-62 VP-020 (F-P2A234-05/2026-09-01):** VP-020 proptest P1 added for PromoteRetireChannel idempotency (BC-2.02.009 {INV-001}+{INV-002}; DI-001; graph::channels; Phase 3; harness `promote_retire_channel_idempotency`). Closes BC-2.02.009 unit-test-only coverage gap; structurally analogous to VP-017. Total 20→21; P1 14→15; proptest 7→8. VP-019 §Should Prove updated: four-crash-point staging-table model retired; replaced with two-crash-point per-run DELETE model per ADR-030 §Compaction Atomicity Decision F-P2A234-01 redesign.
 > **D-356 VP-2.24.* SEED registrations (2026-09-06, architect):** 19 VP-2.24.* placeholder rows added for SS-24 Developer Console (BC-2.24.001–008). SEED status — body .md files not required until Phase 3 Wave 3. Tool breakdown: integration ×15, proptest ×3, Kani ×1. VP-2.24.003-B is the Kani candidate (graph::descriptor Pure Core, extractable before Phase 6). Total 21→40; P1 15→34; Kani 9→10; proptest 8→11; integration 3→18.
 > **D-356 adversary fix DC-01 (2026-09-06, architect).** F-PDC01-03: VP-2.24.002-A/B module repointed to `console::ring_buffer` / `pregolya-console` — `RingBuffer<SpanData>` is Pure Core in pregolya-console (ADR-031 Decision 5 + S-console-02 target_module); harness_fn updated (`ring_buffer_bounded_invariant`, `ring_buffer_fifo_invariant`). F-PDC01-04: 8 rows reconciled against BC Proof Methods: 001-A/B integration/proptest→unit; 001-C integration→compile-fail (BC-2.24.001 AC-007 compile-fail test; new tool category); 002-B integration→proptest; 003-A proptest→unit; 003-C integration→unit; 007-A integration→unit; 008-B integration→unit. Updated tool breakdown: Kani ×10, proptest ×10, integration ×12, unit ×7, compile-fail ×1.
+> **D-356 adversary fix DC-02 (2026-09-07, architect).** F-PDC02-03: VP-2.24.002-A/B module repointed `console::ring_buffer` → `console::span_exporter` (ADR-031 Decision 5 canonical; `console::ring_buffer` was a non-canonical invention; canonical module is `console::span_exporter` — Boundary module hosting `RingBuffer<SpanData>`, per ADR-031 Decision 5 purity table). F-PDC02-02: VP-2.24.004-008 A/B module columns corrected from `console::server` to SPA panel modules per respective BCs: `console::run_inspector` (004-A/B), `console::checkpoint_panel` (005-A/B), `console::hitl_panel` (006-A/B), `console::budget_panel` (007-A/B), `console::guardrail_panel` (008-A/B). Tool census UNCHANGED. See companion fixes in api-surface.md and ADR-031 (F-PDC02-05 mandatory debug_api_key).
+> **D-356 adversary fix DC-02 addendum (2026-09-07, architect).** VP-2.24.002-D registered — SpanData SEC-BOUND-001 sanitization before ring-buffer insertion (unit P1; BC-2.24.002; DI-014; `console::span_exporter`; harness `test_BC_2_24_002_span_data_sanitization_sec_bound_001`). Sanitization-location ruling: AT INSERTION (stricter; in-memory ring buffer never holds unsanitized `llm_request`/`llm_response`/`attributes`; satisfies BC-2.24.002 PC-008 as a postcondition). Census 40→41; unit ×7→×8; P1 34→35. PO follow-up: BC-2.24.002 PC-008 wording needs "before ring-buffer insertion" instead of "before being served at /debug/trace/*".
 
 ## Provable Properties Catalog
 

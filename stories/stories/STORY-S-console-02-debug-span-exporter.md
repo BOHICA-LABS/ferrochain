@@ -3,12 +3,13 @@ document_type: story
 level: ops
 story_id: S-console-02
 epic_id: E-console
-version: "1.0"
+version: "1.1"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
 changelog:
   - "1.0 (D-356/2026-09-06, story-writer): Initial story — DebugSpanExporter FIFO ring buffer, OTel SpanExporter trait, dev-mode co-launch wiring, Arc DI."
+  - "1.1 (D-356/2026-09-07, story-writer): Adversary fix DC-02 — add VP-2.24.002-D (SpanData SEC-BOUND-001 sanitization unit test) to verification_properties frontmatter; add AC-011 asserting that DebugSpanExporter sanitizes credential-pattern field values before ring buffer insertion."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.001.md
@@ -16,13 +17,13 @@ inputs:
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "6b81e95"
+input-hash: "daa692b"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-01]
 blocks: [S-console-03]
 behavioral_contracts: [BC-2.24.001, BC-2.24.002]
-verification_properties: [VP-2.24.002-A, VP-2.24.002-B, VP-2.24.002-C]
+verification_properties: [VP-2.24.002-A, VP-2.24.002-B, VP-2.24.002-C, VP-2.24.002-D]
 priority: P1
 cycle: v1.0.0-greenfield
 wave: 3
@@ -39,6 +40,8 @@ tdd_mode: strict
 > **D-356 dev-console scope expansion (2026-09-06, story-writer).** Roadmap-only.
 > Wave 3 — not built in the current Phase 3 implementation cycle.
 
+> **D-356 adversary fix DC-02 (2026-09-07, story-writer).** Product-owner added VP-2.24.002-D (`test_BC_2_24_002_span_data_sanitization_sec_bound_001`) to BC-2.24.002 — a sanitization unit test verifying that `SpanData` field values matching the SEC-BOUND-001 credential pattern are stripped before ring buffer insertion. Added `VP-2.24.002-D` to this story's `verification_properties` frontmatter (this story builds `DebugSpanExporter` and `SpanData`, which are the types BC-2.24.002 covers). Added AC-011 asserting the sanitization behavior.
+
 ## Narrative
 
 - **As a** developer using `pregolya console --dev`
@@ -50,7 +53,7 @@ tdd_mode: strict
 | BC | Title | Covered ACs |
 |----|-------|------------|
 | BC-2.24.001 | `pregolya-console` Startup, Asset Serving, and `ConsoleConfig` (CAP-041) | AC-001, AC-002 (dev-mode clauses PC-004, PC-005) |
-| BC-2.24.002 | `DebugSpanExporter` Retention-Capped Ring Buffer and Trace-Read Debug Endpoints (CAP-042) | AC-003..AC-010 |
+| BC-2.24.002 | `DebugSpanExporter` Retention-Capped Ring Buffer and Trace-Read Debug Endpoints (CAP-042) | AC-003..AC-011 |
 
 ## Acceptance Criteria
 
@@ -83,6 +86,9 @@ When the ring buffer is at capacity and a batch of 5 new spans arrives, exactly 
 
 ### AC-010 (traces to BC-2.24.002 invariant INV-004)
 Span export errors (OTel export callback failure) are logged via `tracing::warn!` and do not propagate to the engine — engine execution continues uninterrupted. The `SpanExporter::export()` implementation on `DebugSpanExporter` never returns an error that would abort the exporter pipeline. Verified by `test_BC_2_24_002_export_error_logged_not_propagated()`.
+
+### AC-011 (traces to BC-2.24.002 security boundary SEC-BOUND-001)
+Before a span is inserted into the ring buffer, `DebugSpanExporter` sanitizes `SpanData` field values that match the SEC-BOUND-001 credential pattern (raw API key literals and bearer token values) in the `attributes`, `llm_request`, and `llm_response` fields. The sanitized span is stored; no raw credential value is retained in the ring buffer. Verified by `test_BC_2_24_002_span_data_sanitization_sec_bound_001()` (VP-2.24.002-D).
 
 ## Architecture Mapping
 

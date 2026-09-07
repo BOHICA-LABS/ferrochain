@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.004
-version: "1.1"
+version: "1.2"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -19,6 +19,7 @@ di_anchors: [DI-014]
 vp_seed: false
 red_gate: false
 changelog:
+  - "1.2 (D-356-fix/DC-02/2026-09-07, product-owner): F-PDC02-01 paper-fix regression — DC-01 replaced run_error but left phantom graph_interrupt at position 15 and compaction_event at position 16, omitting error (the true 16th variant). Corrected: graph_interrupt removed; compaction_event moved to 15th; error added as 16th. DC-01 blockquote false claim annotated. Final list is exactly the 16 verified canonical variants."
   - "1.1 (D-356-fix/DC-01/2026-09-06, product-owner): F-PDC01-01 Story Anchor corrected: was S-console-05, now S-console-06. Verified against S-console-06 frontmatter behavioral_contracts: [BC-2.24.004]. F-PDC01-02 PC-001 StreamEvent variant list corrected: removed phantom run_error, added missing step_start and tool_stream, reordered to canonical 16 per ADR-006 — count is now exactly 16 distinct variants."
   - "1.0 (D-356/2026-09-06, product-owner): Initial BC — D-356 dev-console scope expansion. Run inspection event timeline and live monitoring panel."
 traces_to:
@@ -28,7 +29,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "fea55e3"
+input-hash: "81edd7e"
 extracted_from: null
 modified: []
 deprecated: null
@@ -62,9 +63,11 @@ is a pure SSE+REST client — no new server additions are required for this capa
 
 ## Postconditions
 
-1. {PC-001} **Event timeline rendered:** All `StreamEvent` variants for the run are displayed in the timeline, ordered by emission sequence. Minimum supported variants (all 16 per ADR-006): `run_start`, `run_stream`, `run_end`, `step_start`, `step_end`, `node_start`, `node_stream`, `node_end`, `tool_start`, `tool_stream`, `tool_end`, `guardrail_decision`, `tool_approval_request`, `tool_approval_resolved`, `graph_interrupt`, `compaction_event`, and any future variants (consumer must not hard-fail on unknown variants per `#[non_exhaustive]`).
+1. {PC-001} **Event timeline rendered:** All `StreamEvent` variants for the run are displayed in the timeline, ordered by emission sequence. Minimum supported variants (all 16 per ADR-006 canonical ordering / BC-2.06.001 §Postconditions PC-002): `run_start`, `run_stream`, `run_end`, `step_start`, `step_end`, `node_start`, `node_stream`, `node_end`, `tool_start`, `tool_stream`, `tool_end`, `guardrail_decision` (12th), `tool_approval_request`, `tool_approval_resolved`, `compaction_event` (15th), `error` (16th), and any future variants (consumer must not hard-fail on unknown variants per `#[non_exhaustive]`). There is NO `graph_interrupt` variant — it is phantom.
 
-   > **D-356 adversary fix DC-01 (2026-09-06, product-owner).** PC-001 StreamEvent variant enumeration corrected (F-PDC01-02): removed phantom `run_error` (errors ride in `run_end`/RunEndData — no RunError variant in ss-06); added missing `step_start` and `tool_stream`; reordered to match the canonical 16 per ADR-006 causal ordering. Count is now exactly 16 distinct variants with no duplicates.
+   > **D-356 adversary fix DC-01 (2026-09-06, product-owner).** PC-001 StreamEvent variant enumeration corrected (F-PDC01-02): removed phantom `run_error` (errors ride in `run_end`/RunEndData — no RunError variant in ss-06); added missing `step_start` and `tool_stream`; reordered to match the canonical 16 per ADR-006 causal ordering. Count is now exactly 16 distinct variants with no duplicates. **NOTE: DC-01 was itself a paper-fix regression — it replaced `run_error` but left phantom `graph_interrupt` at position 15 and `compaction_event` at position 16, omitting `error` (the true 16th). Superseded by DC-02.**
+
+   > **D-356 adversary fix DC-02 (2026-09-07, product-owner).** F-PDC02-01 paper-fix regression corrected: `graph_interrupt` removed (it is phantom — there is no such StreamEvent; node-boundary interrupts halt the stream and are detected via run STATUS, not an SSE event); `compaction_event` placed at 15th; `error` added as 16th variant per the verified canonical ordering in BC-2.06.001 §Postconditions PC-002 and ADR-006. The authoritative 16-variant list is now exact: run_start (1), run_stream (2), run_end (3), step_start (4), step_end (5), node_start (6), node_stream (7), node_end (8), tool_start (9), tool_stream (10), tool_end (11), guardrail_decision (12), tool_approval_request (13), tool_approval_resolved (14), compaction_event (15), error (16).
 2. {PC-002} **Expandable payloads:** Each event row is expandable. Expanded view shows:
    - `node_start` / `node_end`: input/output state diff at that node boundary.
    - `tool_start` / `tool_end`: tool name, input args (JSON), output result (JSON).

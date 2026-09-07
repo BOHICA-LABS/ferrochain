@@ -7,8 +7,8 @@ title: "Developer Console Architecture: pregolya-console Crate, Debug Endpoints,
 status: accepted
 date: "2026-09-06"
 producer: architect
-timestamp: 2026-09-06T00:00:00Z
-version: "1.0"
+timestamp: 2026-09-07T00:00:00Z
+version: "1.1"
 phase: 1b
 traces_to: ARCH-INDEX.md
 decisions: [D356]
@@ -23,8 +23,9 @@ inputs:
   - .factory/specs/architecture/decisions/ADR-021-server-config-surface-runnable-config-configurable.md
   - .factory/specs/architecture/decisions/ADR-028-server-run-lifecycle-semantics.md
   - .factory/specs/architecture/ARCH-INDEX.md
-input-hash: "5880d78"
+input-hash: "7a99f6a"
 changelog:
+  - "1.1 (D-356/DC-02/2026-09-07, architect): F-PDC02-05 — D6-2 security strengthened: debug_api_key is now MANDATORY (not opt-in) when debug-endpoints feature is enabled; unauthenticated /debug/* requests → 403 E-SERVER-004 DebugRouteUnauthorized. §Security interaction updated from 'opt-in debug-key gate' to mandatory gate with explicit error code and DNS-rebinding rationale. SpanData sanitization (SEC-BOUND-001 parity; llm_request/llm_response strips from SpanData) cross-referenced to BC-2.24.002. Companion api-surface.md §Security note updated. input-hash pending-recompute."
   - "1.0 (D-356/2026-09-06, architect): Initial ADR — developer console scope expansion. Six decisions: (1) pregolya-console new binary crate (Wave 3, roadmap); (2) debug-endpoints feature-gated on pregolya-server; (3) SSE transport confirmed, WebSocket-vs-SSE discrepancy closed; (4) SPA framework deferred to Wave 3; (5) purity boundary: console::server Effectful Shell, console::span_exporter Boundary, server::debug_routes Effectful Shell; (6) NFR/security deltas: localhost-bind, no external auth in dev mode, debug-endpoints OFF by default."
 ---
 
@@ -137,8 +138,12 @@ The descriptor is a static structural snapshot of the compiled graph — it carr
 runtime state. Returns `404` with existing `E-SERVER-009 AssistantNotFound` when the assistant
 does not exist.
 
-**Security interaction:** Debug endpoints are subject to `SecurityConfig.debug_api_key`
-(BC-2.12.005 — the existing opt-in debug-key gate). CORS policy follows `SecurityConfig`.
+**Security interaction:** When `debug-endpoints` is enabled, `SecurityConfig.debug_api_key`
+(BC-2.12.005) MUST be configured — this is MANDATORY, not opt-in. Unauthenticated requests
+to `/debug/*` return `403` with `E-SERVER-004 DebugRouteUnauthorized`. CORS policy follows
+`SecurityConfig`. `SpanData` exposes `llm_request`/`llm_response` payloads; loopback bind
+alone is insufficient against DNS-rebinding/CSRF-to-127.0.0.1 (SEC-BOUND-001 parity;
+sanitization specified in BC-2.24.002).
 
 **Pure-core extraction required:** The `CompiledStateGraph → GraphDescriptor`
 serialization is a pure, deterministic transformation. It MUST be extracted as a free
@@ -207,8 +212,14 @@ These are **additive exceptions** to the workspace-wide NFR catalog for the cons
   required for loopback-bound dev-tool operation (same posture as adk-web, LangGraph Dev
   Server). Operator's responsibility if exposed beyond localhost (unsupported in v1).
 - **D6-2 Auth:** No auth layer on `/ui/` asset routes. Loopback bind is the security
-  boundary. `SecurityConfig.debug_api_key` (BC-2.12.005) governs `/debug/*` endpoints
-  when co-launched with pregolya-server.
+  boundary for UI assets only. When the `debug-endpoints` Cargo feature is enabled,
+  `SecurityConfig.debug_api_key` (BC-2.12.005) MUST be configured; enabling the feature
+  without a configured key is a misconfiguration — unauthenticated requests to `/debug/*`
+  return `403` with `E-SERVER-004 DebugRouteUnauthorized`. Rationale: debug/trace endpoints
+  expose `llm_request`/`llm_response` payloads in `SpanData`; loopback bind alone is
+  insufficient against the DNS-rebinding/CSRF-to-127.0.0.1 attack vector.
+  `SpanData` sanitization (SEC-BOUND-001 parity — strip `llm_request`/`llm_response`
+  from exported spans) is specified in BC-2.24.002.
 - **D6-3 debug-endpoints default OFF:** `debug-endpoints` feature MUST default to `false`
   in `pregolya-server/Cargo.toml`. CI gate `check-debug-endpoints-default` verifies this
   (authored at Wave 3 workspace setup).
@@ -221,6 +232,8 @@ These are **additive exceptions** to the workspace-wide NFR catalog for the cons
 - **D6-6 No println! in console library modules:** `console::server` and
   `console::span_exporter` use `tracing::*!` per workspace convention. The `main.rs`
   CLI entrypoint may use `println!` for UX output (port announcement).
+
+> **D-356 adversary fix DC-02 (2026-09-07, architect).** F-PDC02-05: D6-2 security posture strengthened per adversary finding. `debug_api_key` is now MANDATORY (not opt-in) when the `debug-endpoints` Cargo feature is enabled; unauthenticated requests to `/debug/*` return `403` with `E-SERVER-004 DebugRouteUnauthorized`. Rationale: `SpanData` exposes `llm_request`/`llm_response` payloads; loopback bind alone is insufficient against the DNS-rebinding/CSRF-to-127.0.0.1 vector. `SpanData` sanitization (SEC-BOUND-001 parity — strip LLM payload fields before export) is cross-referenced to BC-2.24.002. Companion: api-surface.md §Security note updated to reflect mandatory auth.
 
 ---
 

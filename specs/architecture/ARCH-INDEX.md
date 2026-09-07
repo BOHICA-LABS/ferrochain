@@ -1,10 +1,10 @@
 ---
 document_type: architecture-index
 level: L3
-version: "1.71"
+version: "1.74"
 status: active
-producer: architect
-timestamp: 2026-09-06T00:00:00Z
+producer: state-manager
+timestamp: 2026-09-07T00:00:00Z
 phase: 1b
 inputs:
   - .factory/specs/prd.md
@@ -17,6 +17,9 @@ traces_to: prd.md
 deployment_topology: single-service
 decisions: [D4, D6, D9, D11, D13, D17, D20, D21, D23, D356]
 changelog:
+  - "1.74 (D-356/DC-02 fix-burst/2026-09-07, state-manager): §Verification Properties preamble count corrected 40→41: '40 VPs total' → '41 VPs total'; unit breakdown 7→8; matches VP-2.24.002-D (architect v1.73 addendum). Architect v1.73 added VP-2.24.002-D to the catalog table and noted census 41 but body preamble was not updated in that pass."
+  - "1.73 (D-356/DC-02-addendum/2026-09-07, architect): VP-2.24.002-D registered in §Verification Properties — SpanData SEC-BOUND-001 sanitization before ring-buffer insertion (unit P1; console::span_exporter; BC-2.24.002). Census note: VP 41 total (state-manager to reconcile STATE.md 40→41)."
+  - "1.72 (D-356/DC-02/2026-09-07, architect): F-PDC02-02+F-PDC02-03 — VP-2.24.002-A/B BC Anchor description and Module column repointed console::ring_buffer → console::span_exporter (ADR-031 Decision 5 canonical; DC-01 had used non-canonical name). VP-2.24.004-008 A/B BC Anchor descriptions rewritten to canonical postcondition wording per BCs; Module column corrected from console::server to SPA panel modules: console::run_inspector (004-A/B), console::checkpoint_panel (005-A/B), console::hitl_panel (006-A/B), console::budget_panel (007-A/B), console::guardrail_panel (008-A/B). VP census unchanged: 40 total."
   - "1.71 (D-356/2026-09-06, architect): F3+F4 consistency fix — SS-24 BC range corrected BC-2.24.001–TBD→BC-2.24.001–008 (8 BCs authored by product-owner); VP census updated 21→40 (19 VP-2.24.* SEED rows registered); §Verification Properties summary updated 21→40 VPs; §SS-24 blockquote updated; v1.70 census VP 21→40."
   - "1.70 (D-356/ADR-031/2026-09-06): D-356 dev-console scope expansion — SS-24 (Developer Console) added to Subsystem Registry (primary crate pregolya-console, PRD section 2.24, Wave 3 roadmap; BC-2.24.001–008 authored). pregolya-console added to Canonical Crate Roster as crate #22 (Wave 3 roadmap; not built this cycle; D356/ADR-031). ADR-031 added to ADR Registry (Developer Console Architecture: pregolya-console crate, debug-endpoints feature gate, SSE transport reconciliation, SPA framework deferral, purity boundary classification, NFR deltas; accepted D-356 human-authorized). Document Map ADR count updated 30→31 files (ADR-001 to ADR-031). SS count 23→24. Crate Roster entries 21→22 (+1 roadmap). Census note: BC 140 / VP 40 / EC 143 / TV 795 canonical / stories 42 / pts 316 / ADR 31 / SS 24 / crates 22 (21 published + 1 roadmap) / holdout 24 (must-pass 17/24=70.8%) / NFR 15."
   - "1.69 (round-67/D-345/2026-09-02): P2A-239 fix-burst census reconciliation — F-P2A239-02[MED] CLOSED. Full cross-index census verification performed: BC-INDEX §Changelog / STORY-INDEX §Changelog / VP-INDEX §Changelog / test-vectors.md §Changelog / ARCH-INDEX §Changelog all confirmed at BC 140 / VP 21 / EC 143 / TV 795 canonical / stories 42 / pts 316 / ADR 30 / holdout 24 (must-pass 17/24=70.8%) / NFR 15 — fully consistent. At frozen HEAD 69ec78d (adversary P2A-239 review scope), ARCH-INDEX was at v1.67 which carried TV 794 canonical (pre-round-63); v1.68 committed D-341 already carried TV 795 canonical; this entry formally closes F-P2A239-02 and records the cross-index reconciliation sweep. sprint-state.yaml S-6.01 vps VP-015 spurious entry removed (F-P2A239-01[MED]; state-manager — story frontmatter source of truth = 12 VPs, no VP-015). Census UNCHANGED: BC 140 / VP 21 / EC 143 / TV 795 canonical / stories 42 / pts 316 / ADR 30 / holdout 24 (must-pass 17/24=70.8%) / NFR 15."
@@ -246,7 +249,7 @@ R6 namespace reservation: publish-all.sh must cover all 21 currently-published c
 
 ## Verification Properties (VP-INDEX)
 
-40 VPs total (6 Kani P0 + 4 Kani P1 + 10 proptest P1 + 12 integration P1 + 7 unit P1 + 1 compile-fail P1 — see VP-INDEX; mirror of VP-INDEX, kept in sync via POL-9):
+41 VPs total (6 Kani P0 + 4 Kani P1 + 10 proptest P1 + 12 integration P1 + 8 unit P1 + 1 compile-fail P1 — see VP-INDEX; mirror of VP-INDEX, kept in sync via POL-9):
 
 | VP | BC Anchor | Module | Tool | Priority | Status |
 |----|-----------|--------|------|----------|--------|
@@ -274,23 +277,28 @@ R6 namespace reservation: publish-all.sh must cover all 21 currently-published c
 | VP-2.24.001-A | BC-2.24.001 (console::server lifecycle — unit) | `console::server` | unit | P1 | draft |
 | VP-2.24.001-B | BC-2.24.001 (console::server zero-cap error — unit) | `console::server` | unit | P1 | draft |
 | VP-2.24.001-C | BC-2.24.001 (console::server type safety — compile-fail) | `console::server` | compile-fail | P1 | draft |
-| VP-2.24.002-A | BC-2.24.002 (ring buffer bounded invariant — proptest) | `console::ring_buffer` | proptest | P1 | draft |
-| VP-2.24.002-B | BC-2.24.002 (ring buffer FIFO invariant — proptest) | `console::ring_buffer` | proptest | P1 | draft |
+| VP-2.24.002-A | BC-2.24.002 (ring buffer bounded invariant — proptest) | `console::span_exporter` | proptest | P1 | draft |
+| VP-2.24.002-B | BC-2.24.002 (ring buffer FIFO invariant — proptest) | `console::span_exporter` | proptest | P1 | draft |
 | VP-2.24.002-C | BC-2.24.002 (debug trace session endpoint — integration) | `server::debug_routes` | integration | P1 | draft |
+| VP-2.24.002-D | BC-2.24.002 (SpanData llm_request/llm_response/attributes sanitized via SEC-BOUND-001 before ring-buffer insertion — unit) | `console::span_exporter` | unit | P1 | draft |
 | VP-2.24.003-A | BC-2.24.003 (graph descriptor serialization — unit) | `graph::descriptor` | unit | P1 | draft |
 | VP-2.24.003-B | BC-2.24.003 (graph descriptor pure termination — Kani) | `graph::descriptor` | Kani | P1 | draft |
 | VP-2.24.003-C | BC-2.24.003 (graph endpoint unit) | `server::debug_routes` | unit | P1 | draft |
-| VP-2.24.004-A | BC-2.24.004 (runtime config injection — integration) | `console::server` | integration | P1 | draft |
-| VP-2.24.004-B | BC-2.24.004 (SPA asset serving — integration) | `console::server` | integration | P1 | draft |
-| VP-2.24.005-A | BC-2.24.005 (span exporter ring buffer relay — integration; DI-002) | `console::server` | integration | P1 | draft |
-| VP-2.24.005-B | BC-2.24.005 (span exporter Arc-DI injection — integration; DI-002) | `console::server` | integration | P1 | draft |
-| VP-2.24.006-A | BC-2.24.006 (debug API key auth enforcement — integration) | `console::server` | integration | P1 | draft |
-| VP-2.24.006-B | BC-2.24.006 (debug endpoint feature gate OFF — integration) | `console::server` | integration | P1 | draft |
-| VP-2.24.007-A | BC-2.24.007 (dev-mode co-launch — unit) | `console::server` | unit | P1 | draft |
-| VP-2.24.007-B | BC-2.24.007 (console config lifecycle — integration) | `console::server` | integration | P1 | draft |
-| VP-2.24.008-A | BC-2.24.008 (console localhost bind — integration) | `console::server` | integration | P1 | draft |
-| VP-2.24.008-B | BC-2.24.008 (console TLS-less loopback — unit) | `console::server` | unit | P1 | draft |
+| VP-2.24.004-A | BC-2.24.004 (all 16 StreamEvent variants render without error — integration) | `console::run_inspector` | integration | P1 | draft |
+| VP-2.24.004-B | BC-2.24.004 (live node highlight fires on node_start, clears on node_end — integration) | `console::run_inspector` | integration | P1 | draft |
+| VP-2.24.005-A | BC-2.24.005 (checkpoint history rendered in step_idx monotone order — integration; DI-002) | `console::checkpoint_panel` | integration | P1 | draft |
+| VP-2.24.005-B | BC-2.24.005 (fork-from-checkpoint produces a new run_id — integration; DI-002) | `console::checkpoint_panel` | integration | P1 | draft |
+| VP-2.24.006-A | BC-2.24.006 (approve sends PreToolDecision::Allow; deny sends Deny(reason) — integration) | `console::hitl_panel` | integration | P1 | draft |
+| VP-2.24.006-B | BC-2.24.006 (multiple interrupts surfaced in FIFO order — integration) | `console::hitl_panel` | integration | P1 | draft |
+| VP-2.24.007-A | BC-2.24.007 (gauge renders without crash when tokens_remaining_after is null — unit) | `console::budget_panel` | unit | P1 | draft |
+| VP-2.24.007-B | BC-2.24.007 (timeline boundary marker emitted on each compaction_event — integration) | `console::budget_panel` | integration | P1 | draft |
+| VP-2.24.008-A | BC-2.24.008 (feed contains exactly the Fail and Transform events — integration) | `console::guardrail_panel` | integration | P1 | draft |
+| VP-2.24.008-B | BC-2.24.008 (malformed guardrail_decision payload does not crash the feed — unit) | `console::guardrail_panel` | unit | P1 | draft |
 
 > **D-356 VP-2.24.* SEED registrations (2026-09-06, architect):** 19 VP-2.24.* placeholder rows added for SS-24 Developer Console (BC-2.24.001–008). SEED status — body .md files authored at Phase 3 Wave 3. VP-2.24.003-B (Kani, graph::descriptor Pure Core) is the Phase 6 formal-proof candidate. Total VP 21→40.
+
+> **D-356 adversary fix DC-02 (2026-09-07, architect).** F-PDC02-03: VP-2.24.002-A/B Module column repointed `console::ring_buffer` → `console::span_exporter` (ADR-031 Decision 5 canonical). F-PDC02-02: VP-2.24.004-008 A/B BC Anchor descriptions rewritten to canonical postcondition wording per BCs; Module column corrected from `console::server` to SPA panel modules: `console::run_inspector` (004-A/B), `console::checkpoint_panel` (005-A/B), `console::hitl_panel` (006-A/B), `console::budget_panel` (007-A/B), `console::guardrail_panel` (008-A/B). F-PDC02-05 companion: ADR-031 D6-2 and api-surface.md updated to make `debug_api_key` MANDATORY when `debug-endpoints` feature is enabled. VP census 40→41 (VP-2.24.002-D addendum; see below).
+
+> **D-356 adversary fix DC-02 addendum (2026-09-07, architect).** VP-2.24.002-D registered — SpanData SEC-BOUND-001 sanitization before ring-buffer insertion (unit P1; `console::span_exporter`; BC-2.24.002). Sanitization-location ruling: AT INSERTION. PO follow-up: BC-2.24.002 PC-008 wording needs updating to "before ring-buffer insertion". Census 40→41; unit 7→8; state-manager to reconcile STATE.md VP 40→41.
 
 > **D23 VPs SEEDED (burst-232):** VP-011/012/013 minted with BC anchors, Kani harness skeletons, and input-hashes. VP-011 (graph::hitl / PreToolCallHook fail-closed — Kani P0); VP-012 (core-budget / OnWatermark arithmetic — Kani P1); VP-013 (tools-shell / BashTool risk floor — Kani P1). BC-2.23.005 category RESOLVED: BC-2.23.005 §Postconditions (PC-4) category amended to VAL in burst-232 (error-taxonomy.md §Component: TOOLS; consistent with VP-013 harness).

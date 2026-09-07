@@ -3,20 +3,21 @@ document_type: story
 level: ops
 story_id: S-console-06
 epic_id: E-console
-version: "1.1"
+version: "1.2"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
 changelog:
   - "1.0 (D-356/2026-09-06, story-writer): Initial story — run inspection event timeline, live SSE monitoring, live node highlighting via graph descriptor."
   - "1.1 (D-356/2026-09-06, story-writer): F-PDC01-02 adversary fix — correct AC-001 StreamEvent variant list: drop phantom run_error, remove duplicate run_stream, add step_start and tool_stream to reach exactly 16 canonical variants per BC-2.24.004 PC-001 and ADR-006."
+  - "1.2 (D-356/2026-09-07, story-writer): Adversary fix DC-02 — replace phantom graph_interrupt with error as the 16th canonical StreamEvent variant in AC-001. DC-01 introduced graph_interrupt believing it canonical; DC-02 corrects to the verified 16-variant list per BC-2.24.004 PC-001."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.004.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "b2e1c35"
+input-hash: "2b5f8be"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 8
 depends_on: [S-console-03, S-console-04, S-console-05]
@@ -41,6 +42,8 @@ tdd_mode: strict
 
 > **D-356 adversary fix DC-01 (2026-09-06, story-writer).** F-PDC01-02 sibling-sweep: corrected AC-001 StreamEvent variant list to the canonical 16 per BC-2.24.004 PC-001 and ADR-006 rev-3. Dropped phantom `run_error` (never existed in the grammar), removed duplicate `run_stream` (was listed at positions 8 and 16 yielding only 15 distinct entries), and added the two omitted variants `step_start` and `tool_stream`. The canonical ordered set is now: `run_start`, `run_stream`, `run_end`, `step_start`, `step_end`, `node_start`, `node_stream`, `node_end`, `tool_start`, `tool_stream`, `tool_end`, `guardrail_decision`, `tool_approval_request`, `tool_approval_resolved`, `graph_interrupt`, `compaction_event`.
 
+> **D-356 adversary fix DC-02 (2026-09-07, story-writer).** AC-001 StreamEvent variant list corrected again: the 16th canonical variant is `error`, not `graph_interrupt`. `graph_interrupt` is phantom — it does not exist in the 16-variant StreamEvent grammar per BC-2.24.004 PC-001 confirmed variant registry. The DC-01 fix (v1.1) replaced `run_error` with `graph_interrupt` while incrementing the position count to 16, but `graph_interrupt` was never a real variant. DC-02 corrects: slot 15 = `compaction_event`, slot 16 = `error`. Verified canonical set: `run_start`, `run_stream`, `run_end`, `step_start`, `step_end`, `node_start`, `node_stream`, `node_end`, `tool_start`, `tool_stream`, `tool_end`, `guardrail_decision`, `tool_approval_request`, `tool_approval_resolved`, `compaction_event`, `error`.
+
 ## Narrative
 
 - **As a** developer observing a running or completed pregolya agent
@@ -56,7 +59,7 @@ tdd_mode: strict
 ## Acceptance Criteria
 
 ### AC-001 (traces to BC-2.24.004 postcondition PC-001)
-All 16 `StreamEvent` variants for the selected run are displayed in the timeline, ordered by emission sequence. The 16 variants are: `run_start`, `run_stream`, `run_end`, `step_start`, `step_end`, `node_start`, `node_stream`, `node_end`, `tool_start`, `tool_stream`, `tool_end`, `guardrail_decision`, `tool_approval_request`, `tool_approval_resolved`, `graph_interrupt`, and `compaction_event`. Unknown variants (future extensions) render as a generic "Unknown event" row without crashing (forward-compatible). Verified by `test_BC_2_24_004_all_variants_render()` (VP-2.24.004-A).
+All 16 `StreamEvent` variants for the selected run are displayed in the timeline, ordered by emission sequence. The 16 variants are: `run_start`, `run_stream`, `run_end`, `step_start`, `step_end`, `node_start`, `node_stream`, `node_end`, `tool_start`, `tool_stream`, `tool_end`, `guardrail_decision`, `tool_approval_request`, `tool_approval_resolved`, `compaction_event`, and `error`. Unknown variants (future extensions) render as a generic "Unknown event" row without crashing (forward-compatible). Verified by `test_BC_2_24_004_all_variants_render()` (VP-2.24.004-A).
 
 ### AC-002 (traces to BC-2.24.004 postcondition PC-002)
 Each event row in the timeline is expandable. Expanded view shows payload-type-specific detail: `node_start`/`node_end` shows input/output state diff; `tool_start`/`tool_end` shows tool name and args JSON; `guardrail_decision` shows boundary type, severity, and outcome; `compaction_event` shows compacted turn range, `summary_token_count`, and `tokens_remaining_after`; `run_stream`/`node_stream` shows accumulated token text. Verified by individual expand tests per variant type.

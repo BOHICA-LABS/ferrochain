@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.008
-version: "1.1"
+version: "1.2"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -19,6 +19,7 @@ di_anchors: [DI-012, DI-014]
 vp_seed: false
 red_gate: false
 changelog:
+  - "1.2 (D-356-fix/DC-02/2026-09-07, product-owner): F-PDC02-04 guardrail_decision variant ordinal corrected from 16th to 12th (per BC-2.06.001 §Postconditions PC-002 canonical ordering and ADR-006 rev-3): three sites updated — Description, Architecture Anchors section, and Traceability §Architecture Authority row."
   - "1.1 (D-356-fix/DC-01/2026-09-06, product-owner): F-PDC01-01 Story Anchor corrected: was S-console-09, now S-console-10. Verified against S-console-10 frontmatter behavioral_contracts: [BC-2.24.008]."
   - "1.0 (D-356/2026-09-06, product-owner): Initial BC — D-356 dev-console scope expansion. Guardrail/security decision review panel (Fail/Transform only; Pass not shown per F-P99-01)."
 traces_to:
@@ -28,7 +29,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "fea55e3"
+input-hash: "81edd7e"
 extracted_from: null
 modified: []
 deprecated: null
@@ -44,10 +45,12 @@ removal_reason: null
 > **D-356 dev-console scope expansion (2026-09-06, product-owner).** Roadmap-only.
 > Not built in the current cycle — spec and storyboard only. Build in Wave 3.
 
+> **D-356 adversary fix DC-02 (2026-09-07, product-owner).** F-PDC02-04: `guardrail_decision` variant ordinal corrected from 16th to 12th at two sites — Description and Architecture Anchors. Authority: BC-2.06.001 §Postconditions PC-002 canonical StreamEvent ordering and ADR-006 rev-3. The `guardrail_decision` variant is the 12th of the 16 canonical variants; `error` is the 16th (not `guardrail_decision`).
+
 ## Description
 
 The developer console provides a dedicated guardrail security feed that isolates all
-`guardrail_decision` StreamEvents (CAP-007, 16th variant) from a run. Each entry shows
+`guardrail_decision` StreamEvents (CAP-007, 12th variant per ADR-006 rev-3 / BC-2.06.001 §Postconditions PC-002 canonical ordering) from a run. Each entry shows
 the boundary type, severity, and outcome (Fail or Transform). Pass decisions are NOT shown
 — they are not streamed per the existing design (ADR-006 rev-3, F-P99-01: "Pass is not
 streamed"). The feed updates in real time for live runs (via the shared SSE subscription)
@@ -117,7 +120,7 @@ visibility during untrusted-tool-result ingestion).
 ## Architecture Anchors
 
 - `architecture/decisions/ADR-031-developer-console-architecture.md` — §Traceability row "Guardrail review panel (CAP-047 — SS-24, SS-11)"
-- `architecture/decisions/ADR-006-streaming-event-taxonomy.md` — rev-3 `guardrail_decision` variant (16th), Fail/Transform only streamed, F-P99-01
+- `architecture/decisions/ADR-006-streaming-event-taxonomy.md` — rev-3 `guardrail_decision` variant (12th per canonical ordering, per BC-2.06.001 §Postconditions PC-002), Fail/Transform only streamed, F-P99-01
 
 ## Story Anchor
 
@@ -137,7 +140,7 @@ S-console-10 (Wave 3 — guardrail/security decision review panel)
 | Source L2 Capability | CAP-047 |
 | Capability Anchor Justification | CAP-047 ("Guardrail/Security Decision Review Panel") per capabilities-p1-p2.md §CAP-047 — this BC specifies the security feed filtering (Fail/Transform only, not Pass per F-P99-01), per-entry fields (boundary_type, GuardrailSeverity, outcome, reason), real-time SSE update, completed-run reconstruction, and DI-012 completeness requirement that constitute the guardrail review panel described in CAP-047 |
 | L2 Domain Invariants | DI-012 (No guardrail bypass — all qualifying Fail/Transform events appear in feed; no silent omission), DI-014 (Error Propagation — malformed events render as placeholder; no crash) |
-| Architecture Authority | ADR-031 §Traceability (CAP-047 — SS-24, SS-11); ADR-006 rev-3 (guardrail_decision 16th variant, F-P99-01 Pass-not-streamed) |
+| Architecture Authority | ADR-031 §Traceability (CAP-047 — SS-24, SS-11); ADR-006 rev-3 (guardrail_decision 12th variant per canonical ordering, F-P99-01 Pass-not-streamed) |
 | Binding Decisions | D-356 (developer console scope expansion, 2026-09-06) |
 | VP Registration | VP-2.24.008-A/B |
 | Module | pregolya-console / SPA (web frontend, pure SSE consumer of guardrail_decision events) |

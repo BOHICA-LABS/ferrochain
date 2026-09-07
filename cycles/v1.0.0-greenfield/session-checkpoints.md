@@ -1,8 +1,9 @@
 ---
 document_type: session-checkpoints
 level: ops
-version: "2.2"
+version: "2.3"
 changelog:
+  - "2.3 (D-356/DC-02 fix-burst/2026-09-07): D-356/DC-01 checkpoint archived"
   - "2.2 (D-347/round-68/2026-09-02): D-346 checkpoint archived"
   - "2.1 (D-341/round-63/2026-09-01): D-340 checkpoint archived"
   - "2.0 (D-340/round-62/2026-09-01): D-339 checkpoint archived"
@@ -4490,4 +4491,20 @@ Phase-2 gate APPROVED. HRQ-1..HRQ-6 satisfied by convergence. Phase-3 human gate
 
 ### PENDING USER-APPROVED WORK
 DEV-TOOLING-D255: v1 dev-tooling expansion — ready to start (post-Phase-2 approval gate met). DTU clones (openai/anthropic/ollama): Phase-4 prerequisite.
+
+---
+
+## Archived D-356/DC-01 Session Checkpoint (archived D-356/DC-02; 2026-09-07)
+
+### RESUME IN ONE BREATH
+pregolya Phase-2 CONVERGED+gate-APPROVED (anchor 81d16ca); Phase-3 IN PROGRESS at workspace-init. D-356 Phase-1 spec amendment COMPLETE (developer-console ROADMAP-ONLY; census: BC 148 / VP 40 / stories 52 / pts 372). D-356/DC-01 fix-burst COMPLETE: 5 findings closed (3H+1M+1L), input-hashes recomputed, PG-4/PG-5 Drift entries added, L-278/L-279 codified. Streak 0/3 reset by fix push; DC-02 adversary pass gates new HEAD. PR #1 (workspace scaffold) is REVIEWED-CLEAN + MERGEABLE at c9712c20 but BLOCKED from agent-merge (self-authored PR) — needs GENUINE HUMAN MERGE.
+
+### HEADS
+- develop: `bfe0592` — LOCAL ONLY (2 commits ahead of origin/develop at `644d1ad`; D-318+D-319 ops bursts); factory-artifacts: HEAD updated by DC-01 fix-burst commit. Main worktree on `chore/phase3-workspace-init`. PR #1: head `c9712c20` (OPEN, MERGEABLE, CI 17/17 green, cycle-13 APPROVE 0-blocking).
+
+### RESUME NEXT-ACTION
+(1) Dispatch DC-02 adversary pass; (2) re-run merge-classifier research; (3) human-merge PR #1; (4) Post-merge: S-1.01 (PregolyaError). Standing directives DIRECTIVE 1/2/3/4. 6 open convergence-close deferrals (C-1/PG-1/PG-2/PG-3/PG-4/PG-5).
+
+### DECISION-LOG DELTA (D-356/DC-01 fix-burst)
+D-356/DC-01 (2026-09-06): DC-01 adversary pass fix-burst CLOSED. trajectory-tail →5→0→0→0 (DC-01=5 findings [3H+1M+1L]; ALL CLOSED; DC-02 pending). PG-4: BC→Story reverse-direction hook. PG-5: POL-11 positive-coverage assertion for check-debug-endpoints-default. Census UNCHANGED: BC 148 / VP 40 / stories 52 / pts 372. Phase stays 3.
 

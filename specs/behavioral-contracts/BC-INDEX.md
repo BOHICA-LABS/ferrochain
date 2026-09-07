@@ -1,16 +1,17 @@
 ---
 document_type: bc-index
 level: L3
-version: "4.24"
+version: "4.25"
 status: active
 producer: state-manager
-timestamp: 2026-09-06T00:00:00Z
+timestamp: 2026-09-07T00:00:00Z
 project: pregolya
 cycle: v1.0.0-greenfield
 input-hash: "[live-index]"
 traces_to: .factory/specs/prd.md
 changelog:
-  - "4.24 (D-356/DC-01 fix-burst/2026-09-06, state-manager): 5 BC Story Anchors repointed (product-owner): BC-2.24.003→S-console-04, BC-2.24.004→S-console-06, BC-2.24.006→S-console-08, BC-2.24.007→S-console-09, BC-2.24.008→S-console-10. BC-2.24.004 PC-001 canonical 16-variant LLM tool-call type list corrected (adversary finding F-PDC01-04). All 5 BC files v1.0→v1.1. Census UNCHANGED: BC 148 / VP 40 / EC 143 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24."
+  - "4.25 (D-356/DC-02 fix-burst/2026-09-07, state-manager): F-PDC02-06 [LOW records] — v4.24 entry description corrected: 'LLM tool-call type list' → 'StreamEvent variant list' (those 16 are StreamEvent variants per BC-2.06.001 §PC-002, not LLM tool-call types). VP census updated: VP 40→41 (VP-2.24.002-D registered by architect). Census: BC 148 / VP 41 / EC 143 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24."
+  - "4.24 (D-356/DC-01 fix-burst/2026-09-06, state-manager): 5 BC Story Anchors repointed (product-owner): BC-2.24.003→S-console-04, BC-2.24.004→S-console-06, BC-2.24.006→S-console-08, BC-2.24.007→S-console-09, BC-2.24.008→S-console-10. BC-2.24.004 PC-001 canonical 16-variant StreamEvent variant list corrected (adversary finding F-PDC01-04). All 5 BC files v1.0→v1.1. Census UNCHANGED: BC 148 / VP 40 / EC 143 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24."
   - "4.23 (D-356/2026-09-06): SS-24 Developer Console registered — 8 new BCs (BC-2.24.001..008; CAP-041..047 anchors; wave 3; draft; P1). BC-to-Story SS-24 section added. Summary: BC 140→148 (+8); P1 86→94 (+8); Subsection groups 23→24. VP-2.24.* seed anchors listed per VP-INDEX v1.41. Census: BC 148 / VP 40 / EC 143 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24."
   - "4.22 (round-67 reconciliation/D-346/2026-09-02): BC-2.14.005 row Notes column updated v1.4→v1.5 per product-owner multi-anchor adjudication Decision (a): BC-2.14.005 is a legitimate multi-anchor contract co-anchored to S-1.02 (primary; credential newtypes in pregolya-core/src/credentials.rs) + S-2.06 (co-anchor; SDK crates cannot depend on pregolya-core per BC-2.08.006 PC-001; SDK crates define independent credential newtypes governed by BC-2.14.005 workspace-wide policy). S-2.06 AC-006 traces to BC-2.14.005 {PC-002}. STORY-INDEX §BC-to-Story anchor map BC-2.14.005 row: S-1.02→S-1.02, S-2.06 (v1.51). sprint-state.yaml S-2.06 bcs: [BC-2.08.006]→[BC-2.08.006, BC-2.14.005]. Census UNCHANGED: BC 140 / VP 21 / EC 143 / TV 795 canonical / stories 42 / pts 316 / ADR 30 / holdout 24 (must-pass 17/24=70.8%) / NFR 15."
   - "4.21 (round-65/D-343/2026-09-01): BC-2.02.009 §Traceability Test Types corrected 'U (unit)'→'U (unit), P (property)' (F-P2A237-03[MED]; VP-020 proptest P1 coverage now reflected in Test Types cell; aligned with sibling BC-2.02.007 canonical form). Census UNCHANGED: BC 140 / VP 21 / EC 143 / TV 795 canonical / stories 42 / pts 316 / ADR 30 / holdout 24 (must-pass 17/24=70.8%) / NFR 15."
@@ -387,6 +388,8 @@ _VP-004 and VP-005 are integration VPs (from BC-2.09.004/005); registered in VP-
 
 | Version | Date | Change | Source |
 |---------|------|--------|--------|
+| 4.25 | 2026-09-07 | D-356/DC-02 fix-burst: F-PDC02-06 [LOW records] — v4.24 entry description corrected: 'LLM tool-call type list' → 'StreamEvent variant list' (those 16 are StreamEvent variants per BC-2.06.001 §PC-002, not LLM tool-call types). VP census updated: VP 40→41 (VP-2.24.002-D registered by architect). Census: BC 148 / VP 41 / EC 143 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24. | D-356/DC-02 fix-burst |
+| 4.24 | 2026-09-06 | D-356/DC-01 fix-burst: 5 BC Story Anchors repointed (product-owner): BC-2.24.003→S-console-04, BC-2.24.004→S-console-06, BC-2.24.006→S-console-08, BC-2.24.007→S-console-09, BC-2.24.008→S-console-10. BC-2.24.004 PC-001 canonical 16-variant StreamEvent variant list corrected (F-PDC01-04). All 5 BC files v1.0→v1.1. Census UNCHANGED: BC 148 / VP 40 / EC 143 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24. | D-356/DC-01 fix-burst |
 | 4.23 | 2026-09-06 | D-356 dev-console scope expansion: SS-24 Developer Console registered — 8 new BCs (BC-2.24.001..008; all P1; CAP-041..047; DI-014; pregolya-console crate Wave 3 ROADMAP-ONLY). VP Seed BCs table +8 rows (VP-2.24.001-A/B/C + VP-2.24.002-A/B/C + VP-2.24.003-A/B/C + VP-2.24.004-A/B + VP-2.24.005-A/B + VP-2.24.006-A/B + VP-2.24.007-A/B + VP-2.24.008-A/B = 19 new VP entries; VP 21→40). Subsystem groups 23→24 (SS-24 added). Census: BC 140→148 (51 P0 / 94 P1 / 3 P2) / VP 21→40 / EC 143 / TV 795 / stories 42→52 / pts 316→372 / ADR 30→31 / holdout 24 / NFR 15. | D-356 |
 | 4.22 | 2026-09-02 | round-67 reconciliation/D-346: BC-2.14.005 row Notes annotation updated v1.4→v1.5 — multi-anchor S-1.02+S-2.06 adjudication (product-owner Decision (a)). STORY-INDEX anchor map BC-2.14.005 S-1.02→S-1.02, S-2.06 (v1.51). sprint-state.yaml S-2.06 bcs synced. Census UNCHANGED: BC 140 / VP 21 / EC 143 / TV 795. | round-67 reconciliation D-346 |
 | 4.21 | 2026-09-01 | round-65/D-343/F-P2A237-03: BC-2.02.009 §Traceability Test Types corrected 'U (unit)' → 'U (unit), P (property)' — VP-020 proptest P1 coverage now reflected; aligned with sibling BC-2.02.007. Census UNCHANGED: BC 140 / VP 21 / EC 143 / TV 795. | round-65 D-343 |

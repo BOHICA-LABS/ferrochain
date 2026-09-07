@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.006
-version: "1.1"
+version: "1.2"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -19,6 +19,7 @@ di_anchors: [DI-003, DI-014]
 vp_seed: false
 red_gate: false
 changelog:
+  - "1.2 (D-356-fix/DC-02/2026-09-07, product-owner): F-PDC02-01 PRE-002 and PC-001 graph_interrupt SSE-event references removed. Node-boundary interrupt detection re-scoped: detected via interrupted run-status (CAP-006 interrupt() machinery), NOT via any SSE event — there is no graph_interrupt StreamEvent. Tool-approval interrupt detection remains via tool_approval_request StreamEvent (CAP-034). Related BCs section updated to remove graph_interrupt reference."
   - "1.1 (D-356-fix/DC-01/2026-09-06, product-owner): F-PDC01-01 Story Anchor corrected: was S-console-06, now S-console-08. Verified against S-console-08 frontmatter behavioral_contracts: [BC-2.24.006]."
   - "1.0 (D-356/2026-09-06, product-owner): Initial BC — D-356 dev-console scope expansion. HITL approval dialog and resume dispatch."
 traces_to:
@@ -28,7 +29,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "fea55e3"
+input-hash: "81edd7e"
 extracted_from: null
 modified: []
 deprecated: null
@@ -57,12 +58,14 @@ subscribes to the new run stream (BC-2.24.004 live monitoring).
 ## Preconditions
 
 1. {PRE-001} A run in `interrupted` status exists on the selected thread (either a node-boundary interrupt via `interrupt()` machinery, CAP-006, or a per-tool-call approval request, CAP-034).
-2. {PRE-002} The run's SSE stream contains one or more `tool_approval_request` StreamEvents (CAP-007, for per-tool-call interrupts) or a `graph_interrupt` event (for node-boundary interrupts).
+2. {PRE-002} Either: (a) the run's SSE stream contains one or more `tool_approval_request` StreamEvents (CAP-034, for per-tool-call approval interrupts); or (b) the run's status is `interrupted` as returned by run-status polling (for node-boundary interrupts via `interrupt()` machinery, CAP-006). There is no `graph_interrupt` StreamEvent — node-boundary interrupts emit NO SSE event; detection is exclusively via run STATUS transitions to `interrupted`.
 3. {PRE-003} `POST /threads/{id}/runs/{run_id}/resume` is available on pregolya-server (BC-2.05.004).
 
 ## Postconditions
 
-1. {PC-001} **Interrupt detection:** The console identifies runs in `interrupted` status from the run list or from observing a `graph_interrupt` / `tool_approval_request` event in the SSE stream. Interrupted runs are visually flagged (e.g., with a badge).
+1. {PC-001} **Interrupt detection:** The console identifies runs in `interrupted` status via two mechanisms: (a) **run-status polling** — node-boundary interrupts (CAP-006 `interrupt()` machinery) are detected when run STATUS transitions to `interrupted`; there is no `graph_interrupt` StreamEvent — the interrupt halts the stream and the interrupted state is visible only via STATUS; (b) **`tool_approval_request` StreamEvent** — per-tool-call approval interrupts (CAP-034) emit a `tool_approval_request` event in the SSE stream before halting. Interrupted runs are visually flagged (e.g., with a badge).
+
+   > **D-356 adversary fix DC-02 (2026-09-07, product-owner).** F-PDC02-01 graph_interrupt references removed from PRE-002 and PC-001. `graph_interrupt` is phantom — there is no such StreamEvent in the verified 16-variant canonical enum (BC-2.06.001 §Postconditions PC-002). Node-boundary interrupts (CAP-006) halt the stream without emitting any SSE event; detection is exclusively via run STATUS transitioning to `interrupted`. The sole interrupt-adjacent SSE event is `tool_approval_request` (emitted BEFORE a tool-call interrupt halts the run). PC-001 re-scoped accordingly; PRE-002 re-scoped to STATUS-polling for node-boundary, `tool_approval_request` event for tool-approval. Related BCs section updated to remove graph_interrupt reference.
 2. {PC-002} **Approval dialog contents:**
    - For **node-boundary interrupts** (CAP-006 `interrupt()` machinery): the dialog shows the interrupt's `scratchpad` value (arbitrary JSON) and the node name where the interrupt fired.
    - For **per-tool-call interrupts** (CAP-034 `tool_approval_request` StreamEvent): the dialog shows the `ToolCallPreview` — tool name, args as JSON, and `ActionRisk` level — from the `tool_approval_request` event payload.
@@ -112,7 +115,7 @@ subscribes to the new run stream (BC-2.24.004 live monitoring).
 ## Related BCs
 
 - BC-2.05.004 — depends on: `POST /threads/{id}/runs/{run_id}/resume` endpoint (exact contract consumed)
-- BC-2.12.007 — depends on: SSE stream for detecting `tool_approval_request` and `graph_interrupt` events
+- BC-2.12.007 — depends on: SSE stream for detecting `tool_approval_request` events (tool-approval interrupts; node-boundary interrupts detected via run-status polling, not SSE — there is no `graph_interrupt` StreamEvent)
 - BC-2.24.004 — composes with: after resume, console transitions to live monitoring (BC-2.24.004) for new run
 
 ## Architecture Anchors
