@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.002
-version: "1.6"
+version: "1.7"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -19,6 +19,7 @@ di_anchors: [DI-014]
 vp_seed: false
 red_gate: false
 changelog:
+  - "1.7 (D-356-fix/DC-11/2026-09-07, product-owner): F-PDC11-03: §Module server::debug_span clause had duplicate [VP-2.24.002-C target] annotation — VP-2.24.002-C targets server::debug_routes ONLY (VP-INDEX §VP Catalog). Removed [VP-2.24.002-C target] from server::debug_span clause; replaced with [no dedicated VP; exercised via VP-2.24.002-C/D] to document the indirect coverage. server::debug_routes [VP-2.24.002-C target] annotation unchanged."
   - "1.6 (D-356-fix/DC-10/2026-09-07, product-owner): F-PDC10-02: §Module updated to canonical 4-entry ADR-031 Decision 7 split — server::debug_span (Boundary) added as pregolya-server module owning SpanData data type and DebugSpanSource read-trait (consumer-owns-interface). Body sweep: Description clarified that server reads via Arc<dyn DebugSpanSource> with zero server→console compile dependency; PRE-002 injection language updated to Arc<dyn DebugSpanSource>; PC-005 and TV-004 updated from DebugSpanExporter to DebugSpanSource abstraction; INV-003 SpanData attributed to server::debug_span; INV-005 corrected from Arc<DebugSpanExporter> to Arc<dyn DebugSpanSource> (ADR-031 Decision 7 dependency inversion); Architecture Anchors updated to cite Decision 7; Traceability Module and Architecture Authority rows updated."
   - "1.5 (D-356-fix/DC-08/2026-09-07, product-owner): F-PDC08-02: §Story Anchor updated — S-console-03 appended as Wave 3 secondary anchor (debug-endpoints feature / server::debug_routes; builds VP-2.24.002-C). S-console-02 remains primary."
   - "1.4 (D-356-fix/DC-07/2026-09-07, product-owner): F-PDC07-01: debug_api_key→debug_route_key throughout PC-007, EC-007, changelogs, and DC-02 blockquote (canonical field: SecurityConfig.debug_route_key per BC-2.12.005 PRE-004/INV-001; ADR-021 §Decision 1). F-PDC07-02: PC-007 and EC-007 now explicitly cite E-SERVER-013 InvalidDebugRouteKey as the boot-refusal code (startup path; distinct from E-SERVER-004 runtime 403). F-PDC07-05: stale '(update in progress by architect)' annotations removed from PC-007 body and DC-02 blockquote (ADR-031 D6-2 landed)."
@@ -58,6 +59,8 @@ removal_reason: null
 > **D-356 adversary fix DC-08 (2026-09-07, product-owner).** F-PDC08-02: §Story Anchor updated — S-console-03 appended as Wave 3 secondary anchor (debug-endpoints feature / `server::debug_routes`; builds VP-2.24.002-C). S-console-02 remains primary.
 
 > **D-356 adversary fix DC-07 (2026-09-07, product-owner).** F-PDC07-01: `debug_api_key` → `debug_route_key` throughout (PC-007, EC-007, changelog v1.1, DC-02 blockquote). Canonical field is `SecurityConfig.debug_route_key: Option<String>` (BC-2.12.005 PRE-004/PC-006/PC-007/INV-001; ADR-021 §Decision 1). F-PDC07-02: PC-007 and EC-007 now explicitly cite E-SERVER-013 InvalidDebugRouteKey for the startup boot-refusal path (distinct from E-SERVER-004 runtime 403). F-PDC07-05: stale `(update in progress by architect)` removed from PC-007 and DC-02 blockquote (ADR-031 D6-2 landed).
+
+> **D-356 adversary fix DC-11 (2026-09-07, product-owner).** F-PDC11-03: §Module `server::debug_span` clause had an erroneous `[VP-2.24.002-C target]` annotation. VP-2.24.002-C targets `server::debug_routes` ONLY (VP-INDEX §VP Catalog: `VP-2.24.002-C | server::debug_routes | integration | pregolya-server`). Annotation corrected to `[no dedicated VP; exercised via VP-2.24.002-C/D]`; `server::debug_routes` retains `[VP-2.24.002-C target]` unchanged.
 
 > **D-356 adversary fix DC-10 (2026-09-07, product-owner).** F-PDC10-02: §Module updated to canonical 4-entry ADR-031 Decision 7 split — `server::debug_span` (Boundary) added as the pregolya-server module owning `SpanData` and the `DebugSpanSource` read-trait (consumer-owns-interface: server owns the contract type; pregolya-console implements it). Body sweep: Description, PRE-002, PC-005, TV-004, INV-003, INV-005, Architecture Anchors, Traceability corrected to reflect that `server::debug_routes` holds `Arc<dyn DebugSpanSource>` (dyn-dispatch) with ZERO server→console compile dependency per ADR-031 Decision 7.
 
@@ -169,7 +172,7 @@ S-console-03 (Wave 3 — debug-endpoints feature / server::debug_routes; builds 
 | Architecture Authority | ADR-031 Decision 2 (debug endpoint paths, SpanData shape, E-SERVER-023, debug-endpoints feature gate, default OFF), Decision 5 (purity boundary: ring buffer Pure Core, OTel registration Boundary), Decision 7 (consumer-owns-interface: SpanData + DebugSpanSource trait in server::debug_span; server holds Arc<dyn DebugSpanSource>; zero server→console compile dependency) |
 | Binding Decisions | D-356 (developer console scope expansion, 2026-09-06) |
 | VP Registration | VP-2.24.002-A/B/C/D |
-| Module | pregolya-server / server::debug_span (Boundary): SpanData data type + DebugSpanSource read-trait [consumer-owns-interface; VP-2.24.002-C target] + pregolya-console / console::ring_buffer (Pure Core): RingBuffer<T> [VP-2.24.002-A/B targets] + pregolya-console / console::span_exporter (Boundary): DebugSpanExporter implements DebugSpanSource; SEC-BOUND-001 at insertion; owns Arc<Mutex<RingBuffer<SpanData>>> [VP-2.24.002-D target] + pregolya-server / server::debug_routes [feature debug-endpoints] (Effectful Shell): holds Arc<dyn DebugSpanSource>; dyn-dispatch per ADR-031 Decision 7 [VP-2.24.002-C target] |
+| Module | pregolya-server / server::debug_span (Boundary): SpanData data type + DebugSpanSource read-trait [consumer-owns-interface; no dedicated VP; exercised via VP-2.24.002-C/D] + pregolya-console / console::ring_buffer (Pure Core): RingBuffer<T> [VP-2.24.002-A/B targets] + pregolya-console / console::span_exporter (Boundary): DebugSpanExporter implements DebugSpanSource; SEC-BOUND-001 at insertion; owns Arc<Mutex<RingBuffer<SpanData>>> [VP-2.24.002-D target] + pregolya-server / server::debug_routes [feature debug-endpoints] (Effectful Shell): holds Arc<dyn DebugSpanSource>; dyn-dispatch per ADR-031 Decision 7 [VP-2.24.002-C target] |
 | Priority | P1 |
 | Wave | 3 |
 | Test Types | unit + proptest + integration |

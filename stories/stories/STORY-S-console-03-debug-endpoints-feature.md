@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-console-03
 epic_id: E-console
-version: "1.2"
+version: "1.3"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -11,6 +11,7 @@ changelog:
   - "1.0 (D-356/2026-09-06, story-writer): Initial story — debug-endpoints Cargo feature on pregolya-server, trace-read HTTP endpoints, E-SERVER-023 not-configured response."
   - "1.1 (D-356/2026-09-07, story-writer): F-PDC07-01 — renamed SecurityConfig field debug_api_key → debug_route_key throughout (BC-2.12.005 PRE-004/INV-001; ADR-021 §Decision 1); AC-005 updated to cover startup refusal E-SERVER-013 InvalidDebugRouteKey when key absent/empty (BC-2.24.002 PC-007/EC-007)."
   - "1.2 (D-356/2026-09-07, story-writer): F-PDC10-02 — dependency inversion applied per ADR-031 Decision 7: server reads via Arc<dyn DebugSpanSource> (server-owned trait); pregolya-console path dep row removed from Library requirements; server::debug_span (own module) replaces it; AC-001/AC-002 SpanData attributed as server::debug_span server-owned type; AC-008 Arc<DebugSpanExporter> -> Arc<dyn DebugSpanSource>; Task 5 and Previous Story Intelligence updated."
+  - "1.3 (D-356/2026-09-07, story-writer): F-PDC11-02 — S-console-03 is now the build-owner of server::debug_span; dep-edge flipped (depends_on now [S-console-01]; blocks now [S-console-02, S-console-04, S-console-06]); debug_span.rs CREATE task added; compile-fail gate tests/external/span-data-non-exhaustive/ relocated here; PSI corrected to note S-console-03 creates server::debug_span."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.002.md
@@ -18,11 +19,11 @@ inputs:
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
   - .factory/specs/prd-supplements/error-taxonomy.md
-input-hash: "2d81652"
+input-hash: "fcf62aa"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
-depends_on: [S-console-02]
-blocks: [S-console-04, S-console-06]
+depends_on: [S-console-01]
+blocks: [S-console-02, S-console-04, S-console-06]
 behavioral_contracts: [BC-2.24.002]
 verification_properties: [VP-2.24.002-C]
 priority: P1
@@ -42,6 +43,8 @@ tdd_mode: strict
 > Wave 3 — not built in the current Phase 3 implementation cycle.
 
 > **D-356 adversary fix DC-07 (2026-09-07, story-writer).** F-PDC07-01: `SecurityConfig.debug_api_key` renamed to `SecurityConfig.debug_route_key` in all live-body locations (AC-005, Task 7, Architecture Compliance Rules) per ADR-021 §Decision 1 (canonical SecurityConfig field name). AC-005 now covers both behaviours from BC-2.24.002 PC-007/EC-007: (1) empty/absent `debug_route_key` with `debug-endpoints` feature enabled → E-SERVER-013 InvalidDebugRouteKey at startup (refuse to start); (2) valid key present + unauthenticated request → E-SERVER-004 403 at runtime.
+
+> **D-356 adversary fix DC-11 (2026-09-07, story-writer).** F-PDC11-02: S-console-03 is the build-owner of `server::debug_span` (`pregolya-server/src/server/debug_span.rs` — `SpanData` `#[non_exhaustive]` `Clone+Serialize` + `DebugSpanSource` read-trait). Dep-edge flipped: S-console-03 `depends_on` now `[S-console-01]`; `blocks` now `[S-console-02, S-console-04, S-console-06]`. S-console-02 (`DebugSpanExporter`) now depends on S-console-03 for the trait definition — `console→server` direction confirmed. `tests/external/span-data-non-exhaustive/` compile-fail gate relocated here (SpanData is a pregolya-server type). PSI corrected.
 
 > **D-356 adversary fix DC-10 (2026-09-07, story-writer).** F-PDC10-02: dependency inversion applied (ADR-031 Decision 7). `SpanData` type + `DebugSpanSource` trait live in `pregolya-server/server::debug_span` (server-owned). `console::span_exporter` implements `DebugSpanSource` — `console→server` direction only; pregolya-server has zero compile dep on pregolya-console. All story locations updated: Architecture Mapping row, Library & Framework Requirements row (pregolya-console path dep removed; server::debug_span own-module row added), Task 5, AC-001/AC-002 SpanData ownership note, AC-008 `Arc<dyn DebugSpanSource>`, Previous Story Intelligence, Forbidden Patterns.
 
@@ -87,6 +90,7 @@ Concurrent `GET /debug/trace/session/{id}` requests against the shared `Arc<dyn 
 
 | Component | Module | Pure/Effectful |
 |-----------|--------|----------------|
+| `server::debug_span` module | `pregolya-server/src/server/debug_span.rs` | Pure Core (`SpanData`) + Boundary (`DebugSpanSource` trait) — created by THIS story; server-owned |
 | `debug-endpoints` feature gate | `pregolya-server/Cargo.toml` | N/A (build config) |
 | Trace-read HTTP handlers | `pregolya-server/src/server/debug_routes.rs` [feature debug-endpoints] | Effectful Shell |
 | `DebugSpanSource` trait receiver | `pregolya-server/src/server/debug_routes.rs` | Boundary (reads via `Arc<dyn DebugSpanSource>`; trait + `SpanData` type owned by `server::debug_span`) |
@@ -128,6 +132,7 @@ Concurrent `GET /debug/trace/session/{id}` requests against the shared `Arc<dyn 
 1. [ ] Write failing tests for all ACs — `test_BC_2_24_002_*` family covering endpoints (test-writer)
 2. [ ] Verify Red Gate — `cargo nextest run -p pregolya-server --features debug-endpoints` shows failures
 3. [ ] Add `debug-endpoints = []` feature (default false) to `pregolya-server/Cargo.toml`
+3a. [ ] Create `pregolya-server/src/server/debug_span.rs` — `pub struct SpanData { span_id, trace_id, start_time_ms, end_time_ms, attributes, llm_request, llm_response }` with `#[non_exhaustive]`, `Clone`, `Serialize`; `pub trait DebugSpanSource` (read method; no dep on pregolya-console; ADR-031 Decision 7); this must exist before debug_routes.rs and before S-console-02's DebugSpanExporter can implement it
 4. [ ] Create `pregolya-server/src/server/debug_routes.rs` behind `#[cfg(feature = "debug-endpoints")]`; implement `GET /debug/trace/session/{session_id}` and `GET /debug/trace/{event_id}` handlers
 5. [ ] `server::debug_routes` reads via `Arc<dyn DebugSpanSource>` injected at launch by the console layer (`DebugSpanExporter` implements `DebugSpanSource`); pregolya-server has ZERO compile dependency on pregolya-console (ADR-031 Decision 7)
 6. [ ] Implement `E-SERVER-023 DebugExporterNotConfigured` response when exporter is `None`
@@ -140,7 +145,7 @@ Concurrent `GET /debug/trace/session/{id}` requests against the shared `Arc<dyn 
 
 ## Previous Story Intelligence (MANDATORY)
 
-Predecessor: S-console-02 (DebugSpanExporter + Arc DI). S-console-02 establishes the `DebugSpanSource` trait and `SpanData` type in `pregolya-server/server::debug_span`; `console::span_exporter::DebugSpanExporter` implements `DebugSpanSource`. At dev-mode startup the console layer injects `Arc<dyn DebugSpanSource>` into pregolya-server — pregolya-server has zero compile dep on pregolya-console (ADR-031 Decision 7). This story adds the HTTP endpoint surface. Follow the same Arc-DI injection pattern established in S-console-02.
+Predecessor: S-console-01 (pregolya-console scaffold). **This story (S-console-03)** creates `pregolya-server/src/server/debug_span.rs` — `SpanData` type (`#[non_exhaustive]`, `Clone`, `Serialize`) and `DebugSpanSource` read-trait, both owned by pregolya-server (ADR-031 Decision 7). This establishes the server::debug_span module before `server::debug_routes` references it. After S-console-03 is complete, S-console-02 (`DebugSpanExporter`) imports `SpanData` and implements `DebugSpanSource` — S-console-02 now depends on S-console-03 for the trait definition. pregolya-server has zero compile dep on pregolya-console.
 
 ## Architecture Compliance Rules (MANDATORY)
 
@@ -167,6 +172,8 @@ Predecessor: S-console-02 (DebugSpanExporter + Arc DI). S-console-02 establishes
 | File | Action | Purpose |
 |------|--------|---------|
 | `crates/pregolya-server/Cargo.toml` | MODIFY | Add `debug-endpoints = []` feature (default false) |
+| `crates/pregolya-server/src/server/debug_span.rs` | CREATE | `SpanData` (`#[non_exhaustive]`, `Clone`, `Serialize`) + `DebugSpanSource` trait — server-owned (ADR-031 Decision 7) |
 | `crates/pregolya-server/src/server/debug_routes.rs` | CREATE | Trace-read HTTP handlers behind `#[cfg(feature = "debug-endpoints")]` |
-| `crates/pregolya-server/src/server/mod.rs` | MODIFY | Conditionally register debug routes in router |
+| `crates/pregolya-server/src/server/mod.rs` | MODIFY | Conditionally register debug routes in router; expose `pub mod debug_span` |
+| `tests/external/span-data-non-exhaustive/` | CREATE | Compile-fail test: external code cannot construct `SpanData { .. }` as struct literal (`SpanData` is pregolya-server type, `#[non_exhaustive]`) — relocated from S-console-02 |
 | `Justfile` | MODIFY | Add `check-debug-endpoints-default` recipe |

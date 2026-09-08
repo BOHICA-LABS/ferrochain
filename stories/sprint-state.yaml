@@ -11,6 +11,7 @@
 #   tdd_mode: strict (default) | facade
 #   priority: P0 | P1 | P2
 #   crate: primary target crate(s)
+#   depends_on: story IDs that must merge before this story can begin (optional; Wave 3 roadmap stories)
 #   pr_url: GitHub PR URL (set by pr-manager at PR creation)
 #   merged_sha: develop HEAD SHA after merge (set by state-manager)
 
@@ -584,11 +585,12 @@ stories:
     wave: 3
     status: roadmap
     bcs: [BC-2.24.001, BC-2.24.002]
-    vps: [VP-2.24.002-A, VP-2.24.002-B, VP-2.24.002-C]
+    vps: [VP-2.24.002-A, VP-2.24.002-B, VP-2.24.002-D]
     points: 5
     tdd_mode: strict
     priority: P1
     crate: [pregolya-console]
+    depends_on: [S-console-01, S-console-03]
     pr_url: ~
     merged_sha: ~
 
@@ -600,7 +602,8 @@ stories:
     points: 5
     tdd_mode: strict
     priority: P1
-    crate: [pregolya-console]
+    crate: [pregolya-server]
+    depends_on: [S-console-01]
     pr_url: ~
     merged_sha: ~
 

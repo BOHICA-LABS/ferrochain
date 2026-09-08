@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-console-02
 epic_id: E-console
-version: "1.2"
+version: "1.3"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -11,6 +11,7 @@ changelog:
   - "1.0 (D-356/2026-09-06, story-writer): Initial story — DebugSpanExporter FIFO ring buffer, OTel SpanExporter trait, dev-mode co-launch wiring, Arc DI."
   - "1.1 (D-356/2026-09-07, story-writer): Adversary fix DC-02 — add VP-2.24.002-D (SpanData SEC-BOUND-001 sanitization unit test) to verification_properties frontmatter; add AC-011 asserting that DebugSpanExporter sanitizes credential-pattern field values before ring buffer insertion."
   - "1.2 (D-356/2026-09-07, story-writer): Adversary fix DC-06 sweep — remove VP-2.24.002-C from verification_properties; VP-2.24.002-C anchors to S-console-03 (server::debug_routes integration test) per VP-INDEX; this story builds DebugSpanExporter and SpanData covered by VP-2.24.002-A/B/D; no body references to VP-2.24.002-C were present."
+  - "1.3 (D-356/2026-09-07, story-writer): F-PDC11-01 — dependency inversion sweep per ADR-031 Decision 7: dep-edge flipped (depends_on now [S-console-01, S-console-03]; blocks now []); AC-002 injection Arc<dyn DebugSpanSource>; AC-006 compile-fail test relocated to S-console-03; AC-007 rewritten to INV-005 updated model; SpanData row removed from Architecture Mapping (server-owned); Task 4/6/7 updated; compile-fail File Structure row relocated."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.001.md
@@ -18,11 +19,11 @@ inputs:
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "48bd0f8"
+input-hash: "e14e9b1"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
-depends_on: [S-console-01]
-blocks: [S-console-03]
+depends_on: [S-console-01, S-console-03]
+blocks: []
 behavioral_contracts: [BC-2.24.001, BC-2.24.002]
 verification_properties: [VP-2.24.002-A, VP-2.24.002-B, VP-2.24.002-D]
 priority: P1
@@ -40,6 +41,8 @@ tdd_mode: strict
 
 > **D-356 dev-console scope expansion (2026-09-06, story-writer).** Roadmap-only.
 > Wave 3 — not built in the current Phase 3 implementation cycle.
+
+> **D-356 adversary fix DC-11 (2026-09-07, story-writer).** F-PDC11-01: dependency inversion applied (ADR-031 Decision 7). `SpanData` type + `DebugSpanSource` trait are server-owned (`pregolya-server/server::debug_span`), created by S-console-03. `DebugSpanExporter` (this story) imports `SpanData` from server::debug_span and implements `DebugSpanSource`. Dep-edge flipped: `depends_on` now `[S-console-01, S-console-03]`; `blocks` now `[]`. AC-002 injection updated to `Arc<dyn DebugSpanSource>`. AC-006 compile-fail test relocated to S-console-03 (server::debug_span build-owner). AC-007 rewritten to updated INV-005. Architecture Mapping SpanData row removed. Tasks 4, 6, 7 updated. `tests/external/span-data-non-exhaustive/` File Structure row relocated to S-console-03.
 
 > **D-356 adversary fix DC-06 sweep (2026-09-07, story-writer).** VP-2.24.002-C removed from `verification_properties`. VP-2.24.002-C anchors to S-console-03 per VP-INDEX (`server::debug_routes` /debug/trace/* integration test, built by S-console-03 — not the ring buffer this story builds). S-console-03 already correctly carries VP-2.24.002-C. Corrected array: `[VP-2.24.002-A, VP-2.24.002-B, VP-2.24.002-D]`. No body or AC references to VP-2.24.002-C were present; POLICY-8 gate remains satisfied.
 
@@ -64,7 +67,7 @@ tdd_mode: strict
 When `run_console` is called with `dev_mode: true`, the pregolya-server `/api/*` routes are merged into the same Axum router as `/ui/*`. Both SPA assets and server API are served from the single `<host>:<port>` listener. `POST /api/shutdown` is available. Verified by `test_BC_2_24_001_dev_mode_routes_merged()`.
 
 ### AC-002 (traces to BC-2.24.001 postcondition PC-005)
-When `dev_mode: true`, a `DebugSpanExporter` (ring buffer with `span_retention_cap` entries) is instantiated and injected into the co-launched pregolya-server as its configured OTel span exporter via `Arc<DebugSpanExporter>`. In standalone mode (`dev_mode: false`), `DebugSpanExporter` is not instantiated by the console crate. Verified by `test_BC_2_24_001_dev_mode_exporter_injected()`.
+When `dev_mode: true`, a `DebugSpanExporter` (ring buffer with `span_retention_cap` entries) is instantiated, wrapped as `Arc<dyn DebugSpanSource>` (type-erased coercion; `DebugSpanSource` is defined in `pregolya-server/server::debug_span` per ADR-031 Decision 7), and injected into the co-launched pregolya-server at dev-mode co-launch. In standalone mode (`dev_mode: false`), `DebugSpanExporter` is not instantiated by the console crate. Verified by `test_BC_2_24_001_dev_mode_exporter_injected()`.
 
 ### AC-003 (traces to BC-2.24.002 postcondition PC-001)
 The `DebugSpanExporter` stores up to `span_retention_cap` `SpanData` entries. When the buffer is at capacity and a new span arrives, the oldest span is evicted (FIFO). After eviction, buffer length remains exactly `span_retention_cap`. No unbounded growth. Verified by `test_BC_2_24_002_ring_buffer_fifo_eviction()` (VP-2.24.002-A, VP-2.24.002-B).
@@ -76,10 +79,10 @@ Each stored span has `SpanData` with fields: `span_id: String`, `trace_id: Strin
 The `RingBuffer<SpanData>` data structure is extractable as Pure Core — it has no I/O, no async, no global state. A unit test exercises `RingBuffer` insert, eviction, and read operations without an async runtime. Verified by `test_BC_2_24_002_ring_buffer_pure_core_sync()`.
 
 ### AC-006 (traces to BC-2.24.002 invariant INV-003)
-`SpanData` carries `#[non_exhaustive]`. A compile-fail test confirms external code cannot construct `SpanData { .. }` as a struct literal. Verified by compile-fail test in `tests/external/span-data-non-exhaustive/`.
+`SpanData` carries `#[non_exhaustive]`. `SpanData` is defined in `pregolya-server/server::debug_span` (server-owned; created by S-console-03). The compile-fail test gate (`tests/external/span-data-non-exhaustive/`) asserting external code cannot construct `SpanData { .. }` as a struct literal is a **S-console-03 deliverable** (SpanData lives in pregolya-server). This story's deliverable is the `DebugSpanExporter` implementation that imports `SpanData` from server::debug_span and uses it as ring-buffer element type.
 
 ### AC-007 (traces to BC-2.24.002 invariant INV-005)
-`DebugSpanExporter` is shared between the console server and the pregolya-server debug routes via `Arc<DebugSpanExporter>`. The `Arc` wraps the exporter; both the console server and the debug-routes handler hold a clone of the same `Arc`. Verified by `test_BC_2_24_002_arc_shared_exporter()`.
+`server::debug_routes` in pregolya-server holds `Arc<dyn DebugSpanSource>` (ADR-031 Decision 7). The concrete `DebugSpanExporter` (console crate) implements `DebugSpanSource` and is injected as `Arc<dyn DebugSpanSource>` at dev-mode co-launch. pregolya-server has ZERO compile dependency on pregolya-console; the `DebugSpanSource` trait and `SpanData` type are owned by `pregolya-server/server::debug_span` (built by S-console-03). At runtime, both the console-side OTel pipeline and the server-side debug routes share the same underlying exporter instance via the Arc. Verified by `test_BC_2_24_002_arc_shared_debug_span_source()`.
 
 ### AC-008 (traces to BC-2.24.002 invariant INV-001)
 The ring buffer never exceeds `span_retention_cap` entries under any number of concurrent insertions. Concurrent insert + read does not produce data races — internal synchronization (RwLock or similar) ensures thread-safety. Verified by `test_BC_2_24_002_concurrent_insert_read_no_race()` (VP-2.24.002-A).
@@ -98,9 +101,8 @@ Before a span is inserted into the ring buffer, `DebugSpanExporter` sanitizes `S
 | Component | Module | Pure/Effectful |
 |-----------|--------|----------------|
 | `RingBuffer<T>` data structure | `pregolya-console/src/console/ring_buffer.rs` | Pure Core |
-| `DebugSpanExporter` (OTel trait) | `pregolya-console/src/console/span_exporter.rs` | Boundary |
+| `DebugSpanExporter` (impl `DebugSpanSource` + `SpanExporter`) | `pregolya-console/src/console/span_exporter.rs` | Boundary (imports `SpanData` from `pregolya-server/server::debug_span`; server-owned type) |
 | Dev-mode co-launch wiring | `pregolya-console/src/console/server.rs` | Effectful Shell |
-| `SpanData` struct | `pregolya-console/src/console/span_exporter.rs` | Pure Core (data type) |
 
 ## Purity Classification
 
@@ -141,10 +143,10 @@ Before a span is inserted into the ring buffer, `DebugSpanExporter` sanitizes `S
 1. [ ] Write failing tests for all ACs — `test_BC_2_24_002_*` family (test-writer)
 2. [ ] Verify Red Gate — `cargo nextest run -p pregolya-console` shows new tests as failures
 3. [ ] Create `pregolya-console/src/console/ring_buffer.rs` — `pub struct RingBuffer<T>` with fixed-capacity FIFO eviction; no I/O; Pure Core
-4. [ ] Create `pregolya-console/src/console/span_exporter.rs` — `pub struct SpanData` (`#[non_exhaustive]`), `pub struct DebugSpanExporter` (`Arc<RwLock<RingBuffer<SpanData>>>`), `impl SpanExporter for DebugSpanExporter`
+4. [ ] Create `pregolya-console/src/console/span_exporter.rs` — import `SpanData` from `pregolya_server::server::debug_span` (server-owned; do NOT define `pub struct SpanData` here); define `pub struct DebugSpanExporter` (`Arc<RwLock<RingBuffer<SpanData>>>`), `impl DebugSpanSource for DebugSpanExporter`, `impl SpanExporter for DebugSpanExporter`
 5. [ ] Add `opentelemetry` (workspace pin) dep to `pregolya-console/Cargo.toml` for `SpanExporter` trait
-6. [ ] Modify `console::server` dev-mode path to instantiate `DebugSpanExporter`, wrap in `Arc`, inject into co-launched pregolya-server constructor
-7. [ ] Add `SpanData` non-exhaustive compile-fail test in `tests/external/span-data-non-exhaustive/`
+6. [ ] Modify `console::server` dev-mode path to instantiate `DebugSpanExporter`, coerce to `Arc<dyn DebugSpanSource>`, and inject into co-launched pregolya-server at startup (ADR-031 Decision 7; never inject as concrete `Arc<DebugSpanExporter>` across the crate boundary)
+7. [ ] Verify `SpanData` non-exhaustive compile-fail test — deliverable lives in S-console-03 (`SpanData` is a `pregolya-server` type; see S-console-03 §File Structure); confirm the test asserts `SpanData` from `pregolya-server` cannot be constructed as a struct literal externally
 8. [ ] Run `cargo xtask check-file-size` — `ring_buffer.rs` < 500 code lines, `span_exporter.rs` < 500 code lines
 9. [ ] Run `cargo clippy -p pregolya-console -D warnings` — zero warnings
 10. [ ] Final `cargo nextest run -p pregolya-console` — all AC tests pass
@@ -159,7 +161,7 @@ Predecessor: S-console-01 (pregolya-console crate scaffolding). The `ConsoleConf
 |------|--------|-------------|
 | `RingBuffer<T>` is Pure Core (no I/O) | ADR-031 Decision 5, BC-2.24.002 INV-002 | Unit test without async runtime; proptest candidate |
 | `SpanData` is `#[non_exhaustive]` | BC-2.24.002 INV-003, CLAUDE.md | Compile-fail test |
-| `DebugSpanExporter` shared via `Arc` | BC-2.24.002 INV-005, CLAUDE.md Arc-DI convention | Code review; `Arc::clone` usage in dev-mode wiring |
+| `DebugSpanExporter` injected as `Arc<dyn DebugSpanSource>` (type-erased) | BC-2.24.002 INV-005, ADR-031 Decision 7 | Code review: console injects `Arc<dyn DebugSpanSource>` (not the concrete type); pregolya-server must not import pregolya-console |
 | Export errors logged, not propagated | BC-2.24.002 INV-004 (DI-014) | Test: mock export failure; assert engine continues |
 | No `println!` in `span_exporter.rs` | BC-2.24.001 INV-005, CLAUDE.md | `cargo clippy -D clippy::print_stdout` |
 | No `unwrap()` / `expect()` in non-test | CLAUDE.md | `cargo xtask check-no-panic -p pregolya-console` |
@@ -181,8 +183,8 @@ Predecessor: S-console-01 (pregolya-console crate scaffolding). The `ConsoleConf
 | File | Action | Purpose |
 |------|--------|---------|
 | `crates/pregolya-console/src/console/ring_buffer.rs` | CREATE | `pub struct RingBuffer<T>` — Pure Core FIFO ring buffer |
-| `crates/pregolya-console/src/console/span_exporter.rs` | CREATE | `SpanData`, `DebugSpanExporter`, `impl SpanExporter` |
+| `crates/pregolya-console/src/console/span_exporter.rs` | CREATE | `DebugSpanExporter` (imports `SpanData` from `server::debug_span`), `impl DebugSpanSource`, `impl SpanExporter`; do NOT define `SpanData` here |
 | `crates/pregolya-console/src/console/mod.rs` | MODIFY | Add `pub mod ring_buffer; pub mod span_exporter;` re-exports |
-| `crates/pregolya-console/src/console/server.rs` | MODIFY | Add dev-mode co-launch branch: instantiate `DebugSpanExporter`, inject via Arc |
-| `crates/pregolya-console/Cargo.toml` | MODIFY | Add `opentelemetry`, `opentelemetry-sdk` deps |
-| `tests/external/span-data-non-exhaustive/` | CREATE | Compile-fail test for `SpanData` non-exhaustive |
+| `crates/pregolya-console/src/console/server.rs` | MODIFY | Add dev-mode co-launch branch: instantiate `DebugSpanExporter`, coerce to `Arc<dyn DebugSpanSource>`, inject |
+| `crates/pregolya-console/Cargo.toml` | MODIFY | Add `opentelemetry`, `opentelemetry-sdk` deps; add `pregolya-server` path dep (needed for SpanData + DebugSpanSource) |
+| `tests/external/span-data-non-exhaustive/` | (S-console-03 deliverable) | SpanData is pregolya-server type; compile-fail test owned by S-console-03 — see S-console-03 §File Structure |

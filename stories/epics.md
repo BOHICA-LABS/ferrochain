@@ -1,6 +1,6 @@
 ---
 document_type: epics
-version: "1.8"
+version: "1.9"
 status: active
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -219,7 +219,8 @@ is feature-gated (`debug-endpoints` Cargo feature defaults `false`) and scoped t
 
 **Architecture** (ADR-031):
 - `pregolya-console` binary: Axum HTTP server + `rust_embed` SPA; `ConsoleConfig` with `#[non_exhaustive]`
-- `DebugSpanExporter`: OTel `SpanExporter` impl; bounded FIFO ring buffer (`default 10 000 spans`); shared via `Arc<DebugSpanExporter>`; Pure Core ring buffer, Effectful Shell OTel adapter
+- `server::debug_span` (pregolya-server): `SpanData` `#[non_exhaustive]` + `DebugSpanSource` read-trait — server-owned (ADR-031 Decision 7); created by S-console-03
+- `DebugSpanExporter` (pregolya-console): OTel `SpanExporter` impl; bounded FIFO ring buffer (`default 10 000 spans`); implements `DebugSpanSource`; injected as `Arc<dyn DebugSpanSource>` at dev-mode co-launch — `console→server` direction only; Pure Core ring buffer, Effectful Shell OTel adapter
 - `debug-endpoints` feature on `pregolya-server`: trace-read routes `/debug/sessions`, `/debug/events/{id}`, `/debug/graph/{assistant_id}` — zero overhead in production
 - `compile_graph_descriptor` Pure Core function in `pregolya-graph` (candidate for Kani verification)
 - SSE (`text/event-stream`) is the sole streaming transport (ADR-031 Decision 3; WebSocket closed)
@@ -240,11 +241,10 @@ is feature-gated (`debug-endpoints` Cargo feature defaults `false`) and scoped t
 | Sub-Wave | Stories | Notes |
 |----------|---------|-------|
 | 3A | S-console-01 | pregolya-console scaffold (ConsoleConfig, Axum bind, SPA embed skeleton) |
-| 3B | S-console-02, S-console-05 | DebugSpanExporter ring buffer; SPA build pipeline (parallel) |
-| 3C | S-console-03, S-console-07 | debug-endpoints Cargo feature; checkpoint history panel (parallel) |
-| 3D | S-console-04 | graph-descriptor endpoint + `compile_graph_descriptor` Pure Core |
-| 3E | S-console-06 | Run inspection panel (all 16 StreamEvent variants, SSE EventSource) |
-| 3F | S-console-08, S-console-09, S-console-10 | HITL, budget, guardrail panels (parallel) |
+| 3B | S-console-03, S-console-05 | S-console-03: server::debug_span + debug-endpoints (dep-inversion; ADR-031 Decision 7); S-console-05: SPA build pipeline (parallel) |
+| 3C | S-console-02, S-console-04, S-console-07 | S-console-02: DebugSpanExporter (imports SpanData, implements DebugSpanSource — depends on S-console-03); S-console-04: graph-descriptor; S-console-07: checkpoint history (parallel) |
+| 3D | S-console-06 | Run inspection panel (all 16 StreamEvent variants, SSE EventSource) |
+| 3E | S-console-08, S-console-09, S-console-10 | HITL, budget, guardrail panels (parallel) |
 
 **Verification properties:** VP-2.24.001-A/B/C through VP-2.24.008-A/B (20 VPs, all P1, Phase 3 target)
 
