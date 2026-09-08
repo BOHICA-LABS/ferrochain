@@ -6988,3 +6988,13 @@ burst-306 COMPLETE (2026-08-17) — P1D-198 NOT CLEAN (0C/1H/1M): F-P198-01 HIGH
 | Step | Agent | Status | Output |
 |------|-------|--------|--------|
 | D-326 round-49 fix-burst CLOSED (2026-08-31): trajectory-tail →2→3→0→4 (P2A-204=2[1M+1OBS] / P2A-205=3[2H+1pgap] / P2A-206=0/CLEAN(strict) / P2A-207=4[2H+1M+1OBS]). GATE-READY=YES 13/13 PASS. NOT CLEAN(strict). 1/4 lenses CLEAN(strict) [P2A-206]. ALL FINDINGS CLOSED: F-P2A205-01[HIGH,CWE-209/532] BC-2.09.007 generic tools/call boundary SEC-BOUND-001 step-3 missing + ADR-029 mis-attribution corrected; F-P2A205-02[HIGH,CWE-522/532] redact_credentials extended 4 to 6 patterns (URL-userinfo+Basic-auth; TV-012+TV-013); O-P2A205-03[MED,pgap] R06-PP partial-pipeline gate added (3 self-probes); F-P2A207-01[HIGH] S-2.10 forbidden-deps contradiction resolved (mcp::graph_tool carve-out; ADR-029 mandate); F-P2A207-02[HIGH] InvocationContext DI seam homed (pregolya-core/src/invocation_context.rs; interface-definitions §InvocationContext; module-decomp row); F-P2A207-03[MED] BC-2.09.003 phantom context.rs replaced with canonical InvocationContext; F-P2A204-01[MED] FtsSearchConfig lifetime annotation; F-P2A204-02[OBS] RPITIT Box<dyn> adjudicated; OBS-P2A207-04[OBS] GraphAgentTool Arc-DI TV coverage gap. BC-2.09.007 TV-011 minted (UUID plain-tool step-3). TV 767 to 770 canonical (778 to 781 incl GTV; +TV-011+TV-012+TV-013). BC-INDEX §Changelog (v4.10); VP-INDEX §Changelog (v1.33); ARCH-INDEX §Changelog (v1.60); STORY-INDEX §Changelog (v1.36). L-240/L-241/L-242 codified. Census: BC 134 / VP 17 / EC 138 / stories 40 / points 303. streak 0/3. NEXT: round-50. | state-manager | COMPLETE | STATE.md v6.37. Single commit per TD-VSDD-053. |
+
+---
+
+## Archived Step: D-356/DC-01 (2026-09-06 fix-burst; v6.75 5-row rolling window)
+
+*D-356/DC-01 step row removed from STATE.md §Current Phase Steps to keep last-5 window; archived verbatim.*
+
+| Step | Agent | Status | Output |
+|------|-------|--------|--------|
+| D-356/DC-01 fix-burst (2026-09-06) — DC-01 adversary pass CLOSED. trajectory-tail →5→0→0→0 (DC-01=5 findings [3H+1M+1L]; ALL CLOSED; streak 0/3 reset by fix push; DC-02 gates new HEAD). F-PDC01-05 [LOW]: research-memo gitignored `.reference/adk-rust/adk-server/` path removed from inputs; hash recomputed 788c5d0. input-hash recomputed: verification-coverage-matrix.md 3b38559 (was 0000000). 5 BC Story Anchors repointed (product-owner, v1.0→v1.1). BC-2.24.004 PC-001 canonical 16-variant list corrected (F-PDC01-04). Index changelogs: BC-INDEX 4.23→4.24; STORY-INDEX 1.60→1.61; VP-INDEX 1.42→1.43. Census UNCHANGED: BC 148 / VP 40 / stories 52 / pts 372. | state-manager | COMPLETE | STATE.md §D-356/DC-01. Single commit per TD-VSDD-053. |

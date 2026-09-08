@@ -1,11 +1,12 @@
 ---
 document_type: story-index
 level: L3
-version: "1.64"
+version: "1.65"
 status: active
 producer: state-manager
 timestamp: 2026-09-07T00:00:00Z
 changelog:
+  - "1.65 (D-356/DC-06 fix-burst/2026-09-07, state-manager): F-PDC06-02 [MED] — VP-to-Story Anchor Map VP-2.24.002-D row added after VP-2.24.002-C (SS-24 block now 20 VP rows). dependency-graph.md v2.0 noted (D-356/DC-06 SS-24 VP-to-Stories matrix 20 rows byte-matched VP-INDEX v1.47; VP-2.24.002-D row added; sync-pending marker retired). prd.md v1.34 noted (D-356/DC-06 BC-2.24.008 catalog row boundary_type→boundary F-PDC06-03 site 2). Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41."
   - "1.64 (D-356/DC-04 fix-burst/2026-09-07, state-manager): S-console-07 v1.1 (story-writer; F-PDC04-01 u64 checkpoint_id; F-PDC04-02 BC-2.12.001 {PC-015} v1.11 + E-CHKPT-011 EC-010; POLICY-8 behavioral_contracts [BC-2.24.005]→[BC-2.24.005, BC-2.12.001]). S-console-07 Story-Inventory BCs column updated: BC-2.24.005→BC-2.24.005 + BC-2.12.001 (POLICY-8 hard gate — legitimate override). BC-to-Story map BC-2.12.001 row: S-1.26→S-1.26 + S-console-07 (roadmap, Wave 3; consumes ?checkpoint_id PC-015 variant). Version bumps: BC-2.24.005 v1.2, BC-2.12.001 v1.11, BC-2.24.008 v1.4, BC-2.24.002 v1.3. error-taxonomy v1.74 (E-CHKPT-011 second raise site + E-SERVER-004 msg correction). Input hashes: ADR-031 00c95fd, vcm 82e8ad9, purity-boundary-map 83d67fc. Story/pts UNCHANGED: 52 / 372. Census: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.63 (D-356/DC-03 fix-burst/2026-09-07, state-manager): S-console-10 v1.1 (story-writer sibling-sweep corrections; F-PDC03-01/03/04 BC-2.24.008 updates propagated). BC-2.24.005 v1.1 (F-PDC03-02 fork mechanism). BC-2.12.003 v1.20 (supporting; E-CHKPT-011 registered). EC 143→145 (E-CHKPT-011 CheckpointNotFound + E-SERVER-023 gap fix). Census: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.62 (D-356/DC-02 fix-burst/2026-09-07, state-manager): F-PDC02-06 [LOW records] — v1.61 entry description corrected: 'LLM tool-call type list' → 'StreamEvent variant list' (those 16 are StreamEvent variants per BC-2.06.001 §PC-002, not LLM tool-call types). VP census updated: VPs 40→41 (VP-2.24.002-D registered by architect). Census: stories 52 / pts 372 / BCs 148 / VPs 41."
@@ -596,6 +597,7 @@ input-hash: "5135b35"
 | VP-2.24.002-A | BC-2.24.002 | S-console-02 | P1 | pregolya-console |
 | VP-2.24.002-B | BC-2.24.002 | S-console-02 | P1 | pregolya-console |
 | VP-2.24.002-C | BC-2.24.002 | S-console-03 | P1 | pregolya-console |
+| VP-2.24.002-D | BC-2.24.002 | S-console-02 | P1 | pregolya-console |
 | VP-2.24.003-A | BC-2.24.003 | S-console-04 | P1 | pregolya-console |
 | VP-2.24.003-B | BC-2.24.003 | S-console-04 | P1 | pregolya-console |
 | VP-2.24.003-C | BC-2.24.003 | S-console-04 | P1 | pregolya-console |

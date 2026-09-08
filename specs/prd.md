@@ -1,7 +1,7 @@
 ---
 document_type: prd
 level: L3
-version: "1.33"
+version: "1.34"
 status: active
 producer: product-owner
 timestamp: 2026-07-28T00:00:00Z
@@ -17,7 +17,7 @@ inputs:
   - .factory/specs/domain-spec/differentiators.md
   - .factory/specs/domain-spec/assumptions.md
   - .factory/comparative/COMPARATIVE-ASSESSMENT.md
-input-hash: "267f99e"
+input-hash: "411b74a"
 traces_to: domain-spec/L2-INDEX.md
 decisions: [D1, D2, D3, D4, D5, D6, D7, D8, D9, D11, D12, D13, D17, D19, D20, D21, D22, D23]
 supplements:
@@ -29,6 +29,7 @@ supplements:
   - prd-supplements/test-vectors.md
   - prd-supplements/observability.md
 changelog:
+  - "v1.34 (D-356-fix/DC-06/2026-09-07, product-owner): F-PDC06-03 site 2: §2.24 BC-2.24.008 catalog row corrected — `boundary_type` → `boundary` (the `guardrail_decision` wire field is `boundary: IngressBoundary` per BC-2.06.001 §PC-002; `boundary_type`/ProvenanceTag is the distinct SS-11 audit field). Stale field name carried forward from the initial v1.33 D-356 entry before DC-03 corrected BC-2.24.008."
   - "v1.33 (D-356/2026-09-06, product-owner): SS-24 Developer Console scope expansion — roadmap-only, Wave 3. §2.24 added (8 BCs: BC-2.24.001..008, CAP-041..047, all P1, DI-002/DI-003/DI-004/DI-012/DI-014). §5b BC file count 140→148. §7 RTM +8 rows pending state-manager (51 P0 / 86+8=94 P1 / 3 P2 → total 148). E-SERVER-023 DebugExporterNotConfigured minted in error-taxonomy.md v1.71→v1.72 (E-SERVER-020/021 were already assigned; E-SERVER-009 already covers AssistantNotFound; next available sequential ID was 023). WebSocket SSE audit performed: zero corrections needed (sole WebSocket reference in BC-2.09.001 describes MCP transport options, not run-streaming transport per ADR-031 Decision 3 scope). input-hash updated (4a26898) — capabilities-p1-p2.md added CAP-041..047 and ADR-031 added as input for the 8 BC files that seed this delta."
   - "v1.32 (round-55/F-P2A225-01/2026-09-01): DI-014→DI-001 correction for BC-2.02.007 and BC-2.02.009 per architect ADR-030 §VP ruling — both reducers are pure infallible Vec<T> functions with no Result/Err/None path; DI-014 (error propagation) is inapplicable; DI-001 (BSP Reducer Determinism) is the correct anchor. §2.02 rows: BC-2.02.007 DI-014/DI-001 → DI-001; BC-2.02.009 DI-014/DI-001 → DI-001. §7 RTM rows: BC-2.02.007 CAP-040/DI-014/DI-001 → CAP-040/DI-001; BC-2.02.009 CAP-040/DI-014/DI-001 → CAP-040/DI-001. §12.4 rows: BC-2.02.007 DI-014/DI-001 → DI-001; BC-2.02.009 DI-014/DI-001 → DI-001."
   - "v1.31 (ADR-030-Stage2b/2026-08-31): PromoteRetireChannel subsystem ruling applied (architect ADR-030 §Decision 3). BC-2.04.011 (PromoteRetireChannel) renamed to BC-2.02.009 (SS-02, pregolya-graph) — BC-2.02.009 row added to §2.02; old anomaly note removed from §2.04 header; §7 RTM BC-2.02.009 row added. BC-2.04.011 reused for new 6th additive BC: Trajectory Compaction Isolation (SS-04, pregolya-checkpoint, P1, DI-002/DI-004/DI-014, Wave 2) — row added to §2.04; §7 RTM BC-2.04.011 updated (module pregolya-checkpoint; test types U, I). §5b BC file count 139→140. §7 RTM totals 139→140 (51 P0 / 85→86 P1 / 3 P2). §12.4 BC-2.04.011 row updated to Trajectory Compaction Isolation. §12.5 differentiator row updated. §12.6 cross-subsystem anomaly note removed."
@@ -530,7 +531,7 @@ become first-class BCs, CI lint gates, or ADRs (see Section 9).
 | BC-2.24.005 | Checkpoint History Browser and Fork-from-Checkpoint Trajectory Replay — `/threads/{id}/history`; step_idx monotone order; per-checkpoint state view; fork via `POST /threads/{id}/runs` | P1 | DI-002, DI-004, DI-014 | ss-24/BC-2.24.005.md |
 | BC-2.24.006 | HITL Approval Dialog and Resume Dispatch — interrupt detection; ToolCallPreview/scratchpad display; Approve/Deny/Edit decisions; FIFO multi-interrupt ordering (DI-003); `POST .../resume` dispatch | P1 | DI-003, DI-014 | ss-24/BC-2.24.006.md |
 | BC-2.24.007 | Token/Context Budget Monitoring Panel — `compaction_event`-driven gauge; `tokens_remaining_after` proportional indicator; timeline annotation; EvidenceJournal PolicyDecision history for completed runs | P1 | DI-014 | ss-24/BC-2.24.007.md |
-| BC-2.24.008 | Guardrail/Security Decision Review Panel — `guardrail_decision` Fail/Transform feed (Pass not shown per F-P99-01); boundary_type/severity/reason fields; real-time SSE; DI-012 complete-feed invariant | P1 | DI-012, DI-014 | ss-24/BC-2.24.008.md |
+| BC-2.24.008 | Guardrail/Security Decision Review Panel — `guardrail_decision` Fail/Transform feed (Pass not shown per F-P99-01); boundary/severity/reason fields; real-time SSE; DI-012 complete-feed invariant | P1 | DI-012, DI-014 | ss-24/BC-2.24.008.md |
 
 ---
 

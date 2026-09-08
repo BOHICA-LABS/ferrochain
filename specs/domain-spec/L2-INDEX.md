@@ -1,10 +1,10 @@
 ---
 document_type: domain-spec-index
 level: L2
-version: "1.30"
+version: "1.31"
 status: active
 producer: business-analyst
-timestamp: 2026-09-06T00:00:00Z
+timestamp: 2026-09-07T00:00:00Z
 phase: 1a
 inputs:
   - .factory/specs/product-brief.md
@@ -33,6 +33,7 @@ sections:
   - bounded-contexts.md
 decisions: [D1, D2, D3, D4, D6, D7, D8, D11, D12, D13, D17, D19, D20, D21, D23, D356]
 changelog:
+  - "v1.31 (D-356/DC-06 fix-burst/2026-09-07, state-manager): capabilities-p1-p2.md v1.33 — CAP-047 guardrail field-name correction (F-PDC06-03 site 1, HIGH): boundary_type:RAGRetrieval/MemoryIngress → boundary:IngressBoundary ToolResult|RagChunk|MemoryItem; GuardrailSeverity → severity:Option<GuardrailSeverityWire>. Counts UNCHANGED: CAP 48 / DI 16."
   - "v1.30 (D-356/2026-09-06): D-356 dev-console scope expansion. ID Registry: CAP-NNN 39→48 (+CAP-040 from D-327 previously missed + CAP-041..048 from D-356: developer-console surface, ROADMAP-ONLY). Priority Distribution: P1 27→36 (CAP-040 P1 + CAP-041..048 all P1). Document Map: capabilities-p1-p2.md row description extended (CAP-040..048; Developer-Operator actor entry). entities-server.md row description extended (Developer-Operator actor). ubiquitous-language-server.md row description extended (Developer-Operator term). D356 added to decisions. CAP count correction note: L2-INDEX v1.28 registered CAP count 38→39 (CAP-039); D-327 (2026-08-31) added CAP-040 to capabilities-p1-p2.md but was not propagated to L2-INDEX at the time; this entry closes both the D-327 gap and the D-356 additions atomically."
   - "v1.29 (burst-325/D-196/2026-08-18): input-hash refreshed (metadata hygiene; D-196 ruling: input-hash refresh is bookkeeping metadata, not normative spec content). Hash was stale since v1.3 authoring; holdout domain input files have been updated since then. No normative content changed. Phase-1 gate-closure burst."
   - "v1.28 (burst-302b/D-171/2026-08-17): ID Registry CAP count 38→39 (CAP-039 LCEL Map/Passthrough Composition: RunnableParallel and RunnablePassthrough, authored business-analyst); DI count 15→16 (DI-016 RunnableParallel Key-Completeness and Branch-Failure Propagation, authored business-analyst). Priority Distribution: P1 26→27 (CAP-039 P1). Document Map: capabilities-p1-p2.md description extended (CAP-039). LCEL scope expansion D-170/D-171."

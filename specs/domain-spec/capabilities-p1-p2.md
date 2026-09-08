@@ -2,7 +2,7 @@
 document_type: domain-spec-section
 level: L2
 section: capabilities-p1-p2
-version: "1.32"
+version: "1.33"
 status: active
 producer: business-analyst
 timestamp: 2026-09-06T00:00:00Z
@@ -14,10 +14,11 @@ inputs:
   - .factory/planning/holdout-domains/domain-d-hermes-agent.md
   - .factory/planning/holdout-domains/domain-e-agentic-coding-assistant.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "77a1533"
+input-hash: "371c041"
 traces_to: L2-INDEX.md
 decisions: [D1, D3, D7, D8, D13, D17, D19, D20, D21, D23, D170, D275, D356]
 changelog:
+  - "1.33 (D-356/F-PDC06-03/2026-09-07, business-analyst): CAP-047 field-name correction — adversary finding F-PDC06-03 site 1 (HIGH). Wrong SS-11 ProvenanceTag names replaced with correct guardrail_decision StreamEvent wire names per BC-2.06.001 §PC-002. boundary_type:RAGRetrieval/MemoryIngress → boundary:IngressBoundary ToolResult|RagChunk|MemoryItem; GuardrailSeverity → severity:Option<GuardrailSeverityWire> (Some for Fail, None for Transform); outcome bullets restructured to decision/severity/reason per BC-2.06.001 §PC-002 shape. Dated delta note added to CAP-047 body. input-hash updated."
   - "1.32 (D-356/2026-09-06, business-analyst): D-356 dev-console scope expansion — new section 'P1 — Developer Console (D-356, Wave 3)' added with CAP-041 through CAP-047 (all P1), and 'P2 — Deferred Dev Console Capability' with CAP-048 (DEFERRED). CAP count 40→48. Research memo (.factory/planning/devconsole-adk-research.md) added to inputs. D356 added to decisions list. Roadmap-only delta: no existing capabilities modified."
   - "1.31 (round-57/F-P2A228-02/2026-09-01): CAP-040 §PromoteRetireChannel body: stale DI-014 parenthetical corrected to DI-001 — pure infallible Vec<T> reducer determinism (BSP reducer determinism = DI-001). Consistent with §Authored BCs footer BC-2.02.009 anchor (DI-001) already fixed in round-55. POL-24 sibling sweep: sole stale DI-014 in PromoteRetireChannel/LedgerChannel/BC-2.02.007/BC-2.02.009 context; no additional stale citations found. Neighboring TrajectoryWriter DI-014 (§error-propagation bullet, §Authored BCs BC-2.04.009/BC-2.04.010/BC-2.04.011) retained — legitimately fallible Result-returning operations."
   - "1.30 (round-55/F-P2A225-01/2026-09-01): CAP-040 §Authored BCs: DI-014 removed from BC-2.02.007 and BC-2.02.009 per architect ADR-030 §VP ruling — both reducers are pure infallible Vec<T> functions; DI-014 inapplicable; DI-001 is the correct anchor. BC-2.02.007: DI-014/DI-001 → DI-001; BC-2.02.009: DI-014/DI-001 → DI-001."
@@ -1146,11 +1147,19 @@ PolicyDecision outcomes); CAP-007 (compaction_event as 15th StreamEvent variant)
 
 The console provides a dedicated security event feed that isolates all `guardrail_decision`
 StreamEvents from a run, surfacing them in a dedicated panel. Each entry shows:
-- `boundary_type`: ToolResult | RAGRetrieval | MemoryIngress (ProvenanceTag field)
-- `GuardrailSeverity`: Critical | High | Medium | Low
-- Outcome: `Fail { reason }` or `Transform` (Pass decisions are NOT shown — they are
-  not streamed per the existing design: "Pass is not streamed", CAP-007, F-P99-01)
-- For `Fail`: the `reason` string from the GuardrailHook result
+
+> **D-356 adversary fix DC-06 (2026-09-07, business-analyst).** Field names corrected from
+> SS-11 ProvenanceTag/BoundaryType names (RAGRetrieval/MemoryIngress) to the authoritative
+> `guardrail_decision` StreamEvent wire names per BC-2.06.001 §PC-002 GuardrailDecision bullet.
+> The two type systems must not be conflated: ProvenanceTag (SS-11 ingress audit struct) and
+> the guardrail_decision StreamEvent payload use different enum shapes.
+
+- `boundary: IngressBoundary` — `ToolResult | RagChunk | MemoryItem` (per BC-2.06.001 §PC-002;
+  NOT RAGRetrieval/MemoryIngress, which are the distinct SS-11 ProvenanceTag BoundaryType values)
+- `decision: Fail | Transform` (Pass decisions are NOT shown — not streamed per CAP-007, F-P99-01)
+- `severity: Option<GuardrailSeverityWire>` — `Some(Critical | High | Medium | Low)` for `Fail`;
+  `None` for `Transform` (severity is only meaningful when content is blocked)
+- `reason: Option<String>` — `Some(reason_string)` for `Fail`; `None` for `Transform`
 
 The feed updates in real time for live runs (via SSE subscription, CAP-043) and reconstructs
 from stored events for completed runs. The Domain A SOC analyst use case (guardrail visibility
