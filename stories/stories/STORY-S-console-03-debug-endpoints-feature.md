@@ -3,12 +3,13 @@ document_type: story
 level: ops
 story_id: S-console-03
 epic_id: E-console
-version: "1.0"
+version: "1.1"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
 changelog:
   - "1.0 (D-356/2026-09-06, story-writer): Initial story — debug-endpoints Cargo feature on pregolya-server, trace-read HTTP endpoints, E-SERVER-023 not-configured response."
+  - "1.1 (D-356/2026-09-07, story-writer): F-PDC07-01 — renamed SecurityConfig field debug_api_key → debug_route_key throughout (BC-2.12.005 PRE-004/INV-001; ADR-021 §Decision 1); AC-005 updated to cover startup refusal E-SERVER-013 InvalidDebugRouteKey when key absent/empty (BC-2.24.002 PC-007/EC-007)."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.002.md
@@ -16,7 +17,7 @@ inputs:
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
   - .factory/specs/prd-supplements/error-taxonomy.md
-input-hash: "5db1f6a"
+input-hash: "718d986"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-02]
@@ -38,6 +39,8 @@ tdd_mode: strict
 
 > **D-356 dev-console scope expansion (2026-09-06, story-writer).** Roadmap-only.
 > Wave 3 — not built in the current Phase 3 implementation cycle.
+
+> **D-356 adversary fix DC-07 (2026-09-07, story-writer).** F-PDC07-01: `SecurityConfig.debug_api_key` renamed to `SecurityConfig.debug_route_key` in all live-body locations (AC-005, Task 7, Architecture Compliance Rules) per ADR-021 §Decision 1 (canonical SecurityConfig field name). AC-005 now covers both behaviours from BC-2.24.002 PC-007/EC-007: (1) empty/absent `debug_route_key` with `debug-endpoints` feature enabled → E-SERVER-013 InvalidDebugRouteKey at startup (refuse to start); (2) valid key present + unauthenticated request → E-SERVER-004 403 at runtime.
 
 ## Narrative
 
@@ -65,8 +68,8 @@ When `DebugSpanExporter` is NOT injected into pregolya-server (standalone mode w
 ### AC-004 (traces to BC-2.24.002 postcondition PC-006)
 The `debug-endpoints` Cargo feature defaults to `false` in `pregolya-server/Cargo.toml`. When the feature is disabled, neither `/debug/trace/session/{id}` nor `/debug/trace/{event_id}` routes exist — all requests to these paths return `404 Not Found`. No debug routing code is compiled in. Verified by `test_BC_2_24_002_feature_disabled_404()`.
 
-### AC-005 (traces to BC-2.24.002 postcondition PC-007)
-When `SecurityConfig.debug_api_key` is configured, requests to `/debug/trace/*` without a valid API key return `403 Forbidden` with `E-SERVER-004 DebugRouteUnauthorized`. Requests with a valid key proceed normally. Verified by `test_BC_2_24_002_debug_api_key_gate()`.
+### AC-005 (traces to BC-2.24.002 postcondition PC-007; traces to BC-2.24.002 edge case EC-007)
+When the `debug-endpoints` feature is enabled and `SecurityConfig.debug_route_key` is empty or absent, the server refuses to start with E-SERVER-013 InvalidDebugRouteKey (BC-2.24.002 EC-007). When `debug_route_key` is set to a valid non-empty value, requests to `/debug/trace/*` without a matching key return `403 Forbidden` with `E-SERVER-004 DebugRouteUnauthorized` (BC-2.24.002 PC-007). Requests with a valid key proceed normally. Verified by `test_BC_2_24_002_debug_route_key_startup_gate()` (startup refusal) and `test_BC_2_24_002_debug_route_key_gate()` (runtime 403).
 
 ### AC-006 (traces to BC-2.24.002 edge case EC-004)
 A production build of `pregolya-server` compiled WITHOUT the `debug-endpoints` feature has zero debug routing code. The CI gate `check-debug-endpoints-default` verifies `debug-endpoints = false` in `pregolya-server/Cargo.toml` feature defaults. Verified by `just check-debug-endpoints-default` CI task.
@@ -125,7 +128,7 @@ Concurrent `GET /debug/trace/session/{id}` requests against the shared `Arc<Debu
 4. [ ] Create `pregolya-server/src/server/debug_routes.rs` behind `#[cfg(feature = "debug-endpoints")]`; implement `GET /debug/trace/session/{session_id}` and `GET /debug/trace/{event_id}` handlers
 5. [ ] Wire `Arc<DebugSpanExporter>` into the server state via Axum extension (injected by pregolya-console dev-mode, from S-console-02)
 6. [ ] Implement `E-SERVER-023 DebugExporterNotConfigured` response when exporter is `None`
-7. [ ] Add `SecurityConfig.debug_api_key` gate to debug routes (reuse existing debug-key middleware from pregolya-server)
+7. [ ] Add `SecurityConfig.debug_route_key` gate — refuse to start with E-SERVER-013 InvalidDebugRouteKey when key empty/absent and `debug-endpoints` feature is on (BC-2.24.002 EC-007); return E-SERVER-004 403 on unauthenticated runtime requests (BC-2.24.002 PC-007)
 8. [ ] Register debug routes into the Axum router conditionally behind feature flag
 9. [ ] Add CI task `check-debug-endpoints-default` verifying feature default is false
 10. [ ] Run `cargo xtask check-file-size` — `debug_routes.rs` < 500 code lines
@@ -144,7 +147,7 @@ Predecessor: S-console-02 (DebugSpanExporter + Arc DI). The `DebugSpanExporter` 
 | Error code `E-SERVER-023` (not E-SERVER-020) | BC-2.24.002 PC-005, D-356 correction | Code review; test asserts exact error code string |
 | Debug routes compiled only with feature flag | ADR-031 Decision 2 | `cargo build -p pregolya-server` (no features) succeeds with no debug code |
 | No `unwrap()` / `expect()` in `debug_routes.rs` | CLAUDE.md, BC-2.24.002 (DI-014) | `cargo xtask check-no-panic -p pregolya-server` |
-| `SecurityConfig.debug_api_key` gate applied | BC-2.24.002 PC-007 | Integration test: request without key → 403 |
+| `SecurityConfig.debug_route_key` gate applied | BC-2.24.002 PC-007, EC-007 | Startup absent/empty key → E-SERVER-013 (refuse to start); runtime unauthenticated request → E-SERVER-004 403 |
 
 **Forbidden patterns:** Returning 404 instead of 503 when exporter is absent. Error code E-SERVER-020 is incorrect — use E-SERVER-023 only.
 

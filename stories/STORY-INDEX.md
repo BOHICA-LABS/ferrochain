@@ -1,11 +1,12 @@
 ---
 document_type: story-index
 level: L3
-version: "1.66"
+version: "1.67"
 status: active
 producer: state-manager
 timestamp: 2026-09-07T00:00:00Z
 changelog:
+  - "1.67 (D-356/DC-07-residue/2026-09-07, state-manager): STORY-S-console-03 v1.0→v1.1 (story-writer; F-PDC07-01 residual: debug_api_key→debug_route_key in ×3 live-body sites — AC-005, Task 7, Architecture Compliance Rules; AC-005 updated to cover both behaviours per BC-2.24.002 PC-007/EC-007: E-SERVER-013 InvalidDebugRouteKey startup-refusal + E-SERVER-004 DebugRouteUnauthorized runtime-403). input-hash 718d986. Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.66 (D-356/DC-06-sweep fix-burst/2026-09-07, state-manager): F3–F6 [MED] — §VP-to-Story-Anchor-Map Crate column corrected for 4 rows: VP-2.24.002-C pregolya-console→pregolya-server (server::debug_routes per VP-INDEX §VP-Catalog); VP-2.24.003-A pregolya-console→pregolya-graph (graph::descriptor per VP-INDEX §VP-Catalog); VP-2.24.003-B pregolya-console→pregolya-graph (graph::descriptor Kani per VP-INDEX §VP-Catalog); VP-2.24.003-C pregolya-console→pregolya-server (server::debug_routes per VP-INDEX §VP-Catalog). Story column was already correct for all 4 rows. input-hash refreshed (VP-INDEX §VP-Catalog updated). Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41."
   - "1.65 (D-356/DC-06 fix-burst/2026-09-07, state-manager): F-PDC06-02 [MED] — VP-to-Story Anchor Map VP-2.24.002-D row added after VP-2.24.002-C (SS-24 block now 20 VP rows). dependency-graph.md v2.0 noted (D-356/DC-06 SS-24 VP-to-Stories matrix 20 rows byte-matched VP-INDEX v1.47; VP-2.24.002-D row added; sync-pending marker retired). prd.md v1.34 noted (D-356/DC-06 BC-2.24.008 catalog row boundary_type→boundary F-PDC06-03 site 2). Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41."
   - "1.64 (D-356/DC-04 fix-burst/2026-09-07, state-manager): S-console-07 v1.1 (story-writer; F-PDC04-01 u64 checkpoint_id; F-PDC04-02 BC-2.12.001 {PC-015} v1.11 + E-CHKPT-011 EC-010; POLICY-8 behavioral_contracts [BC-2.24.005]→[BC-2.24.005, BC-2.12.001]). S-console-07 Story-Inventory BCs column updated: BC-2.24.005→BC-2.24.005 + BC-2.12.001 (POLICY-8 hard gate — legitimate override). BC-to-Story map BC-2.12.001 row: S-1.26→S-1.26 + S-console-07 (roadmap, Wave 3; consumes ?checkpoint_id PC-015 variant). Version bumps: BC-2.24.005 v1.2, BC-2.12.001 v1.11, BC-2.24.008 v1.4, BC-2.24.002 v1.3. error-taxonomy v1.74 (E-CHKPT-011 second raise site + E-SERVER-004 msg correction). Input hashes: ADR-031 00c95fd, vcm 82e8ad9, purity-boundary-map 83d67fc. Story/pts UNCHANGED: 52 / 372. Census: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."

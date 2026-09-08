@@ -1,7 +1,7 @@
 ---
 document_type: bc-index
 level: L3
-version: "4.30"
+version: "4.31"
 status: active
 producer: state-manager
 timestamp: 2026-09-07T00:00:00Z
@@ -10,6 +10,7 @@ cycle: v1.0.0-greenfield
 input-hash: "[live-index]"
 traces_to: .factory/specs/prd.md
 changelog:
+  - "4.31 (D-356/DC-07-residue/2026-09-07, state-manager): error-taxonomy v1.75→v1.76 (F-PDC07-01 residual: E-SERVER-004 live-body annotation debug_api_key→debug_route_key; canonical field per BC-2.12.005 PRE-004/INV-001; ADR-021 §Decision 1; product-owner). STORY-S-console-03 v1.0→v1.1 (F-PDC07-01: debug_api_key→debug_route_key ×3 live-body sites + AC-005 covers E-SERVER-013 startup-refusal + E-SERVER-004 runtime-403; story-writer). Tree-wide grep ZERO live-body debug_api_key remaining. Input hashes: error-taxonomy 5ebc65a; STORY-S-console-03 718d986. Census UNCHANGED: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24."
   - "4.30 (D-356/DC-07 fix-burst/2026-09-07, state-manager): BC-2.24.001 v1.1 (F-PDC07-01: debug_route_key canonical-field rename in INV-003; SecurityConfig.debug_route_key is the canonical gate field per BC-2.12.005 PRE-004/INV-001; ADR-021 §Decision 1). BC-2.24.002 v1.4 (F-PDC07-01: debug_route_key throughout PC-007/EC-007/changelog; F-PDC07-02: E-SERVER-013 startup-boot-refusal + E-SERVER-004 runtime-403 both-behaviors cited in PC-007/EC-007; F-PDC07-05: stale markers removed). BC-2.24.003 v1.2 (F-PDC07-01: debug_route_key in PC-007). BC-2.12.005 v1.8 (INV-004 acknowledges debug-endpoints gated surface). error-taxonomy v1.75: E-SERVER-013 dual-anchor BC-2.12.005+BC-2.24.002 (startup raise site via BC-2.24.002 {EC-007}). Input hashes recomputed: ADR-031 19e7478; api-surface.md 4c5f776; verification-architecture.md db1e4d9; vcm d8356b2 (were 0000000; ZERO 0000000 remain). L-282 codified: 2 consistency-sweep blind spots. Census UNCHANGED: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24."
   - "4.29 (D-356/DC-05 fix-burst/2026-09-07, state-manager): F-PDC05-03 [MED] — BC-2.24.002 Full Catalog VP column corrected VP-2.24.002-A/B/C → VP-2.24.002-A/B/C/D (VP-2.24.002-D was registered in DC-02 addendum; BC body §VP Registration + all 4 VP mirrors already listed A/B/C/D; BC-INDEX Full Catalog was the sole residue). Census UNCHANGED: BC 148 / VP 41 / EC 145 / stories 52."
   - "4.28 (DC-04 addendum/2026-09-07, state-manager): BC-2.12.001 v1.11→v1.12 — §Story Anchor: S-console-07 appended as roadmap consumer of the PC-015 ?checkpoint_id variant (Wave 3); S-1.26 remains primary; reverse-anchor completeness fix. Census UNCHANGED: BC 148 / VP 41 / EC 145 / stories 52."
