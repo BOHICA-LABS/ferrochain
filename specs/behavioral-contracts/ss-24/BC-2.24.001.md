@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.001
-version: "1.0"
+version: "1.1"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -19,6 +19,7 @@ di_anchors: [DI-014]
 vp_seed: false
 red_gate: false
 changelog:
+  - "1.1 (D-356-fix/DC-07/2026-09-07, product-owner): F-PDC07-01: INV-003 corrected — SecurityConfig field name debug_api_key→debug_route_key (canonical field per BC-2.12.005 PRE-004/PC-006/PC-007/INV-001; ADR-021 §Decision 1; E-SERVER-013 InvalidDebugRouteKey)."
   - "1.0 (D-356/2026-09-06, product-owner): Initial BC — D-356 dev-console scope expansion. pregolya-console startup, ConsoleConfig, run_console entry point, CLI subcommand, SPA asset serving, runtime-config.json injection."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-041
@@ -27,7 +28,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "fea55e3"
+input-hash: "0493743"
 extracted_from: null
 modified: []
 deprecated: null
@@ -42,6 +43,8 @@ removal_reason: null
 
 > **D-356 dev-console scope expansion (2026-09-06, product-owner).** Roadmap-only.
 > Not built in the current cycle — spec and storyboard only. Build in Wave 3.
+
+> **D-356 adversary fix DC-07 (2026-09-07, product-owner).** F-PDC07-01: INV-003 corrected — `SecurityConfig.debug_api_key` → `SecurityConfig.debug_route_key`. `debug_route_key: Option<String>` is the canonical SecurityConfig gate field (BC-2.12.005 PRE-004/PC-006/PC-007/INV-001; ADR-021 §Decision 1).
 
 ## Description
 
@@ -78,7 +81,7 @@ internals or imports from `pregolya-graph` crate-private modules.
 
 - {INV-001} **Dependency boundary (ADR-031 Decision 1):** `pregolya-console` MUST NOT import from `pregolya-graph` internals, executor internals, or any crate-private module. It drives the engine exclusively through the public pregolya-server REST+SSE contract. This is enforced at the `Cargo.toml` level — `pregolya-console` depends on `pregolya-server` (public API) but not on `pregolya-graph` directly.
 - {INV-002} **TLS exception (ADR-031 Decision 6):** Loopback bind (`127.0.0.1`) does not require TLS. If the operator changes `host` to a non-loopback address, TLS is the operator's responsibility (unsupported in v1). The console does not enforce or validate this.
-- {INV-003} **No auth on `/ui/` routes:** Asset routes under `/ui/` have no auth layer. The loopback bind is the security boundary per ADR-031 Decision 6. `SecurityConfig.debug_api_key` governs `/debug/*` endpoints when co-launched (BC-2.12.005).
+- {INV-003} **No auth on `/ui/` routes:** Asset routes under `/ui/` have no auth layer. The loopback bind is the security boundary per ADR-031 Decision 6. `SecurityConfig.debug_route_key` governs `/debug/*` endpoints when co-launched (BC-2.12.005).
 - {INV-004} **`ConsoleConfig` is `#[non_exhaustive]`:** `ConsoleConfig` is a public API-surface type and MUST be annotated `#[non_exhaustive]` per workspace conventions.
 - {INV-005} **No `println!` in `console::server`:** `console::server` and `console::span_exporter` use `tracing::*!` for structured logging. Only `main.rs` / CLI entrypoint may emit `println!` for port announcement output.
 - {INV-006} **DI-014:** Startup errors propagate via `Err(PregolyaError)` — no silent swallowing, no `unwrap()`, no `expect()` in non-test code paths.

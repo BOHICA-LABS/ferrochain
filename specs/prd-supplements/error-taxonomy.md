@@ -1,11 +1,12 @@
 ---
 document_type: prd-supplement-error-taxonomy
 level: L3
-version: "1.74"
+version: "1.75"
 status: active
 producer: product-owner
 timestamp: 2026-09-07T00:00:00Z
 changelog:
+  - "1.75 (D-356-fix/DC-07/2026-09-07, state-manager): E-SERVER-013 secondary raise site added — BC-2.24.002 {EC-007} (startup boot-refusal for empty/absent debug_route_key when debug-endpoints feature is enabled; BC-2.24.002 PC-007 startup path). BC-anchor column updated: BC-2.12.005 → BC-2.12.005 + BC-2.24.002. Primary raise site (BC-2.12.005 {PC-007}) at runtime validated key check unchanged. Pattern mirrors E-CHKPT-011 dual-anchor (BC-2.12.003 + BC-2.12.001). EC count UNCHANGED at 145: 52 HTTP + 31 individual + 62 blanket = 145 ✓ (E-SERVER-013 reused at second site — no new code minted)."
   - "1.74 (D-356-fix/DC-04/2026-09-07, state-manager): E-CHKPT-011 second raise site added — BC-2.12.001 {EC-010} (GET /threads/{id}/state?checkpoint_id=<N> read path v1.11); BC column updated to 'BC-2.12.003 + BC-2.12.001'. Same semantic as primary raise site (BC-2.12.003 {EC-008}): requested CheckpointId does not exist in CheckpointSaver for given thread. HTTP 422 Unprocessable Entity at both sites. E-SERVER-004 message correction: prior wording 'requires explicit opt-in configuration' was stale — BC-2.24.002 PC-007 (v1.1+) makes debug_api_key MANDATORY when debug-endpoints feature is on; table row now reads 'requires a valid API key'. EC count UNCHANGED at 145: 52 HTTP + 31 individual + 62 blanket = 145 ✓ (E-CHKPT-011 reused at second site — no new code minted)."
   - "1.73 (D-356-fix/DC-03/2026-09-07, state-manager): E-CHKPT-011 CheckpointNotFound minted (POLICY, broken, HTTP 422, Never — POLICY default) — raised by the `pregolya-server` run-executor when `POST /threads/{id}/runs` is called with `config.configurable.checkpoint_id` set to a `CheckpointId` that does not exist in the `CheckpointSaver` for the given `thread_id` (fork-from-checkpoint path; BC-2.12.003 {INV-009}). No Run is created; the thread's current state is unchanged. Two placeholders: `<checkpoint_id>` = the requested CheckpointId; `<thread_id>` = the thread identifier. BC-2.12.003 {EC-008}/{INV-009} are the authoritative raise-site anchors. Code assignment note: product-owner originally named this code 'E-CHKPT-002' in BC-2.12.003 EC-008; E-CHKPT-002 is occupied by MonotonicClockRegression (BC-2.04.003, INTERNAL); per append-only-numbering policy IDs are never reused; E-CHKPT-011 is the next available CHKPT code; BC-2.12.003 updated v1.19→v1.20 to use E-CHKPT-011 throughout. CHKPT namespace: 10→11 live codes. Census 144→145: 52 HTTP (+1: E-CHKPT-011 HTTP-surface code, HTTP 422 Unprocessable Entity) + 31 individual (unchanged) + 62 blanket (unchanged) = 145. Arithmetic: 52 + 31 + 62 = 145 ✓. STATE.md propagation-gap note: E-SERVER-023 was minted in v1.72 (D-356/2026-09-06) but STATE.md EC count was not updated then (remained at 143); STATE.md corrected to EC 145 in DC-03 burst (accounts for both E-SERVER-023 and E-CHKPT-011)."
   - "1.72 (D-356/2026-09-06, product-owner): D-356 dev-console scope expansion — one new code minted. E-SERVER-023 DebugExporterNotConfigured (VAL, broken, Never — diverges from 503 transient default: the debug span exporter will not appear until the operator restarts via `pregolya console --dev`; not a transient condition; fix is configuration, not retry). Raised by both `GET /debug/trace/session/{session_id}` and `GET /debug/trace/{event_id}` when no `DebugSpanExporter` has been injected (standalone server without dev_mode co-launch). STATIC message: 'DebugExporterNotConfigured: debug span exporter is not configured; start server via `pregolya console --dev`'. Raise-site anchor: BC-2.24.002 {PC-005}. HTTP 503 Service Unavailable (ADR-031 Decision 2). RetryHint divergence entry added to RetryHint precedence blockquote below the SERVER table. ADR-031 Decision 2 originally requested E-SERVER-020 for this code; however E-SERVER-020 was already minted (burst-A-error-coord/P2A-BC-scan-hardening/2026-08-26 for AssistantFieldInvalid, BC-2.12.002) and E-SERVER-021 was also already minted (ApiRateLimitExceeded); E-SERVER-023 is the next sequential available ID per append-only numbering policy. ADR-031 also requested minting 'E-SERVER-021 AssistantNotFound' — this is COVERED by the existing E-SERVER-009 AssistantNotFound (VAL, broken, BC-2.12.002, minted 2026-07-13); no new code minted for that case. BC-2.24.003 {PC-006} correctly cites E-SERVER-009. SERVER namespace: 20→21 live codes. Census 143→144: 51 HTTP (+1: E-SERVER-023 HTTP-surface SERVER code, HTTP 503 Service Unavailable) + 31 individual (unchanged) + 62 blanket (unchanged) = 144. Arithmetic: 51 + 31 + 62 = 144 ✓."
@@ -85,7 +86,7 @@ inputs:
   - .factory/specs/prd.md
   - .factory/specs/domain-spec/invariants.md
   - .factory/comparative/COMPARATIVE-ASSESSMENT.md
-input-hash: "b465387"
+input-hash: "5ebc65a"
 traces_to: prd.md
 primary_consumers: [implementer, test-writer]
 ---
@@ -229,7 +230,7 @@ primary_consumers: [implementer, test-writer]
 | E-SERVER-010 | VAL | broken | BC-2.12.002 | Never | `AssistantVersionNotFound: assistant '<assistant_id>' has no version <version>` |
 | E-SERVER-011 | VAL | broken | BC-2.12.002 | Never | `GraphNotFound: graph '<graph_id>' is not registered with this server instance` |
 | E-SERVER-012 | CONCURRENCY | broken | BC-2.12.003 | Never | `ConcurrentRun: thread '<thread_id>' already has an active run; use multitask_strategy to override` |
-| E-SERVER-013 | VAL | broken | BC-2.12.005 | Never | `InvalidDebugRouteKey: debug_route_key must be non-empty` |
+| E-SERVER-013 | VAL | broken | BC-2.12.005 + BC-2.24.002 | Never | `InvalidDebugRouteKey: debug_route_key must be non-empty` |
 | E-SERVER-014 | DURABILITY | broken | BC-2.12.006 | Maybe | `RunStoreFailed: RunStore write failed for run '<run_id>' during transition '<transition>': <backend_error>` |
 | E-SERVER-015 | CONCURRENCY | broken | BC-2.12.007 | Never | `RunAlreadyExecuting: run '<run_id>' is already being executed; concurrent execution rejected` |
 | E-SERVER-016 | TIMEOUT | broken | BC-2.12.006 | Later | `IdempotencyLockTimeout: in-flight deduplication lock for key '<key>' held for ><timeout>s; lock_timeout is configurable via IdempotencyStore` |

@@ -2,7 +2,7 @@
 document_type: architecture-section
 level: L3
 section: verification-architecture
-version: "2.43"
+version: "2.44"
 status: active
 producer: architect
 timestamp: 2026-09-07T00:00:00Z
@@ -28,10 +28,11 @@ inputs:
   - .factory/specs/behavioral-contracts/ss-01/BC-2.01.006.md
   - .factory/specs/behavioral-contracts/ss-09/BC-2.09.008.md
   - .factory/specs/behavioral-contracts/ss-04/BC-2.04.011.md
-input-hash: "472a877"
+input-hash: "db1e4d9"
 traces_to: ARCH-INDEX.md
 decisions: [D17, D21, D23, D356]
 changelog:
+  - "2.44 (D-356/DC-07/2026-09-07, architect): F-PDC07-03 — 10 panel-VP Module cells repointed to canonical SPA component path form: spa/components/run_inspector (VP-2.24.004-A/B), spa/components/checkpoint_panel (VP-2.24.005-A/B), spa/components/hitl_panel (VP-2.24.006-A/B), spa/components/budget_panel (VP-2.24.007-A/B), spa/components/guardrail_panel (VP-2.24.008-A/B). CORRECTION: v2.41 (DC-02) claimed these were SPA panel modules but used console::* Rust module notation — non-canonical for SPA components. Canonical convention: spa/components/<component_name> path form. Census UNCHANGED: 41 total. input-hash pending-recompute."
   - "2.43 (D-356/DC-04/2026-09-07, architect): F-PDC04-04 — VP-2.24.002-A/B module repointed console::span_exporter → console::ring_buffer (console::ring_buffer is now canonical Pure Core for RingBuffer<T> per ADR-031 Decision 5 DC-04 split). VP-2.24.002-C (server::debug_routes) and VP-2.24.002-D (console::span_exporter sanitization) unchanged. Census UNCHANGED: 41 total. input-hash pending-recompute."
   - "2.42 (D-356/DC-02-addendum/2026-09-07, architect): VP-2.24.002-D registered — SpanData SEC-BOUND-001 sanitization before ring-buffer insertion (unit P1; console::span_exporter; BC-2.24.002; DI-014). Sanitization location: AT INSERTION (stricter than BC PC-008 'before serving'; ensures ring buffer never holds unsanitized llm_request/llm_response/attributes; satisfies PC-008 as a postcondition). Census 40→41; unit ×7→×8; P1 34→35. Preamble Forty→Forty-one. input-hash pending-recompute."
   - "2.41 (D-356/DC-02/2026-09-07, architect): F-PDC02-02+F-PDC02-03 — VP-2.24.002-A/B module repointed console::ring_buffer → console::span_exporter (ADR-031 Decision 5 canonical; DC-01 had used non-canonical name; console::span_exporter is the Boundary module hosting RingBuffer<SpanData>, per ADR-031 Decision 5 purity table). VP-2.24.004-008 A/B module columns corrected from console::server to SPA panel modules: console::run_inspector (004-A/B), console::checkpoint_panel (005-A/B), console::hitl_panel (006-A/B), console::budget_panel (007-A/B), console::guardrail_panel (008-A/B), per respective BCs. Tool census UNCHANGED: Kani ×10, proptest ×10, integration ×12, unit ×7, compile-fail ×1 (40 total VPs). input-hash pending-recompute."
@@ -119,16 +120,16 @@ Forty-one VPs committed before v1.0 release — VP-001..005 (original five) plus
 | VP-2.24.003-A | BC-2.24.003 | DI-014 | `graph::descriptor` | unit | 3 | P1 |
 | VP-2.24.003-B | BC-2.24.003 | DI-014 | `graph::descriptor` | Kani | 6 | P1 |
 | VP-2.24.003-C | BC-2.24.003 | DI-014 | `server::debug_routes` | unit | 3 | P1 |
-| VP-2.24.004-A | BC-2.24.004 | DI-014 | `console::run_inspector` | integration | 3 | P1 |
-| VP-2.24.004-B | BC-2.24.004 | DI-014 | `console::run_inspector` | integration | 3 | P1 |
-| VP-2.24.005-A | BC-2.24.005 | DI-002 | `console::checkpoint_panel` | integration | 3 | P1 |
-| VP-2.24.005-B | BC-2.24.005 | DI-002 | `console::checkpoint_panel` | integration | 3 | P1 |
-| VP-2.24.006-A | BC-2.24.006 | DI-014 | `console::hitl_panel` | integration | 3 | P1 |
-| VP-2.24.006-B | BC-2.24.006 | DI-014 | `console::hitl_panel` | integration | 3 | P1 |
-| VP-2.24.007-A | BC-2.24.007 | DI-014 | `console::budget_panel` | unit | 3 | P1 |
-| VP-2.24.007-B | BC-2.24.007 | DI-014 | `console::budget_panel` | integration | 3 | P1 |
-| VP-2.24.008-A | BC-2.24.008 | DI-014 | `console::guardrail_panel` | integration | 3 | P1 |
-| VP-2.24.008-B | BC-2.24.008 | DI-014 | `console::guardrail_panel` | unit | 3 | P1 |
+| VP-2.24.004-A | BC-2.24.004 | DI-014 | `spa/components/run_inspector` | integration | 3 | P1 |
+| VP-2.24.004-B | BC-2.24.004 | DI-014 | `spa/components/run_inspector` | integration | 3 | P1 |
+| VP-2.24.005-A | BC-2.24.005 | DI-002 | `spa/components/checkpoint_panel` | integration | 3 | P1 |
+| VP-2.24.005-B | BC-2.24.005 | DI-002 | `spa/components/checkpoint_panel` | integration | 3 | P1 |
+| VP-2.24.006-A | BC-2.24.006 | DI-014 | `spa/components/hitl_panel` | integration | 3 | P1 |
+| VP-2.24.006-B | BC-2.24.006 | DI-014 | `spa/components/hitl_panel` | integration | 3 | P1 |
+| VP-2.24.007-A | BC-2.24.007 | DI-014 | `spa/components/budget_panel` | unit | 3 | P1 |
+| VP-2.24.007-B | BC-2.24.007 | DI-014 | `spa/components/budget_panel` | integration | 3 | P1 |
+| VP-2.24.008-A | BC-2.24.008 | DI-014 | `spa/components/guardrail_panel` | integration | 3 | P1 |
+| VP-2.24.008-B | BC-2.24.008 | DI-014 | `spa/components/guardrail_panel` | unit | 3 | P1 |
 
 **Total: 41 VPs — 6 P0 / 35 P1 | Tool breakdown: Kani ×10, proptest ×10, integration ×12, unit ×8, compile-fail ×1**
 
@@ -145,6 +146,8 @@ Forty-one VPs committed before v1.0 release — VP-001..005 (original five) plus
 > **D-356 adversary fix DC-02 addendum (2026-09-07, architect).** VP-2.24.002-D registered — SpanData SEC-BOUND-001 sanitization before ring-buffer insertion (unit P1; BC-2.24.002; DI-014; `console::span_exporter`; harness `test_BC_2_24_002_span_data_sanitization_sec_bound_001`). Sanitization-location ruling: AT INSERTION (stricter; in-memory ring buffer never holds unsanitized `llm_request`/`llm_response`/`attributes`; satisfies BC-2.24.002 PC-008 as a postcondition). Census 40→41; unit ×7→×8; P1 34→35. PO follow-up: BC-2.24.002 PC-008 wording needs "before ring-buffer insertion" instead of "before being served at /debug/trace/*".
 
 > **D-356 adversary fix DC-04 (2026-09-07, architect).** F-PDC04-04: VP-2.24.002-A/B module repointed `console::span_exporter` → `console::ring_buffer`. `console::ring_buffer` is now the canonical Pure Core module for `RingBuffer<T>` per ADR-031 Decision 5 (DC-04 split). VP-2.24.002-C (`server::debug_routes`) and VP-2.24.002-D (`console::span_exporter` sanitization) unchanged. Census UNCHANGED: 41 total.
+
+> **D-356 adversary fix DC-07 (2026-09-07, architect).** F-PDC07-03: 10 panel-VP Module cells repointed to canonical SPA component path form — `spa/components/run_inspector` (VP-2.24.004-A/B), `spa/components/checkpoint_panel` (VP-2.24.005-A/B), `spa/components/hitl_panel` (VP-2.24.006-A/B), `spa/components/budget_panel` (VP-2.24.007-A/B), `spa/components/guardrail_panel` (VP-2.24.008-A/B). CORRECTION: v2.41 (DC-02) described these as "SPA panel modules" but used `console::*` Rust module notation — non-canonical for SPA components. Canonical form: `spa/components/<component_name>` path form (matches VP-INDEX.md preamble SPA convention note). Census UNCHANGED: 41 total.
 
 ## Provable Properties Catalog
 
@@ -1084,6 +1087,12 @@ Modules where behavioral testing is the primary verification method:
 
 | Version | Date | Author | Decision | Change |
 |---------|------|--------|----------|--------|
+| 2.44 | 2026-09-07 | architect | D-356/DC-07/2026-09-07 | F-PDC07-03 — 10 panel-VP Module cells repointed to canonical SPA component path form: spa/components/run_inspector (VP-2.24.004-A/B), spa/components/checkpoint_panel (VP-2.24.005-A/B), spa/components/hitl_panel (VP-2.24.006-A/B), spa/components/budget_panel (VP-2.24.007-A/B), spa/components/guardrail_panel (VP-2.24.008-A/B). CORRECTION: v2.41 (DC-02) used console::* Rust module notation — non-canonical for SPA components. Canonical convention: spa/components/<component_name> path form. Census UNCHANGED: 41 total. |
+| 2.43 | 2026-09-07 | architect | D-356/DC-04/2026-09-07 | F-PDC04-04 — VP-2.24.002-A/B module repointed console::span_exporter → console::ring_buffer (canonical Pure Core for RingBuffer<T> per ADR-031 Decision 5 DC-04 split). VP-2.24.002-C (server::debug_routes) and VP-2.24.002-D (console::span_exporter sanitization) unchanged. Census UNCHANGED: 41 total. |
+| 2.42 | 2026-09-07 | architect | D-356/DC-02-addendum/2026-09-07 | VP-2.24.002-D registered — SpanData SEC-BOUND-001 sanitization before ring-buffer insertion (unit P1; console::span_exporter; BC-2.24.002; DI-014). Sanitization location: AT INSERTION (stricter than BC PC-008 'before serving'; ensures ring buffer never holds unsanitized llm_request/llm_response/attributes). Census 40→41; unit ×7→×8; P1 34→35. Preamble Forty→Forty-one. |
+| 2.41 | 2026-09-07 | architect | D-356/DC-02/2026-09-07 | F-PDC02-02+F-PDC02-03 — VP-2.24.002-A/B module repointed console::ring_buffer → console::span_exporter (ADR-031 Decision 5 canonical). VP-2.24.004-008 A/B module columns corrected from console::server to SPA panel modules: console::run_inspector (004-A/B), console::checkpoint_panel (005-A/B), console::hitl_panel (006-A/B), console::budget_panel (007-A/B), console::guardrail_panel (008-A/B). Tool census UNCHANGED: Kani ×10, proptest ×10, integration ×12, unit ×7, compile-fail ×1 (40 total VPs). |
+| 2.40 | 2026-09-06 | architect | D-356/DC-01/2026-09-06 | F-PDC01-03+F-PDC01-04 — VP-2.24.002-A/B repointed to console::ring_buffer / pregolya-console (RingBuffer<SpanData> Pure Core; ADR-031 Decision 5 + S-console-02). Tool reconciled vs BC Proof Methods for 8 rows: 001-A/B integration/proptest→unit; 001-C integration→compile-fail; 002-B integration→proptest (module/crate also fixed); 003-A proptest→unit; 003-C integration→unit; 007-A integration→unit; 008-B integration→unit. Total: proptest ×10, integration ×12, unit ×7, compile-fail ×1 (40 VPs total unchanged). |
+| 2.39 | 2026-09-06 | architect | D-356/2026-09-06 | F3 — 19 VP-2.24.* placeholder rows added to Provable Properties Catalog for SS-24 Developer Console (BC-2.24.001–008). Tool breakdown: integration ×15, proptest ×3, Kani ×1. All P1, draft, Phase 3 except VP-2.24.003-B (Kani Phase 6). Total 21→40 VPs; P1 15→34; Kani 9→10; proptest 8→11; integration 3→18; unit unchanged at 1. Preamble narrative twenty-one→forty. |
 | 2.38 | 2026-09-01 | architect | round-65/F-P2A237-02 | §VP-020 narrative corrected to canonical VP-020.md (source-of-truth per CLAUDE.md rule 4): (a) property description rewritten from apply-twice-idempotency to five-property statement ({INV-001} no-duplicate, {INV-002} reducer-determinism, {PC-002} promote-dedup-idempotent, {PC-004} retire-idempotent, order-sensitivity); (b) {INV-001} gloss corrected from promote-dedup-no-op description to 'the active set contains no duplicate entry_id values at any time'; (c) formal statement replaced from non-canonical apply_ops-twice form with VP-020.md §Formal Invariant five-property form; (d) op shape corrected from Promote(id)/Retire(id) to PromoteRetireOp::Promote(T) / Retire(String) per VP-020.md §Formal Invariant and ADR-030 §Decision 3. input-hash updated 8837490→721a6e7. |
 | 2.37 | 2026-09-01 | architect | round-63/F-P2A235-03+F-P2A235-08 | §VP-019 stale completed-directive blockquote deleted — replaced with one-line completed note; VP-019.md is at the two-crash-point per-run DELETE model (v1.4); live directive was incorrect. §VP-020 formal invariants {INV-002} bullet corrected from retire-idempotency gloss to reducer-determinism ({INV-002} is REDUCER DETERMINISM — deterministic output under task-identity ordering; {PC-004} is Retire idempotency). |
 | 2.36 | 2026-09-01 | architect | round-62/F-P2A234-05 | VP-020 added — PromoteRetireChannel idempotency proptest P1 (BC-2.02.009 {INV-001}+{INV-002}; graph::channels; pregolya-graph; DI-001; Phase 3; harness promote_retire_channel_idempotency). Structurally analogous to VP-017; closes BC-2.02.009 unit-test-only gap. VP-019 §Should Prove description updated to two-crash-point per-run DELETE model. Committed VP Obligations table: VP-020 row added; total 20→21 VPs; proptest 7→8. Preamble narrative twenty→twenty-one. |

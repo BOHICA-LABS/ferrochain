@@ -2,12 +2,13 @@
 document_type: architecture-section
 level: L3
 section: api-surface
-version: "1.31"
+version: "1.32"
 status: active
 producer: architect
 timestamp: 2026-09-07T00:00:00Z
 changelog:
-  - "1.31 (D-356/DC-02/2026-09-07, architect): F-PDC02-05 — §Security note updated: debug_api_key is now MANDATORY (not opt-in) when debug-endpoints feature is enabled; unauthenticated /debug/* returns 403 E-SERVER-004 DebugRouteUnauthorized. DNS-rebinding/CSRF-to-127.0.0.1 rationale added (SpanData exposes llm_request/llm_response; SEC-BOUND-001 parity; BC-2.24.002). Companion: ADR-031 D6-2 and §Security interaction updated. input-hash pending-recompute."
+  - "1.32 (D-356/DC-07/2026-09-07, architect): F-PDC07-01 — sweep debug_api_key → debug_route_key (5 sites: changelog 1.31, §Security, Debug Endpoints preamble blockquote, DC-02 blockquote, Cargo Feature Flags table). F-PDC07-02 — §Security updated to state both auth behaviors: (a) empty/absent debug_route_key → E-SERVER-013 InvalidDebugRouteKey startup-refusal before HTTP listener binds; (b) valid key + unauthenticated request → E-SERVER-004 DebugRouteUnauthorized 403 at runtime. input-hash pending-recompute."
+  - "1.31 (D-356/DC-02/2026-09-07, architect): F-PDC02-05 — §Security note updated: debug_route_key is now MANDATORY (not opt-in) when debug-endpoints feature is enabled; unauthenticated /debug/* returns 403 E-SERVER-004 DebugRouteUnauthorized. DNS-rebinding/CSRF-to-127.0.0.1 rationale added (SpanData exposes llm_request/llm_response; SEC-BOUND-001 parity; BC-2.24.002). Companion: ADR-031 D6-2 and §Security interaction updated. input-hash pending-recompute."
   - "1.30 (D-356/2026-09-06, architect): F1 consistency fix — three debug endpoint error codes corrected: E-SERVER-020→E-SERVER-023 (DebugExporterNotConfigured, minted error-taxonomy.md v1.72) on GET /debug/trace/session/{session_id} and GET /debug/trace/{event_id}; E-SERVER-021→E-SERVER-009 (AssistantNotFound, existing code) on GET /assistants/{id}/graph. Per source-of-truth precedence rule 3: error-taxonomy.md supersedes prose for error code assignments. input-hash pending-recompute."
   - "1.29 (D-356/2026-09-06, architect): D-356 dev-console scope expansion — three new debug endpoints added (feature-gated debug-endpoints, default OFF): GET /debug/trace/session/{session_id}, GET /debug/trace/{event_id}, GET /assistants/{id}/graph. debug-endpoints Cargo feature added (Security-annotated, NO default). SSE transport formally confirmed for run streaming (ADR-031 §Decision 3 — no WebSocket). input-hash refreshed from pre-existing drift d55270a→c34f721."
   - "1.28 (R44/F-P2A184-03/2026-08-30): F-P2A184-03 [MED] §Public Rust Traits DynTool blockquote — stale 'impl Stream return' description corrected. OLD: 'which exposes `stream()` (opaque `impl Stream` return)'. NEW: 'which exposes `stream()` (RPITIT `impl Future` return — opaque, non-dyn-compatible)'. Post-R43, `Runnable::stream` returns an RPITIT `impl Future` whose output boxes the stream via `Pin<Box<dyn Stream...>>`; describing it as 'impl Stream return' is inaccurate. The E0038 non-object-safety conclusion for `dyn Tool` is unchanged. input-hash refreshed."
@@ -43,7 +44,7 @@ phase: 1b
 inputs:
   - .factory/specs/prd.md
   - .factory/specs/prd-supplements/interface-definitions.md
-input-hash: "76de142"
+input-hash: "4c5f776"
 traces_to: ARCH-INDEX.md
 decisions: [D13, D17]
 ---
@@ -271,7 +272,7 @@ cross-thread aggregate query for schedule-fired runs only.
 
 **Wire format:** JSON for HTTP responses. msgpack for checkpoint state (ADR-002).
 
-**Security:** `SecurityConfig::default()` denies CORS. When the `debug-endpoints` feature is enabled, `SecurityConfig.debug_api_key` (BC-2.12.005) is MANDATORY — unauthenticated requests to `/debug/*` return `403` with `E-SERVER-004 DebugRouteUnauthorized`. Loopback bind alone is insufficient against DNS-rebinding/CSRF-to-127.0.0.1; `SpanData` exposes `llm_request`/`llm_response` payloads (SEC-BOUND-001 parity; sanitization specified in BC-2.24.002).
+**Security:** `SecurityConfig::default()` denies CORS. When the `debug-endpoints` feature is enabled: (a) empty/absent `debug_route_key` (BC-2.12.005) → server refuses to start — `E-SERVER-013 InvalidDebugRouteKey` raised during config validation before the HTTP listener binds (startup-refusal, not a runtime error); (b) valid key configured + unauthenticated request → `403` with `E-SERVER-004 DebugRouteUnauthorized` at runtime. Loopback bind alone is insufficient against DNS-rebinding/CSRF-to-127.0.0.1; `SpanData` exposes `llm_request`/`llm_response` payloads (SEC-BOUND-001 parity; sanitization specified in BC-2.24.002).
 
 ### Debug Endpoints (feature `debug-endpoints`, default OFF)
 
@@ -279,9 +280,11 @@ cross-thread aggregate query for schedule-fired runs only.
 > compiled into `pregolya-server` ONLY when the `debug-endpoints` Cargo feature is enabled
 > (default: OFF). Production deployments that do not enable this feature compile out all debug
 > routing with zero overhead. All three endpoints are subject to
-> `SecurityConfig.debug_api_key` (BC-2.12.005). Authoritative decisions: ADR-031 §Decision 2.
+> `SecurityConfig.debug_route_key` (BC-2.12.005). Authoritative decisions: ADR-031 §Decision 2.
 
-> **D-356 adversary fix DC-02 (2026-09-07, architect).** F-PDC02-05: `SecurityConfig.debug_api_key`
+> **D-356 adversary fix DC-07 (2026-09-07, architect).** F-PDC07-01: swept `debug_api_key` → `debug_route_key` at all 5 api-surface.md sites (changelog 1.31, §Security, Debug Endpoints preamble blockquote, DC-02 blockquote, Cargo Feature Flags table). F-PDC07-02: §Security updated to state both auth behaviors explicitly: (a) empty/absent `debug_route_key` → `E-SERVER-013 InvalidDebugRouteKey` startup-refusal before HTTP listener binds; (b) valid key + unauthenticated request → `E-SERVER-004 DebugRouteUnauthorized` 403 at runtime. Companion: ADR-031 updated in same burst.
+
+> **D-356 adversary fix DC-02 (2026-09-07, architect).** F-PDC02-05: `SecurityConfig.debug_route_key`
 > is MANDATORY (not opt-in) when `debug-endpoints` is enabled — unauthenticated `/debug/*` returns
 > `403` with `E-SERVER-004 DebugRouteUnauthorized`. Rationale: `SpanData` exposes `llm_request`/
 > `llm_response` payloads; loopback bind alone is insufficient (DNS-rebinding/CSRF-to-127.0.0.1).
@@ -322,7 +325,7 @@ is added by D-356. The debug endpoints are unary REST (JSON request/response), n
 | `mcp` | NO | pregolya-mcp adapter | BC-2.09.001 |
 | `budget` | YES | Budget governance policy primitive | BC-2.10.001 |
 | `guardrail` | YES | Content provenance + guardrail hook | BC-2.11.001 |
-| `debug-endpoints` | **NO** | **Security-annotated.** Feature-gates `/debug/trace/*` + `/assistants/{id}/graph` endpoints. Off by default — production builds MUST NOT enable unless behind `SecurityConfig.debug_api_key` (BC-2.12.005) and explicitly scoped to developer/staging. Compiled out entirely when off. CI gate `check-debug-endpoints-default` (authored at Wave 3) verifies this feature is absent from `[features].default`. See ADR-031 §Decision 2 and §Decision 6 D6-3. | CAP-042 (D-356/ADR-031) |
+| `debug-endpoints` | **NO** | **Security-annotated.** Feature-gates `/debug/trace/*` + `/assistants/{id}/graph` endpoints. Off by default — production builds MUST NOT enable unless behind `SecurityConfig.debug_route_key` (BC-2.12.005) and explicitly scoped to developer/staging. Compiled out entirely when off. CI gate `check-debug-endpoints-default` (authored at Wave 3) verifies this feature is absent from `[features].default`. See ADR-031 §Decision 2 and §Decision 6 D6-3. | CAP-042 (D-356/ADR-031) |
 
 ## Error Type
 

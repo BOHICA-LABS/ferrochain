@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.12.005
-version: "1.7"
+version: "1.8"
 status: active
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -24,7 +24,7 @@ inputs:
   - .factory/specs/domain-spec/edge-cases.md
   - .factory/semport/platform/behavioral-intent.md
   - .factory/comparative/assessment-parts/part-2-dispositions-p51-p97.md
-input-hash: "5560f41"
+input-hash: "b9f89a7"
 changelog:
   - "1.1 (ADV-P1D-PASS-26): F-P26-04 removed debug_route_path reference from invariant — debug route is fixed at /_debug (minimal config surface decision; TVs do not depend on a configurable path)."
   - "1.2 (ADV-P1D-PASS-27): F-P27-05 removed stale '(or the configured debug route path)' parenthetical from PC4 — residue of the pre-P26-04 configurable-path design; path is fixed at /_debug."
@@ -33,6 +33,7 @@ changelog:
   - "1.5 (burst-226/F-P131-03/2026-07-21): Assign canonical event_type 'server.security_config_cors_wildcard' to EC-003 and Invariants WARN emission per observability census (SAP-1)."
   - "1.6 (story-anchor-backfill/2026-08-22): §Story Anchor backfilled to S-1.27 from STORY-INDEX forward map (CANONICAL PRINCIPLE Rule 6; no behavioral change)."
   - "1.7 (M1/ADR-027/2026-08-23): stable clause anchors {PC/INV/PRE-NNN} added; purely additive, no content change."
+  - "1.8 (D-356-fix/DC-07/2026-09-07, product-owner): F-PDC07-04: INV-004 added — additive note acknowledging that the D-356 developer console debug-endpoints feature extends the debug_route_key gate to the console debug endpoint family (BC-2.24.002, BC-2.24.003). Does not contradict INV-002's fixed /_debug path; this is an additive feature-gated surface."
 extracted_from: null
 modified: []
 deprecated: null
@@ -44,6 +45,8 @@ removal_reason: null
 ---
 
 # BC-2.12.005: SecurityConfig::default() Denies CORS; Debug Route Gated on Explicit Opt-In Key (NE-14)
+
+> **D-356 adversary fix DC-07 (2026-09-07, product-owner).** F-PDC07-04: INV-004 added — additive note acknowledging that the D-356 developer console `debug-endpoints` feature on `pregolya-server` extends the `debug_route_key` gate to the console debug endpoint family (`GET /debug/trace/session/{id}`, `GET /debug/trace/{event_id}`, `GET /assistants/{id}/graph`). Does not contradict INV-002's fixed `/_debug` path — this is a separate additive feature-gated surface, all protected by the same `debug_route_key`.
 
 ## Description
 
@@ -98,6 +101,7 @@ Separately, for the opt-in path:
 - {INV-003} Constructing `SecurityConfig` with an explicit `allowed_origins: [AllowOrigin::Any]`
   (CORS wildcard) is permitted for local-dev use cases, but the server emits a `WARN`
   log on startup with `event_type = "server.security_config_cors_wildcard"`: `"SecurityConfig: CORS wildcard configured — do not use in production"`.
+- {INV-004} **Feature-gated debug-endpoints surface (D-356):** The developer console `debug-endpoints` Cargo feature on `pregolya-server` extends the `debug_route_key` gate to an additional endpoint family: `GET /debug/trace/session/{id}`, `GET /debug/trace/{event_id}` (BC-2.24.002 PC-007), and `GET /assistants/{id}/graph` (BC-2.24.003 PC-007). The same E-SERVER-013 startup-refusal semantics and E-SERVER-004 runtime-403 semantics apply. This is additive to INV-002's fixed `/_debug` path — it is a separate feature-gated surface, not a path override.
 
 ## Edge Cases
 

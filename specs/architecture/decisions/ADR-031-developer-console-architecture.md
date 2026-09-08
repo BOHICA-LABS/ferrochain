@@ -8,7 +8,7 @@ status: accepted
 date: "2026-09-06"
 producer: architect
 timestamp: 2026-09-07T00:00:00Z
-version: "1.2"
+version: "1.3"
 phase: 1b
 traces_to: ARCH-INDEX.md
 decisions: [D356]
@@ -23,10 +23,11 @@ inputs:
   - .factory/specs/architecture/decisions/ADR-021-server-config-surface-runnable-config-configurable.md
   - .factory/specs/architecture/decisions/ADR-028-server-run-lifecycle-semantics.md
   - .factory/specs/architecture/ARCH-INDEX.md
-input-hash: "00c95fd"
+input-hash: "19e7478"
 changelog:
+  - "1.3 (D-356/DC-07/2026-09-07, architect): F-PDC07-01 — sweep debug_api_key → debug_route_key (5 sites: changelog 1.1, §Decision 2 Security interaction, D6-2, DC-02 blockquote, §Source). F-PDC07-02 — D6-2 and §Decision 2 Security interaction updated to state both auth behaviors explicitly: (a) empty/absent debug_route_key → E-SERVER-013 InvalidDebugRouteKey startup-refusal before HTTP listener binds; (b) valid key + unauthenticated request → E-SERVER-004 403 at runtime. input-hash pending-recompute."
   - "1.2 (D-356/DC-04/2026-09-07, architect): F-PDC04-04 — Decision 5 split: `console::ring_buffer` added as canonical Pure Core module (RingBuffer<T> deterministic bounded FIFO; no I/O deps; Kani/proptest-provable; VP-2.24.002-A/B targets). `console::span_exporter` updated to Boundary (owns Arc<Mutex<RingBuffer<SpanData>>>, depends on console::ring_buffer; performs SEC-BOUND-001 sanitization AT insertion). This split is the canonical arbiter; prevents future flip-flop. VP-2.24.002-A/B repointed to console::ring_buffer in all four VP mirrors. input-hash pending-recompute."
-  - "1.1 (D-356/DC-02/2026-09-07, architect): F-PDC02-05 — D6-2 security strengthened: debug_api_key is now MANDATORY (not opt-in) when debug-endpoints feature is enabled; unauthenticated /debug/* requests → 403 E-SERVER-004 DebugRouteUnauthorized. §Security interaction updated from 'opt-in debug-key gate' to mandatory gate with explicit error code and DNS-rebinding rationale. SpanData sanitization (SEC-BOUND-001 parity; llm_request/llm_response strips from SpanData) cross-referenced to BC-2.24.002. Companion api-surface.md §Security note updated. input-hash pending-recompute."
+  - "1.1 (D-356/DC-02/2026-09-07, architect): F-PDC02-05 — D6-2 security strengthened: debug_route_key is now MANDATORY (not opt-in) when debug-endpoints feature is enabled; unauthenticated /debug/* requests → 403 E-SERVER-004 DebugRouteUnauthorized. §Security interaction updated from 'opt-in debug-key gate' to mandatory gate with explicit error code and DNS-rebinding rationale. SpanData sanitization (SEC-BOUND-001 parity; llm_request/llm_response strips from SpanData) cross-referenced to BC-2.24.002. Companion api-surface.md §Security note updated. input-hash pending-recompute."
   - "1.0 (D-356/2026-09-06, architect): Initial ADR — developer console scope expansion. Six decisions: (1) pregolya-console new binary crate (Wave 3, roadmap); (2) debug-endpoints feature-gated on pregolya-server; (3) SSE transport confirmed, WebSocket-vs-SSE discrepancy closed; (4) SPA framework deferred to Wave 3; (5) purity boundary: console::server Effectful Shell, console::span_exporter Boundary, server::debug_routes Effectful Shell; (6) NFR/security deltas: localhost-bind, no external auth in dev mode, debug-endpoints OFF by default."
 ---
 
@@ -139,9 +140,12 @@ The descriptor is a static structural snapshot of the compiled graph — it carr
 runtime state. Returns `404` with existing `E-SERVER-009 AssistantNotFound` when the assistant
 does not exist.
 
-**Security interaction:** When `debug-endpoints` is enabled, `SecurityConfig.debug_api_key`
-(BC-2.12.005) MUST be configured — this is MANDATORY, not opt-in. Unauthenticated requests
-to `/debug/*` return `403` with `E-SERVER-004 DebugRouteUnauthorized`. CORS policy follows
+**Security interaction:** When `debug-endpoints` is enabled:
+(a) if `SecurityConfig.debug_route_key` (BC-2.12.005) is empty or absent, the server
+**refuses to start** — `E-SERVER-013 InvalidDebugRouteKey` is raised during config
+validation, before the HTTP listener binds (startup-refusal, not a runtime error);
+(b) with a valid key configured, unauthenticated requests to `/debug/*` return `403`
+with `E-SERVER-004 DebugRouteUnauthorized` at runtime. CORS policy follows
 `SecurityConfig`. `SpanData` exposes `llm_request`/`llm_response` payloads; loopback bind
 alone is insufficient against DNS-rebinding/CSRF-to-127.0.0.1 (SEC-BOUND-001 parity;
 sanitization specified in BC-2.24.002).
@@ -214,10 +218,12 @@ These are **additive exceptions** to the workspace-wide NFR catalog for the cons
   required for loopback-bound dev-tool operation (same posture as adk-web, LangGraph Dev
   Server). Operator's responsibility if exposed beyond localhost (unsupported in v1).
 - **D6-2 Auth:** No auth layer on `/ui/` asset routes. Loopback bind is the security
-  boundary for UI assets only. When the `debug-endpoints` Cargo feature is enabled,
-  `SecurityConfig.debug_api_key` (BC-2.12.005) MUST be configured; enabling the feature
-  without a configured key is a misconfiguration — unauthenticated requests to `/debug/*`
-  return `403` with `E-SERVER-004 DebugRouteUnauthorized`. Rationale: debug/trace endpoints
+  boundary for UI assets only. When the `debug-endpoints` Cargo feature is enabled:
+  (a) if `debug_route_key` (BC-2.12.005) is empty or absent, the server **refuses to
+  start** — `E-SERVER-013 InvalidDebugRouteKey` is raised during config validation,
+  before the HTTP listener binds (startup-refusal, not a runtime error);
+  (b) with a valid key configured, unauthenticated requests to `/debug/*` return `403`
+  with `E-SERVER-004 DebugRouteUnauthorized` at runtime. Rationale: debug/trace endpoints
   expose `llm_request`/`llm_response` payloads in `SpanData`; loopback bind alone is
   insufficient against the DNS-rebinding/CSRF-to-127.0.0.1 attack vector.
   `SpanData` sanitization (SEC-BOUND-001 parity — strip `llm_request`/`llm_response`
@@ -235,7 +241,9 @@ These are **additive exceptions** to the workspace-wide NFR catalog for the cons
   `console::span_exporter` use `tracing::*!` per workspace convention. The `main.rs`
   CLI entrypoint may use `println!` for UX output (port announcement).
 
-> **D-356 adversary fix DC-02 (2026-09-07, architect).** F-PDC02-05: D6-2 security posture strengthened per adversary finding. `debug_api_key` is now MANDATORY (not opt-in) when the `debug-endpoints` Cargo feature is enabled; unauthenticated requests to `/debug/*` return `403` with `E-SERVER-004 DebugRouteUnauthorized`. Rationale: `SpanData` exposes `llm_request`/`llm_response` payloads; loopback bind alone is insufficient against the DNS-rebinding/CSRF-to-127.0.0.1 vector. `SpanData` sanitization (SEC-BOUND-001 parity — strip LLM payload fields before export) is cross-referenced to BC-2.24.002. Companion: api-surface.md §Security note updated to reflect mandatory auth.
+> **D-356 adversary fix DC-02 (2026-09-07, architect).** F-PDC02-05: D6-2 security posture strengthened per adversary finding. `debug_route_key` is now MANDATORY (not opt-in) when the `debug-endpoints` Cargo feature is enabled; unauthenticated requests to `/debug/*` return `403` with `E-SERVER-004 DebugRouteUnauthorized`. Rationale: `SpanData` exposes `llm_request`/`llm_response` payloads; loopback bind alone is insufficient against the DNS-rebinding/CSRF-to-127.0.0.1 vector. `SpanData` sanitization (SEC-BOUND-001 parity — strip LLM payload fields before export) is cross-referenced to BC-2.24.002. Companion: api-surface.md §Security note updated to reflect mandatory auth.
+
+> **D-356 adversary fix DC-07 (2026-09-07, architect).** F-PDC07-01: swept `debug_api_key` → `debug_route_key` at all 5 ADR-031 sites (changelog 1.1, §Decision 2 Security interaction, D6-2, DC-02 blockquote, §Source). Canonical field is `debug_route_key: Option<String>` per BC-2.12.005 PRE-004/PC-006/PC-007/INV-001 and ADR-021 §Decision 1 — the non-canonical `debug_api_key` was introduced in DC-02. F-PDC07-02: D6-2 and §Decision 2 Security interaction now state both auth behaviors explicitly: (a) empty/absent `debug_route_key` → `E-SERVER-013 InvalidDebugRouteKey` startup-refusal before HTTP listener binds; (b) valid key + unauthenticated request → `E-SERVER-004 DebugRouteUnauthorized` 403 at runtime. Companion: api-surface.md updated in same burst (F-PDC07-01 rename + F-PDC07-02 both-behaviors). F-PDC07-03: 10 panel-VP Module cells repointed to `spa/components/<panel>` convention in all 4 VP mirrors (VP-INDEX, verification-architecture, verification-coverage-matrix, ARCH-INDEX); VP-INDEX preamble SPA convention note added; v1.44 false changelog claim corrected via new v1.48 entry.
 
 > **D-356 adversary fix DC-04 (2026-09-07, architect).** F-PDC04-04: Decision 5 purity table split into two canonical modules. `console::ring_buffer` is now the **canonical Pure Core** module hosting `RingBuffer<T>` (deterministic bounded FIFO, no I/O deps, Kani/proptest-provable; VP-2.24.002-A/B targets). `console::span_exporter` remains **Boundary** but is now explicitly defined as the OTel exporter that **DEPENDS ON** `console::ring_buffer` — it owns `Arc<Mutex<RingBuffer<SpanData>>>` and performs SEC-BOUND-001 sanitization AT insertion before delegating to the ring buffer. This ADR text is the canonical arbiter for the module split; it prevents future reversion (DC-01 introduced `console::ring_buffer` non-canonically; DC-02 collapsed both into `console::span_exporter`; DC-04 resolves by canonicalizing the split with explicit dependency direction). VP-2.24.002-A/B repointed to `console::ring_buffer` in all four VP mirrors. VP-2.24.002-D (sanitization) stays at `console::span_exporter`. BC-2.24.002 §Module wording for PO: "`pregolya-console` — two modules: `console::ring_buffer` (Pure Core, `RingBuffer<T>` data structure) and `console::span_exporter` (Boundary, `DebugSpanExporter` OTel exporter owning `Arc<Mutex<RingBuffer<SpanData>>>`).". INV-002 wording for PO: "`RingBuffer<SpanData>` storage lives in `console::ring_buffer` (Pure Core); `DebugSpanExporter` in `console::span_exporter` (Boundary) is the sole writer via `Arc<Mutex<RingBuffer<SpanData>>>`; reads served by `server::debug_routes` via the same Arc handle."
 
@@ -377,7 +385,7 @@ and purity-boundary-map.md updated in the same D-356 burst.
   behavioral requirements for the console surface.
 - **ADR-006** `decisions/ADR-006-streaming-event-taxonomy.md` — SSE transport authority
   (Decision 3 grounds).
-- **BC-2.12.005** — `SecurityConfig.debug_api_key` gate (Decision 2 security interaction).
+- **BC-2.12.005** — `SecurityConfig.debug_route_key` gate (Decision 2 security interaction).
 - **HS-C-001** (`holdout-scenarios/HS-C-001-flowloom-embedding-host-end-to-end.md`) —
   proves an external host consuming the public wire contract works; validates the
   console-as-client architecture posture.

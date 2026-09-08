@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.003
-version: "1.1"
+version: "1.2"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -19,6 +19,7 @@ di_anchors: [DI-014]
 vp_seed: false
 red_gate: false
 changelog:
+  - "1.2 (D-356-fix/DC-07/2026-09-07, product-owner): F-PDC07-01: PC-007 corrected — debug_api_key→debug_route_key (canonical field: SecurityConfig.debug_route_key per BC-2.12.005 PRE-004/INV-001; ADR-021 §Decision 1)."
   - "1.1 (D-356-fix/DC-01/2026-09-06, product-owner): F-PDC01-01 Story Anchor corrected: was S-console-03, now S-console-04. Verified against S-console-04 frontmatter behavioral_contracts: [BC-2.24.003]."
   - "1.0 (D-356/2026-09-06, product-owner): Initial BC — D-356 dev-console scope expansion. Graph-descriptor structural contract for GET /assistants/{id}/graph endpoint."
 traces_to:
@@ -28,7 +29,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "fea55e3"
+input-hash: "0493743"
 extracted_from: null
 modified: []
 deprecated: null
@@ -43,6 +44,8 @@ removal_reason: null
 
 > **D-356 dev-console scope expansion (2026-09-06, product-owner).** Roadmap-only.
 > Not built in the current cycle — spec and storyboard only. Build in Wave 3.
+
+> **D-356 adversary fix DC-07 (2026-09-07, product-owner).** F-PDC07-01: PC-007 corrected — `debug_api_key` → `debug_route_key`. `SecurityConfig.debug_route_key: Option<String>` is the canonical gate field (BC-2.12.005 PRE-004/PC-006/PC-007/INV-001; ADR-021 §Decision 1).
 
 ## Description
 
@@ -81,7 +84,7 @@ AssistantNotFound`.
 4. {PC-004} **`dot_src` optional:** `dot_src` is populated when the `dot` binary (Graphviz) is available in PATH at runtime. When absent, `dot_src` is `null`. The absence of `dot_src` does not affect `nodes`/`edges` completeness.
 5. {PC-005} **Static snapshot semantics:** The descriptor is a structural snapshot of the compiled graph — it carries no runtime state (no current node position, no message content, no checkpoint IDs). Repeated calls return the same descriptor for the same graph version.
 6. {PC-006} **Assistant not found:** When `{id}` does not match any registered assistant, returns HTTP 404 with `E-SERVER-009 AssistantNotFound` (existing code — no new code minted for this case).
-7. {PC-007} **`debug_api_key` gate:** Subject to `SecurityConfig.debug_api_key` (BC-2.12.005) — same gate as all `/debug/*` endpoints.
+7. {PC-007} **`debug_route_key` gate:** Subject to `SecurityConfig.debug_route_key` (BC-2.12.005) — same gate as all `/debug/*` endpoints (BC-2.12.005 PC-006/PC-007).
 
 ## Invariants
 
