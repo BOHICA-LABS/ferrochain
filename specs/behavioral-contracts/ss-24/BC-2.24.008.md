@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.008
-version: "1.4"
+version: "1.5"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -24,6 +24,7 @@ changelog:
   - "1.2 (D-356-fix/DC-02/2026-09-07, product-owner): F-PDC02-04 guardrail_decision variant ordinal corrected from 16th to 12th (per BC-2.06.001 §Postconditions PC-002 canonical ordering and ADR-006 rev-3): three sites updated — Description, Architecture Anchors section, and Traceability §Architecture Authority row."
   - "1.3 (D-356-fix/DC-03/2026-09-07, product-owner): F-PDC03-01 + F-PDC03-03: PC-002 boundary field corrected — field name boundary_type→boundary, type ProvenanceTag/BoundaryType→IngressBoundary, values RAGRetrieval→RagChunk, MemoryIngress→MemoryItem; severity type GuardrailSeverity→GuardrailSeverityWire (Transform decisions carry severity: None and reason: None per BC-2.06.001 §Postconditions PC-002); TV-001/TV-002/TV-004 updated to match corrected field names and enum values; EC-003 severity-for-Transform corrected (None, not High). Authority: BC-2.06.001 §Postconditions PC-002 StreamEvent::GuardrailDecision and ADR-006 §Decision. F-PDC03-04: DC-02 blockquote count corrected two sites→three sites (POL-46; changelog v1.2 correctly stated three)."
   - "1.4 (D-356-fix/DC-04/2026-09-07, product-owner): F-PDC04-03: Traceability Capability Anchor Justification corrected — field name boundary_type→boundary, severity type GuardrailSeverity→GuardrailSeverityWire, matching the PC-002 corrections already applied in v1.3 (DC-03). The Justification now cites the canonical field and type names as they appear in BC-2.06.001 §Postconditions PC-002 and ADR-006 §Decision."
+  - "1.5 (D-356-fix/DC-29/2026-09-08, product-owner): F-PDC29-01 (HIGH): Description/PRE-002/PC-004/INV-002 all referenced non-existent stored StreamEvent list for completed-run reconstruction. Replaced throughout with D8 realizable substrate: evidence_journal? on run-read response (BC-2.12.003 {PC-013}) is the authoritative source for completed-run guardrail history (StreamEvent is transient per ADR-030; ADR-031 Decision 8). INV-002 completeness obligation now correctly spans SSE stream (live) and evidence_journal? (terminal-status runs)."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-047
   - architecture/decisions/ADR-031-developer-console-architecture.md
@@ -31,7 +32,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "5ff81d4"
+input-hash: "7bc6667"
 extracted_from: null
 modified: []
 deprecated: null
@@ -60,14 +61,14 @@ The developer console provides a dedicated guardrail security feed that isolates
 the boundary type, severity, and outcome (Fail or Transform). Pass decisions are NOT shown
 — they are not streamed per the existing design (ADR-006 rev-3, F-P99-01: "Pass is not
 streamed"). The feed updates in real time for live runs (via the shared SSE subscription)
-and reconstructs from stored events for completed runs. This panel serves both the
+and sources completed-run guardrail history from the `evidence_journal?` field on the run-read response (BC-2.12.003 {PC-013}; ADR-031 Decision 8). This panel serves both the
 interactive local-debug workflow and the Domain A SOC analyst use case (guardrail
 visibility during untrusted-tool-result ingestion).
 
 ## Preconditions
 
 1. {PRE-001} A run is selected (active or completed) with at least one `guardrail_decision` event in the stream (i.e., at least one guardrail check on a non-Pass decision was triggered for a qualifying boundary).
-2. {PRE-002} The run's SSE stream (BC-2.12.007) is open (live) OR stored events include `guardrail_decision` variants (completed run).
+2. {PRE-002} The run's SSE stream (BC-2.12.007) is open (live) OR the run is terminal-status and the run-read response (BC-2.12.003 {PC-013}) is accessible for post-run guardrail history via `evidence_journal?` (ADR-031 Decision 8).
 3. {PRE-003} The server is configured with at least one `GuardrailHook` that can produce Fail or Transform decisions (CAP-013, BC-2.11.001).
 
 ## Postconditions
@@ -79,14 +80,14 @@ visibility during untrusted-tool-result ingestion).
    - Decision: `Fail` or `Transform` (`decision` field on `StreamEvent::GuardrailDecision`).
    - For `Fail`: the `reason` string (`reason: Option<String>` — `Some` for `Fail`; `None` for `Transform`).
 3. {PC-003} **Real-time update (live runs):** For in-progress runs, new `guardrail_decision` events are appended to the feed as they arrive via the shared SSE subscription (one `EventSource` per run, shared with BC-2.24.004 and BC-2.24.007).
-4. {PC-004} **Completed run reconstruction:** For completed runs, the feed reconstructs from the stored event list — all `guardrail_decision` events with Fail or Transform outcomes are shown.
+4. {PC-004} **Completed run reconstruction:** For terminal-status runs, the feed reconstructs from the `evidence_journal?` field on `GET /threads/{thread_id}/runs/{run_id}` (BC-2.12.003 {PC-013}). The `evidence_journal` contains the durable record of all guardrail evaluation results for the run; the console filters and displays entries corresponding to Fail or Transform outcomes. There is NO stored StreamEvent list — `StreamEvent` is transient (ADR-030 §Decision; ADR-031 Decision 8); the `evidence_journal` is the correct and authoritative substrate for completed-run guardrail history. (The DI-012 completeness invariant {INV-002} applies to both live-stream and completed-run reconstruction.)
 5. {PC-005} **No new server machinery:** `guardrail_decision` events are already emitted by the server (ADR-006 rev-3, CAP-007). No new endpoints are added.
 6. {PC-006} **DI-012 invariant:** All qualifying boundary crossings produce `guardrail_decision` events. The feed MUST NOT silently omit any Fail or Transform decision that was emitted. A complete feed is the correctness requirement (DI-012: no guardrail bypass — all qualifying events appear in the feed).
 
 ## Invariants
 
 - {INV-001} **F-P99-01: Pass not shown.** Pass decisions are NOT streamed by the server (ADR-006 rev-3) and are therefore NOT shown in this panel. The console MUST NOT attempt to fetch or display Pass decisions from any source. This is by design — Pass decisions are the high-frequency normal case and surfacing them would obscure the actionable Fail/Transform events.
-- {INV-002} **DI-012 complete feed:** Every `guardrail_decision` event with a Fail or Transform outcome that appears in the SSE stream or stored event list MUST appear in the feed. Filtering is limited to outcome type (Fail/Transform only) — no other filtering that could silently drop events is permitted.
+- {INV-002} **DI-012 complete feed:** Every `guardrail_decision` event with a Fail or Transform outcome that appears in the SSE stream (live runs) or `evidence_journal?` (terminal-status runs per BC-2.12.003 {PC-013}) MUST appear in the feed. Filtering is limited to outcome type (Fail/Transform only) — no other filtering that could silently drop events is permitted.
 - {INV-003} **Shared SSE subscription:** The guardrail feed reuses the same `EventSource` connection as BC-2.24.004 and BC-2.24.007. There is ONE SSE connection per run.
 - {INV-004} **DI-014:** Display errors (e.g., failure to parse a `guardrail_decision` event payload) surface as a malformed-entry placeholder in the feed, not as a page crash. The remaining entries are unaffected.
 
@@ -131,6 +132,8 @@ visibility during untrusted-tool-result ingestion).
 ## Story Anchor
 
 S-console-10 (Wave 3 — guardrail/security decision review panel)
+
+> **D-356 adversary fix DC-29 (2026-09-08, product-owner).** F-PDC29-01 (HIGH): Completed-run reconstruction substrate was non-existent stored StreamEvent list. ADR-031 Decision 8 defines the v1-realizable substrate: evidence_journal? on GET /threads/{id}/runs/{run_id} (BC-2.12.003 {PC-013}) is the authoritative source for completed-run guardrail history. StreamEvent is transient (ADR-030 §Decision). Description, PRE-002, PC-004, and INV-002 all updated to cite evidence_journal? mechanism; "stored event list" removed throughout.
 
 > **D-356 adversary fix DC-01 (2026-09-06, product-owner).** Story Anchor corrected S-console-09 → S-console-10. story-writer split BC-2.24.002 across S-console-02+03 and added S-console-05 (SPA build, no BC), shifting the numbering. Verified: S-console-10 frontmatter carries `behavioral_contracts: [BC-2.24.008]`.
 

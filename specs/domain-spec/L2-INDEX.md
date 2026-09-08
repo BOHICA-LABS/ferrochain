@@ -1,10 +1,10 @@
 ---
 document_type: domain-spec-index
 level: L2
-version: "1.33"
+version: "1.34"
 status: active
 producer: state-manager
-timestamp: 2026-09-08T22:00:00Z
+timestamp: 2026-09-08T23:45:00Z
 phase: 1a
 inputs:
   - .factory/specs/product-brief.md
@@ -33,6 +33,7 @@ sections:
   - bounded-contexts.md
 decisions: [D1, D2, D3, D4, D6, D7, D8, D11, D12, D13, D17, D19, D20, D21, D23, D356]
 changelog:
+  - "v1.34 (D-356/DC-29/2026-09-08, state-manager): capabilities-p1-p2.md F-PDC29-01 substrate sweep: CAP-043 completed-run inspection re-scoped to run-read (BC-2.12.003 {PC-013}) + evidence_journal? + trace spans (BC-2.24.002); no run-event endpoint (ADR-031 §Decision 8; ADR-030 StreamEvent transient). CAP-047 guardrail review substrate: same run-read+evidence_journal? mechanism. Counts UNCHANGED: CAP 48 / DI 16."
   - "v1.33 (D-356/DC-27/L-288/2026-09-08, state-manager): capabilities-p1-p2.md v1.35 — F-L288-002[MED] CAP-042 graph-descriptor field: dotSrc→dot_src (snake_case per BC-2.24.003 PC-001/PC-004 + S-console-04; CAP-042 was the lone camelCase outlier in the D-356 delta). F-L288-005[MED] CAP-046 EvidenceJournal scope: 'For completed runs' → 'For terminal-status (finished) runs (completed, failed, cancelled, summary_halt)' per DC-24/DC-25 broadening in BC-2.24.007 + BC-2.12.003 {PC-013} evidence_journal? projection. Counts UNCHANGED: CAP 48 / DI 16."
   - "v1.32 (D-356/DC-26/2026-09-08, state-manager): capabilities-p1-p2.md v1.34 — CAP-045 two-site drift correction (F-PDC26-03[MED]): (1) node-boundary interrupt dialog 'scratchpad value and node name' corrected to 'value (scratchpad JSON) and interrupt_id' per BC-2.24.006 PC-002 + S-console-08 (InterruptPayload has only value+interrupt_id, not node_name); (2) 'subscribes to the new run stream' corrected to 'same run stream (run_id unchanged)' per DC-23 canonical ruling (resume is interrupted→in_progress on SAME run_id). Counts UNCHANGED: CAP 48 / DI 16."
   - "v1.31 (D-356/DC-06 fix-burst/2026-09-07, state-manager): capabilities-p1-p2.md v1.33 — CAP-047 guardrail field-name correction (F-PDC06-03 site 1, HIGH): boundary_type:RAGRetrieval/MemoryIngress → boundary:IngressBoundary ToolResult|RagChunk|MemoryItem; GuardrailSeverity → severity:Option<GuardrailSeverityWire>. Counts UNCHANGED: CAP 48 / DI 16."

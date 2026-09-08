@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.005
-version: "1.4"
+version: "1.5"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -24,6 +24,7 @@ changelog:
   - "1.2 (D-356-fix/DC-04/2026-09-07, product-owner): F-PDC04-01: all checkpoint_id occurrences corrected from JSON string form to canonical u64 numeric form (CheckpointId newtype over u64 per BC-2.04.003 §Architecture Anchors; BC-2.12.003 TV-014 precedent). TV-002 ?checkpoint_id=ckpt-2 → ?checkpoint_id=2; TV-003 checkpoint_id: \"ckpt-1\" → checkpoint_id: 1; PC-003 placeholder quotes removed. F-PDC04-02: PC-002 citation updated to reference BC-2.12.001 {PC-015} ?checkpoint_id variant (added in BC-2.12.001 v1.11 DC-04 burst)."
   - "1.3 (D-356-fix/DC-05/2026-09-07, product-owner): F-PDC05-01: EC-002 HTTP status corrected 404→422 for E-CHKPT-011 CheckpointNotFound (HTTP 422 per taxonomy definition and BC-2.12.001 EC-010; DC-04 missed this site)."
   - "1.4 (D-356-fix/DC-08/2026-09-07, product-owner): F-PDC08-01: INV-002 corrected — 'a standard 404 error path' → 'the standard 422 E-CHKPT-011 CheckpointNotFound error path' (DC-04→DC-05 sweep hit EC-002 but missed INV-002; HTTP 422 per error-taxonomy E-CHKPT-011 and BC-2.12.001 {EC-010}/TV-011)."
+  - "1.5 (D-356-fix/DC-29/2026-09-08, product-owner): F-PDC29-02 (MED): §Architecture Anchors dangling ADR fixed — non-existent ADR-002-checkpointing-strategy.md replaced with ADR-003-durability-tiers.md (title: 'Checkpoint Durability Tiers: Sync Default, Async and Exit-Only Opt-In'; confirmed present). Real ADR-002 is ADR-002-checkpoint-format.md (msgpack wire format, SS-04), not the three-tier durability doc."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-044
   - architecture/decisions/ADR-031-developer-console-architecture.md
@@ -31,7 +32,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "5ff81d4"
+input-hash: "e17c718"
 extracted_from: null
 modified: []
 deprecated: null
@@ -124,7 +125,9 @@ Fork-from-checkpoint creates a new run via `POST /threads/{id}/runs` with `confi
 ## Architecture Anchors
 
 - `architecture/decisions/ADR-031-developer-console-architecture.md` — §Traceability row "Checkpoint history browser + trajectory replay (CAP-044 — SS-24, SS-04)"
-- `architecture/decisions/ADR-002-checkpointing-strategy.md` — checkpoint substrate (three-tier durability)
+- `architecture/decisions/ADR-003-durability-tiers.md` — three-tier durability substrate (Sync Default, Async and Exit-Only Opt-In)
+
+> **D-356 adversary fix DC-29 (2026-09-08, product-owner).** F-PDC29-02 (MED): §Architecture Anchors cited non-existent `ADR-002-checkpointing-strategy.md`. The real ADR-002 is `ADR-002-checkpoint-format.md` (msgpack wire format, SS-04); "three-tier durability" lives in `ADR-003-durability-tiers.md` (title: "Checkpoint Durability Tiers: Sync Default, Async and Exit-Only Opt-In"). Anchor repointed to ADR-003-durability-tiers.md with exact ADR title.
 
 ## Story Anchor
 

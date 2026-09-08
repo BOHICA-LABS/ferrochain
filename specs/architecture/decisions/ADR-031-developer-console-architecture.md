@@ -7,8 +7,8 @@ title: "Developer Console Architecture: pregolya-console Crate, Debug Endpoints,
 status: accepted
 date: "2026-09-06"
 producer: architect
-timestamp: 2026-09-07T00:00:00Z
-version: "1.5"
+timestamp: 2026-09-08T00:00:00Z
+version: "1.6"
 phase: 1b
 traces_to: ARCH-INDEX.md
 decisions: [D356]
@@ -23,8 +23,9 @@ inputs:
   - .factory/specs/architecture/decisions/ADR-021-server-config-surface-runnable-config-configurable.md
   - .factory/specs/architecture/decisions/ADR-028-server-run-lifecycle-semantics.md
   - .factory/specs/architecture/ARCH-INDEX.md
-input-hash: "c9607b2"
+input-hash: "9b4b34d"
 changelog:
+  - "1.6 (D-356/DC-29/2026-09-08, architect): F-PDC29-01 — Decision 8 added: completed-run inspection substrate. Resolves realizability gap in BC-2.24.004 {PRE-004}/{PC-006}/{TV-002}, BC-2.24.007 {PRE-002}, BC-2.24.008 {PC-004}: all three incorrectly assumed a stored StreamEvent list + run-event endpoint that do not exist. Decision: use run-read endpoint (BC-2.12.003 {PC-013}) + debug-trace endpoint (BC-2.24.002) for completed-run inspection. StreamEvent is transient (ADR-030 §Decision); no StreamEvent persistence substrate is introduced. PO routing: exact replacement wording for all three BCs in DC-29 delta note."
   - "1.5 (D-356/DC-23/2026-09-08, architect): F-PDC23-03 — Mutex→RwLock for span ring buffer (concurrent-reader adjudication). Decision 5 table `console::span_exporter` row updated: `Arc<Mutex<RingBuffer<SpanData>>>` → `Arc<RwLock<RingBuffer<SpanData>>>`. Rationale: S-console-03 AC-008 explicitly requires RwLock for multiple concurrent debug-route readers; BC-2.24.002 EC-006 specifies 'RwLock or similar'; Mutex serializes all reads and fails the concurrent-reader requirement. PO routing: BC-2.24.002 INV-002 must be updated (exact replacement wording in DC-23 delta note). input-hash updated to c9607b2 (input drift resolved — inputs changed prior to this burst)."
   - "1.4 (D-356/DC-10/2026-09-07, architect): F-PDC10-02 — dependency-cycle break via inversion. Added server::debug_span (Boundary) to pregolya-server: SpanData data type + DebugSpanSource read-trait. server::debug_routes now reads via Arc<dyn DebugSpanSource> (not Arc<DebugSpanExporter>). console::span_exporter implements DebugSpanSource and DEPENDS ON server::debug_span for SpanData+trait — console→server direction (already asserted; no cycle). Decision 5 table: added server::debug_span row, updated server::debug_routes + console::span_exporter rows. Decision 7 added. input-hash unchanged (inputs did not change; current dfd9a77)."
   - "1.3 (D-356/DC-07/2026-09-07, architect): F-PDC07-01 — sweep debug_api_key → debug_route_key (5 sites: changelog 1.1, §Decision 2 Security interaction, D6-2, DC-02 blockquote, §Source). F-PDC07-02 — D6-2 and §Decision 2 Security interaction updated to state both auth behaviors explicitly: (a) empty/absent debug_route_key → E-SERVER-013 InvalidDebugRouteKey startup-refusal before HTTP listener binds; (b) valid key + unauthenticated request → E-SERVER-004 403 at runtime. input-hash unchanged (inputs did not change)."
@@ -285,6 +286,51 @@ merely moved crates.
 > **D-356 adversary fix DC-04 (2026-09-07, architect).** F-PDC04-04: Decision 5 purity table split into two canonical modules. `console::ring_buffer` is now the **canonical Pure Core** module hosting `RingBuffer<T>` (deterministic bounded FIFO, no I/O deps, Kani/proptest-provable; VP-2.24.002-A/B targets). `console::span_exporter` remains **Boundary** but is now explicitly defined as the OTel exporter that **DEPENDS ON** `console::ring_buffer` — it owns `Arc<Mutex<RingBuffer<SpanData>>>` and performs SEC-BOUND-001 sanitization AT insertion before delegating to the ring buffer. This ADR text is the canonical arbiter for the module split; it prevents future reversion (DC-01 introduced `console::ring_buffer` non-canonically; DC-02 collapsed both into `console::span_exporter`; DC-04 resolves by canonicalizing the split with explicit dependency direction). VP-2.24.002-A/B repointed to `console::ring_buffer` in all four VP mirrors. VP-2.24.002-D (sanitization) stays at `console::span_exporter`. BC-2.24.002 §Module wording for PO: "`pregolya-console` — two modules: `console::ring_buffer` (Pure Core, `RingBuffer<T>` data structure) and `console::span_exporter` (Boundary, `DebugSpanExporter` OTel exporter owning `Arc<Mutex<RingBuffer<SpanData>>>`).". INV-002 wording for PO: "`RingBuffer<SpanData>` storage lives in `console::ring_buffer` (Pure Core); `DebugSpanExporter` in `console::span_exporter` (Boundary) is the sole writer via `Arc<Mutex<RingBuffer<SpanData>>>`; reads served by `server::debug_routes` via the same Arc handle."
 
 > **D-356 adversary fix DC-23 (2026-09-08, architect).** F-PDC23-03: `Arc<Mutex<RingBuffer<SpanData>>>` corrected to `Arc<RwLock<RingBuffer<SpanData>>>` in Decision 5 table `console::span_exporter` row (live content only; DC-04 historical delta note above is not revised — it records what DC-04 decided at the time). Ruling: S-console-03 AC-008 explicitly states "The `RwLock` inside the concrete `DebugSpanExporter`... allows multiple concurrent readers." `Mutex` serializes ALL access and cannot satisfy this load-bearing requirement. `RwLock` permits concurrent read-guard holders (multiple simultaneous HTTP debug-route requests) plus exclusive write access during OTel span insertion. BC-2.24.002 EC-006 independently corroborates ("RwLock or similar"). The DC-04 `Mutex` pin was incorrect and is superseded by this ruling. **PO routing — BC-2.24.002 INV-002 replacement wording:** "`RingBuffer<SpanData>` storage lives in `console::ring_buffer` (Pure Core); `DebugSpanExporter` in `console::span_exporter` (Boundary) is the sole writer via `Arc<RwLock<RingBuffer<SpanData>>>` (acquires write lock at insertion; multiple concurrent readers acquire read locks at query time); reads served by `server::debug_routes` via the same Arc handle (ADR-031 Decision 5)." Companion: purity-boundary-map.md v1.48 updated same burst. Stories S-console-02 and S-console-03 already cite RwLock in AC-008/EC-005 — no story edits required for F-PDC23-03.
+
+### Decision 8 — Completed-Run Inspection Substrate (DC-29)
+
+**`StreamEvent` is transient. There is no stored-event-list endpoint and no `RunEvent` persistence substrate in v1.** The incorrect assumption in BC-2.24.004 {PRE-004}/{PC-006}, BC-2.24.007 {PRE-002}, and BC-2.24.008 {PC-004} that the server persists `StreamEvent`s per BC-2.12.006 is architecturally false. This decision defines the v1-realizable completed-run inspection substrate.
+
+**Authority chain:**
+- ADR-030 §Decision: "`StreamEvent` is transient (emitted over a channel, consumed in real time, not persisted)."
+- BC-2.12.007 {EC-002}: "The partial stream is lost (not buffered for reconnect in v1)."
+- BC-2.06.001 {EC-003}: "No partial event sequences are delivered to a dropped consumer."
+- BC-2.12.006: `RunStore` persists Run lifecycle state transitions (status, output, error, evidence_journal, completed_at), NOT `StreamEvent` payloads. No event-list endpoint is defined.
+
+**v1-realizable substrate for completed-run inspection:**
+
+| Information need | Source | Endpoint / mechanism |
+|------------------|--------|----------------------|
+| Run final status, output, error | BC-2.12.003 {PC-013} | `GET /threads/{id}/runs/{run_id}` |
+| All guardrail decisions (Fail/Transform/Allow) | BC-2.12.003 {PC-013} `evidence_journal?` field | `GET /threads/{id}/runs/{run_id}` (terminal-status runs only) |
+| Per-span latency, LLM request/response, attributes | BC-2.24.002 `DebugSpanSource` | `GET /debug/trace/session/{run_id}` (when `debug-endpoints` enabled + within 10k ring buffer) |
+| Step-level checkpoint history | BC-2.12.001 / checkpoint read | Checkpoint read endpoint (out of scope for console v1) |
+
+**The console's completed-run view is a composite of run-read + trace-span** — this mirrors ADK's dev console, which shows persisted traces for completed runs (not a replayed event stream).
+
+**Explicit non-decisions (out of v1 scope):**
+- A `/runs/{id}/events` endpoint that returns all `StreamEvent`s for a completed run is NOT built. Adding it later would require a new `RunEventStore` persistence layer (a significant v2 decision that would need a new ADR).
+- `TrajectoryRecord` (ADR-030) is a specialized primitive for research-orchestrator reproducibility; it is not a general-purpose event replay substrate for the console.
+
+**Implication for `{INV-001}` ("No new server endpoints are required"):** This decision CONFIRMS `{INV-001}`. The run-read endpoint (`GET /threads/{id}/runs/{run_id}`) and debug-trace endpoint (`GET /debug/trace/session/{run_id}`) already exist. No new endpoints are introduced.
+
+> **D-356 adversary fix DC-29 (2026-09-08, architect).** F-PDC29-01 (HIGH): Completed-run inspection realizability gap. Decision 8 added: StreamEvent is transient (ADR-030); no run-event endpoint; no stored-event-list. BC-2.12.006 persists Run state transitions only. The v1-realizable substrate is: `GET /threads/{id}/runs/{run_id}` (run final state + evidence_journal? + output?) PLUS `GET /debug/trace/session/{run_id}` (trace spans when debug-endpoints enabled). This CONFIRMS BC-2.24.004 {INV-001} ("no new server endpoints required") — the two endpoints already exist. BC corrections routed to PO (exact wording in this delta note). **PO routing — exact replacement wording for BC-2.24.004:**
+
+> **BC-2.24.004 {PRE-004}** replacement: "For completed run inspection: the run has a terminal status (`completed`, `failed`, `cancelled`, or `summary_halt`); the run's final state is accessible via `GET /threads/{thread_id}/runs/{run_id}` (BC-2.12.003 {PC-013}); trace spans may be available via `GET /debug/trace/session/{run_id}` (BC-2.24.002) when `debug-endpoints` is enabled and the run's spans are within the ring buffer retention window. There is NO stored StreamEvent list and NO run-event endpoint — StreamEvent is transient (ADR-030 §Decision)."
+
+> **BC-2.24.004 {PC-006}** replacement: "**Completed run inspection:** For a terminal-status run (`completed`, `failed`, `cancelled`, `summary_halt`), the SPA fetches the run's final state via `GET /threads/{thread_id}/runs/{run_id}` (BC-2.12.003 {PC-013}) — status, `output?`, `error?`, `evidence_journal?`, and `completed_at?`. When `debug-endpoints` is enabled and the run's spans are within the ring buffer, the SPA additionally fetches span detail via `GET /debug/trace/session/{run_id}` (BC-2.24.002). The completed-run view is static (no SSE subscription). There is NO stored StreamEvent list and NO run-event endpoint; StreamEvent is transient (ADR-030 §Decision; ADR-031 Decision 8)."
+
+> **BC-2.24.004 {TV-002}** replacement: "Terminal-status run (`completed`); `GET /threads/{id}/runs/{run_id}` returns `{ status: 'completed', output: '...', evidence_journal: [2 entries], completed_at: '...' }`; `debug-endpoints` enabled with 3 spans in buffer | Static view shows run summary (final output, evidence journal entries, span detail links); no SSE opened | completed-run inspection"
+
+> **PO routing — exact replacement wording for BC-2.24.007:**
+
+> **BC-2.24.007 {PRE-002}** replacement: "The live SSE stream (`GET /threads/{id}/runs/{run_id}/stream`) is open for active runs (BC-2.12.007), OR the run is terminal-status and the run-read response (`GET /threads/{id}/runs/{run_id}`, BC-2.12.003 {PC-013}) is accessible for post-run evidence display. NOTE: per-compaction-event detail (individual `compaction_event` StreamEvent payloads) is NOT available for completed runs — StreamEvent is transient (ADR-030 §Decision; ADR-031 Decision 8). The completed-run panel shows the terminal state summary via `evidence_journal?` and the final output context."
+
+> **PO routing — exact replacement wording for BC-2.24.008:**
+
+> **BC-2.24.008 {PC-004}** replacement: "**Completed run reconstruction:** For terminal-status runs, the feed reconstructs from the `evidence_journal?` field on `GET /threads/{thread_id}/runs/{run_id}` (BC-2.12.003 {PC-013}). The `evidence_journal` contains the durable record of all guardrail evaluation results for the run; the console filters and displays entries corresponding to Fail or Transform outcomes. There is NO stored StreamEvent list — `StreamEvent` is transient (ADR-030 §Decision; ADR-031 Decision 8); the `evidence_journal` is the correct and authoritative substrate for completed-run guardrail history. (The DI-012 completeness invariant {INV-002} applies to both live-stream and completed-run reconstruction.)"
+
+> **Story-writer routing:** S-console-06 (BC-2.24.004), S-console-09 (BC-2.24.007), S-console-10 (BC-2.24.008) must sweep their completed-run ACs, tasks, and EC rows to align with the corrected BCs. Any AC that references "fetch stored event list," "run-event endpoint," or "replay StreamEvents" must be replaced with run-read + trace-span fetch (as per BC-2.24.004 {PC-006} corrected wording above). **BA routing:** CAP-043 "inspect completed run" capability description should be updated by business-analyst to say "inspect completed run via run-state summary (status, output, evidence_journal) and trace spans (when debug-endpoints enabled)" rather than any wording implying StreamEvent replay.
 
 ---
 

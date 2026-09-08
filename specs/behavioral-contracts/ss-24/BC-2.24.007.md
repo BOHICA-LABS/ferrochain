@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.007
-version: "1.4"
+version: "1.5"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -24,6 +24,7 @@ changelog:
   - "1.2 (D-356-fix/DC-24/2026-09-08, product-owner): F-PDC24-04: {PC-003} updated — 'via the server's run-read endpoint' made precise: cites `evidence_journal?` field on `GET /threads/{thread_id}/runs/{run_id}` response (BC-2.12.003 {PC-013}), present when run status is terminal. BC-2.12.003 {PC-013} was amended in the same burst to project this field."
   - "1.3 (D-356-fix/DC-25/2026-09-08, product-owner): F-PDC25-02 (MED): EvidenceJournal scope broadened from 'completed runs' to 'terminal-status (finished) runs' throughout. Description, PC-003, EC-005, and TV-004 updated to include all four terminal states: completed, failed, cancelled, summary_halt. BC-2.12.003 {PC-013} already projects evidence_journal? for all four states; BC-2.24.007 was the outlier."
   - "1.4 (D-356-fix/DC-27/L-288/2026-09-08, product-owner): F-L288-003 (MED): INV-004 'completed run' → 'terminal-status (finished) run'. F-L288-004 (MED): §Related BCs BC-2.10.006 row 'completed-run budget history' → 'terminal-status (finished) run budget history'. DC-25 scope-broadening was incomplete — missed INV-004 and §Related BCs."
+  - "1.5 (D-356-fix/DC-29/2026-09-08, product-owner): F-PDC29-01 (HIGH): {PRE-002} 'stored events include compaction_event variants' replaced with D8 realizable substrate — terminal-status run-read (BC-2.12.003 {PC-013}) for evidence_journal? summary; per-compaction-event detail NOT available for completed runs (StreamEvent transient per ADR-030 §Decision; ADR-031 Decision 8). EC-005: 'stored events' fallback removed — gauge/timeline compaction data unavailable for completed runs. ADR-031 Decision 8."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-046
   - architecture/decisions/ADR-031-developer-console-architecture.md
@@ -31,7 +32,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "e17c718"
+input-hash: "7bc6667"
 extracted_from: null
 modified: []
 deprecated: null
@@ -61,7 +62,7 @@ part of the StreamEvent grammar.
 ## Preconditions
 
 1. {PRE-001} A run with `BudgetConfig.compaction_trigger != CompactionTrigger::Disabled` is active or has completed (CAP-035, BC-2.10.005).
-2. {PRE-002} The live SSE stream (`GET /threads/{id}/runs/{run_id}/stream`) is open (BC-2.12.007) OR the run is completed and stored events include one or more `compaction_event` variants.
+2. {PRE-002} The live SSE stream (`GET /threads/{id}/runs/{run_id}/stream`) is open for active runs (BC-2.12.007), OR the run is terminal-status and the run-read response (`GET /threads/{id}/runs/{run_id}`, BC-2.12.003 {PC-013}) is accessible for post-run evidence display. NOTE: per-compaction-event detail (individual `compaction_event` StreamEvent payloads) is NOT available for completed runs — StreamEvent is transient (ADR-030 §Decision; ADR-031 Decision 8). The completed-run panel shows the terminal state summary via `evidence_journal?` and the final output context.
 3. {PRE-003} `tokens_remaining_after` is non-null in at least one `compaction_event` (requires a token ceiling configured via `BudgetConfig` — `OnMessageCount`-only configs may produce `null`, per BC-2.06.006 {INV-002}).
 
 ## Postconditions
@@ -91,7 +92,7 @@ part of the StreamEvent grammar.
 | {EC-002} | `tokens_remaining_after = null` (OnMessageCount trigger, no token ceiling) | Gauge shows "budget unknown" / "N/A"; timeline annotation still shows turn range and summary_token_count |
 | {EC-003} | `tokens_remaining_after` is negative (Deny path: `accumulated > ceiling`) | Gauge renders 0% or a visual "overrun" state (negative budget displayed as 0 with a warning indicator) |
 | {EC-004} | Two `compaction_event` variants in one run | Two boundary markers on the timeline; gauge updates twice; latest `tokens_remaining_after` drives the gauge |
-| {EC-005} | EvidenceJournal fetch fails for a terminal-status (finished) run | Inline error "Evidence journal unavailable" in panel; rest of panel (gauge, timeline annotations) still rendered from stored events |
+| {EC-005} | EvidenceJournal fetch fails for a terminal-status (finished) run | Inline error "Evidence journal unavailable" in panel; gauge and timeline annotation compaction data is unavailable for completed runs (StreamEvent is transient; no stored compaction_event list per ADR-031 Decision 8) |
 
 ## Canonical Test Vectors
 
@@ -129,6 +130,8 @@ S-console-09 (Wave 3 — token/context budget monitoring panel)
 > **D-356 adversary fix DC-25 (2026-09-08, product-owner).** F-PDC25-02 (MED): EvidenceJournal display scope was narrowed to `completed` runs only. Broadened throughout — Description, PC-003, EC-005, TV-004 — to "terminal-status (finished) runs (`completed`, `failed`, `cancelled`, `summary_halt`)". BC-2.12.003 {PC-013} already has the correct `evidence_journal?` projection for all four terminal states; BC-2.24.007 was the outlier.
 
 > **D-356 adversary fix DC-27/L-288 (2026-09-08, product-owner).** F-L288-003 (MED) + F-L288-004 (MED): DC-25 scope-broadening missed two remaining "completed" sites. INV-004: "failed EvidenceJournal fetch for completed run" → "terminal-status (finished) run". §Related BCs BC-2.10.006: "for completed-run budget history" → "for terminal-status (finished) run budget history".
+
+> **D-356 adversary fix DC-29 (2026-09-08, product-owner).** F-PDC29-01 (HIGH): {PRE-002} claimed "stored events include compaction_event variants" for completed runs — non-existent substrate (StreamEvent is transient per ADR-030; ADR-031 Decision 8). Replaced with D8 realizable wording: terminal-status run-read for evidence_journal? summary; explicit NOTE that per-compaction-event detail is NOT available for completed runs. EC-005 "stored events" fallback removed — gauge/timeline compaction data is unavailable for completed runs.
 
 > **D-356 adversary fix DC-01 (2026-09-06, product-owner).** Story Anchor corrected S-console-08 → S-console-09. story-writer split BC-2.24.002 across S-console-02+03 and added S-console-05 (SPA build, no BC), shifting the numbering. Verified: S-console-09 frontmatter carries `behavioral_contracts: [BC-2.24.007]`.
 

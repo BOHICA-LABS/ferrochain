@@ -1,11 +1,12 @@
 ---
 document_type: story-index
 level: L3
-version: "1.81"
+version: "1.82"
 status: active
 producer: state-manager
-timestamp: 2026-09-08T23:30:00Z
+timestamp: 2026-09-08T23:45:00Z
 changelog:
+  - "1.82 (D-356/DC-29/2026-09-08, state-manager): S-console-06 (story-writer; D8 completed-run sweep — run-read+evidence_journal?+trace spans; no StreamEvent replay per ADR-031 §Decision 8). S-console-09 (story-writer; D8 completed-run sweep). S-console-10 (story-writer; D8 completed-run sweep). BC-INDEX. ARCH-INDEX. L2-INDEX. Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.81 (D-356/DC-28/2026-09-08, state-manager): S-console-05 v1.3 (story-writer; F-PDC28-01[LOW] — Token Budget Estimate table backfilled with BC-2.24.004 row (~300 tokens); total ~8,100→~8,400; POL-8 step 4: BC count matches len(behavioral_contracts)=2). ARCH-INDEX v1.80 (architect; F-PDC28-02[OBS] — DI-annotation uniformity: removed vestigial '; DI-004)' from VP-2.24.005-A/B description cells; all 20 SS-24 §VP rows now DI-annotation-free). verify-form-a-changelog-direction.sh PASS: FAIL=0 BC_UNVERIFIED=0. ZERO 0000000 remain. Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.80 (D-356/DC-27/L-288/2026-09-08, state-manager): L-288 exhaustive semantic-coherence sweep of ALL 8 SS-24 BCs complete — 8 findings [F-L288-001..008] ALL CLOSED. BC-2.24.006 v1.6 (F-L288-001[HIGH] §Description 'new run stream'→'same run SSE stream (run_id unchanged)'). capabilities-p1-p2.md v1.35 (F-L288-002[MED] CAP-042 dotSrc→dot_src; F-L288-005[MED] CAP-046 'completed'→'terminal-status (finished)'). BC-2.24.007 v1.4 (F-L288-003[MED] INV-004 'completed'→'terminal-status (finished)'; F-L288-004[MED] §Related BCs BC-2.10.006 'completed-run'→'terminal-status (finished) run'). S-console-09 v1.1 (F-L288-006 — 7 sites 'completed'→'terminal-status'; test renamed evidence_journal_terminal_run). S-console-05 v1.2 (F-L288-007 — AC-005 trace corrected BC-2.24.001 INV-002→ADR-031 D3/BC-2.24.004 INV-002; BC-2.24.004 added to behavioral_contracts per POLICY-8). BC-2.24.002 v1.10 (F-L288-008[OBS] DC-04 blockquote Arc<Mutex<...>> SUPERSEDED-BY-DC-23 annotation). BC-2.24.004 v1.3 (reverse-anchor: §Story-Anchor +S-console-05; 4 of 8 SS-24 BCs verified fully coherent). Story-Inventory S-console-05 BCs column: BC-2.24.001→BC-2.24.001, BC-2.24.004. BC-to-Story map BC-2.24.004: S-console-06→S-console-05, S-console-06. BC-INDEX v4.41→v4.42. L2-INDEX v1.32→v1.33. Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.79 (D-356/DC-25/2026-09-08, state-manager): S-console-08 v1.3 (story-writer; F-PDC25-01 sibling-sweep — AC-001/AC-002/Task-3b/EC-004/PSI corrected to terminal {\"__interrupt__\":[InterruptPayload]} frame model; zero node_name residue; zero no-dedicated-event over-correction residue). Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."

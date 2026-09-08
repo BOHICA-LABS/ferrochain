@@ -3,20 +3,21 @@ document_type: story
 level: ops
 story_id: S-console-09
 epic_id: E-console
-version: "1.1"
+version: "1.2"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
 changelog:
   - "1.0 (D-356/2026-09-06, story-writer): Initial story — token/context budget monitoring panel driven by compaction_event StreamEvents, EvidenceJournal display."
   - "1.1 (D-356/DC-27/L-288/2026-09-08, story-writer): F-L288-006 — EvidenceJournal scope broadened to all 4 terminal states (completed, failed, cancelled, summary_halt); test renamed evidence_journal_terminal_run."
+  - "1.2 (D-356/DC-29/2026-09-08, story-writer): F-PDC29-01 — AC-007 corrected: completed-run budget panel shows no gauge/timeline (compaction_event StreamEvents are transient; ADR-031 Decision 8); panel renders only EvidenceJournal area with error message on fetch failure."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.007.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "401e2c9"
+input-hash: "0c56f04"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-06]
@@ -40,6 +41,8 @@ tdd_mode: strict
 > Wave 3 — not built in the current Phase 3 implementation cycle.
 
 > **D-356 adversary fix DC-27/L-288 (2026-09-08, story-writer).** F-L288-006 — EvidenceJournal scope broadened from `completed`-only to all 4 terminal states (`completed`, `failed`, `cancelled`, `summary_halt`) per BC-2.24.007 v1.3 (AC-003, AC-007, EC-005, Task 4, Task 7, File Structure). Test renamed `test_BC_2_24_007_evidence_journal_terminal_run()`.
+
+> **D-356 adversary fix DC-29 (2026-09-08, story-writer).** F-PDC29-01 — AC-007 corrected for ADR-031 Decision 8. StreamEvent is transient; per-compaction-event detail is not available for terminal-status runs post-run. The budget panel for a completed run shows only the EvidenceJournal area — no gauge, no compaction timeline annotations. On EvidenceJournal fetch failure, only the inline error message is rendered; there are no other panel elements to preserve. Live (in_progress) SSE path (AC-004) is unchanged.
 
 ## Narrative
 
@@ -74,7 +77,7 @@ When `tokens_remaining_after` is `null` (no token ceiling configured), the gauge
 When `compaction_trigger = Disabled` (default) and no `compaction_event` arrives, the budget panel shows a "compaction not configured" placeholder message. No gauge is rendered. Verified by `test_BC_2_24_007_compaction_disabled_placeholder()`.
 
 ### AC-007 (traces to BC-2.24.007 edge case EC-005)
-When the `EvidenceJournal` fetch fails for a terminal-status (finished) run (server error), the panel shows an inline error message "Evidence journal unavailable" within the panel area. The gauge, timeline annotations, and other panel elements remain rendered from stored events. Verified by `test_BC_2_24_007_evidence_journal_fetch_error()`.
+When the `EvidenceJournal` fetch fails for a terminal-status (finished) run (server error), the panel shows an inline error message "Evidence journal unavailable" within the panel area. No gauge or compaction timeline annotations are shown for terminal-status runs — per-compaction-event detail (`compaction_event` StreamEvent payloads) is not available post-run because StreamEvent is transient (ADR-031 Decision 8); only the EvidenceJournal display area is rendered, and it shows the error message. Verified by `test_BC_2_24_007_evidence_journal_fetch_error()`.
 
 ## Architecture Mapping
 

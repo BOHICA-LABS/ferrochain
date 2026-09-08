@@ -3,20 +3,21 @@ document_type: story
 level: ops
 story_id: S-console-10
 epic_id: E-console
-version: "1.1"
+version: "1.2"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
 changelog:
   - "1.0 (D-356/2026-09-06, story-writer): Initial story — guardrail/security decision review panel, Fail/Transform filtering, DI-012 completeness, F-P99-01 Pass-not-shown."
   - "1.1 (D-356/2026-09-07, story-writer): DC-03 adversary fix — corrected BC-2.24.008 wire field/enum names in AC-002, EC-003, and Forbidden Patterns: boundary_type→boundary, BoundaryType→IngressBoundary, RAGRetrieval→RagChunk, MemoryIngress→MemoryItem, GuardrailSeverity→GuardrailSeverityWire; clarified Transform carries severity=None AND reason=None."
+  - "1.2 (D-356/DC-29/2026-09-08, story-writer): F-PDC29-01 — AC-004 + AC-005 + Task 4 + File Structure corrected for ADR-031 Decision 8: completed-run reconstruction uses evidence_journal from run-read, not stored event list (StreamEvent is transient)."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.008.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "5c3f58d"
+input-hash: "ca02ba8"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-06]
@@ -40,6 +41,8 @@ tdd_mode: strict
 > Wave 3 — not built in the current Phase 3 implementation cycle.
 
 > **D-356 adversary fix DC-03 (2026-09-07, story-writer).** BC-2.24.008 v1.3 boundary field/enum correction propagated to story body per bc_array_changes_propagate_to_body_and_acs. Corrected: `boundary_type`→`boundary`, `BoundaryType`/`ProvenanceTag`→`IngressBoundary`, `RAGRetrieval`→`RagChunk`, `MemoryIngress`→`MemoryItem`, `GuardrailSeverity`→`GuardrailSeverityWire`; clarified that `Transform` carries both severity=`None` and reason=`None` (not just no reason). Affected locations: AC-002, EC-003, Forbidden Patterns. Traceability: guardrail-output subsystem postcondition PC-002 GuardrailDecision bullet (source of truth for wire field names) + ADR-006 §Decision (IngressBoundary enum definition).
+
+> **D-356 adversary fix DC-29 (2026-09-08, story-writer).** F-PDC29-01 — AC-004, AC-005, Task 4, File Structure corrected for ADR-031 Decision 8. StreamEvent is transient; there is no stored StreamEvent list for completed-run reconstruction. The guardrail security feed for terminal-status runs reconstructs from the `evidence_journal?` field on the run-read endpoint. AC-005 completeness invariant updated: "SSE stream or stored event list" → "live SSE stream (in_progress) or evidence_journal reconstruction (terminal-status)". Live (in_progress) SSE path (AC-003) is unchanged.
 
 ## Narrative
 
@@ -65,10 +68,10 @@ Each entry in the security feed shows: `boundary` (an `IngressBoundary` value �
 For in-progress runs, new `guardrail_decision` events are appended to the security feed as they arrive via the shared `EventSource`. The shared SSE subscription from S-console-06 is reused — there is ONE `EventSource` per run. Verified by `test_BC_2_24_008_realtime_append_shared_sse()`.
 
 ### AC-004 (traces to BC-2.24.008 postcondition PC-004)
-For completed runs, the security feed reconstructs from the stored event list — all `guardrail_decision` events with `Fail` or `Transform` outcomes are shown. No `EventSource` is opened for completed runs. Verified by `test_BC_2_24_008_completed_run_reconstruction()`.
+For completed (terminal-status) runs, the security feed reconstructs from the `evidence_journal?` field returned by the run-read endpoint (`GET /threads/{thread_id}/runs/{run_id}`). The `evidence_journal` contains the durable record of all guardrail evaluation results for the run; the console filters and displays entries corresponding to `Fail` or `Transform` outcomes. No `EventSource` is opened for completed runs. There is NO stored StreamEvent list — StreamEvent is transient (ADR-030 §Decision; ADR-031 Decision 8). Verified by `test_BC_2_24_008_completed_run_reconstruction()`.
 
 ### AC-005 (traces to BC-2.24.008 invariant INV-002)
-Every `guardrail_decision` event with a Fail or Transform outcome that appears in the SSE stream or stored event list MUST appear in the security feed. No silent omission. The feed is a complete audit log of all qualifying events. Filtering is limited to outcome type (Fail/Transform only) — no other filtering that could drop events is permitted. Verified by `test_BC_2_24_008_complete_audit_no_omission()`.
+Every `guardrail_decision` event with a Fail or Transform outcome that appears in the live SSE stream (in_progress runs) or in the `evidence_journal` reconstruction (terminal-status runs) MUST appear in the security feed. No silent omission. The feed is a complete audit log of all qualifying events. Filtering is limited to outcome type (Fail/Transform only) — no other filtering that could drop events is permitted. Verified by `test_BC_2_24_008_complete_audit_no_omission()`.
 
 ### AC-006 (traces to BC-2.24.008 edge case EC-001)
 When a run has only Pass guardrail decisions (none streamed per F-P99-01 design), the security feed renders empty state: "no Fail or Transform decisions in this run". No error state; no crash. Verified by `test_BC_2_24_008_empty_state_all_pass()`.
@@ -123,7 +126,7 @@ High-volume runs with many `guardrail_decision` Fail events (e.g., 50 events for
 1. [ ] Write failing tests for all ACs (test-writer; unit + E2E/component tests)
 2. [ ] Create `spa/src/components/SecurityFeedPanel.*` — security feed with Fail/Transform filter; empty state; malformed-event placeholder; virtual scroll for high-volume
 3. [ ] Add `guardrail_decision` event handler in `spa/src/lib/sse.ts`: filter to Fail/Transform outcomes only; append to security feed state
-4. [ ] Implement completed-run reconstruction: fetch stored events, filter to `guardrail_decision` Fail/Transform
+4. [ ] Implement completed-run reconstruction: fetch `evidence_journal?` from run-read (`GET /threads/{thread_id}/runs/{run_id}`); filter entries to Fail/Transform outcomes — no stored event list (StreamEvent is transient; ADR-031 Decision 8)
 5. [ ] Implement malformed-event placeholder: wrap event parsing in try/catch; render raw JSON in placeholder row on parse error
 6. [ ] Add empty state rendering when no qualifying events exist
 7. [ ] Ensure security feed reuses the shared `EventSource` from S-console-06 (no new SSE connection)
@@ -158,4 +161,4 @@ Predecessor: S-console-06 (run inspection panel). The `sse.ts` SSE subscription 
 |------|--------|---------|
 | `crates/pregolya-console/spa/src/components/SecurityFeedPanel.*` | CREATE | Security feed with Fail/Transform filter, empty state, malformed placeholder |
 | `crates/pregolya-console/spa/src/lib/sse.ts` | MODIFY | Add `guardrail_decision` Fail/Transform event handler |
-| `crates/pregolya-console/spa/src/lib/api.ts` | MODIFY | Add completed-run stored event fetch for guardrail reconstruction |
+| `crates/pregolya-console/spa/src/lib/api.ts` | MODIFY | Add completed-run `evidence_journal` fetch from run-read endpoint for guardrail reconstruction |

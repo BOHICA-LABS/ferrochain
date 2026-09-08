@@ -1,10 +1,10 @@
 ---
 document_type: architecture-index
 level: L3
-version: "1.80"
+version: "1.81"
 status: active
 producer: state-manager
-timestamp: 2026-09-07T00:00:00Z
+timestamp: 2026-09-08T00:00:00Z
 phase: 1b
 inputs:
   - .factory/specs/prd.md
@@ -17,6 +17,7 @@ traces_to: prd.md
 deployment_topology: single-service
 decisions: [D4, D6, D9, D11, D13, D17, D20, D21, D23, D356]
 changelog:
+  - "1.81 (D-356/DC-29/2026-09-08, state-manager): ADR-031 §Decision 8 (architect; completed-run inspection substrate: ADR-030 rules StreamEvent transient; no run-event endpoint; canonical substrate = run-read {PC-013} BC-2.12.003 + evidence_journal? + trace spans BC-2.24.002; no ADK-style persistent-StreamEvent replay; BC-2.24.004/007/008 + CAP-043/047 re-scoped). ADR-031 row description updated in §ADR Registry. Census UNCHANGED: ADR 31 / VP 41."
   - "1.80 (D-356/DC-28/2026-09-08, architect): F-PDC28-02 — DI-annotation uniformity. Removed vestigial inline '; DI-004)' fragment from VP-2.24.005-A and VP-2.24.005-B description cells. DI is NOT a required ARCH-INDEX §VP column (POL-9 requires VP-ID/BC-anchor/Module/type/priority/status only); authoritative DI values live in VP-INDEX + verification-architecture.md (both verified consistent). All 20 SS-24 §VP rows in ARCH-INDEX are now DI-annotation-free. Census UNCHANGED: VP 41 total."
   - "1.79 (D-356/DC-21/2026-09-08, architect): F-PDC21-01 — §Verification Properties VP-2.24.005-A and VP-2.24.005-B description cells corrected: DI-002 → DI-004 (DC-20 DI mirror sync; source of truth: VP-INDEX v1.51; DI-004 Monotonic Checkpoint Clock governs step_idx ordering and fork lineage; DI-002 is durability). Census UNCHANGED: VP 41 total."
   - "1.78 (D-356/DC-19/2026-09-08, architect): F-PDC19-01+F-PDC19-02 — VP-2.24.003-B BC Anchor description corrected: graph descriptor pure termination → no self-loops (a node does not edge to itself) — Kani. VP-2.24.003-C Module/description corrected: server::debug_routes/graph endpoint unit → graph::descriptor/start node always present in descriptor. Census UNCHANGED: VP 41 total."
@@ -251,7 +252,7 @@ R6 namespace reservation: publish-all.sh must cover all 21 currently-published c
 | ADR-028 | Server Run Lifecycle Semantics: multitask_strategy interrupt/rollback/enqueue, delete_threads cascade atomicity, idempotency-key TTL basis (P2A-BC-scan/2026-08-25) | accepted — architect adjudication of 5 Phase 2 BC completeness gaps in SS-12 | SS-12 |
 | ADR-029 | Agent-as-MCP-Tool (GraphAgentTool) Wrapping — StateGraph Registration in ToolRegistry for MCP Exposure (GAP-01/2026-08-26) | accepted — human-approved v1 scope addition; new BC-2.09.008 + VP-016 + E-MCP-010 | SS-09 |
 | ADR-030 | Research Orchestrator Composition Reference Architecture (praxist-inspired, clean-room behavioral; ADR-030 Stage 1/2026-08-31; v1.1 ruling: BC-2.02.009 added for PromoteRetireChannel) | accepted — human-approved scope addition; composition-only use case (no new product crate); two additive primitives: TrajectoryRecord/TrajectoryWriter/TrajectoryReader (SS-04) + LedgerEntry/LedgerChannel/PromoteRetireOp/PromoteRetireChannel (SS-02); new VP-017 proptest P1; BC IDs BC-2.02.007/008/009 (SS-02) + BC-2.04.009/010/011 (SS-04) reserved for product-owner Stage 2 | SS-02, SS-04 |
-| ADR-031 | Developer Console Architecture: pregolya-console crate, debug-endpoints feature gate, SSE transport reconciliation, SPA framework deferral, purity boundary classification, NFR deltas (D-356) | accepted — D-356 human-authorized scope expansion; roadmap-only (Wave 3, not built this cycle); new binary crate pregolya-console #22; Cargo feature debug-endpoints (default OFF) on pregolya-server; SSE confirmed as sole streaming transport (ADR-006 authoritative; no WebSocket); SPA framework deferred to Wave 3; 4 new purity rows (graph::descriptor Pure Core, console::server/server::debug_routes Effectful Shell, console::span_exporter Boundary) | SS-24 |
+| ADR-031 | Developer Console Architecture: pregolya-console crate, debug-endpoints feature gate, SSE transport reconciliation, SPA framework deferral, purity boundary classification, NFR deltas, completed-run inspection substrate (D-356) | accepted — D-356 human-authorized scope expansion; roadmap-only (Wave 3, not built this cycle); new binary crate pregolya-console #22; Cargo feature debug-endpoints (default OFF) on pregolya-server; SSE confirmed as sole streaming transport (ADR-006 authoritative; no WebSocket); SPA framework deferred to Wave 3; 4 new purity rows (graph::descriptor Pure Core, console::server/server::debug_routes Effectful Shell, console::span_exporter Boundary); Decision 8 (DC-29): completed-run inspection — ADR-030 StreamEvent transient, no run-event endpoint; canonical substrate = run-read (BC-2.12.003 {PC-013}) + evidence_journal? + trace spans (BC-2.24.002); no persistent-StreamEvent replay | SS-24 |
 
 ## Verification Properties (VP-INDEX)
 

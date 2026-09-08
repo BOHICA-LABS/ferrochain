@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-console-06
 epic_id: E-console
-version: "1.3"
+version: "1.4"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -12,13 +12,14 @@ changelog:
   - "1.1 (D-356/2026-09-06, story-writer): F-PDC01-02 adversary fix — correct AC-001 StreamEvent variant list: drop phantom run_error, remove duplicate run_stream, add step_start and tool_stream to reach exactly 16 canonical variants per BC-2.24.004 PC-001 and ADR-006."
   - "1.2 (D-356/2026-09-07, story-writer): Adversary fix DC-02 — replace phantom graph_interrupt with error as the 16th canonical StreamEvent variant in AC-001. DC-01 introduced graph_interrupt believing it canonical; DC-02 corrects to the verified 16-variant list per BC-2.24.004 PC-001."
   - "1.3 (D-356/2026-09-07, story-writer): F-PDC10-03 records fix — append inline superseded-marker to DC-01 blockquote's variant list to flag graph_interrupt as phantom and point to DC-02 correction. Historical record preserved; annotation added per sibling BC-2.24.004 pattern."
+  - "1.4 (D-356/DC-29/2026-09-08, story-writer): F-PDC29-01 — AC-006 + Task 7 corrected for ADR-031 Decision 8: StreamEvent is transient; no stored event list; no run-event endpoint. Completed-run inspection uses run-read + debug-trace endpoint (when debug-endpoints enabled); timeline reconstructs from trace spans."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.004.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "1358551"
+input-hash: "e5ed63e"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 8
 depends_on: [S-console-03, S-console-04, S-console-05]
@@ -44,6 +45,8 @@ tdd_mode: strict
 > **D-356 adversary fix DC-01 (2026-09-06, story-writer).** F-PDC01-02 sibling-sweep: corrected AC-001 StreamEvent variant list to the canonical 16 per BC-2.24.004 PC-001 and ADR-006 rev-3. Dropped phantom `run_error` (never existed in the grammar), removed duplicate `run_stream` (was listed at positions 8 and 16 yielding only 15 distinct entries), and added the two omitted variants `step_start` and `tool_stream`. The canonical ordered set is now: `run_start`, `run_stream`, `run_end`, `step_start`, `step_end`, `node_start`, `node_stream`, `node_end`, `tool_start`, `tool_stream`, `tool_end`, `guardrail_decision`, `tool_approval_request`, `tool_approval_resolved`, `graph_interrupt`, `compaction_event`. **(SUPERSEDED by DC-02 — `graph_interrupt` is phantom; the canonical 16th variant is `error`; see the DC-02 blockquote below)**
 
 > **D-356 adversary fix DC-02 (2026-09-07, story-writer).** AC-001 StreamEvent variant list corrected again: the 16th canonical variant is `error`, not `graph_interrupt`. `graph_interrupt` is phantom — it does not exist in the 16-variant StreamEvent grammar per BC-2.24.004 PC-001 confirmed variant registry. The DC-01 fix (v1.1) replaced `run_error` with `graph_interrupt` while incrementing the position count to 16, but `graph_interrupt` was never a real variant. DC-02 corrects: slot 15 = `compaction_event`, slot 16 = `error`. Verified canonical set: `run_start`, `run_stream`, `run_end`, `step_start`, `step_end`, `node_start`, `node_stream`, `node_end`, `tool_start`, `tool_stream`, `tool_end`, `guardrail_decision`, `tool_approval_request`, `tool_approval_resolved`, `compaction_event`, `error`.
+
+> **D-356 adversary fix DC-29 (2026-09-08, story-writer).** F-PDC29-01 — AC-006 (completed-run inspection) and Task 7 corrected to ADR-031 Decision 8 model. StreamEvent is transient (ADR-030 §Decision); there is no stored StreamEvent list and no run-event endpoint. Completed-run inspection substrate: run-read (`GET /threads/{thread_id}/runs/{run_id}`) for final state + debug-trace endpoint (`GET /debug/trace/session/{run_id}`, when debug-endpoints enabled and spans within ring buffer) for timeline reconstruction from trace spans. Live (in_progress) SSE path is unchanged.
 
 ## Narrative
 
@@ -75,7 +78,7 @@ Incoming `node_start` events set the named node to "active" in the StateGraph DA
 `run_stream` and `node_stream` events deliver token-level text deltas. The SPA accumulates them inline in the timeline row, updating the displayed text on each delta. No batching delay; each delta updates the displayed text immediately. Verified by `test_BC_2_24_004_token_streaming_accumulated()`.
 
 ### AC-006 (traces to BC-2.24.004 postcondition PC-006)
-For completed runs, the SPA fetches the stored event list via the run-event endpoint and renders the full timeline in a non-live (static) view. No `EventSource` is opened for completed runs. Verified by `test_BC_2_24_004_completed_run_static_view()`.
+For completed (terminal-status) runs, the SPA fetches the run's final state via the run-read endpoint (`GET /threads/{thread_id}/runs/{run_id}`: status, `output?`, `error?`, `evidence_journal?`, `completed_at?`). When `debug-endpoints` is enabled and the run's spans are within the ring buffer, the SPA additionally fetches span detail via `GET /debug/trace/session/{run_id}` (the debug-trace endpoint, built by S-console-03) and renders the event timeline in a non-live (static) view from the trace spans. No `EventSource` is opened for completed runs. There is NO stored StreamEvent list and NO run-event endpoint — StreamEvent is transient (ADR-030 §Decision; ADR-031 Decision 8). Verified by `test_BC_2_24_004_completed_run_static_view()`.
 
 ### AC-007 (traces to BC-2.24.004 invariant INV-003)
 Unknown `StreamEvent` variants (e.g., future variants added after this story) render as a "Unknown event [raw JSON]" row without throwing a JavaScript error. The SPA must not hard-code a variant exhaustive list that breaks on new variants. Verified by `test_BC_2_24_004_unknown_variant_no_crash()`.
@@ -135,7 +138,7 @@ When a `node_start` event references a node name not present in the graph descri
 4. [ ] Implement per-variant expanded payload detail views (AC-002) — at minimum `node_start/end`, `tool_start/end`, `guardrail_decision`, `compaction_event`, `run_stream/node_stream`
 5. [ ] Create `spa/src/components/GraphDag.*` — DAG visualization component consuming `GraphDescriptor` from S-console-04 endpoint; live node highlighting from `node_start`/`node_end` SSE events
 6. [ ] Create `spa/src/components/RunInspectionPanel.*` — composes EventTimeline + GraphDag + SSE subscription
-7. [ ] Implement completed-run fetch path (no SSE; fetch stored events list)
+7. [ ] Implement completed-run fetch path: run-read (`GET /threads/{thread_id}/runs/{run_id}`) for final state + trace spans (`GET /debug/trace/session/{run_id}` when debug-endpoints enabled) for timeline reconstruction — no SSE, no stored event list (StreamEvent is transient; ADR-031 Decision 8)
 8. [ ] Implement unknown-variant fallback ("Unknown event [raw JSON]") — AC-007
 9. [ ] Add `EventSource` reconnect with exponential back-off — AC-008
 10. [ ] Run SPA tests — all AC tests pass

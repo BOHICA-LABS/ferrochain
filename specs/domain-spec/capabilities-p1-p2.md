@@ -2,7 +2,7 @@
 document_type: domain-spec-section
 level: L2
 section: capabilities-p1-p2
-version: "1.35"
+version: "1.37"
 status: active
 producer: business-analyst
 timestamp: 2026-09-06T00:00:00Z
@@ -18,6 +18,8 @@ input-hash: "371c041"
 traces_to: L2-INDEX.md
 decisions: [D1, D3, D7, D8, D13, D17, D19, D20, D21, D23, D170, D275, D356]
 changelog:
+  - "1.37 (D-356/F-PDC29-01-sibling/2026-09-08, business-analyst): CAP-047 sibling fix — TD-VSDD-060 sweep found same transient-StreamEvent class of defect as F-PDC29-01 in CAP-047 body. 'reconstructs from stored events for completed runs' → 'reconstructs from persisted trace spans (GET /debug/trace/session/{run_id}, BC-2.24.002) for completed runs (StreamEvent TRANSIENT, ADR-030; no event-replay endpoint, ADR-031 Decision 8)'. Dated delta note added to CAP-047 body."
+  - "1.36 (D-356/F-PDC29-01/2026-09-08, business-analyst): CAP-043 completed-run inspection substrate correction — adversary finding F-PDC29-01 (HIGH). Opening paragraph rewrote to split completed-run vs live-run workflows. Completed run: trace spans (GET /debug/trace/session/{run_id}, BC-2.24.002) + run-state summary + evidence_journal? (BC-2.12.003 {PC-013}) — NOT StreamEvent replay (StreamEvent is TRANSIENT per ADR-030; no run-event endpoint, ADR-031 Decision 8). Live run: SSE StreamEvent stream (BC-2.12.007) — unchanged. Anchor justification and trace anchors updated; CAP-007 scope now explicitly LIVE only."
   - "1.35 (D-356/F-L288-002+005/2026-09-08, business-analyst): Two L-288 exhaustive-sweep fixes. (1) F-L288-002 [MED] CAP-042 graph-descriptor field: dotSrc: String → dot_src: String (snake_case per BC-2.24.003 PC-001/PC-004 + S-console-04 AC-001/AC-004; CAP-042 was the lone camelCase outlier). (2) F-L288-005 [MED] CAP-046 EvidenceJournal scope: 'For completed runs' → 'For terminal-status (finished) runs (completed, failed, cancelled, summary_halt)' per DC-24/DC-25 broadening in BC-2.24.007 + BC-2.12.003 {PC-013} evidence_journal? projection. Dated delta notes added to both CAP bodies."
   - "1.34 (D-356/F-PDC26-03/2026-09-08, business-analyst): CAP-045 two-site drift correction — adversary finding F-PDC26-03 (MED). (1) node_name drift: node-boundary interrupt dialog bullet 'scratchpad value and node name' corrected to 'value (scratchpad JSON) and interrupt_id' per BC-2.24.006 PC-002 + S-console-08; InterruptPayload has only value+interrupt_id, not node_name. (2) same-run drift: 'subscribes to the new run stream' corrected to 'same run stream (run_id unchanged)' per DC-23 canonical ruling: resume is interrupted→in_progress on the SAME run_id. Dated delta note added to CAP-045 body."
   - "1.33 (D-356/F-PDC06-03/2026-09-07, business-analyst): CAP-047 field-name correction — adversary finding F-PDC06-03 site 1 (HIGH). Wrong SS-11 ProvenanceTag names replaced with correct guardrail_decision StreamEvent wire names per BC-2.06.001 §PC-002. boundary_type:RAGRetrieval/MemoryIngress → boundary:IngressBoundary ToolResult|RagChunk|MemoryItem; GuardrailSeverity → severity:Option<GuardrailSeverityWire> (Some for Fail, None for Transform); outcome bullets restructured to decision/severity/reason per BC-2.06.001 §PC-002 shape. Dated delta note added to CAP-047 body. input-hash updated."
@@ -1028,11 +1030,14 @@ existing `tracing` subsystem and Canonical Structured Event Catalog.
 
 ### CAP-043: Run Inspection and Live Monitoring Panel
 
-The console renders a sorted event timeline for any `run_id`: a list of StreamEvents ordered
-by emission sequence, each expandable to show phase-specific payloads — for `node_start/end`:
-input/output state diff; for `tool_start/end`: args and result; for `guardrail_decision`:
-boundary, severity, outcome, reason; for `compaction_event`: which messages were summarized
-and token reclaim. Span latency detail (CAP-042 trace data) is accessible per event.
+For **completed runs**: inspection reconstructs from the persisted trace-span layer — not from
+stored StreamEvents (StreamEvent is transient per ADR-030; no run-event replay endpoint exists,
+per ADR-031 Decision 8). The console calls `GET /debug/trace/session/{run_id}` (BC-2.24.002)
+to retrieve persisted trace spans, which carry phase-specific detail: node input/output diffs,
+tool args and results, guardrail decisions, and compaction summaries. The panel also surfaces
+the final run-state summary (status/output/error from the Run record) and the `evidence_journal?`
+projection (BC-2.12.003 {PC-013}). Span latency detail (CAP-042 trace data) is accessible
+per entry.
 
 For **live runs**: subscribes to `GET /threads/{id}/runs/{run_id}/stream` (BC-2.12.007, SSE)
 and renders events in real time. Drives live node highlighting on the StateGraph DAG
@@ -1046,13 +1051,26 @@ The console is a pure SSE+REST client for this capability — no new server engi
 (P1, P2); §1 table rows 1, 4 (interactive run + event inspection); §4.1 "pregolya's backend
 is already a superset" for run/session/event data.
 **Anchor justification:** CAP-043 is the primary value-delivery capability for developer-
-operator personas P1 and P2. It reuses the full existing StreamEvent grammar (CAP-007) and
-the SSE endpoint (BC-2.12.007) without modification — the console adds only the frontend
-presentation surface. Covers both the "inspect completed run" and "watch live run" workflows.
-**Trace anchors:** CAP-007 (all 16 StreamEvent variants consumed and rendered);
-CAP-003 (StateGraph nodes matched by name for live highlighting);
-existing SSE endpoint BC-2.12.007; CAP-042 (span detail per event).
+operator personas P1 and P2. The two workflows use distinct substrates: completed-run
+inspection uses persisted trace spans (`GET /debug/trace/session/{run_id}`, BC-2.24.002) plus
+final run-state summary and `evidence_journal?` (BC-2.12.003 {PC-013}); live-run monitoring
+uses the real-time SSE StreamEvent stream (BC-2.12.007). Neither workflow requires new server
+engine additions.
+**Trace anchors:** BC-2.24.002 (`GET /debug/trace/session/{run_id}` trace-span endpoint,
+completed-run inspection substrate; ADR-031 Decision 8); BC-2.12.003 {PC-013}
+(`evidence_journal?` for terminal runs); CAP-007 (16 StreamEvent variants, live-run monitoring
+only); CAP-003 (StateGraph nodes matched by name for live highlighting);
+existing SSE endpoint BC-2.12.007; CAP-042 (span latency detail per entry).
 **Priority:** P1. **Wave:** 3.
+
+> **D-356 adversary fix DC-29 (2026-09-08, business-analyst).** F-PDC29-01 (HIGH).
+> Completed-run inspection description rewritten. OLD: opening paragraph implied StreamEvent
+> replay for any `run_id` (including completed runs) — a sorted list of StreamEvents ordered
+> by emission sequence. NEW: completed run = trace spans (`GET /debug/trace/session/{run_id}`,
+> BC-2.24.002) + run-state summary + `evidence_journal?` (BC-2.12.003 {PC-013}). StreamEvent
+> is TRANSIENT (ADR-030); no run-event replay endpoint (ADR-031 Decision 8). Live-run workflow
+> (SSE StreamEvent stream, BC-2.12.007) unchanged. Anchor justification and trace anchors
+> updated; CAP-007 scope now explicitly live-run monitoring only.
 
 ---
 
@@ -1183,9 +1201,17 @@ StreamEvents from a run, surfacing them in a dedicated panel. Each entry shows:
 - `reason: Option<String>` — `Some(reason_string)` for `Fail`; `None` for `Transform`
 
 The feed updates in real time for live runs (via SSE subscription, CAP-043) and reconstructs
-from stored events for completed runs. The Domain A SOC analyst use case (guardrail visibility
-during untrusted-tool-result ingestion) is served by this panel — the same content drives
-both the interactive local-debug workflow and the broader security audit requirement.
+from persisted trace spans (`GET /debug/trace/session/{run_id}`, BC-2.24.002) for completed
+runs (StreamEvent is TRANSIENT per ADR-030; no event-replay endpoint, ADR-031 Decision 8).
+The Domain A SOC analyst use case (guardrail visibility during untrusted-tool-result ingestion)
+is served by this panel — the same content drives both the interactive local-debug workflow and
+the broader security audit requirement.
+
+> **D-356 adversary fix DC-29 sibling (2026-09-08, business-analyst).** TD-VSDD-060 sweep of
+> F-PDC29-01 fix found same transient-StreamEvent class of defect in CAP-047 body. OLD:
+> "reconstructs from stored events for completed runs" — implies stored StreamEvents (WRONG:
+> StreamEvent is TRANSIENT, ADR-030). NEW: "reconstructs from persisted trace spans
+> (BC-2.24.002) for completed runs" — same substrate ruling as CAP-043 (ADR-031 Decision 8).
 
 No new server machinery needed; `guardrail_decision` events are already emitted.
 
