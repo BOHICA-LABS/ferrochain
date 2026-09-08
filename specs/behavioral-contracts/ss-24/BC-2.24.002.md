@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.002
-version: "1.4"
+version: "1.5"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -19,6 +19,7 @@ di_anchors: [DI-014]
 vp_seed: false
 red_gate: false
 changelog:
+  - "1.5 (D-356-fix/DC-08/2026-09-07, product-owner): F-PDC08-02: §Story Anchor updated — S-console-03 appended as Wave 3 secondary anchor (debug-endpoints feature / server::debug_routes; builds VP-2.24.002-C). S-console-02 remains primary."
   - "1.4 (D-356-fix/DC-07/2026-09-07, product-owner): F-PDC07-01: debug_api_key→debug_route_key throughout PC-007, EC-007, changelogs, and DC-02 blockquote (canonical field: SecurityConfig.debug_route_key per BC-2.12.005 PRE-004/INV-001; ADR-021 §Decision 1). F-PDC07-02: PC-007 and EC-007 now explicitly cite E-SERVER-013 InvalidDebugRouteKey as the boot-refusal code (startup path; distinct from E-SERVER-004 runtime 403). F-PDC07-05: stale '(update in progress by architect)' annotations removed from PC-007 body and DC-02 blockquote (ADR-031 D6-2 landed)."
   - "1.3 (D-356-fix/DC-04/2026-09-07, product-owner): F-PDC04-04: INV-002 tightened — explicit module attribution added: RingBuffer<T> lives in `console::ring_buffer` (Pure Core); DebugSpanExporter lives in `console::span_exporter` (Boundary) and holds Arc<Mutex<RingBuffer<SpanData>>>. Module field in Traceability updated to include `console::ring_buffer (Pure Core)` alongside `console::span_exporter (Boundary)`. Prior wording cited the purity split without naming the module boundary."
   - "1.2 (D-356-fix/DC-02/2026-09-07, product-owner): Architect adjudication — sanitization location tightened from 'before serving' to before ring-buffer insertion in console::span_exporter (S-console-02 AC-011). PC-008, INV-006, VP-2.24.002-D updated to canonical location wording. Delta note added."
@@ -31,7 +32,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "0493743"
+input-hash: "fa6dcca"
 extracted_from: null
 modified: []
 deprecated: null
@@ -52,6 +53,8 @@ removal_reason: null
 > **D-356 adversary fix DC-02 location adjudication (2026-09-07, product-owner).** Architect adjudication (S-console-02 AC-011): sanitization location tightened to **before ring-buffer insertion in `console::span_exporter`** — the in-memory buffer must never hold unsanitized fields; this subsumes "before serving." PC-008, INV-006, and VP-2.24.002-D updated to canonical location wording.
 
 > **D-356 adversary fix DC-04 (2026-09-07, product-owner).** F-PDC04-04: INV-002 and §Module updated — explicit module attribution added for the Pure Core / Boundary split: `RingBuffer<T>` lives in `console::ring_buffer` (Pure Core); `DebugSpanExporter` lives in `console::span_exporter` (Boundary) and owns `Arc<Mutex<RingBuffer<SpanData>>>`. Prior wording cited the purity split correctly but did not name the module boundary by canonical module path.
+
+> **D-356 adversary fix DC-08 (2026-09-07, product-owner).** F-PDC08-02: §Story Anchor updated — S-console-03 appended as Wave 3 secondary anchor (debug-endpoints feature / `server::debug_routes`; builds VP-2.24.002-C). S-console-02 remains primary.
 
 > **D-356 adversary fix DC-07 (2026-09-07, product-owner).** F-PDC07-01: `debug_api_key` → `debug_route_key` throughout (PC-007, EC-007, changelog v1.1, DC-02 blockquote). Canonical field is `SecurityConfig.debug_route_key: Option<String>` (BC-2.12.005 PRE-004/PC-006/PC-007/INV-001; ADR-021 §Decision 1). F-PDC07-02: PC-007 and EC-007 now explicitly cite E-SERVER-013 InvalidDebugRouteKey for the startup boot-refusal path (distinct from E-SERVER-004 runtime 403). F-PDC07-05: stale `(update in progress by architect)` removed from PC-007 and DC-02 blockquote (ADR-031 D6-2 landed).
 
@@ -148,7 +151,9 @@ configured, both endpoints return HTTP 503 with `E-SERVER-023 DebugExporterNotCo
 
 ## Story Anchor
 
-S-console-02 (Wave 3 — DebugSpanExporter implementation + debug-endpoints feature)
+S-console-02 (primary — Wave 3, DebugSpanExporter implementation + debug-endpoints feature)
+
+S-console-03 (Wave 3 — debug-endpoints feature / server::debug_routes; builds VP-2.24.002-C)
 
 ## VP Anchors
 

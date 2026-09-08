@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.005
-version: "1.3"
+version: "1.4"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -19,6 +19,7 @@ di_anchors: [DI-002, DI-004, DI-014]
 vp_seed: false
 red_gate: false
 changelog:
+  - "1.4 (D-356-fix/DC-08/2026-09-07, product-owner): F-PDC08-01: INV-002 corrected — 'a standard 404 error path' → 'the standard 422 E-CHKPT-011 CheckpointNotFound error path' (DC-04→DC-05 sweep hit EC-002 but missed INV-002; HTTP 422 per error-taxonomy E-CHKPT-011 and BC-2.12.001 {EC-010}/TV-011)."
   - "1.3 (D-356-fix/DC-05/2026-09-07, product-owner): F-PDC05-01: EC-002 HTTP status corrected 404→422 for E-CHKPT-011 CheckpointNotFound (HTTP 422 per taxonomy definition and BC-2.12.001 EC-010; DC-04 missed this site)."
   - "1.2 (D-356-fix/DC-04/2026-09-07, product-owner): F-PDC04-01: all checkpoint_id occurrences corrected from JSON string form to canonical u64 numeric form (CheckpointId newtype over u64 per BC-2.04.003 §Architecture Anchors; BC-2.12.003 TV-014 precedent). TV-002 ?checkpoint_id=ckpt-2 → ?checkpoint_id=2; TV-003 checkpoint_id: \"ckpt-1\" → checkpoint_id: 1; PC-003 placeholder quotes removed. F-PDC04-02: PC-002 citation updated to reference BC-2.12.001 {PC-015} ?checkpoint_id variant (added in BC-2.12.001 v1.11 DC-04 burst)."
   - "1.1 (D-356-fix/DC-03/2026-09-07, product-owner): F-PDC03-02: PC-003 fork mechanism made concrete — specifies config.configurable.checkpoint_id as the fork-start key (idiomatic LangGraph fork-start pattern; executor semantic defined in BC-2.12.003 {INV-009} added in this same fix burst). PC-005 wording corrected: 'no new server machinery' → 'no new server endpoints'; config.configurable.checkpoint_id is new documented server BEHAVIOR on the existing POST /threads/{id}/runs endpoint, not a new endpoint. TV-003 updated to show correct fork request shape."
@@ -30,7 +31,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "c0ff9f0"
+input-hash: "fa6dcca"
 extracted_from: null
 modified: []
 deprecated: null
@@ -45,6 +46,8 @@ removal_reason: null
 
 > **D-356 dev-console scope expansion (2026-09-06, product-owner).** Roadmap-only.
 > Not built in the current cycle — spec and storyboard only. Build in Wave 3.
+
+> **D-356 adversary fix DC-08 (2026-09-07, product-owner).** F-PDC08-01: INV-002 corrected — `"a standard 404 error path"` → `"the standard 422 E-CHKPT-011 CheckpointNotFound error path"`. DC-04→DC-05 sweep corrected EC-002 but missed INV-002.
 
 > **D-356 adversary fix DC-05 (2026-09-07, product-owner).** F-PDC05-01: EC-002 HTTP status corrected `404` → `422` for E-CHKPT-011 CheckpointNotFound. E-CHKPT-011 is defined as HTTP 422 in the taxonomy (POLICY); the `404` in EC-002 was a DC-04 residue missed by the 404→422 sweep.
 
@@ -81,7 +84,7 @@ Fork-from-checkpoint creates a new run via `POST /threads/{id}/runs` with `confi
 ## Invariants
 
 - {INV-001} **DI-004 monotone step_idx:** The console MUST render checkpoints in the order returned by the server (`step_idx` is monotonically non-decreasing per DI-004). Rendering in reverse or sorted order by other fields is incorrect.
-- {INV-002} **DI-002 durability:** Checkpoints displayed in the history survive process restart. The console reads them as durable server state — it does not need to handle "checkpoint disappeared" gracefully beyond a standard 404 error path.
+- {INV-002} **DI-002 durability:** Checkpoints displayed in the history survive process restart. The console reads them as durable server state — it does not need to handle "checkpoint disappeared" gracefully beyond the standard 422 E-CHKPT-011 CheckpointNotFound error path (BC-2.12.001 {EC-010}; error-taxonomy §E-CHKPT-011).
 - {INV-003} **Pure consumer:** The checkpoint history browser does not write to any checkpoint. Browse and fork are the only operations. Browsing is purely read-only.
 - {INV-004} **DI-014:** Server errors on history fetch or state fetch propagate as user-visible error messages. Partial failures (some checkpoints unreachable) surface individually per entry.
 

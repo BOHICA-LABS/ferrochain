@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.001
-version: "1.1"
+version: "1.2"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -19,6 +19,7 @@ di_anchors: [DI-014]
 vp_seed: false
 red_gate: false
 changelog:
+  - "1.2 (D-356-fix/DC-08/2026-09-07, product-owner): F-PDC08-04: §Story Anchor updated — S-console-02 and S-console-05 appended as Wave 3 consumers of BC-2.24.001 (S-console-02 consumes PC-004/PC-005; S-console-05 implements SPA asset serving, traces PRE-002/PC-002/PC-003). S-console-01 remains primary."
   - "1.1 (D-356-fix/DC-07/2026-09-07, product-owner): F-PDC07-01: INV-003 corrected — SecurityConfig field name debug_api_key→debug_route_key (canonical field per BC-2.12.005 PRE-004/PC-006/PC-007/INV-001; ADR-021 §Decision 1; E-SERVER-013 InvalidDebugRouteKey)."
   - "1.0 (D-356/2026-09-06, product-owner): Initial BC — D-356 dev-console scope expansion. pregolya-console startup, ConsoleConfig, run_console entry point, CLI subcommand, SPA asset serving, runtime-config.json injection."
 traces_to:
@@ -28,7 +29,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "0493743"
+input-hash: "fa6dcca"
 extracted_from: null
 modified: []
 deprecated: null
@@ -45,6 +46,8 @@ removal_reason: null
 > Not built in the current cycle — spec and storyboard only. Build in Wave 3.
 
 > **D-356 adversary fix DC-07 (2026-09-07, product-owner).** F-PDC07-01: INV-003 corrected — `SecurityConfig.debug_api_key` → `SecurityConfig.debug_route_key`. `debug_route_key: Option<String>` is the canonical SecurityConfig gate field (BC-2.12.005 PRE-004/PC-006/PC-007/INV-001; ADR-021 §Decision 1).
+
+> **D-356 adversary fix DC-08 (2026-09-07, product-owner).** F-PDC08-04: §Story Anchor updated — S-console-02 and S-console-05 appended as Wave 3 consumers (S-console-02 traces PC-004/PC-005; S-console-05 implements SPA asset serving, traces PRE-002/PC-002/PC-003). S-console-01 remains primary.
 
 ## Description
 
@@ -128,7 +131,11 @@ internals or imports from `pregolya-graph` crate-private modules.
 
 ## Story Anchor
 
-S-console-01 (Wave 3 — pregolya-console crate init)
+S-console-01 (primary — Wave 3, pregolya-console crate init; VP-2.24.001-A/B/C vehicle)
+
+S-console-02 (Wave 3 — consumes BC-2.24.001 PC-004/PC-005)
+
+S-console-05 (Wave 3 — SPA asset serving, BC-2.24.001 PC-002/PC-003)
 
 ## VP Anchors
 

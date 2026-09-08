@@ -1,7 +1,7 @@
 ---
 document_type: verification-property-index
 level: L3
-version: "1.48"
+version: "1.49"
 status: active
 producer: state-manager
 timestamp: 2026-09-07T00:00:00Z
@@ -9,6 +9,7 @@ phase: 1b
 input-hash: "[live-index]"
 traces_to: ARCH-INDEX.md
 changelog:
+  - "1.49 (D-356/DC-08/2026-09-07, state-manager): F-PDC08-03 — DC-02 blockquote §VP Catalog annotation corrected: `debug_api_key` → `debug_route_key` (DC-07-rename consistency sweep; records-tier annotation; canonical field per BC-2.12.005 PRE-004/INV-001; ADR-021 §Decision 1). Census UNCHANGED: 41 total."
   - "1.48 (D-356/DC-07/2026-09-07, architect): F-PDC07-03 — 10 panel-VP Module cells repointed to canonical SPA component path form: spa/components/run_inspector (VP-2.24.004-A/B), spa/components/checkpoint_panel (VP-2.24.005-A/B), spa/components/hitl_panel (VP-2.24.006-A/B), spa/components/budget_panel (VP-2.24.007-A/B), spa/components/guardrail_panel (VP-2.24.008-A/B). CORRECTION: v1.44 changelog claimed these were set 'per BCs' to console::<panel> Rust module notation — this was incorrect. BCs describe SPA (TypeScript/JavaScript) frontend panels; the canonical module convention for SPA components uses filesystem path form spa/components/<component_name>. The console::* Rust module names used in v1.44 were non-canonical. SPA VP module convention preamble note added. Census UNCHANGED: 41 total."
   - "1.47 (D-356/DC-04/2026-09-07, architect): F-PDC04-04 — VP-2.24.002-A and VP-2.24.002-B Module repointed console::span_exporter → console::ring_buffer (console::ring_buffer is now the canonical Pure Core module for RingBuffer<T> per ADR-031 Decision 5 DC-04 split; harness names ring_buffer_bounded_invariant / ring_buffer_fifo_invariant already fit). VP-2.24.002-C (server::debug_routes) and VP-2.24.002-D (console::span_exporter sanitization) unchanged. Census UNCHANGED: 41 total."
   - "1.46 (D-356/DC-02 fix-burst/2026-09-07, state-manager): DC-02 fix-burst bookkeeping pass. Arithmetic invariant preamble updated 40→41 (P0 6 unchanged, P1 34→35, unit 7→8). Summary table Total VPs 40→41; P1 34→35; unit 7→8; Status:draft 40→41. Census now: Kani 10 / proptest 10 / integration 12 / unit 8 / compile-fail 1 = total 41, P0 6 / P1 35."
@@ -153,7 +154,7 @@ changelog:
 | VP-2.24.008-A | BC-2.24.008 | spa/components/guardrail_panel | integration | 3 | P1 | draft | DI-014 | pregolya-console | n/a (integration test) | SEED |
 | VP-2.24.008-B | BC-2.24.008 | spa/components/guardrail_panel | unit | 3 | P1 | draft | DI-014 | pregolya-console | n/a (unit test) | SEED |
 
-> **D-356 adversary fix DC-02 (2026-09-07, architect).** F-PDC02-03: VP-2.24.002-A/B module repointed `console::ring_buffer` → `console::span_exporter` (ADR-031 Decision 5 canonical; `console::ring_buffer` was a non-canonical name invented in DC-01). F-PDC02-02: VP-2.24.004-008 A/B module columns corrected from `console::server` to panel-specific modules per BCs: `console::run_inspector` (004-A/B), `console::checkpoint_panel` (005-A/B), `console::hitl_panel` (006-A/B), `console::budget_panel` (007-A/B), `console::guardrail_panel` (008-A/B). VP census 40→41 (DC-02 addendum). See also companion F-PDC02-05 fixes in ADR-031 and api-surface.md (mandatory debug_api_key).
+> **D-356 adversary fix DC-02 (2026-09-07, architect).** F-PDC02-03: VP-2.24.002-A/B module repointed `console::ring_buffer` → `console::span_exporter` (ADR-031 Decision 5 canonical; `console::ring_buffer` was a non-canonical name invented in DC-01). F-PDC02-02: VP-2.24.004-008 A/B module columns corrected from `console::server` to panel-specific modules per BCs: `console::run_inspector` (004-A/B), `console::checkpoint_panel` (005-A/B), `console::hitl_panel` (006-A/B), `console::budget_panel` (007-A/B), `console::guardrail_panel` (008-A/B). VP census 40→41 (DC-02 addendum). See also companion F-PDC02-05 fixes in ADR-031 and api-surface.md (mandatory `debug_route_key`). *[DC-08 records sweep: `debug_api_key` → `debug_route_key` for DC-07-rename consistency.]*
 
 > **D-356 adversary fix DC-02 addendum (2026-09-07, architect).** VP-2.24.002-D registered — SpanData SEC-BOUND-001 sanitization before ring-buffer insertion (unit P1; `console::span_exporter`; `pregolya-console`; BC-2.24.002; DI-014; harness `test_BC_2_24_002_span_data_sanitization_sec_bound_001`). Sanitization-location ruling: AT INSERTION (production-grade choice; in-memory ring buffer must never hold unsanitized `llm_request`/`llm_response`/`attributes` fields). PO follow-up: BC-2.24.002 PC-008 wording "before being served at /debug/trace/*" → "before ring-buffer insertion" to match S-console-02 AC-011. Census 40→41; unit 7→8; P1 34→35. State-manager to reconcile STATE.md VP census 40→41.
 
