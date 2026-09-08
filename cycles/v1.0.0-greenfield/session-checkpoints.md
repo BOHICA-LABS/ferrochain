@@ -1,8 +1,9 @@
 ---
 document_type: session-checkpoints
 level: ops
-version: "2.3"
+version: "2.4"
 changelog:
+  - "2.4 (D-356/DC-33 fix-burst/2026-09-08): D-356/DC-32 checkpoint archived"
   - "2.3 (D-356/DC-02 fix-burst/2026-09-07): D-356/DC-01 checkpoint archived"
   - "2.2 (D-347/round-68/2026-09-02): D-346 checkpoint archived"
   - "2.1 (D-341/round-63/2026-09-01): D-340 checkpoint archived"
@@ -4619,3 +4620,29 @@ pregolya Phase-2 CONVERGED+gate-APPROVED (anchor 81d16ca); Phase-3 IN PROGRESS a
 
 ### DECISION-LOG DELTA (D-356/DC-17 fix-burst)
 D-356/DC-17 (2026-09-08): DC-17 fix-burst CLOSED. trajectory-tail →3→1→2→2+pgap (DC-14=3 [3MED]; DC-15=1 [1MED]; DC-16=2 [1MED+1LOW]; DC-17=2+pgap [1H+1M+1pgap] ALL CLOSED). F-PDC17-01[HIGH] 10 BC frontmatter changelogs reordered strict ascending (8 SS-24 BCs born descending at v1.0 + BC-2.12.001/003 non-monotonic via prepend→fixed). Input-hash drift corrected 7 SS-24 BCs (stale→5ff81d4). Hook PASS: FAIL=0 BC_UNVERIFIED=0. F-PDC17-02[MED] (PO): BC-2.12.001 v1.13→v1.14 §Related BCs +BC-2.24.005; §Story Anchor +S-console-07. L-284 codified. PG-7: POL-14 advisory→BLOCKING promotion deferred factory self-improvement wave (devops-engineer). BC-INDEX v4.36→v4.37. Census UNCHANGED: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31. Streak 0/3 (fix push; DC-18 gates new HEAD).
+
+---
+<!-- D-356/DC-32 checkpoint archived from STATE.md §Session Resume Checkpoint (2026-09-08; replaced by DC-33 checkpoint). -->
+
+## Archived: D-356/DC-32 fix-burst Session Resume Checkpoint
+
+### RESUME IN ONE BREATH
+pregolya Phase-2 CONVERGED+gate-APPROVED (anchor 81d16ca); Phase-3 IN PROGRESS at workspace-init. D-356 Phase-1 spec amendment COMPLETE (developer-console ROADMAP-ONLY; census: BC 148 / VP 41 / EC 145 / stories 52 / pts 372). D-356/DC-01 through DC-32 fix-bursts COMPLETE: DC-01..DC-27 details in burst-log.md + STATE DC-28..DC-32 steps. DC-22=CLEAN(strict) streak1/3 [banked, then broken]; DC-23=4(1H+2M+1L); DC-24=2H+2M+2OBS; DC-25=1H+1MED; DC-26=1H+2M; DC-27=1H+2M+1L; DC-28=1L+1OBS (RECORDS-ONLY); DC-29=1H+1MED+1LOW; DC-30=2H+1MED; DC-31=1H+1MED; DC-32=3MED ALL CLOSED. Full trajectory: →5→6→4→4→3→3→6→5→4→2→4→3→1→2→3→1→2→2+pgap→2→2+pgap→2+pgap→1→0→4→2H+2M+2OBS→1H+1MED→1H+2M→1H+2M+1L→1L+1OBS→1H+1MED+1LOW→2H+1MED→1H+1MED→3MED. OBS-DC05-01 RESOLVED-BY-DC-23; PG-7 RESOLVED-BY-DEVOPS (POL-14→BLOCKING); PG-DC32 OPEN (BC↔story propagation gap recurrence). strict streak reset 0/3 (DC-32 fix push); DC-33 gates new HEAD. PR #1 (workspace scaffold) REVIEWED-CLEAN + MERGEABLE at c9712c2 but BLOCKED from agent-merge (self-authored PR) — needs GENUINE HUMAN MERGE.
+
+### HEADS
+- develop: bfe0592 LOCAL ONLY (2 commits ahead of origin/develop; push required before Phase-3); factory-artifacts: HEAD updated by DC-32 fix-burst commit. Main worktree on `chore/phase3-workspace-init` (NOT develop; return to develop post-merge). PR #1 branch `chore/phase3-workspace-init`: head c9712c2 (OPEN, MERGEABLE, CI 17/17 green, cycle-13 APPROVE 0-blocking).
+
+### RESUME NEXT-ACTION
+(1) Dispatch DC-33 adversary pass (fresh-context) against current factory-artifacts HEAD; strict streak 0/3. (2) Get PR #1 human-merged (squash-merge targeting develop). (3) Post-merge: return main worktree to develop; push develop 2 local-only commits; launch S-1.01 (PregolyaError) in pregolya-core. Standing directives DIRECTIVE 1/2/3/4 in force. 7 open convergence-close deferrals (C-1/PG-1/PG-2/PG-3/PG-4/PG-5/PG-6; PG-7 RESOLVED); PG-DC32 OPEN. OBS-DC05-01 CLOSED.
+
+### DECISION-LOG DELTA (D-356/DC-32 fix-burst)
+D-356/DC-32 (2026-09-08): DC-32 fix-burst CLOSED. trajectory-tail →1H+1MED+1LOW→2H+1MED→1H+1MED→3MED (DC-29=1H+1MED+1LOW CLOSED; DC-30=2H+1MED CLOSED; DC-31=1H+1MED CLOSED; DC-32=3MED ALL CLOSED). F-PDC32-02[MED] SpanData session_id realizability gap typed session_id: String field 5 in 8-field SpanData shape across ADR-031 §Decision 2/§Decision 7, BC-2.24.002 {PC-002}, S-console-02 AC-004. F-PDC32-01[MED] S-console-09 EC-005 aligned to AC-007/BC-2.24.007 {EC-005}: no gauge or compaction timeline for terminal-status runs (ADR-031 §Decision 8 transience); EvidenceJournal display area only; on fetch failure shows "Evidence journal unavailable". F-PDC32-03[MED] S-console-06/S-console-10 bare ADR-030 §Decision anchor corrected to §Decision 2 (POL-19 ambiguous-heading citation). ARCH-INDEX updated. BC-INDEX updated (census BC 148). STORY-INDEX updated. records-lint PASS FAIL=0. changelog-direction PASS FAIL=0. ZERO 0000000. Census UNCHANGED: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / SS 24 / crates 22. PG-DC32 logged. strict streak reset 0/3 (DC-32 fix push; DC-33 gates new HEAD).
+
+### WORKTREE INVENTORY
+Main worktree on `chore/phase3-workspace-init` (NOT develop). .worktrees/ absent. Phase-3 workspace init PENDING human merge of PR #1.
+
+### STANDING HUMAN-GATE OBS
+PR #1 MERGEABLE but requires GENUINE HUMAN MERGE (self-authored PR, DIRECTIVE 4 CAVEAT). Phase-3 TDD stories cannot start until PR #1 merges.
+
+### PENDING USER-APPROVED WORK
+DC-33 adversary pass PENDING (orchestrator, strict streak 0/3). PR #1 merge (human action required). DEV-TOOLING-D255 v1 dev-tooling expansion — ready to start post-merge. DTU clones (openai/anthropic/ollama): Phase-4 prerequisite.

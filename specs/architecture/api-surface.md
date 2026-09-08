@@ -2,11 +2,13 @@
 document_type: architecture-section
 level: L3
 section: api-surface
-version: "1.32"
+version: "1.34"
 status: active
 producer: architect
-timestamp: 2026-09-07T00:00:00Z
+timestamp: 2026-09-08T00:00:00Z
 changelog:
+  - "1.34 (D-356/DC-33/F-PDC33-02-Option-a/2026-09-08, architect): Option (a) human-authorized — durable GuardrailJournal. Attempted to add `guardrail_journal?: Vec<GuardrailEntry>` alongside `evidence_journal?` in the run-read response shape per coordinator directive. FINDING: `GET /threads/{thread_id}/runs/{run_id}` response field enumeration (including `evidence_journal?`) is NOT present in this file — api-surface.md is an architecture-level summary; full response shapes live in `interface-definitions.md` and entity definitions in entities-server.md. The `guardrail_journal?` field must be added by: BA — entities-server.md §RunStore (add `guardrail_journal: Vec<GuardrailEntry>` field to the Run entity response projection, terminal-status only, same projection rule as `evidence_journal?`; add `GuardrailEntry { boundary: String, result: GuardrailResult (Pass|Fail|Transform), provenance: ProvenanceTag, timestamp_ms: u64, transform_applied: Option<String> }` type; add separation note: guardrail_journal? = GuardrailResult outcomes, evidence_journal? = budget PolicyDecision outcomes — do not conflate). PO — BC-2.12.003 {PC-013} (add `guardrail_journal?` to the terminal-status run response postcondition alongside `evidence_journal?`). No live-body changes to this file in this version bump. input-hash unchanged (inputs did not change)."
+  - "1.33 (D-356/DC-33/F-PDC33-01/2026-09-08, architect): F-PDC33-01 (HIGH) — §SpanData shape under Debug Endpoints updated from 7-field to canonical 8-field: `session_id: String` added as field 5 (between `end_time_ms` and `attributes`), with reference note citing DC-32 extension; matches canonical shape in ADR-031 Decision 2 and Decision 7. Companion: ADR-031 Decision 5 `server::debug_span` row updated in same burst. input-hash unchanged (inputs did not change)."
   - "1.32 (D-356/DC-07/2026-09-07, architect): F-PDC07-01 — sweep debug_api_key → debug_route_key (5 sites: changelog 1.31, §Security, Debug Endpoints preamble blockquote, DC-02 blockquote, Cargo Feature Flags table). F-PDC07-02 — §Security updated to state both auth behaviors: (a) empty/absent debug_route_key → E-SERVER-013 InvalidDebugRouteKey startup-refusal before HTTP listener binds; (b) valid key + unauthenticated request → E-SERVER-004 DebugRouteUnauthorized 403 at runtime. input-hash unchanged (inputs did not change)."
   - "1.31 (D-356/DC-02/2026-09-07, architect): F-PDC02-05 — §Security note updated: debug_route_key is now MANDATORY (not opt-in) when debug-endpoints feature is enabled; unauthenticated /debug/* returns 403 E-SERVER-004 DebugRouteUnauthorized. DNS-rebinding/CSRF-to-127.0.0.1 rationale added (SpanData exposes llm_request/llm_response; SEC-BOUND-001 parity; BC-2.24.002). Companion: ADR-031 D6-2 and §Security interaction updated. input-hash unchanged (inputs did not change)."
   - "1.30 (D-356/2026-09-06, architect): F1 consistency fix — three debug endpoint error codes corrected: E-SERVER-020→E-SERVER-023 (DebugExporterNotConfigured, minted error-taxonomy.md v1.72) on GET /debug/trace/session/{session_id} and GET /debug/trace/{event_id}; E-SERVER-021→E-SERVER-009 (AssistantNotFound, existing code) on GET /assistants/{id}/graph. Per source-of-truth precedence rule 3: error-taxonomy.md supersedes prose for error code assignments. input-hash unchanged (inputs did not change)."
@@ -297,9 +299,10 @@ cross-thread aggregate query for schedule-fired runs only.
 | GET | `/debug/trace/{event_id}` | `SpanData` for a single event — same exporter source; `503` with `E-SERVER-023` when not configured | CAP-042 |
 | GET | `/assistants/{id}/graph` | Compiled `StateGraph` as JSON node/edge descriptor + optional `dot_src: String` (Graphviz DOT; `null` when `dot` binary absent); `404` with `E-SERVER-009 AssistantNotFound` when assistant does not exist | CAP-042, CAP-003 |
 
-**`SpanData` shape:** `{ span_id, trace_id, start_time_ms, end_time_ms, attributes: JSON,
-llm_request: JSON|null, llm_response: JSON|null }`. Matches adk-rust `convert_to_span_data()`
-→ `Trace.ts` SpanData shape (research memo §2.2 table row 5) for frontend interoperability.
+**`SpanData` shape:** `{ span_id, trace_id, start_time_ms, end_time_ms, session_id: String,
+attributes: JSON, llm_request: JSON|null, llm_response: JSON|null }`. Matches adk-rust
+`convert_to_span_data()` → `Trace.ts` SpanData shape (research memo §2.2 table row 5),
+extended with `session_id` as field 5 for session-keyed ring-buffer filtering (DC-32).
 
 **Graph descriptor shape:** `{ nodes: [{name, kind}], edges: [{source, target, condition}],
 dot_src: String|null }`. Static structural snapshot of the compiled graph; carries no runtime

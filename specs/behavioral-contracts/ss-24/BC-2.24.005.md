@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.005
-version: "1.5"
+version: "1.6"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -25,6 +25,7 @@ changelog:
   - "1.3 (D-356-fix/DC-05/2026-09-07, product-owner): F-PDC05-01: EC-002 HTTP status corrected 404→422 for E-CHKPT-011 CheckpointNotFound (HTTP 422 per taxonomy definition and BC-2.12.001 EC-010; DC-04 missed this site)."
   - "1.4 (D-356-fix/DC-08/2026-09-07, product-owner): F-PDC08-01: INV-002 corrected — 'a standard 404 error path' → 'the standard 422 E-CHKPT-011 CheckpointNotFound error path' (DC-04→DC-05 sweep hit EC-002 but missed INV-002; HTTP 422 per error-taxonomy E-CHKPT-011 and BC-2.12.001 {EC-010}/TV-011)."
   - "1.5 (D-356-fix/DC-29/2026-09-08, product-owner): F-PDC29-02 (MED): §Architecture Anchors dangling ADR fixed — non-existent ADR-002-checkpointing-strategy.md replaced with ADR-003-durability-tiers.md (title: 'Checkpoint Durability Tiers: Sync Default, Async and Exit-Only Opt-In'; confirmed present). Real ADR-002 is ADR-002-checkpoint-format.md (msgpack wire format, SS-04), not the three-tier durability doc."
+  - "1.6 (D-356/DC-33/2026-09-08, product-owner): F-PDC33-04 (records-tier, L9b/POL-12): version-pin annotations removed from normative PC bodies. {PC-002} and {PC-005}: burst-provenance phrases citing DC-04 version identity dropped — bare BC-2.12.001 {PC-015} clause cite only. Provenance already in changelog row for DC-04 fix-burst. No behavioral change."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-044
   - architecture/decisions/ADR-031-developer-console-architecture.md
@@ -32,7 +33,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "e17c718"
+input-hash: "9b1aa26"
 extracted_from: null
 modified: []
 deprecated: null
@@ -77,7 +78,7 @@ Fork-from-checkpoint creates a new run via `POST /threads/{id}/runs` with `confi
    - `step_idx`: the monotone logical clock position (DI-004 — monotonically non-decreasing).
    - The node that executed at that step (extracted from checkpoint metadata).
    - A summary of state delta applied at that step.
-2. {PC-002} **Checkpoint state inspection:** Selecting a history entry issues `GET /threads/{id}/state?checkpoint_id=<CheckpointId>` (CheckpointId is a u64 newtype; BC-2.04.003 §Architecture Anchors) and renders the full state snapshot (`values`, `checkpoint`, `next`) at that point (BC-2.12.001 {PC-015} `?checkpoint_id` variant, added v1.11 DC-04 burst). The state is rendered as structured JSON with collapsible fields.
+2. {PC-002} **Checkpoint state inspection:** Selecting a history entry issues `GET /threads/{id}/state?checkpoint_id=<CheckpointId>` (CheckpointId is a u64 newtype; BC-2.04.003 §Architecture Anchors) and renders the full state snapshot (`values`, `checkpoint`, `next`) at that point (BC-2.12.001 {PC-015} `?checkpoint_id` variant). The state is rendered as structured JSON with collapsible fields.
 3. {PC-003} **Fork-from-checkpoint:** From any history entry, the operator may initiate a fork: the console sends `POST /threads/{id}/runs` with `{ assistant_id: <id>, config: { configurable: { checkpoint_id: <selected_checkpoint_id> } } }` (where `<selected_checkpoint_id>` is a u64 `CheckpointId` numeric value, not a string). The `config.configurable.checkpoint_id` key instructs the executor to initialize the run's starting state from the specified checkpoint's stored `ChannelValues` rather than the thread's `current_checkpoint` — this is the idiomatic LangGraph fork-start pattern; the executor semantic is defined in BC-2.12.003 {INV-009}. A new `run_id` is returned; the console transitions to the live monitoring panel (BC-2.24.004) for the new run. Existing checkpoints beyond the fork point are NOT deleted (the fork is additive; contrast with `multitask_strategy: "rollback"` which resets the checkpoint chain).
 4. {PC-004} **Pagination:** `GET /threads/{id}/history` accepts `?limit=N`. The console loads history in pages, showing a "load more" control when more checkpoints are available.
 5. {PC-005} **No new server endpoints:** All operations use existing endpoints (`GET /threads/{id}/history`, `GET /threads/{id}/state?checkpoint_id=<CheckpointId>` (u64; BC-2.12.001 {PC-015} variant), `POST /threads/{id}/runs`). The console adds only the presentation layer. The `config.configurable.checkpoint_id` key in the fork request is new documented server BEHAVIOR on the existing Create-Run endpoint (executor semantic defined in BC-2.12.003 {INV-009}); it does not introduce a new endpoint.

@@ -1,11 +1,12 @@
 ---
 document_type: story-index
 level: L3
-version: "1.83"
+version: "1.84"
 status: active
 producer: state-manager
-timestamp: 2026-09-08T23:45:00Z
+timestamp: 2026-09-08T23:59:45Z
 changelog:
+  - "1.84 (D-356/DC-33/2026-09-08, state-manager): DC-33 fix-burst CLOSED. S-console-10 behavioral_contracts updated: +BC-2.11.007 (SS-11 P0 durable GuardrailJournal) +BC-2.12.003 (SS-12 P1 run-read {PC-013} projects guardrail_journal?) per F-PDC33-02 human-authorized Option a. SS-11 BC count 6→7. BC-2.11.007 row added to SS-11 BC-to-Story Coverage section. BC-2.11.007 row added to BC-to-Story Anchor Map. Census: BC 148→149 / VP 41→42 (+VP-2.11.007-A). stories 52 / pts 372 / EC 145 UNCHANGED. strict streak reset 0/3 (fix push; DC-34 gates new HEAD)."
   - "1.83 (D-356/DC-32/2026-09-08, state-manager): F-PDC32-02 — S-console-02 AC-004 SpanData field list corrected to 8-field shape (added session_id: String after end_time_ms per ADR-031 §Decision 2/§Decision 7 and BC-2.24.002 {INV-007}). F-PDC32-01 — S-console-09 EC-005 aligned to AC-007 + BC-2.24.007 {EC-005} (no gauge/timeline for terminal runs; EvidenceJournal area only; ADR-031 §Decision 8). F-PDC32-03 — S-console-06 + S-console-10 bare ADR-030 §Decision → §Decision 2 (POL-19 ambiguous-anchor). Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.82 (D-356/DC-29/2026-09-08, state-manager): S-console-06 (story-writer; D8 completed-run sweep — run-read+evidence_journal?+trace spans; no StreamEvent replay per ADR-031 §Decision 8). S-console-09 (story-writer; D8 completed-run sweep). S-console-10 (story-writer; D8 completed-run sweep). BC-INDEX. ARCH-INDEX. L2-INDEX. Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.81 (D-356/DC-28/2026-09-08, state-manager): S-console-05 v1.3 (story-writer; F-PDC28-01[LOW] — Token Budget Estimate table backfilled with BC-2.24.004 row (~300 tokens); total ~8,100→~8,400; POL-8 step 4: BC count matches len(behavioral_contracts)=2). ARCH-INDEX v1.80 (architect; F-PDC28-02[OBS] — DI-annotation uniformity: removed vestigial '; DI-004)' from VP-2.24.005-A/B description cells; all 20 SS-24 §VP rows now DI-annotation-free). verify-form-a-changelog-direction.sh PASS: FAIL=0 BC_UNVERIFIED=0. ZERO 0000000 remain. Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
@@ -267,7 +268,7 @@ input-hash: "34034c0"
 | S-console-07 | Checkpoint History Browser and Fork-from-Checkpoint Trajectory Replay | BC-2.24.005, BC-2.12.001 | SS-24 | pregolya-console | P1 | 5 | [S-console-05] | roadmap |
 | S-console-08 | HITL Approval Dialog and Resume Dispatch | BC-2.24.006 | SS-24 | pregolya-console | P1 | 5 | [S-console-06] | roadmap |
 | S-console-09 | Token/Context Budget Monitoring Panel | BC-2.24.007 | SS-24 | pregolya-console | P1 | 5 | [S-console-06] | roadmap |
-| S-console-10 | Guardrail/Security Decision Review Panel | BC-2.24.008 | SS-24 | pregolya-console | P1 | 5 | [S-console-06] | roadmap |
+| S-console-10 | Guardrail/Security Decision Review Panel | BC-2.24.008, BC-2.11.007, BC-2.12.003 | SS-24 | pregolya-console | P1 | 5 | [S-console-06] | roadmap |
 
 ---
 
@@ -440,7 +441,7 @@ input-hash: "34034c0"
 | BC-2.10.005 | CompactionTrigger Config — Watermark Arithmetic (VP-012) | S-1.25 | P1 |
 | BC-2.10.006 | Compaction Execution — Mid-Run Window Replacement | S-1.25 | P1 |
 
-### SS-11 Content Provenance / Guardrail (6 BCs)
+### SS-11 Content Provenance / Guardrail (7 BCs)
 
 | BC ID | Title (abbreviated) | Story | Priority |
 |-------|---------------------|-------|---------|
@@ -450,6 +451,7 @@ input-hash: "34034c0"
 | BC-2.11.004 | GuardrailHook at Memory Ingress | S-1.19 | P0 |
 | BC-2.11.005 | Rejected Content Never Enters Model Context | S-1.19 | P0 |
 | BC-2.11.006 | No-Hook Default — Pass-Through with WARNING LOG | S-1.19 | P0 |
+| BC-2.11.007 | Guardrail Evaluation Results Are Durably Journaled | S-console-10 | P0 |
 
 ### SS-12 Durable-Run HTTP Server (7 BCs)
 
@@ -581,6 +583,7 @@ input-hash: "34034c0"
 | BC-2.24.006 | HITL Approval Dialog and Resume Dispatch | S-console-08 | P1 |
 | BC-2.24.007 | Token/Context Budget Monitoring Panel | S-console-09 | P1 |
 | BC-2.24.008 | Guardrail/Security Decision Review Panel | S-console-10 | P1 |
+| BC-2.11.007 | Guardrail Evaluation Results Are Durably Journaled | S-console-10 | P0 |
 
 ---
 

@@ -1,7 +1,7 @@
 ---
 document_type: architecture-index
 level: L3
-version: "1.83"
+version: "1.84"
 status: active
 producer: state-manager
 timestamp: 2026-09-08T23:59:00Z
@@ -17,6 +17,7 @@ traces_to: prd.md
 deployment_topology: single-service
 decisions: [D4, D6, D9, D11, D13, D17, D20, D21, D23, D356]
 changelog:
+  - "1.84 (D-356/DC-33/2026-09-08, architect): VP-2.11.007-A registered — GuardrailJournal completeness integration P0 (BC-2.11.007 {PC-001}/{INV-003}; DI-012; server::guardrail_journal; pregolya-server; Phase 3). §Verification Properties preamble and table updated 41→42 VPs; integration P0 added. Census: ADR 31 / VP 42. Human-authorized DC-33 core-domain amendment."
   - "1.83 (D-356/DC-32/2026-09-08, state-manager): F-PDC32-02 — ADR-031 §Decision 2 + §Decision 7 updated: SpanData gains typed `session_id: String` as field 5 (8-field shape: span_id, trace_id, start_time_ms, end_time_ms, session_id, attributes, llm_request, llm_response); set by DebugSpanExporter at insertion per {INV-007}; enables get_session_spans typed-field equality filter. ADR-031 row description updated in §ADR Registry. Census UNCHANGED: ADR 31 / VP 41."
   - "1.82 (D-356/DC-30/2026-09-08, state-manager): F-PDC30-01 — ADR-031 §Decision 2 session-key binding added: session_id=run_id invariant (DebugSpanExporter sets session_id=run_id at insertion; BC-2.24.002 {INV-007} anchors this invariant). F-PDC30-02 — ADR-031 §Decision 2 sweep: 6 bare §Decision citations corrected to §Decision 2. ADR-031 row description updated in §ADR Registry. Census UNCHANGED: ADR 31 / VP 41."
   - "1.81 (D-356/DC-29/2026-09-08, state-manager): ADR-031 §Decision 8 (architect; completed-run inspection substrate: ADR-030 rules StreamEvent transient; no run-event endpoint; canonical substrate = run-read {PC-013} BC-2.12.003 + evidence_journal? + trace spans BC-2.24.002; no ADK-style persistent-StreamEvent replay; BC-2.24.004/007/008 + CAP-043/047 re-scoped). ADR-031 row description updated in §ADR Registry. Census UNCHANGED: ADR 31 / VP 41."
@@ -258,7 +259,7 @@ R6 namespace reservation: publish-all.sh must cover all 21 currently-published c
 
 ## Verification Properties (VP-INDEX)
 
-41 VPs total (6 Kani P0 + 4 Kani P1 + 10 proptest P1 + 12 integration P1 + 8 unit P1 + 1 compile-fail P1 — see VP-INDEX; mirror of VP-INDEX, kept in sync via POL-9):
+42 VPs total (6 Kani P0 + 1 integration P0 + 4 Kani P1 + 10 proptest P1 + 12 integration P1 + 8 unit P1 + 1 compile-fail P1 — see VP-INDEX; mirror of VP-INDEX, kept in sync via POL-9):
 
 | VP | BC Anchor | Module | Tool | Priority | Status |
 |----|-----------|--------|------|----------|--------|
@@ -283,6 +284,7 @@ R6 namespace reservation: publish-all.sh must cover all 21 currently-published c
 | VP-018 | BC-2.04.011 {INV-001} (TrajectoryCompactor retention-integrity; DI-002) | `checkpoint::trajectory` | proptest | P1 | draft |
 | VP-019 | BC-2.04.011 {INV-003} (trajectory compaction crash-isolation — SQLite atomicity under SIGKILL; DI-002) | `checkpoint::trajectory` | integration | P1 | draft |
 | VP-020 | BC-2.02.009 {INV-001}+{INV-002} (PromoteRetireChannel idempotency/ordering; DI-001) | `graph::channels` | proptest | P1 | draft |
+| VP-2.11.007-A | BC-2.11.007 {PC-001}/{INV-003} (GuardrailJournal completeness — every evaluate() call produces one entry; DC-33) | `server::guardrail_journal` | integration | P0 | draft |
 | VP-2.24.001-A | BC-2.24.001 (console::server lifecycle — unit) | `console::server` | unit | P1 | draft |
 | VP-2.24.001-B | BC-2.24.001 (console::server zero-cap error — unit) | `console::server` | unit | P1 | draft |
 | VP-2.24.001-C | BC-2.24.001 (console::server type safety — compile-fail) | `console::server` | compile-fail | P1 | draft |
@@ -321,3 +323,5 @@ R6 namespace reservation: publish-all.sh must cover all 21 currently-published c
 > **D-356 adversary fix DC-19 (2026-09-08, architect).** F-PDC19-01+F-PDC19-02 — VP-2.24.003-B BC Anchor description corrected: "graph descriptor pure termination — Kani" → "no self-loops (a node does not edge to itself) — Kani" (BC-2.24.003 §VP table is source of truth). VP-2.24.003-C Module/description corrected: `server::debug_routes` / "graph endpoint unit" → `graph::descriptor` / "start node always present in descriptor" (BC-2.24.003 §VP table declares start-node-always-present targeting graph::descriptor/pregolya-graph). VP census UNCHANGED: 41 total.
 
 > **D23 VPs SEEDED (burst-232):** VP-011/012/013 minted with BC anchors, Kani harness skeletons, and input-hashes. VP-011 (graph::hitl / PreToolCallHook fail-closed — Kani P0); VP-012 (core-budget / OnWatermark arithmetic — Kani P1); VP-013 (tools-shell / BashTool risk floor — Kani P1). BC-2.23.005 category RESOLVED: BC-2.23.005 §Postconditions (PC-4) category amended to VAL in burst-232 (error-taxonomy.md §Component: TOOLS; consistent with VP-013 harness).
+
+> **D-356 adversary fix DC-33 (2026-09-08, architect).** VP-2.11.007-A registered — GuardrailJournal completeness integration P0 (BC-2.11.007 {PC-001}/{INV-003}; DI-012; server::guardrail_journal; pregolya-server; Phase 3). Human-authorized DC-33 core-domain amendment: GuardrailJournal append-only entity (one GuardrailEntry per GuardrailHook::evaluate() call) + BC-2.11.007 + BC-2.12.003 {PC-013}. VP census 41→42; integration 12→13; P0 6→7.

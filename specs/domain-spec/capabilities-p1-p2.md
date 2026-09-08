@@ -2,10 +2,10 @@
 document_type: domain-spec-section
 level: L2
 section: capabilities-p1-p2
-version: "1.38"
+version: "1.39"
 status: active
 producer: business-analyst
-timestamp: 2026-09-06T00:00:00Z
+timestamp: 2026-09-08T00:00:00Z
 phase: 1b
 inputs:
   - .factory/specs/product-brief.md
@@ -18,6 +18,7 @@ input-hash: "371c041"
 traces_to: L2-INDEX.md
 decisions: [D1, D3, D7, D8, D13, D17, D19, D20, D21, D23, D170, D275, D356]
 changelog:
+  - "1.39 (DC-33/F-PDC33-02/2026-09-08, business-analyst): CAP-047 rewrite per architect DC-33 ruling. Completed-run guardrail substrate corrected from evidence_journal? to guardrail_journal? (BC-2.11.007). EvidenceJournal is BUDGET-ONLY (PolicyDecision); GuardrailResult (Pass/Fail/Transform) outcomes now persist in the GuardrailJournal entity (entities-server.md §GuardrailJournal). Capability description replaced with architect-canonical form: live runs consume GuardrailDecision StreamEvent variants; completed runs reconstruct from guardrail_journal? (BC-2.11.007) on run-read. DC-33 dated delta note added to CAP-047 body. Prior DC-29-sibling and DC-31 interim delta notes superseded. Trace anchors: removed evidence_journal? guardrail-substrate claims (BC-2.24.008 {PC-004} + BC-2.12.003 {PC-013}); added BC-2.11.007 (guardrail_journal? projection). Anchor justification extended to reference entities-server.md §GuardrailJournal. CAP-043 cascade: DC-33 superseding note added after DC-31 delta note — DC-31 stated guardrail completed-run history arrives via evidence_journal? (BC-2.24.008 {PC-004}); superseded per DC-33: guardrail history is in guardrail_journal? (BC-2.11.007); EvidenceJournal is BUDGET-ONLY; DC-31 note preserved for audit. CAP-043 live body confirmed clean — evidence_journal? references in live body are for budget history (correct), not guardrail history. Authority: F-PDC33-02, architect DC-33 ruling."
   - "1.38 (D-356/DC-31/F-PDC31-01+02/2026-09-08, business-analyst): CAP-043 + CAP-047 3-substrate model corrections per DC-31. F-PDC31-01 (HIGH): (1) CAP-043 trace-span content list: struck 'guardrail decisions' — guardrail completed-run history arrives via evidence_journal? on run-read (BC-2.24.008 {PC-004}), NOT trace spans. (2) CAP-047 completed-run substrate: replaced trace-span read (BC-2.24.002) with evidence_journal? on run-read (BC-2.12.003 {PC-013}, BC-2.24.008 {PC-004}). F-PDC31-02 (MED): CAP-043 trace-span content list: struck 'compaction summaries' — compaction per-event markers/timeline are LIVE-run SSE only, unavailable for completed runs (BC-2.24.007); clarifying clause added. O-PDC31-A sweep: CAP-041/042/044/045/046 already correct per 3-substrate model; only CAP-043/047 required fixes. CAP-047 trace anchors updated to add BC-2.24.008 {PC-004} + BC-2.12.003 {PC-013}."
   - "1.37 (D-356/F-PDC29-01-sibling/2026-09-08, business-analyst): CAP-047 sibling fix — TD-VSDD-060 sweep found same transient-StreamEvent class of defect as F-PDC29-01 in CAP-047 body. 'reconstructs from stored events for completed runs' → 'reconstructs from persisted trace spans (GET /debug/trace/session/{run_id}, BC-2.24.002) for completed runs (StreamEvent TRANSIENT, ADR-030; no event-replay endpoint, ADR-031 Decision 8)'. Dated delta note added to CAP-047 body."
   - "1.36 (D-356/F-PDC29-01/2026-09-08, business-analyst): CAP-043 completed-run inspection substrate correction — adversary finding F-PDC29-01 (HIGH). Opening paragraph rewrote to split completed-run vs live-run workflows. Completed run: trace spans (GET /debug/trace/session/{run_id}, BC-2.24.002) + run-state summary + evidence_journal? (BC-2.12.003 {PC-013}) — NOT StreamEvent replay (StreamEvent is TRANSIENT per ADR-030; no run-event endpoint, ADR-031 Decision 8). Live run: SSE StreamEvent stream (BC-2.12.007) — unchanged. Anchor justification and trace anchors updated; CAP-007 scope now explicitly LIVE only."
@@ -1084,6 +1085,16 @@ existing SSE endpoint BC-2.12.007; CAP-042 (span latency detail per entry).
 > (BC-2.24.007). Added clarifying clause per BC-2.24.007. Trace spans carry: per-span latency,
 > LLM request/response, and span attributes only (ADR-031 Decision 8 table).
 
+> **D-356 adversary fix DC-33 superseding (2026-09-08, business-analyst).** F-PDC33-02 cascades
+> to CAP-043: the DC-31 note above stated "guardrail completed-run decision history arrives via
+> `evidence_journal?` on run-read (BC-2.24.008 {PC-004})." That substrate statement is superseded
+> per architect DC-33 ruling. `EvidenceJournal` is BUDGET-ONLY (`PolicyDecision: Allow | Escalate
+> | Deny`); `GuardrailResult (Pass | Fail | Transform)` outcomes from `GuardrailHook::evaluate()`
+> are recorded in the distinct `GuardrailJournal` entity (entities-server.md §GuardrailJournal).
+> Completed-run guardrail decision history is reconstructed from `guardrail_journal?` (BC-2.11.007)
+> on run-read — NOT `evidence_journal?`. The DC-31 note is preserved for historical audit; only
+> its guardrail-substrate statement is superseded by this note.
+
 ---
 
 ### CAP-044: Checkpoint History Browser and Trajectory Replay
@@ -1196,8 +1207,11 @@ PolicyDecision outcomes); CAP-007 (compaction_event as 15th StreamEvent variant)
 
 ### CAP-047: Guardrail/Security Decision Review Panel
 
-The console provides a dedicated security event feed that isolates all `guardrail_decision`
-StreamEvents from a run, surfacing them in a dedicated panel. Each entry shows:
+> **D-356 adversary fix DC-33 (2026-09-08, business-analyst).** F-PDC33-02 (HIGH) — completed-run guardrail substrate corrected. Prior description claimed completed-run guardrail history was reconstructed from `evidence_journal?` on run-read (cited BC-2.24.008 {PC-004} and BC-2.12.003 {PC-013}). This was wrong: `EvidenceJournal` is BUDGET-ONLY — `JournalEntry.decision` records `PolicyDecision (Allow | Escalate | Deny)` from token-budget checks only; `GuardrailResult (Pass | Fail | Transform)` outcomes from `GuardrailHook::evaluate()` had no persistence substrate. Architect DC-33 ruling (F-PDC33-02): `GuardrailJournal` entity created (entities-server.md §GuardrailJournal) as the durable per-run guardrail log. Completed-run substrate is `guardrail_journal?` (BC-2.11.007). All prior `evidence_journal?` guardrail-substrate claims superseded. Supersedes DC-29-sibling and DC-31 interim fixes for this CAP. The two governance journals are distinct and MUST NOT be conflated.
+
+Guardrail security review panel — displays guardrail evaluation history for active and completed runs. For active runs: consumes `GuardrailDecision` `StreamEvent` variants over the live SSE stream. For completed runs: reconstructs guardrail history from `guardrail_journal?` (BC-2.11.007) on the run-read response — each entry records the result (Pass/Fail/Transform) and provenance for one `GuardrailHook::evaluate` call. The panel is both live (streaming) and retrospective (completed-run reconstruction).
+
+For live runs, each `guardrail_decision` StreamEvent entry shows:
 
 > **D-356 adversary fix DC-06 (2026-09-07, business-analyst).** Field names corrected from
 > SS-11 ProvenanceTag/BoundaryType names (RAGRetrieval/MemoryIngress) to the authoritative
@@ -1212,30 +1226,9 @@ StreamEvents from a run, surfacing them in a dedicated panel. Each entry shows:
   `None` for `Transform` (severity is only meaningful when content is blocked)
 - `reason: Option<String>` — `Some(reason_string)` for `Fail`; `None` for `Transform`
 
-The feed updates in real time for live runs (via SSE subscription, CAP-043) and reconstructs
-from the `evidence_journal?` field on the run-read response
-(`GET /threads/{thread_id}/runs/{run_id}`, BC-2.12.003 {PC-013}) for completed runs, per
-BC-2.24.008 {PC-004} (guardrail completed-run decision history arrives via run-read
-`evidence_journal?`, not via trace spans; StreamEvent is TRANSIENT per ADR-030).
 The Domain A SOC analyst use case (guardrail visibility during untrusted-tool-result ingestion)
 is served by this panel — the same content drives both the interactive local-debug workflow and
 the broader security audit requirement.
-
-> **D-356 adversary fix DC-29 sibling (2026-09-08, business-analyst).** TD-VSDD-060 sweep of
-> F-PDC29-01 fix found same transient-StreamEvent class of defect in CAP-047 body. OLD:
-> "reconstructs from stored events for completed runs" — implies stored StreamEvents (WRONG:
-> StreamEvent is TRANSIENT, ADR-030). NEW: "reconstructs from persisted trace spans
-> (BC-2.24.002) for completed runs" — same substrate ruling as CAP-043 (ADR-031 Decision 8).
-
-> **D-356 adversary fix DC-31 (2026-09-08, business-analyst).** F-PDC31-01 (HIGH). CAP-047
-> completed-run substrate corrected from trace spans to `evidence_journal?` run-read. OLD
-> (post-DC-29-sibling): "reconstructs from persisted trace spans (BC-2.24.002) for completed
-> runs" — trace spans carry latency/LLM/attributes only (ADR-031 Decision 8 table); guardrail
-> decision history is NOT trace-span content. NEW: "reconstructs from `evidence_journal?` field
-> on run-read (`GET /threads/{thread_id}/runs/{run_id}`, BC-2.12.003 {PC-013})" per BC-2.24.008
-> {PC-004}. Trace anchors updated to add BC-2.24.008 {PC-004} and BC-2.12.003 {PC-013}.
-
-No new server machinery needed; `guardrail_decision` events are already emitted.
 
 **Grounding:** research memo §5 workflow "Watch guardrails" (P5 persona); domain-a-soc-analyst
 forcing function (CAP-013 D17-Q8 — real-time guardrail visibility for prompt-injection
@@ -1244,12 +1237,13 @@ than ADK's trace-only model."
 **Anchor justification:** CAP-047 is grounded in the research memo's explicit finding that
 `GuardrailDecision` events are already emitted and richer than the reference implementation's
 trace-only model. The P5 developer-operator persona and the Domain A SOC forcing function
-together justify a dedicated panel.
+together justify a dedicated panel. The `GuardrailJournal` entity (entities-server.md §GuardrailJournal)
+provides the durable completed-run inspection substrate via `guardrail_journal?` (BC-2.11.007).
 **Trace anchors:** CAP-013 (content provenance tagging and guardrail-on-ingress — source
 of the events this panel surfaces); CAP-007 (`guardrail_decision` StreamEvent variant, Fail/Transform
 only per F-P99-01); DI-012 (no guardrail bypass — all qualifying events appear in the feed);
-BC-2.24.008 {PC-004} (`evidence_journal?` as completed-run guardrail decision substrate, run-read
-response); BC-2.12.003 {PC-013} (`evidence_journal?` projection for terminal-status runs).
+BC-2.11.007 (`guardrail_journal?` projection for terminal-status runs — completed-run guardrail history substrate);
+entities-server.md §GuardrailJournal (`GuardrailEntry` type; `guardrail_journal: Vec<GuardrailEntry>` per-run append-only log).
 **Priority:** P1. **Wave:** 3.
 
 ---

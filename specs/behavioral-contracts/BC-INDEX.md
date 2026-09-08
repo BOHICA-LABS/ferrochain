@@ -1,15 +1,16 @@
 ---
 document_type: bc-index
 level: L3
-version: "4.45"
+version: "4.46"
 status: active
 producer: state-manager
-timestamp: 2026-09-08T23:58:00Z
+timestamp: 2026-09-08T23:59:45Z
 project: pregolya
 cycle: v1.0.0-greenfield
 input-hash: "[live-index]"
 traces_to: .factory/specs/prd.md
 changelog:
+  - "4.46 (D-356/DC-33/2026-09-08, state-manager): DC-33 fix-burst CLOSED. F-PDC33-01[HIGH]: SpanData session_id field swept to ADR-031 §Decision 5 + api-surface.md (session_id field 5 of 8-field shape). F-PDC33-02[HIGH, HUMAN-AUTHORIZED Option a]: durable GuardrailJournal core-domain amendment — BC-2.11.007 (SS-11, P0, v1.0) registered; guardrail_journal in RunStore (entities-server §GuardrailJournal); guardrail_journal? projected on run-read (BC-2.12.003 {PC-013}); BC-2.24.008 re-pointed to guardrail_journal?; CAP-047+CAP-043 superseding note; ADR-031 §Decision 8 de-pended; S-console-10 re-pointed; VP-2.11.007-A minted. F-PDC33-03[MED]: ADR-031 binding-decisions count updated + heading normalized. F-PDC33-04[LOW/records]: BC-2.24.005 version-pin removed. Census: BC 148→149 (+BC-2.11.007 SS-11 P0); VP 41→42 (+VP-2.11.007-A integration P0); EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / SS 24 / crates 22. strict streak reset 0/3 (fix push; DC-34 gates new HEAD)."
   - "4.45 (D-356/DC-32/2026-09-08, state-manager): DC-32 (strict-streak pass 1) — 3 MED ALL CLOSED; strict streak reset 0/3 (fix push; DC-33 gates new HEAD). F-PDC32-02[MED]: BC-2.24.002 {PC-002} SpanData shape updated — `session_id: String` added as field 5 (8-field shape) per ADR-031 §Decision 2 + §Decision 7 (DC-32 Option A ruling); {INV-007} and {PC-003} wording unchanged. F-PDC32-01[MED]: S-console-09 EC-005 corrected to align with AC-007 and BC-2.24.007 {EC-005} — terminal-status runs show no gauge/compaction timeline (transient StreamEvent per ADR-031 §Decision 8); EvidenceJournal display area only on fetch failure. F-PDC32-03[MED]: S-console-06 + S-console-10 bare `ADR-030 §Decision` → `ADR-030 §Decision 2` (POL-19 ambiguous-anchor). Census UNCHANGED: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / SS 24 / crates 22."
   - "4.44 (D-356/DC-30/2026-09-08, state-manager): DC-30 (strict-streak pass 1 retry) — 2 HIGH + 1 MED ALL CLOSED; strict streak reset 0/3 (fix push; DC-31 gates new HEAD). F-PDC30-01[HIGH]: BC-2.24.002 {INV-007} session_id=run_id invariant added (ADR-031 §Decision 2 session-key binding: DebugSpanExporter sets session_id=run_id at insertion; all spans addressable via GET /debug/trace/session/{run_id}). F-PDC30-03[HIGH]: BC-2.24.007 {TV-004} rewrote — terminal-run panel shows EvidenceJournal Allow/Escalate/Deny table ONLY; compaction markers transient (ADR-030 §Decision 2 + ADR-031 §Decision 8); {PRE-002} ADR-030 §Decision → §Decision 2 corrected. F-PDC30-02[MED]: ADR-030 §Decision → §Decision 2 sweep — ADR-031 §Decision 2 (6 sites); BC-2.24.004 {PRE-004}/{PC-006}; BC-2.24.008 {PC-004}. BC-INDEX. ARCH-INDEX. Census UNCHANGED: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / SS 24 / crates 22."
   - "4.43 (D-356/DC-29/2026-09-08, state-manager): DC-29 fix-burst CLOSED: 1H+1MED+1LOW ALL CLOSED; strict streak reset 0/3 (fix push; DC-30 gates new HEAD). F-PDC29-01[HIGH] BC-2.24.004 (PRE-004/PC-006/TV-002 re-scoped run-read+trace-span; INV-001 confirmed) + BC-2.24.007 (PRE-002/EC-005 compaction-detail-unavailable-post-run) + BC-2.24.008 (Description/PRE-002/PC-004/INV-002 evidence_journal? reconstruction) + ADR-031 §Decision 8 (architect; completed-run inspection: ADR-030 StreamEvent transient; no run-event endpoint; run-read BC-2.12.003 {PC-013}+evidence_journal?+trace spans BC-2.24.002 canonical). F-PDC29-02[MED] BC-2.24.005 (ADR-002→ADR-003 dangling anchor). F-PDC29-03[LOW] records-lint L9a→L9e extension (devops 9d913b7) + BC-2.12.003 citation fix. capabilities-p1-p2.md CAP-043/047 substrate re-scoped. S-console-06, S-console-09, S-console-10 (D8 sweep). ARCH-INDEX. STORY-INDEX. L2-INDEX. L-289 codified. Hook: verify-form-a-changelog-direction.sh PASS: FAIL=0 BC_UNVERIFIED=0. ZERO 0000000 remain. Census UNCHANGED: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / SS 24 / crates 22."
@@ -165,13 +166,13 @@ changelog:
 
 # BC-INDEX: pregolya Behavioral Contracts
 
-> **148 BCs total — 51 P0 / 94 P1 / 3 P2 | 11 Red Gate | 18 VP Seed | 41 VPs registered**
+> **149 BCs total — 52 P0 / 94 P1 / 3 P2 | 11 Red Gate | 19 VP Seed | 42 VPs registered**
 >
 > Subsystem IDs: SS-01 through SS-17 assigned by architect at Phase 1 Step D (2026-07-14).
 > SS-18 through SS-22 added D21 ecosystem-parity expansion (2026-07-20).
 > SS-23 (First-Party Tools) added D23 first-class approval hook + compaction expansion (2026-07-22).
 > All BCs reside under `specs/behavioral-contracts/ss-NN/` per ARCH-INDEX Subsystem Registry.
-> VP-INDEX: 41 VPs registered (VP-001–VP-003 Kani P0, VP-004–VP-005 integration P1,
+> VP-INDEX: 42 VPs registered (VP-001–VP-003 Kani P0, VP-004–VP-005 integration P1,
 > VP-006–VP-010 assigned in VP-INDEX (burst-223, 2026-07-21) and authored — VP-006.md–VP-010.md all complete;
 > VP-006-B proptest P1 seeded SEC-review-adjudication burst and authored — vp-006-b-injection-guard-multipair-fewshot.md complete;
 > VP-011–VP-013 seeds assigned D23 burst-232 and authored — VP-011.md–VP-013.md all complete;
@@ -181,14 +182,15 @@ changelog:
 > VP-017 proptest P1 seeded ADR-030 Stage 1 burst and authored — vp-017-ledger-channel-append-dedup.md complete;
 > VP-018 proptest P1 seeded BC-2.04.011/ADR-030 Stage 2b burst and authored — vp-018-trajectory-compaction-retention-integrity.md complete;
 > VP-019 integration P1 seeded round-50 cascade (crash-isolation; BC-2.04.011 {INV-003}; distinct from VP-018 {INV-001}) and authored — vp-019-trajectory-compaction-crash-isolation.md complete;
-> VP-020 proptest P1 seeded round-62 cascade (PromoteRetireChannel idempotency; BC-2.02.009 {INV-001}+{INV-002}) and authored — vp-020-promote-retire-channel-idempotency.md complete).
+> VP-020 proptest P1 seeded round-62 cascade (PromoteRetireChannel idempotency; BC-2.02.009 {INV-001}+{INV-002}) and authored — vp-020-promote-retire-channel-idempotency.md complete;
+> VP-2.11.007-A integration P0 seeded DC-33 GuardrailJournal amendment (BC-2.11.007 {PC-001}/{INV-003}; DI-012; server::guardrail_journal) and authored — vp-2.11.007-a-guardrail-journal-completeness.md complete).
 
 ## Summary
 
 | Metric | Count |
 |--------|-------|
-| Total BCs | 148 |
-| Priority P0 | 51 |
+| Total BCs | 149 |
+| Priority P0 | 52 |
 | Priority P1 | 94 |
 | Priority P2 | 3 |
 | Red Gate BCs | 11 |
@@ -324,6 +326,7 @@ _VP-004 and VP-005 are integration VPs (from BC-2.09.004/005); registered in VP-
 | BC-2.11.004 | GuardrailHook Fires at Memory Ingress | CAP-013 | NE-06 | DI-012 | P0 | | | ss-11/BC-2.11.004.md |
 | BC-2.11.005 | Rejected Content Does Not Enter Model Context Under Any Code Path | CAP-013 | | DI-012 | P0 | | | ss-11/BC-2.11.005.md |
 | BC-2.11.006 | No-Hook Default — Content Passes Through with WARNING LOG (Default-Permit) | CAP-013 | | DI-012 | P0 | | | ss-11/BC-2.11.006.md |
+| BC-2.11.007 | Guardrail Evaluation Results Are Durably Journaled | CAP-013, CAP-047 | | DI-012 | P0 | | **VP-2.11.007-A** | ss-11/BC-2.11.007.md |
 | BC-2.12.001 | Thread Resource CRUD (Create, Read, List, Delete Durable Conversation History) | CAP-014 | | | P1 | | | ss-12/BC-2.12.001.md |
 | BC-2.12.002 | Assistant Resource CRUD (Named Agent Config with Graph Reference) | CAP-014 | | | P1 | | | ss-12/BC-2.12.002.md |
 | BC-2.12.003 | Run Creation and Execution Lifecycle (queued → in_progress → completed/failed/cancelled/summary_halt; interrupted is pausable/resumable) | CAP-014 | | | P1 | | | ss-12/BC-2.12.003.md |
