@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.12.001
-version: "1.13"
+version: "1.14"
 status: active
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -21,7 +21,7 @@ inputs:
   - .factory/specs/prd.md
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/semport/platform/behavioral-intent.md
-input-hash: "25528ef"
+input-hash: "faac9bb"
 extracted_from: null
 modified: []
 deprecated: null
@@ -31,9 +31,6 @@ retired: null
 removed: null
 removal_reason: null
 changelog:
-  - "1.13 (D-356-fix/DC-05/2026-09-07, product-owner): F-PDC05-02: changelog v1.11 entry self-contradiction corrected — 'HTTP 404' → 'HTTP 422' in the v1.11 changelog line (records fix; normative body already correct at HTTP 422 throughout)."
-  - "1.12 (D-356-fix/DC-04/2026-09-07, product-owner): §Story Anchor: S-console-07 appended as roadmap consumer of the PC-015 ?checkpoint_id variant (Wave 3); S-1.26 remains primary implementation anchor. Reverse-anchor completeness fix."
-  - "1.11 (D-356-fix/DC-04/2026-09-07, product-owner): F-PDC04-02: PC-015 amended — GET /threads/{thread_id}/state gains optional ?checkpoint_id=<CheckpointId> (u64) selector returning historical checkpoint state at the specified ID; checkpoint not found raises E-CHKPT-011 CheckpointNotFound HTTP 422 (EC-010; HTTP 422 per taxonomy — corrected by v1.13/DC-05). TV-010 and TV-011 added covering the happy-path read and not-found path respectively."
   - "1.1 (ADV-P1D-PASS-31): F-P31-01 PC17 history endpoint — declare limit default 10, max 100, values > 100 clamped to 100, offset default 0 (pagination coherence canon; clamp out-of-range semantics)."
   - "1.2 (ADV-P1D-PASS-34): F-P34-01 PC8 — add clamp semantics (values > 100 silently clamped to 100) and offset default 0 (partial-fix propagation gap from pass-31). PC9 — declare created_at DESC ordering (canonical; F-P31-01). interface-definitions.md §Canonical Pagination Convention cites BC-2.12.001 PC8 as threads-list clamp+ordering anchor; PC8 now matches."
   - "1.3 (2026-07-15, F-P78-SWEEP/D18-P78-A): E-SERVER-007 message-prefix correction at two BC sites. (1) PC3 (Create Thread): added 'ThreadAlreadyExists:' prefix and lowercased 'Thread' to 'thread' in message string (was 'Thread'; now 'thread'). (2) EC-001: same corrections applied. Taxonomy already carried the prefix and lowercase; BC was the lagging artifact. Both sites now produce the canonical form 'ThreadAlreadyExists: thread <id> already exists'."
@@ -44,9 +41,15 @@ changelog:
   - "1.8 (P2A-052 F-052-01/2026-08-25): ## VP Anchors section corrected from duplicated Story-Anchor story-ID to 'None' (BC has no Kani VP seed; see §Verification Properties)."
   - "1.9 (P2A-BC-scan-B/2026-08-26): POST /state failure paths added — EC-007 (thread-not-found → E-SERVER-003), EC-008 (invalid as_node → NEEDS-NEW-CODE flagged in manifest), EC-009 (malformed delta → NEEDS-NEW-CODE flagged in manifest). PC-016 amended to reference failure paths. TV-008 and TV-009 added."
   - "1.10 (burst-A2-error-coord/P2A-BC-scan-hardening-addendum/2026-08-26): EC-008, EC-009, PC-016(b)/(c), and TV-009 repointed from NEEDS-NEW-CODE → E-SERVER-022 StateUpdateInvalid (see error-taxonomy.md §Component: SERVER (pregolya-server)); single reason-discriminated code for both invalid-as_node and malformed-delta POST /state failures. NEEDS-NEW-CODE annotations removed."
+  - "1.11 (D-356-fix/DC-04/2026-09-07, product-owner): F-PDC04-02: PC-015 amended — GET /threads/{thread_id}/state gains optional ?checkpoint_id=<CheckpointId> (u64) selector returning historical checkpoint state at the specified ID; checkpoint not found raises E-CHKPT-011 CheckpointNotFound HTTP 422 (EC-010; HTTP 422 per taxonomy — corrected by v1.13/DC-05). TV-010 and TV-011 added covering the happy-path read and not-found path respectively."
+  - "1.12 (D-356-fix/DC-04/2026-09-07, product-owner): §Story Anchor: S-console-07 appended as roadmap consumer of the PC-015 ?checkpoint_id variant (Wave 3); S-1.26 remains primary implementation anchor. Reverse-anchor completeness fix."
+  - "1.13 (D-356-fix/DC-05/2026-09-07, product-owner): F-PDC05-02: changelog v1.11 entry self-contradiction corrected — 'HTTP 404' → 'HTTP 422' in the v1.11 changelog line (records fix; normative body already correct at HTTP 422 throughout)."
+  - "1.14 (D-356-fix/DC-17/2026-09-08, product-owner): F-PDC17-02: Reverse-anchor completeness — §Related BCs lacked the reverse edge for BC-2.24.005 (which consumes {PC-015} ?checkpoint_id variant via BC-2.24.005 {PC-002}). DC-04 added only the §Story Anchor edge (S-console-07); §Related BCs edge was missing. BC-2.24.005 added as consumer entry. §Story Anchor unchanged (S-console-07 already present from DC-04)."
 ---
 
 # BC-2.12.001: Thread Resource CRUD (Create, Read, List, Delete Durable Conversation History)
+
+> **D-356 adversary fix DC-17 (2026-09-08, product-owner).** F-PDC17-02: §Related BCs reverse-anchor completeness — BC-2.24.005 consumes {PC-015} `?checkpoint_id` variant via BC-2.24.005 {PC-002}, but this BC had no reverse edge in §Related BCs. DC-04 added only the §Story Anchor edge (S-console-07). BC-2.24.005 added to §Related BCs as consumer. §Story Anchor unchanged.
 
 > **D-356 adversary fix DC-04 (2026-09-07, product-owner).** F-PDC04-02: PC-015 amended — `GET /threads/{thread_id}/state` gains optional `?checkpoint_id=<CheckpointId>` (u64 newtype per BC-2.04.003 §Architecture Anchors) selector returning historical checkpoint state at the specified ID (same response shape as the no-selector form). Checkpoint not found → E-CHKPT-011 CheckpointNotFound HTTP 422 (EC-010; HTTP 422 per taxonomy definition — POLICY, CheckpointId semantically unprocessable). E-CHKPT-011 is semantically correct for both the fork-start path (BC-2.12.003 {INV-009}) and this state-read path — the semantic is identical: a requested CheckpointId does not exist. TV-010 (happy-path historical read) and TV-011 (not-found) added. This variant is the substrate cited by BC-2.24.005 PC-002.
 
@@ -197,6 +200,7 @@ _No Kani VP seed required. Integration tests against in-process pregolya-server 
 
 - BC-2.12.002 — sibling: Assistants reference graph configs; threads reference no assistant directly (they are untyped containers)
 - BC-2.12.003 — depends on: Runs are executed against Threads; Run lifecycle ties to thread state
+- BC-2.24.005 — consumer: checkpoint history browser reads per-checkpoint state via the {PC-015} ?checkpoint_id variant (BC-2.24.005 {PC-002})
 
 ## Architecture Anchors
 

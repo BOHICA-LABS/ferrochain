@@ -19,9 +19,9 @@ di_anchors: [DI-003, DI-014]
 vp_seed: false
 red_gate: false
 changelog:
-  - "1.2 (D-356-fix/DC-02/2026-09-07, product-owner): F-PDC02-01 PRE-002 and PC-001 graph_interrupt SSE-event references removed. Node-boundary interrupt detection re-scoped: detected via interrupted run-status (CAP-006 interrupt() machinery), NOT via any SSE event — there is no graph_interrupt StreamEvent. Tool-approval interrupt detection remains via tool_approval_request StreamEvent (CAP-034). Related BCs section updated to remove graph_interrupt reference."
-  - "1.1 (D-356-fix/DC-01/2026-09-06, product-owner): F-PDC01-01 Story Anchor corrected: was S-console-06, now S-console-08. Verified against S-console-08 frontmatter behavioral_contracts: [BC-2.24.006]."
   - "1.0 (D-356/2026-09-06, product-owner): Initial BC — D-356 dev-console scope expansion. HITL approval dialog and resume dispatch."
+  - "1.1 (D-356-fix/DC-01/2026-09-06, product-owner): F-PDC01-01 Story Anchor corrected: was S-console-06, now S-console-08. Verified against S-console-08 frontmatter behavioral_contracts: [BC-2.24.006]."
+  - "1.2 (D-356-fix/DC-02/2026-09-07, product-owner): F-PDC02-01 PRE-002 and PC-001 graph_interrupt SSE-event references removed. Node-boundary interrupt detection re-scoped: detected via interrupted run-status (CAP-006 interrupt() machinery), NOT via any SSE event — there is no graph_interrupt StreamEvent. Tool-approval interrupt detection remains via tool_approval_request StreamEvent (CAP-034). Related BCs section updated to remove graph_interrupt reference."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-045
   - architecture/decisions/ADR-031-developer-console-architecture.md
@@ -29,7 +29,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "81edd7e"
+input-hash: "5ff81d4"
 extracted_from: null
 modified: []
 deprecated: null

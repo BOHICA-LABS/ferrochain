@@ -1,15 +1,16 @@
 ---
 document_type: bc-index
 level: L3
-version: "4.36"
+version: "4.37"
 status: active
 producer: state-manager
-timestamp: 2026-09-08T04:00:00Z
+timestamp: 2026-09-08T05:00:00Z
 project: pregolya
 cycle: v1.0.0-greenfield
 input-hash: "[live-index]"
 traces_to: .factory/specs/prd.md
 changelog:
+  - "4.37 (D-356/DC-17/2026-09-08, state-manager): 10 BC frontmatter changelogs reordered strict ascending (oldest top, newest bottom, version==last entry): ss-24/BC-2.24.001..008 (8 BCs born descending v1.0; reordered to 1.0→1.N asc) + ss-12/BC-2.12.001 (non-monotonic 1.13,1.14 prepended→strict 1.1→1.14 asc) + ss-12/BC-2.12.003 (non-monotonic tail 1.18..1.21→strict asc). BC-2.12.001 v1.14 PO reverse-edge (§Related BCs +BC-2.24.005; §Story Anchor +S-console-07) already applied (F-PDC17-02). Input-hash drift corrected for 7 SS-24 BCs (stale fa6dcca/0493743/81edd7e/fea55e3/805b7eb→5ff81d4; ADR-031 updated DC-10). Hook PASS: FAIL=0 BC_UNVERIFIED=0. L-284 codified: POL-14 advisory-hook gap (10 DC-01..DC-16 escapes); promote-to-BLOCKING follow-up deferred to factory self-improvement wave (owner devops-engineer; PG-7). Census UNCHANGED: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24."
   - "4.36 (D-356/DC-16/2026-09-08, state-manager): BC-2.12.003 v1.20→v1.21 (product-owner; F-PDC16-01 [MED] — reverse-anchor completeness: §Related BCs +BC-2.24.005 fork-from-checkpoint consumer; §Story Anchor +S-console-07 roadmap Wave 3 consumer of {INV-009} via BC-2.24.005 {PC-003}; mirrors DC-04/BC-2.12.001 pattern). STORY-INDEX v1.74→v1.75 (state-manager; F-PDC16-02 [LOW, records] — BC-to-Story map BC-2.12.003 row updated S-1.26→S-1.26 + S-console-07 roadmap Wave 3; S-1.26 v1.14→v1.15 frontmatter changelog reordered ascending + v1.13 backfilled). Census UNCHANGED: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24."
   - "4.35 (D-356/DC-14/2026-09-08, state-manager): BC-2.24.002 v1.7→v1.8 (product-owner; F-PDC14-03[MED]: TV-006 redaction output corrected to canonical `<redacted>` form; entire Bearer span replaced per S-1.26 AC-020 / BC-2.12.003 INV-008). STORY-INDEX v1.72→v1.73 (state-manager; F-PDC14-01[MED]: S-console-04 crate pregolya-console→[pregolya-graph, pregolya-server] in STORY-INDEX story-inventory row + sprint-state.yaml; F-PDC14-02[MED]: blanket 'all 10 Wave-3 stories target pregolya-console' claim reworded — S-console-03 pregolya-server + S-console-04 pregolya-graph+pregolya-server excepted). census UNCHANGED: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24."
   - "4.34 (D-356/DC-11/2026-09-07, state-manager): BC-2.24.002 v1.6→v1.7 (product-owner; F-PDC11-03[MED]: VP-2.24.002-C annotation corrected — server::debug_routes ONLY (not ring-buffer); server::debug_span annotated 'no dedicated VP; exercised via VP-2.24.002-C/D' per DC-10 dep-inversion split). census UNCHANGED: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24."

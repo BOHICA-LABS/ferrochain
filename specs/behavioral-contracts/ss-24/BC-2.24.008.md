@@ -19,11 +19,11 @@ di_anchors: [DI-012, DI-014]
 vp_seed: false
 red_gate: false
 changelog:
-  - "1.4 (D-356-fix/DC-04/2026-09-07, product-owner): F-PDC04-03: Traceability Capability Anchor Justification corrected — field name boundary_type→boundary, severity type GuardrailSeverity→GuardrailSeverityWire, matching the PC-002 corrections already applied in v1.3 (DC-03). The Justification now cites the canonical field and type names as they appear in BC-2.06.001 §Postconditions PC-002 and ADR-006 §Decision."
-  - "1.3 (D-356-fix/DC-03/2026-09-07, product-owner): F-PDC03-01 + F-PDC03-03: PC-002 boundary field corrected — field name boundary_type→boundary, type ProvenanceTag/BoundaryType→IngressBoundary, values RAGRetrieval→RagChunk, MemoryIngress→MemoryItem; severity type GuardrailSeverity→GuardrailSeverityWire (Transform decisions carry severity: None and reason: None per BC-2.06.001 §Postconditions PC-002); TV-001/TV-002/TV-004 updated to match corrected field names and enum values; EC-003 severity-for-Transform corrected (None, not High). Authority: BC-2.06.001 §Postconditions PC-002 StreamEvent::GuardrailDecision and ADR-006 §Decision. F-PDC03-04: DC-02 blockquote count corrected two sites→three sites (POL-46; changelog v1.2 correctly stated three)."
-  - "1.2 (D-356-fix/DC-02/2026-09-07, product-owner): F-PDC02-04 guardrail_decision variant ordinal corrected from 16th to 12th (per BC-2.06.001 §Postconditions PC-002 canonical ordering and ADR-006 rev-3): three sites updated — Description, Architecture Anchors section, and Traceability §Architecture Authority row."
-  - "1.1 (D-356-fix/DC-01/2026-09-06, product-owner): F-PDC01-01 Story Anchor corrected: was S-console-09, now S-console-10. Verified against S-console-10 frontmatter behavioral_contracts: [BC-2.24.008]."
   - "1.0 (D-356/2026-09-06, product-owner): Initial BC — D-356 dev-console scope expansion. Guardrail/security decision review panel (Fail/Transform only; Pass not shown per F-P99-01)."
+  - "1.1 (D-356-fix/DC-01/2026-09-06, product-owner): F-PDC01-01 Story Anchor corrected: was S-console-09, now S-console-10. Verified against S-console-10 frontmatter behavioral_contracts: [BC-2.24.008]."
+  - "1.2 (D-356-fix/DC-02/2026-09-07, product-owner): F-PDC02-04 guardrail_decision variant ordinal corrected from 16th to 12th (per BC-2.06.001 §Postconditions PC-002 canonical ordering and ADR-006 rev-3): three sites updated — Description, Architecture Anchors section, and Traceability §Architecture Authority row."
+  - "1.3 (D-356-fix/DC-03/2026-09-07, product-owner): F-PDC03-01 + F-PDC03-03: PC-002 boundary field corrected — field name boundary_type→boundary, type ProvenanceTag/BoundaryType→IngressBoundary, values RAGRetrieval→RagChunk, MemoryIngress→MemoryItem; severity type GuardrailSeverity→GuardrailSeverityWire (Transform decisions carry severity: None and reason: None per BC-2.06.001 §Postconditions PC-002); TV-001/TV-002/TV-004 updated to match corrected field names and enum values; EC-003 severity-for-Transform corrected (None, not High). Authority: BC-2.06.001 §Postconditions PC-002 StreamEvent::GuardrailDecision and ADR-006 §Decision. F-PDC03-04: DC-02 blockquote count corrected two sites→three sites (POL-46; changelog v1.2 correctly stated three)."
+  - "1.4 (D-356-fix/DC-04/2026-09-07, product-owner): F-PDC04-03: Traceability Capability Anchor Justification corrected — field name boundary_type→boundary, severity type GuardrailSeverity→GuardrailSeverityWire, matching the PC-002 corrections already applied in v1.3 (DC-03). The Justification now cites the canonical field and type names as they appear in BC-2.06.001 §Postconditions PC-002 and ADR-006 §Decision."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-047
   - architecture/decisions/ADR-031-developer-console-architecture.md
@@ -31,7 +31,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "805b7eb"
+input-hash: "5ff81d4"
 extracted_from: null
 modified: []
 deprecated: null

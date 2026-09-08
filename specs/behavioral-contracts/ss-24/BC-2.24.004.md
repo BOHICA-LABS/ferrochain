@@ -19,9 +19,9 @@ di_anchors: [DI-014]
 vp_seed: false
 red_gate: false
 changelog:
-  - "1.2 (D-356-fix/DC-02/2026-09-07, product-owner): F-PDC02-01 paper-fix regression — DC-01 replaced run_error but left phantom graph_interrupt at position 15 and compaction_event at position 16, omitting error (the true 16th variant). Corrected: graph_interrupt removed; compaction_event moved to 15th; error added as 16th. DC-01 blockquote false claim annotated. Final list is exactly the 16 verified canonical variants."
-  - "1.1 (D-356-fix/DC-01/2026-09-06, product-owner): F-PDC01-01 Story Anchor corrected: was S-console-05, now S-console-06. Verified against S-console-06 frontmatter behavioral_contracts: [BC-2.24.004]. F-PDC01-02 PC-001 StreamEvent variant list corrected: removed phantom run_error, added missing step_start and tool_stream, reordered to canonical 16 per ADR-006 — count is now exactly 16 distinct variants."
   - "1.0 (D-356/2026-09-06, product-owner): Initial BC — D-356 dev-console scope expansion. Run inspection event timeline and live monitoring panel."
+  - "1.1 (D-356-fix/DC-01/2026-09-06, product-owner): F-PDC01-01 Story Anchor corrected: was S-console-05, now S-console-06. Verified against S-console-06 frontmatter behavioral_contracts: [BC-2.24.004]. F-PDC01-02 PC-001 StreamEvent variant list corrected: removed phantom run_error, added missing step_start and tool_stream, reordered to canonical 16 per ADR-006 — count is now exactly 16 distinct variants."
+  - "1.2 (D-356-fix/DC-02/2026-09-07, product-owner): F-PDC02-01 paper-fix regression — DC-01 replaced run_error but left phantom graph_interrupt at position 15 and compaction_event at position 16, omitting error (the true 16th variant). Corrected: graph_interrupt removed; compaction_event moved to 15th; error added as 16th. DC-01 blockquote false claim annotated. Final list is exactly the 16 verified canonical variants."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-043
   - architecture/decisions/ADR-031-developer-console-architecture.md
@@ -29,7 +29,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "81edd7e"
+input-hash: "5ff81d4"
 extracted_from: null
 modified: []
 deprecated: null

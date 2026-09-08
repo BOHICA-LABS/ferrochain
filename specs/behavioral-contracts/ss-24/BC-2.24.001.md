@@ -19,9 +19,9 @@ di_anchors: [DI-014]
 vp_seed: false
 red_gate: false
 changelog:
-  - "1.2 (D-356-fix/DC-08/2026-09-07, product-owner): F-PDC08-04: §Story Anchor updated — S-console-02 and S-console-05 appended as Wave 3 consumers of BC-2.24.001 (S-console-02 consumes PC-004/PC-005; S-console-05 implements SPA asset serving, traces PRE-002/PC-002/PC-003). S-console-01 remains primary."
-  - "1.1 (D-356-fix/DC-07/2026-09-07, product-owner): F-PDC07-01: INV-003 corrected — SecurityConfig field name debug_api_key→debug_route_key (canonical field per BC-2.12.005 PRE-004/PC-006/PC-007/INV-001; ADR-021 §Decision 1; E-SERVER-013 InvalidDebugRouteKey)."
   - "1.0 (D-356/2026-09-06, product-owner): Initial BC — D-356 dev-console scope expansion. pregolya-console startup, ConsoleConfig, run_console entry point, CLI subcommand, SPA asset serving, runtime-config.json injection."
+  - "1.1 (D-356-fix/DC-07/2026-09-07, product-owner): F-PDC07-01: INV-003 corrected — SecurityConfig field name debug_api_key→debug_route_key (canonical field per BC-2.12.005 PRE-004/PC-006/PC-007/INV-001; ADR-021 §Decision 1; E-SERVER-013 InvalidDebugRouteKey)."
+  - "1.2 (D-356-fix/DC-08/2026-09-07, product-owner): F-PDC08-04: §Story Anchor updated — S-console-02 and S-console-05 appended as Wave 3 consumers of BC-2.24.001 (S-console-02 consumes PC-004/PC-005; S-console-05 implements SPA asset serving, traces PRE-002/PC-002/PC-003). S-console-01 remains primary."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-041
   - architecture/decisions/ADR-031-developer-console-architecture.md
@@ -29,7 +29,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "fa6dcca"
+input-hash: "5ff81d4"
 extracted_from: null
 modified: []
 deprecated: null

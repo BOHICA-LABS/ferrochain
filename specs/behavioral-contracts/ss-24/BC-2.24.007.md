@@ -19,8 +19,8 @@ di_anchors: [DI-014]
 vp_seed: false
 red_gate: false
 changelog:
-  - "1.1 (D-356-fix/DC-01/2026-09-06, product-owner): F-PDC01-01 Story Anchor corrected: was S-console-08, now S-console-09. Verified against S-console-09 frontmatter behavioral_contracts: [BC-2.24.007]."
   - "1.0 (D-356/2026-09-06, product-owner): Initial BC — D-356 dev-console scope expansion. Token/context budget monitoring panel driven by compaction_event StreamEvents."
+  - "1.1 (D-356-fix/DC-01/2026-09-06, product-owner): F-PDC01-01 Story Anchor corrected: was S-console-08, now S-console-09. Verified against S-console-09 frontmatter behavioral_contracts: [BC-2.24.007]."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-046
   - architecture/decisions/ADR-031-developer-console-architecture.md
@@ -28,7 +28,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "fea55e3"
+input-hash: "5ff81d4"
 extracted_from: null
 modified: []
 deprecated: null
