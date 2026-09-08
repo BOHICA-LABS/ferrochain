@@ -2,7 +2,7 @@
 document_type: architecture-section
 level: L3
 section: verification-coverage-matrix
-version: "3.41"
+version: "3.42"
 status: active
 producer: state-manager
 timestamp: 2026-09-07T00:00:00Z
@@ -14,6 +14,7 @@ inputs:
 input-hash: "037d4ff"
 traces_to: ARCH-INDEX.md
 changelog:
+  - "3.42 (D-356/DC-19/2026-09-08, architect): F-PDC19-01+F-PDC19-02 — VP-2.24.003-B Title corrected: Graph Descriptor Pure Termination (Kani) → No self-loops in graph descriptor (Kani) (BC-2.24.003 §VP table source of truth). VP-2.24.003-C Title corrected: Graph Endpoint Unit (unit) → Start node always present in graph descriptor (unit); Module/Crate repointed: server::debug_routes/pregolya-server → graph::descriptor/pregolya-graph. Totals UNCHANGED: 41 VPs | Kani: 10 | proptest: 10 | integration: 12 | unit: 8 | compile-fail: 1. input-hash unchanged (inputs did not change)."
   - "3.41 (D-356/DC-07/2026-09-07, architect): F-PDC07-03 — 10 panel-VP Module column cells repointed to canonical SPA component path form: spa/components/run_inspector (VP-2.24.004-A/B), spa/components/checkpoint_panel (VP-2.24.005-A/B), spa/components/hitl_panel (VP-2.24.006-A/B), spa/components/budget_panel (VP-2.24.007-A/B), spa/components/guardrail_panel (VP-2.24.008-A/B). CORRECTION: v3.37 (DC-02) set these to console::* Rust module notation — non-canonical for SPA components. Totals UNCHANGED: 41 VPs | Kani: 10 | proptest: 10 | integration: 12 | unit: 8 | compile-fail: 1. input-hash unchanged (inputs did not change)."
   - "3.40 (D-356/DC-04/2026-09-07, architect): F-PDC04-04 — VP-2.24.002-A/B Module column repointed console::span_exporter → console::ring_buffer (canonical Pure Core for RingBuffer<T> per ADR-031 Decision 5 DC-04 split). VP-2.24.002-C (server::debug_routes) and VP-2.24.002-D (console::span_exporter) unchanged. Totals UNCHANGED: 41 VPs | Kani: 10 | proptest: 10 | integration: 12 | unit: 8 | compile-fail: 1. input-hash unchanged (inputs did not change)."
   - "3.39 (D-356/DC-02 fix-burst/2026-09-07, state-manager): Arithmetic invariant preamble corrected 40→41 (P0 6 unchanged, P1 34→35, unit 7→8). Architect v3.38 changelog noted 'Totals updated' for the VP-to-Module table; preamble text was not updated in that pass. Preamble now reads: VP total (41) = P0 (6) + P1 (35) = Kani (10) + proptest (10) + integration (12) + unit (8) + compile-fail (1)."
@@ -118,8 +119,8 @@ changelog:
 | VP-2.24.002-C | Debug Trace Session Endpoint (integration) | server::debug_routes | pregolya-server | integration | BC-2.24.002 | 3 | draft |
 | VP-2.24.002-D | SpanData SEC-BOUND-001 Sanitization Before Ring-Buffer Insertion (unit) | console::span_exporter | pregolya-console | unit | BC-2.24.002 | 3 | draft |
 | VP-2.24.003-A | Graph Descriptor Serialization (unit) | graph::descriptor | pregolya-graph | unit | BC-2.24.003 | 3 | draft |
-| VP-2.24.003-B | Graph Descriptor Pure Termination (Kani) | graph::descriptor | pregolya-graph | Kani | BC-2.24.003 | 6 | draft |
-| VP-2.24.003-C | Graph Endpoint Unit (unit) | server::debug_routes | pregolya-server | unit | BC-2.24.003 | 3 | draft |
+| VP-2.24.003-B | No self-loops in graph descriptor (Kani) | graph::descriptor | pregolya-graph | Kani | BC-2.24.003 | 6 | draft |
+| VP-2.24.003-C | Start node always present in graph descriptor (unit) | graph::descriptor | pregolya-graph | unit | BC-2.24.003 | 3 | draft |
 | VP-2.24.004-A | All 16 StreamEvent variants render without error (integration) | spa/components/run_inspector | pregolya-console | integration | BC-2.24.004 | 3 | draft |
 | VP-2.24.004-B | Live node highlight fires on node_start, clears on node_end (integration) | spa/components/run_inspector | pregolya-console | integration | BC-2.24.004 | 3 | draft |
 | VP-2.24.005-A | Checkpoint history rendered in step_idx monotone order (integration) | spa/components/checkpoint_panel | pregolya-console | integration | BC-2.24.005 | 3 | draft |
@@ -139,6 +140,8 @@ changelog:
 > **D-356 adversary fix DC-04 (2026-09-07, architect).** F-PDC04-04: VP-2.24.002-A/B Module column repointed `console::span_exporter` → `console::ring_buffer`. `console::ring_buffer` is now canonical Pure Core for `RingBuffer<T>` per ADR-031 Decision 5 (DC-04 split). VP-2.24.002-C (`server::debug_routes`) and VP-2.24.002-D (`console::span_exporter`) unchanged. Totals UNCHANGED: 41 VPs.
 
 > **D-356 adversary fix DC-07 (2026-09-07, architect).** F-PDC07-03: 10 panel-VP Module column cells repointed to canonical SPA component path form — `spa/components/run_inspector` (VP-2.24.004-A/B), `spa/components/checkpoint_panel` (VP-2.24.005-A/B), `spa/components/hitl_panel` (VP-2.24.006-A/B), `spa/components/budget_panel` (VP-2.24.007-A/B), `spa/components/guardrail_panel` (VP-2.24.008-A/B). CORRECTION: v3.37 (DC-02) set these to `console::*` Rust module notation — non-canonical for SPA components. Canonical form: `spa/components/<component_name>` (see VP-INDEX preamble). Totals UNCHANGED: 41 VPs.
+
+> **D-356 adversary fix DC-19 (2026-09-08, architect).** F-PDC19-01+F-PDC19-02 — VP-2.24.003-B Title corrected: "Graph Descriptor Pure Termination (Kani)" → "No self-loops in graph descriptor (Kani)" (BC-2.24.003 §VP table is source of truth; BC declares no-self-loops property). VP-2.24.003-C Title/Module/Crate corrected: "Graph Endpoint Unit (unit)" / `server::debug_routes` / `pregolya-server` → "Start node always present in graph descriptor (unit)" / `graph::descriptor` / `pregolya-graph` (BC-2.24.003 §VP table declares start-node-always-present property targeting graph::descriptor/pregolya-graph). Totals UNCHANGED: 41 VPs.
 
 **Totals: 41 VPs | Kani: 10 | proptest: 10 | fuzz: 0 | integration: 12 | unit: 8 | compile-fail: 1**
 

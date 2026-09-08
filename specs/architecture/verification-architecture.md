@@ -2,7 +2,7 @@
 document_type: architecture-section
 level: L3
 section: verification-architecture
-version: "2.45"
+version: "2.46"
 status: active
 producer: architect
 timestamp: 2026-09-07T00:00:00Z
@@ -32,6 +32,7 @@ input-hash: "db1e4d9"
 traces_to: ARCH-INDEX.md
 decisions: [D17, D21, D23, D356]
 changelog:
+  - "2.46 (D-356/DC-19/2026-09-08, architect): F-PDC19-02 — VP-2.24.003-C module repointed server::debug_routes → graph::descriptor (BC-2.24.003 §VP table is source of truth; BC declares VP-2.24.003-C as start-node-always-present targeting graph::descriptor/pregolya-graph). VP-2.24.003-B module already correct (graph::descriptor); no change needed in this mirror (harness_fn not tracked here). Census UNCHANGED: 41 total. input-hash unchanged (inputs did not change)."
   - "2.45 (D-356/DC-08/2026-09-07, state-manager): F-PDC08-03 — DC-02 blockquote annotation corrected: `debug_api_key` → `debug_route_key` (DC-07-rename consistency sweep; records-tier annotation; canonical field per BC-2.12.005 PRE-004/INV-001; ADR-021 §Decision 1). input-hash unchanged (inputs did not change)."
   - "2.44 (D-356/DC-07/2026-09-07, architect): F-PDC07-03 — 10 panel-VP Module cells repointed to canonical SPA component path form: spa/components/run_inspector (VP-2.24.004-A/B), spa/components/checkpoint_panel (VP-2.24.005-A/B), spa/components/hitl_panel (VP-2.24.006-A/B), spa/components/budget_panel (VP-2.24.007-A/B), spa/components/guardrail_panel (VP-2.24.008-A/B). CORRECTION: v2.41 (DC-02) claimed these were SPA panel modules but used console::* Rust module notation — non-canonical for SPA components. Canonical convention: spa/components/<component_name> path form. Census UNCHANGED: 41 total. input-hash unchanged (inputs did not change)."
   - "2.43 (D-356/DC-04/2026-09-07, architect): F-PDC04-04 — VP-2.24.002-A/B module repointed console::span_exporter → console::ring_buffer (console::ring_buffer is now canonical Pure Core for RingBuffer<T> per ADR-031 Decision 5 DC-04 split). VP-2.24.002-C (server::debug_routes) and VP-2.24.002-D (console::span_exporter sanitization) unchanged. Census UNCHANGED: 41 total. input-hash unchanged (inputs did not change)."
@@ -120,7 +121,7 @@ Forty-one VPs committed before v1.0 release — VP-001..005 (original five) plus
 | VP-2.24.002-D | BC-2.24.002 | DI-014 | `console::span_exporter` | unit | 3 | P1 |
 | VP-2.24.003-A | BC-2.24.003 | DI-014 | `graph::descriptor` | unit | 3 | P1 |
 | VP-2.24.003-B | BC-2.24.003 | DI-014 | `graph::descriptor` | Kani | 6 | P1 |
-| VP-2.24.003-C | BC-2.24.003 | DI-014 | `server::debug_routes` | unit | 3 | P1 |
+| VP-2.24.003-C | BC-2.24.003 | DI-014 | `graph::descriptor` | unit | 3 | P1 |
 | VP-2.24.004-A | BC-2.24.004 | DI-014 | `spa/components/run_inspector` | integration | 3 | P1 |
 | VP-2.24.004-B | BC-2.24.004 | DI-014 | `spa/components/run_inspector` | integration | 3 | P1 |
 | VP-2.24.005-A | BC-2.24.005 | DI-002 | `spa/components/checkpoint_panel` | integration | 3 | P1 |
@@ -149,6 +150,8 @@ Forty-one VPs committed before v1.0 release — VP-001..005 (original five) plus
 > **D-356 adversary fix DC-04 (2026-09-07, architect).** F-PDC04-04: VP-2.24.002-A/B module repointed `console::span_exporter` → `console::ring_buffer`. `console::ring_buffer` is now the canonical Pure Core module for `RingBuffer<T>` per ADR-031 Decision 5 (DC-04 split). VP-2.24.002-C (`server::debug_routes`) and VP-2.24.002-D (`console::span_exporter` sanitization) unchanged. Census UNCHANGED: 41 total.
 
 > **D-356 adversary fix DC-07 (2026-09-07, architect).** F-PDC07-03: 10 panel-VP Module cells repointed to canonical SPA component path form — `spa/components/run_inspector` (VP-2.24.004-A/B), `spa/components/checkpoint_panel` (VP-2.24.005-A/B), `spa/components/hitl_panel` (VP-2.24.006-A/B), `spa/components/budget_panel` (VP-2.24.007-A/B), `spa/components/guardrail_panel` (VP-2.24.008-A/B). CORRECTION: v2.41 (DC-02) described these as "SPA panel modules" but used `console::*` Rust module notation — non-canonical for SPA components. Canonical form: `spa/components/<component_name>` path form (matches VP-INDEX.md preamble SPA convention note). Census UNCHANGED: 41 total.
+
+> **D-356 adversary fix DC-19 (2026-09-08, architect).** F-PDC19-02: VP-2.24.003-C module repointed `server::debug_routes` → `graph::descriptor` — BC-2.24.003 §VP table is source of truth; BC declares VP-2.24.003-C as "Start node always present in descriptor" targeting `graph::descriptor`/`pregolya-graph`. VP-2.24.003-B module (`graph::descriptor`) already correct in this mirror; harness_fn is not tracked here (harness_fn is VP-INDEX.md scope only). Census UNCHANGED: 41 total.
 
 ## Provable Properties Catalog
 

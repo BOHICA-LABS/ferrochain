@@ -1,11 +1,12 @@
 ---
 document_type: story-index
 level: L3
-version: "1.76"
+version: "1.77"
 status: active
 producer: state-manager
-timestamp: 2026-09-08T08:00:00Z
+timestamp: 2026-09-08T10:00:00Z
 changelog:
+  - "1.77 (D-356/DC-19/2026-09-08, state-manager): VP-2.24.003-C Crate cell corrected pregolya-server→pregolya-graph in §VP-to-Story-Anchor-Map (architect re-anchored VP-2.24.003-C to graph::descriptor/pregolya-graph per BC-2.24.003 §VP property table — 'start node always present in descriptor', unit/phase-3; VP-INDEX §VP-Catalog v1.50 source of truth). VP-2.24.003-B confirmed pregolya-graph (no change needed). sprint-state.yaml unchanged (S-console-04 crate list [pregolya-graph, pregolya-server] correct — both crates still apply to story). S-console-04 v1.2 (story-writer; DC-19 F-PDC19-02 — stale v1.1 changelog claim 'VP-2.24.003-C is pregolya-server' corrected to pregolya-graph; AC-007 already correct; VP-2.24.003-B Kani/phase-6 correctly needs no Phase-3 AC). L-285 codified: BC §VP-property ↔ VP-harness/description/module semantic-coherence sub-check missing from byte-agreement consistency checks. input-hash: fc84e85 (VP-INDEX §VP-Catalog v1.50). ZERO 0000000 remain. Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.76 (D-356/DC-18/2026-09-08, state-manager): S-console-01 v1.1 (story-writer; DC-18 F-PDC18-01[HIGH] — frontmatter changelog reordered strict ascending [1.0, 1.1]; input-hash 1e04879→8fe60e4; pure reorder, no content change). S-console-04 v1.1 (story-writer; DC-18 F-PDC18-01[HIGH] — frontmatter changelog reordered strict ascending [1.0, 1.1]; input-hash 0b706dc→5ca2a1f; pure reorder, no content change). epics.md v1.9 (story-writer; DC-18 F-PDC18-02[MED] — v1.9 body changelog entry added at TOP documenting DC-10+DC-11 dep-inversion + sub-wave restructure 3A-3F→3A-3E; descending-class body changelog, version==first confirmed). verify-form-a-changelog-direction.sh FAIL=0 BC_UNVERIFIED=0 perimeter-wide confirmed. Input-hash: STORY-INDEX inputs not modified. Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.75 (D-356/DC-16/2026-09-08, state-manager): S-1.26 v1.14→v1.15 (story-writer; F-PDC16-02 [LOW, records] — frontmatter changelog reordered to strict ascending (1.1→1.15); v1.13 entry backfilled from body table verbatim (round-79/F-P2A251-02 wording)). BC-to-Story map BC-2.12.003 row updated: S-1.26→S-1.26 + S-console-07 (roadmap, Wave 3 — consumes {INV-009} fork-start via BC-2.24.005 {PC-003}). Input-hash: 5e6586a (S-1.26 current hash; no other index inputs modified). Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.74 (D-356/DC-15/2026-09-08, state-manager): S-console-04 v1.0→v1.1 (story-writer; F-PDC15-01 [MED] — target_module scalar `pregolya-server`→list `[pregolya-graph, pregolya-server]`; third-carrier completion of DC-14 crate-drift fix; story-inventory row + sprint-state.yaml were already corrected in DC-14; story frontmatter now aligned; all three crate carriers consistent). input-hash: 34034c0 UNCHANGED (index inputs not modified). Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
@@ -611,7 +612,7 @@ input-hash: "34034c0"
 | VP-2.24.002-D | BC-2.24.002 | S-console-02 | P1 | pregolya-console |
 | VP-2.24.003-A | BC-2.24.003 | S-console-04 | P1 | pregolya-graph |
 | VP-2.24.003-B | BC-2.24.003 | S-console-04 | P1 | pregolya-graph |
-| VP-2.24.003-C | BC-2.24.003 | S-console-04 | P1 | pregolya-server |
+| VP-2.24.003-C | BC-2.24.003 | S-console-04 | P1 | pregolya-graph |
 | VP-2.24.004-A | BC-2.24.004 | S-console-06 | P1 | pregolya-console |
 | VP-2.24.004-B | BC-2.24.004 | S-console-06 | P1 | pregolya-console |
 | VP-2.24.005-A | BC-2.24.005 | S-console-07 | P1 | pregolya-console |

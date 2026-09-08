@@ -1,7 +1,7 @@
 ---
 document_type: verification-property-index
 level: L3
-version: "1.49"
+version: "1.50"
 status: active
 producer: state-manager
 timestamp: 2026-09-07T00:00:00Z
@@ -9,6 +9,7 @@ phase: 1b
 input-hash: "[live-index]"
 traces_to: ARCH-INDEX.md
 changelog:
+  - "1.50 (D-356/DC-19/2026-09-08, architect): F-PDC19-01+F-PDC19-02 — VP-2.24.003-B harness_fn corrected: graph_descriptor_pure_termination_harness → no_self_loop_invariant (BC-2.24.003 §VP table is source of truth; BC declares property as no-self-loops targeting no_self_loop_invariant). VP-2.24.003-C module/crate repointed: server::debug_routes/pregolya-server → graph::descriptor/pregolya-graph (BC-2.24.003 §VP table declares start-node-always-present property targeting graph::descriptor/pregolya-graph). Census UNCHANGED: 41 total (re-anchors only; no VP additions or removals)."
   - "1.49 (D-356/DC-08/2026-09-07, state-manager): F-PDC08-03 — DC-02 blockquote §VP Catalog annotation corrected: `debug_api_key` → `debug_route_key` (DC-07-rename consistency sweep; records-tier annotation; canonical field per BC-2.12.005 PRE-004/INV-001; ADR-021 §Decision 1). Census UNCHANGED: 41 total."
   - "1.48 (D-356/DC-07/2026-09-07, architect): F-PDC07-03 — 10 panel-VP Module cells repointed to canonical SPA component path form: spa/components/run_inspector (VP-2.24.004-A/B), spa/components/checkpoint_panel (VP-2.24.005-A/B), spa/components/hitl_panel (VP-2.24.006-A/B), spa/components/budget_panel (VP-2.24.007-A/B), spa/components/guardrail_panel (VP-2.24.008-A/B). CORRECTION: v1.44 changelog claimed these were set 'per BCs' to console::<panel> Rust module notation — this was incorrect. BCs describe SPA (TypeScript/JavaScript) frontend panels; the canonical module convention for SPA components uses filesystem path form spa/components/<component_name>. The console::* Rust module names used in v1.44 were non-canonical. SPA VP module convention preamble note added. Census UNCHANGED: 41 total."
   - "1.47 (D-356/DC-04/2026-09-07, architect): F-PDC04-04 — VP-2.24.002-A and VP-2.24.002-B Module repointed console::span_exporter → console::ring_buffer (console::ring_buffer is now the canonical Pure Core module for RingBuffer<T> per ADR-031 Decision 5 DC-04 split; harness names ring_buffer_bounded_invariant / ring_buffer_fifo_invariant already fit). VP-2.24.002-C (server::debug_routes) and VP-2.24.002-D (console::span_exporter sanitization) unchanged. Census UNCHANGED: 41 total."
@@ -141,8 +142,8 @@ changelog:
 | VP-2.24.002-C | BC-2.24.002 | server::debug_routes | integration | 3 | P1 | draft | DI-014 | pregolya-server | n/a (integration test) | SEED |
 | VP-2.24.002-D | BC-2.24.002 | console::span_exporter | unit | 3 | P1 | draft | DI-014 | pregolya-console | test_BC_2_24_002_span_data_sanitization_sec_bound_001 | SEED |
 | VP-2.24.003-A | BC-2.24.003 | graph::descriptor | unit | 3 | P1 | draft | DI-014 | pregolya-graph | n/a (unit test) | SEED |
-| VP-2.24.003-B | BC-2.24.003 | graph::descriptor | Kani | 6 | P1 | draft | DI-014 | pregolya-graph | `graph_descriptor_pure_termination_harness` | SEED |
-| VP-2.24.003-C | BC-2.24.003 | server::debug_routes | unit | 3 | P1 | draft | DI-014 | pregolya-server | n/a (unit test) | SEED |
+| VP-2.24.003-B | BC-2.24.003 | graph::descriptor | Kani | 6 | P1 | draft | DI-014 | pregolya-graph | `no_self_loop_invariant` | SEED |
+| VP-2.24.003-C | BC-2.24.003 | graph::descriptor | unit | 3 | P1 | draft | DI-014 | pregolya-graph | n/a (unit test) | SEED |
 | VP-2.24.004-A | BC-2.24.004 | spa/components/run_inspector | integration | 3 | P1 | draft | DI-014 | pregolya-console | n/a (integration test) | SEED |
 | VP-2.24.004-B | BC-2.24.004 | spa/components/run_inspector | integration | 3 | P1 | draft | DI-014 | pregolya-console | n/a (integration test) | SEED |
 | VP-2.24.005-A | BC-2.24.005 | spa/components/checkpoint_panel | integration | 3 | P1 | draft | DI-002 | pregolya-console | n/a (integration test) | SEED |
@@ -161,3 +162,5 @@ changelog:
 > **D-356 adversary fix DC-07 (2026-09-07, architect).** F-PDC07-03: 10 panel-VP Module cells repointed to canonical SPA component path form — `spa/components/run_inspector` (VP-2.24.004-A/B), `spa/components/checkpoint_panel` (VP-2.24.005-A/B), `spa/components/hitl_panel` (VP-2.24.006-A/B), `spa/components/budget_panel` (VP-2.24.007-A/B), `spa/components/guardrail_panel` (VP-2.24.008-A/B). CORRECTION: v1.44 (DC-02) claimed these were set to `console::<panel>` Rust modules "per BCs" — this was incorrect. The BCs specify SPA (TypeScript/JavaScript) frontend panels, not Rust modules. The `console::*` notation is a Rust module path and does not apply to SPA components. Canonical convention for SPA VP modules: `spa/components/<component_name>` path form (see preamble note). VP census UNCHANGED: 41 total. Propagated to all 4 VP mirrors (verification-architecture.md v2.44, verification-coverage-matrix.md v3.41, ARCH-INDEX.md v1.76) in same burst.
 
 > **D-356 adversary fix DC-04 (2026-09-07, architect).** F-PDC04-04: VP-2.24.002-A Module `console::span_exporter` → `console::ring_buffer`; VP-2.24.002-B Module `console::span_exporter` → `console::ring_buffer`. `console::ring_buffer` is now the canonical Pure Core module for `RingBuffer<T>` per ADR-031 Decision 5 (DC-04 split). Harness names `ring_buffer_bounded_invariant` / `ring_buffer_fifo_invariant` already match the pure module. VP-2.24.002-C (`server::debug_routes`) and VP-2.24.002-D (`console::span_exporter` sanitization) unchanged. Census UNCHANGED: 41 total.
+
+> **D-356 adversary fix DC-19 (2026-09-08, architect).** F-PDC19-01: VP-2.24.003-B harness_fn corrected `graph_descriptor_pure_termination_harness` → `no_self_loop_invariant` — BC-2.24.003 §VP table is source of truth; BC declares the property as "Graph-descriptor has no self-loops" targeting `no_self_loop_invariant`. F-PDC19-02: VP-2.24.003-C module/crate repointed `server::debug_routes`/`pregolya-server` → `graph::descriptor`/`pregolya-graph` — BC-2.24.003 §VP table declares VP-2.24.003-C as "Start node always present in descriptor" targeting `graph::descriptor`/`pregolya-graph`. Propagated to all 4 VP mirrors (verification-architecture.md v2.46, verification-coverage-matrix.md v3.42, ARCH-INDEX.md v1.78) in same burst. Census UNCHANGED: 41 total (re-anchors only; no VP additions or removals).

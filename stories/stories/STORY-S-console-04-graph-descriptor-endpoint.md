@@ -3,13 +3,14 @@ document_type: story
 level: ops
 story_id: S-console-04
 epic_id: E-console
-version: "1.1"
+version: "1.2"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
 changelog:
   - "1.0 (D-356/2026-09-06, story-writer): Initial story — graph::descriptor Pure Core extraction + GET /assistants/{id}/graph endpoint, E-SERVER-009 AssistantNotFound."
   - "1.1 (D-356/DC-15/2026-09-08, story-writer): F-PDC15-01 — target_module corrected from scalar `pregolya-server` to list `[pregolya-graph, pregolya-server]`; story CREATEs descriptor.rs in pregolya-graph (primary Pure Core deliverable) and MODIFYs debug_routes.rs in pregolya-server; VP-2.24.003-A/B are pregolya-graph, VP-2.24.003-C is pregolya-server; aligns with STORY-INDEX and sprint-state."
+  - "1.2 (D-356/DC-19/2026-09-08, story-writer): F-PDC19-02 — VP-2.24.003-C is pregolya-graph (graph::descriptor, start-node-present property, unit/phase-3), NOT pregolya-server; stale claim in v1.1 entry corrected. AC-007 already correctly anchors VP-2.24.003-A and VP-2.24.003-C to test_BC_2_24_003_compile_graph_descriptor_pure() in pregolya-graph."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.003.md
