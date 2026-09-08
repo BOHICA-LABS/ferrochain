@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.002
-version: "1.5"
+version: "1.6"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -19,6 +19,7 @@ di_anchors: [DI-014]
 vp_seed: false
 red_gate: false
 changelog:
+  - "1.6 (D-356-fix/DC-10/2026-09-07, product-owner): F-PDC10-02: §Module updated to canonical 4-entry ADR-031 Decision 7 split — server::debug_span (Boundary) added as pregolya-server module owning SpanData data type and DebugSpanSource read-trait (consumer-owns-interface). Body sweep: Description clarified that server reads via Arc<dyn DebugSpanSource> with zero server→console compile dependency; PRE-002 injection language updated to Arc<dyn DebugSpanSource>; PC-005 and TV-004 updated from DebugSpanExporter to DebugSpanSource abstraction; INV-003 SpanData attributed to server::debug_span; INV-005 corrected from Arc<DebugSpanExporter> to Arc<dyn DebugSpanSource> (ADR-031 Decision 7 dependency inversion); Architecture Anchors updated to cite Decision 7; Traceability Module and Architecture Authority rows updated."
   - "1.5 (D-356-fix/DC-08/2026-09-07, product-owner): F-PDC08-02: §Story Anchor updated — S-console-03 appended as Wave 3 secondary anchor (debug-endpoints feature / server::debug_routes; builds VP-2.24.002-C). S-console-02 remains primary."
   - "1.4 (D-356-fix/DC-07/2026-09-07, product-owner): F-PDC07-01: debug_api_key→debug_route_key throughout PC-007, EC-007, changelogs, and DC-02 blockquote (canonical field: SecurityConfig.debug_route_key per BC-2.12.005 PRE-004/INV-001; ADR-021 §Decision 1). F-PDC07-02: PC-007 and EC-007 now explicitly cite E-SERVER-013 InvalidDebugRouteKey as the boot-refusal code (startup path; distinct from E-SERVER-004 runtime 403). F-PDC07-05: stale '(update in progress by architect)' annotations removed from PC-007 body and DC-02 blockquote (ADR-031 D6-2 landed)."
   - "1.3 (D-356-fix/DC-04/2026-09-07, product-owner): F-PDC04-04: INV-002 tightened — explicit module attribution added: RingBuffer<T> lives in `console::ring_buffer` (Pure Core); DebugSpanExporter lives in `console::span_exporter` (Boundary) and holds Arc<Mutex<RingBuffer<SpanData>>>. Module field in Traceability updated to include `console::ring_buffer (Pure Core)` alongside `console::span_exporter (Boundary)`. Prior wording cited the purity split without naming the module boundary."
@@ -32,7 +33,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "fa6dcca"
+input-hash: "5ff81d4"
 extracted_from: null
 modified: []
 deprecated: null
@@ -58,20 +59,16 @@ removal_reason: null
 
 > **D-356 adversary fix DC-07 (2026-09-07, product-owner).** F-PDC07-01: `debug_api_key` → `debug_route_key` throughout (PC-007, EC-007, changelog v1.1, DC-02 blockquote). Canonical field is `SecurityConfig.debug_route_key: Option<String>` (BC-2.12.005 PRE-004/PC-006/PC-007/INV-001; ADR-021 §Decision 1). F-PDC07-02: PC-007 and EC-007 now explicitly cite E-SERVER-013 InvalidDebugRouteKey for the startup boot-refusal path (distinct from E-SERVER-004 runtime 403). F-PDC07-05: stale `(update in progress by architect)` removed from PC-007 and DC-02 blockquote (ADR-031 D6-2 landed).
 
+> **D-356 adversary fix DC-10 (2026-09-07, product-owner).** F-PDC10-02: §Module updated to canonical 4-entry ADR-031 Decision 7 split — `server::debug_span` (Boundary) added as the pregolya-server module owning `SpanData` and the `DebugSpanSource` read-trait (consumer-owns-interface: server owns the contract type; pregolya-console implements it). Body sweep: Description, PRE-002, PC-005, TV-004, INV-003, INV-005, Architecture Anchors, Traceability corrected to reflect that `server::debug_routes` holds `Arc<dyn DebugSpanSource>` (dyn-dispatch) with ZERO server→console compile dependency per ADR-031 Decision 7.
+
 ## Description
 
-`DebugSpanExporter` is an in-memory span exporter (hosted in `pregolya-console`,
-`console::span_exporter` module) that implements the OTel `SpanExporter` async trait. It
-stores completed spans in a bounded FIFO ring buffer. The `debug-endpoints` feature on
-`pregolya-server` adds two read-only HTTP endpoints that read from this exporter:
-`GET /debug/trace/session/{session_id}` (ordered span list for a session) and
-`GET /debug/trace/{event_id}` (single-event spans). When no `DebugSpanExporter` is
-configured, both endpoints return HTTP 503 with `E-SERVER-023 DebugExporterNotConfigured`.
+`DebugSpanExporter` (`pregolya-console` / `console::span_exporter`) is an in-memory span exporter that implements the OTel `SpanExporter` async trait and the `DebugSpanSource` read-trait (defined in `pregolya-server` / `server::debug_span` — consumer-owns-interface per ADR-031 Decision 7). It stores completed spans in a bounded FIFO ring buffer (`console::ring_buffer`, Pure Core). The `debug-endpoints` feature on `pregolya-server` adds two read-only HTTP endpoints that read spans via `Arc<dyn DebugSpanSource>` (dyn-dispatch, injected at co-launch — ZERO server→console compile dependency): `GET /debug/trace/session/{session_id}` (ordered span list for a session) and `GET /debug/trace/{event_id}` (single-event spans). `SpanData` is a public type defined in `server::debug_span`. When no `DebugSpanSource` implementation is injected, both endpoints return HTTP 503 with `E-SERVER-023 DebugExporterNotConfigured`.
 
 ## Preconditions
 
 1. {PRE-001} `span_retention_cap: usize > 0` is set in `ConsoleConfig` (BC-2.24.001 {PRE-001}).
-2. {PRE-002} `DebugSpanExporter` has been injected into pregolya-server as a configured OTel span exporter (only possible when the server is co-launched in `dev_mode = true`, BC-2.24.001 {PC-005}).
+2. {PRE-002} An implementation of `DebugSpanSource` (specifically `DebugSpanExporter` from `console::span_exporter`) has been injected into `pregolya-server` as `Arc<dyn DebugSpanSource>` (dependency inversion per ADR-031 Decision 7; only possible when the server is co-launched in `dev_mode = true`, BC-2.24.001 {PC-005}).
 3. {PRE-003} The `debug-endpoints` Cargo feature is enabled on `pregolya-server` at build time. Default is `false` (OFF); must be explicitly enabled for these endpoints to exist.
 4. {PRE-004} For trace-read: one or more spans have been exported by the running server (spans are produced by `tracing` events aligned with the Canonical Structured Event Catalog).
 
@@ -92,7 +89,7 @@ configured, both endpoints return HTTP 503 with `E-SERVER-023 DebugExporterNotCo
    ```
 3. {PC-003} **`GET /debug/trace/session/{session_id}` response:** Returns HTTP 200 with a JSON array of `SpanData` ordered by `start_time_ms` ascending for the given `session_id`. Returns an empty array `[]` when no spans match (not 404).
 4. {PC-004} **`GET /debug/trace/{event_id}` response:** Returns HTTP 200 with a JSON object containing the `SpanData` for the identified event. Returns HTTP 404 when no span matches `event_id`.
-5. {PC-005} **No exporter configured:** When `DebugSpanExporter` is not injected (standalone pregolya-server without co-launch, or feature disabled), both endpoints return HTTP 503 with body `{"error": "E-SERVER-023", "message": "DebugExporterNotConfigured: debug span exporter is not configured; start server via pregolya console --dev"}`.
+5. {PC-005} **No exporter configured:** When no `DebugSpanSource` implementation is injected (standalone pregolya-server without co-launch, or feature disabled), both endpoints return HTTP 503 with body `{"error": "E-SERVER-023", "message": "DebugExporterNotConfigured: debug span exporter is not configured; start server via pregolya console --dev"}`.
 6. {PC-006} **Debug-endpoints default OFF:** The `debug-endpoints` feature defaults to `false` in `pregolya-server/Cargo.toml`. Production builds without this feature compile out all debug routing (zero overhead). CI gate `check-debug-endpoints-default` verifies this (ADR-031 Decision 6).
 7. {PC-007} **`debug_route_key` mandatory gate:** When the `debug-endpoints` Cargo feature is enabled, `SecurityConfig.debug_route_key` is REQUIRED — a missing or empty key triggers E-SERVER-013 InvalidDebugRouteKey at startup (the server MUST refuse to start before binding the HTTP listener; error-taxonomy §E-SERVER-013; BC-2.12.005 EC-005 startup-only). Per ADR-031 Decision 6-2. Two distinct failure modes: (a) empty/absent `debug_route_key` + feature on → E-SERVER-013 at startup (refuse to start before accepting any requests); (b) valid key configured + unauthenticated request → E-SERVER-004 DebugRouteUnauthorized HTTP 403 at runtime.
 8. {PC-008} **SpanData sanitization before ring-buffer insertion:** In `console::span_exporter`, `SpanData.llm_request`, `SpanData.llm_response`, and `SpanData.attributes` MUST be passed through the SEC-BOUND-001 sanitization pipeline (internal-panic static-replace → redact_credentials → sanitize_internal_ids) **before the span is inserted into the ring buffer** — the same pipeline applied to `StreamEvent::Error.error_message` at the run-stream boundary (BC-2.06.001 §Postconditions PC-002 and BC-2.12.007 §Invariants INV-004, authority ADR-029 §External-Boundary Error-Sanitization Parity). Sanitization at insertion-time is the canonical location (S-console-02 AC-011); this subsumes and guarantees the "before serving" property. Unsanitized values MUST NOT enter the ring buffer; SEC-BOUND-001 is the only path to storage and therefore to the wire.
@@ -101,9 +98,9 @@ configured, both endpoints return HTTP 503 with `E-SERVER-023 DebugExporterNotCo
 
 - {INV-001} **Bounded memory:** The ring buffer NEVER exceeds `span_retention_cap` entries. FIFO eviction is the only growth-control mechanism — no dynamic resizing, no memory limit override.
 - {INV-002} **Pure-core ring buffer:** `RingBuffer<T>` — pure data structure in `console::ring_buffer` (Pure Core); deterministic read/write, index arithmetic, extractable for Kani/proptest verification. `DebugSpanExporter` in `console::span_exporter` (Boundary) owns an `Arc<Mutex<RingBuffer<SpanData>>>` and applies SEC-BOUND-001 sanitization at insertion. The effectful OTel exporter registration lives in the Boundary layer (ADR-031 Decision 5).
-- {INV-003} **`SpanData` is `#[non_exhaustive]`:** `SpanData` is a public API-surface type and MUST carry `#[non_exhaustive]` per workspace conventions.
+- {INV-003} **`SpanData` is `#[non_exhaustive]`:** `SpanData` is a public API-surface type defined in `server::debug_span` (pregolya-server; consumer-owns-interface per ADR-031 Decision 7) and MUST carry `#[non_exhaustive]` per workspace conventions.
 - {INV-004} **DI-014:** Span-export errors (OTel export callback failure) are logged via `tracing::warn!` and do not propagate to the engine; engine execution continues uninterrupted.
-- {INV-005} **Shared via `Arc`:** `DebugSpanExporter` is shared between the console server and the pregolya-server debug routes via `Arc<DebugSpanExporter>` — required for Arc-DI wiring per workspace convention.
+- {INV-005} **Shared via `Arc<dyn DebugSpanSource>`:** `server::debug_routes` holds `Arc<dyn DebugSpanSource>` (injected at launch) to read spans — dyn-dispatch dependency inversion (ADR-031 Decision 7): pregolya-server has ZERO compile dependency on pregolya-console. `DebugSpanExporter` (in `console::span_exporter`, pregolya-console) implements `DebugSpanSource` and is injected as `Arc<dyn DebugSpanSource>` when the console co-launches the server. This satisfies Arc-DI wiring per workspace convention while eliminating the server→console crate coupling.
 - {INV-006} **SEC-BOUND-001 mandatory at ring-buffer insertion:** `llm_request`, `llm_response`, and `attributes` in `SpanData` may contain LLM prompts, credential fragments, or PII that originated in user input or tool results. The SEC-BOUND-001 pipeline (internal-panic static-replace → redact_credentials → sanitize_internal_ids) MUST be applied in `console::span_exporter` **before the span is written into the ring buffer** — not deferred to serving time. This is the production-grade choice: the in-memory buffer must never hold unsanitized sensitive fields; sanitization at the boundary of storage also satisfies "before serving" transitively. This enforces external-boundary sanitization parity with the run-stream error path (ADR-029 §External-Boundary Error-Sanitization Parity, BC-2.06.001 §Postconditions PC-002). The sanitization is non-optional; there is no flag or dev_mode exception that bypasses SEC-BOUND-001 at insertion time.
 
 ## Edge Cases
@@ -114,7 +111,7 @@ configured, both endpoints return HTTP 503 with `E-SERVER-023 DebugExporterNotCo
 | {EC-002} | `GET /debug/trace/session/{id}` with no matching spans | Returns `200 OK` with empty array `[]` |
 | {EC-003} | `GET /debug/trace/{event_id}` with no matching event | Returns `404 Not Found` |
 | {EC-004} | `debug-endpoints` feature disabled (production build) | Endpoints do not exist; any path under `/debug/trace/` returns `404`; no code compiled in |
-| {EC-005} | `DebugSpanExporter` not injected (standalone server without dev_mode) | Both endpoints return `503` with `E-SERVER-023 DebugExporterNotConfigured` |
+| {EC-005} | No `DebugSpanSource` implementation injected (standalone server without dev_mode) | Both endpoints return `503` with `E-SERVER-023 DebugExporterNotConfigured` |
 | {EC-006} | Concurrent span export and ring-buffer read | Thread-safe access via `Arc` + internal synchronization (RwLock or similar); no data race; read returns consistent snapshot |
 | {EC-007} | `debug-endpoints` feature enabled; server starts with no `debug_route_key` in `SecurityConfig` (absent or empty string) | Server refuses to start; E-SERVER-013 InvalidDebugRouteKey logged at startup before HTTP listener binds; no requests accepted (BC-2.12.005 EC-005; error-taxonomy §E-SERVER-013) |
 
@@ -125,7 +122,7 @@ configured, both endpoints return HTTP 503 with `E-SERVER-023 DebugExporterNotCo
 | TV-001 | Ring buffer cap=3; 4 spans exported in order A, B, C, D | Buffer contains [B, C, D]; A evicted | ring-buffer FIFO |
 | TV-002 | `GET /debug/trace/session/sess-123` when buffer has 2 spans for sess-123 | `200 OK`, JSON array of 2 `SpanData` ordered by `start_time_ms` | happy-path trace read |
 | TV-003 | `GET /debug/trace/evt-456` when event_id not in buffer | `404 Not Found` | EC-003 |
-| TV-004 | Server started without `DebugSpanExporter`; `GET /debug/trace/session/x` | `503` with `{"error": "E-SERVER-023", "message": "DebugExporterNotConfigured: ..."}` | EC-005 |
+| TV-004 | Server started without a `DebugSpanSource` implementation (no co-launch); `GET /debug/trace/session/x` | `503` with `{"error": "E-SERVER-023", "message": "DebugExporterNotConfigured: ..."}` | EC-005 |
 | TV-005 | `debug-endpoints` feature disabled; request to `/debug/trace/session/x` | `404 Not Found` (route does not exist) | EC-004 |
 | TV-006 | `SpanData.llm_request` contains `{"messages": [{"role": "user", "content": "Bearer sk-abc123 is the key"}]}` | Served `llm_request` field has credential fragment replaced: `Bearer [REDACTED]`; original credential not transmitted in HTTP response | PC-008, SEC-BOUND-001 |
 
@@ -146,7 +143,7 @@ configured, both endpoints return HTTP 503 with `E-SERVER-023 DebugExporterNotCo
 
 ## Architecture Anchors
 
-- `architecture/decisions/ADR-031-developer-console-architecture.md` — Decision 2 (debug endpoints, SpanData shape, E-SERVER-023), Decision 5 (`console::span_exporter` Boundary module, `server::debug_routes` Effectful Shell), Decision 6 (debug-endpoints OFF by default, Arc sharing)
+- `architecture/decisions/ADR-031-developer-console-architecture.md` — Decision 2 (debug endpoints, SpanData shape, E-SERVER-023), Decision 5 (`console::span_exporter` Boundary module, `server::debug_routes` Effectful Shell), Decision 6 (debug-endpoints OFF by default, Arc sharing), Decision 7 (consumer-owns-interface: `SpanData` + `DebugSpanSource` trait owned by `server::debug_span`; `server::debug_routes` uses `Arc<dyn DebugSpanSource>`; ZERO server→console compile dependency)
 - `architecture/ARCH-INDEX.md` — SS-24 entry
 
 ## Story Anchor
@@ -169,10 +166,10 @@ S-console-03 (Wave 3 — debug-endpoints feature / server::debug_routes; builds 
 | Source L2 Capability | CAP-042 |
 | Capability Anchor Justification | CAP-042 ("Debug Infrastructure Endpoints (Feature-Gated)") per capabilities-p1-p2.md §CAP-042 — this BC specifies the `DebugSpanExporter` ring-buffer retention contract and the two trace-read endpoints (`GET /debug/trace/session/{id}` and `GET /debug/trace/{event_id}`) that constitute the trace/span debug infrastructure of CAP-042 |
 | L2 Domain Invariants | DI-014 (Error Propagation — span-export errors logged, not propagated; debug endpoint errors returned as structured Err) |
-| Architecture Authority | ADR-031 Decision 2 (debug endpoint paths, SpanData shape, E-SERVER-023, debug-endpoints feature gate, default OFF), Decision 5 (purity boundary: ring buffer Pure Core, OTel registration Boundary) |
+| Architecture Authority | ADR-031 Decision 2 (debug endpoint paths, SpanData shape, E-SERVER-023, debug-endpoints feature gate, default OFF), Decision 5 (purity boundary: ring buffer Pure Core, OTel registration Boundary), Decision 7 (consumer-owns-interface: SpanData + DebugSpanSource trait in server::debug_span; server holds Arc<dyn DebugSpanSource>; zero server→console compile dependency) |
 | Binding Decisions | D-356 (developer console scope expansion, 2026-09-06) |
 | VP Registration | VP-2.24.002-A/B/C/D |
-| Module | pregolya-console / console::ring_buffer (Pure Core) + pregolya-console / console::span_exporter (Boundary) + pregolya-server / server::debug_routes [feature debug-endpoints] (Effectful Shell) |
+| Module | pregolya-server / server::debug_span (Boundary): SpanData data type + DebugSpanSource read-trait [consumer-owns-interface; VP-2.24.002-C target] + pregolya-console / console::ring_buffer (Pure Core): RingBuffer<T> [VP-2.24.002-A/B targets] + pregolya-console / console::span_exporter (Boundary): DebugSpanExporter implements DebugSpanSource; SEC-BOUND-001 at insertion; owns Arc<Mutex<RingBuffer<SpanData>>> [VP-2.24.002-D target] + pregolya-server / server::debug_routes [feature debug-endpoints] (Effectful Shell): holds Arc<dyn DebugSpanSource>; dyn-dispatch per ADR-031 Decision 7 [VP-2.24.002-C target] |
 | Priority | P1 |
 | Wave | 3 |
 | Test Types | unit + proptest + integration |

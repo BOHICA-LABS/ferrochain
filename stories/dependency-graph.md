@@ -1,6 +1,6 @@
 ---
 document_type: dependency-graph
-version: "2.0"
+version: "2.1"
 status: active
 producer: story-writer
 timestamp: 2026-09-07T00:00:00Z
@@ -301,9 +301,13 @@ S-console-10 (guardrail review panel — Fail/Transform, F-P99-01 DI-012)
 > **DAG-acyclicity confirmation:** Adding `pregolya-mcp → pregolya-graph` does not create a
 > cycle. `pregolya-graph` has no dependency on `pregolya-mcp` (one-directional). At the story
 > level, S-1.14 (Wave 1 batch 1d) is upstream of S-2.11 (Wave 2 batch 2d) — no cycle.
-> Adding `pregolya-console → pregolya-server` does not create a cycle: `pregolya-server` has
-> no build dependency on `pregolya-console` (console is the binary consumer, server is the
-> library). S-console-01 is the root of the E-console sub-graph with no Wave-1/2 edges.
+> Adding `pregolya-console → pregolya-server` does not create a cycle — dependency inversion
+> applied (ADR-031 Decision 7): `SpanData` type + `DebugSpanSource` trait live in
+> `pregolya-server/server::debug_span`; `console::span_exporter` implements `DebugSpanSource`
+> and depends on pregolya-server for the type — `console→server` direction only.
+> `server::debug_routes` reads via `Arc<dyn DebugSpanSource>` (dyn-dispatch, injected at
+> launch); pregolya-server has zero compile dep on pregolya-console.
+> S-console-01 is the root of the E-console sub-graph with no Wave-1/2 edges.
 > Topological sort assertion continues to hold: Graph is a DAG.
 
 ### Wave 6 — Formal Verification (E-22)
@@ -455,7 +459,7 @@ S-6.01 (Kani + cargo-fuzz)
 | VP-2.24.008-B | BC-2.24.008 | unit | 3 | P1 | S-console-10 | — |
 
 > **D-356 adversary fix DC-06 (2026-09-07, story-writer).** SS-24 VP rows now byte-match
-> VP-INDEX §VP Catalog (v1.47, source of truth). Corrections applied: VP-2.24.001-B unit/S-console-01
+> VP-INDEX §VP Catalog (source of truth). Corrections applied: VP-2.24.001-B unit/S-console-01
 > (was integration/S-console-02); VP-2.24.001-C compile-fail (was unit); VP-2.24.002-A proptest
 > (was unit); VP-2.24.002-B proptest/S-console-02 (was integration/S-console-03);
 > VP-2.24.002-C integration/S-console-03 (was unit/S-console-02); VP-2.24.002-D row added
@@ -549,7 +553,8 @@ S-6.01 (Kani + cargo-fuzz)
 
 ## Changelog
 
-- **2.0 (D-356/DC-06/2026-09-07):** F-PDC06-01 (HIGH) — SS-24 VP-to-Stories matrix rows rewritten to byte-match VP-INDEX §VP Catalog v1.47 (source of truth). Twelve tool/phase/story corrections across 12 existing rows; VP-2.24.002-D row added (unit / S-console-02 / console::span_exporter SEC-BOUND-001 sanitization, DC-02 addendum). Stale BC-clause tags removed from BC Anchor column. Stale "VP-INDEX sync pending" marker retired and replaced with DC-06 sync-confirmed note. Total SS-24 VP rows: 20. See DC-06 delta note above the VP rows for full per-row correction table.
+- **2.1 (D-356/DC-10/2026-09-07):** F-PDC10-02 — Crate-Level Dependency Edges acyclicity confirmation updated: `console→server` no-cycle explanation replaced with dependency-inversion rationale (ADR-031 Decision 7; SpanData + DebugSpanSource trait server-owned; server::debug_routes reads Arc<dyn DebugSpanSource>, zero compile dep on console). F-PDC10-04 — VP-to-Stories delta note DC-06: version pin `(v1.47)` removed from "VP-INDEX §VP Catalog" citation per TD-VSDD-091/POL-12.
+- **2.0 (D-356/DC-06/2026-09-07):** F-PDC06-01 (HIGH) — SS-24 VP-to-Stories matrix rows rewritten to byte-match VP-INDEX §VP Catalog (source of truth). Twelve tool/phase/story corrections across 12 existing rows; VP-2.24.002-D row added (unit / S-console-02 / console::span_exporter SEC-BOUND-001 sanitization, DC-02 addendum). Stale BC-clause tags removed from BC Anchor column. Stale "VP-INDEX sync pending" marker retired and replaced with DC-06 sync-confirmed note. Total SS-24 VP rows: 20. See DC-06 delta note above the VP rows for full per-row correction table.
 - **1.9 (D-356/2026-09-06):** Wave-3 developer console roadmap cluster integrated. New DAG section: 10 S-console-01..10 stories with 9 dependency edges and zero inter-wave edges to Wave-1/2/6 nodes. Crate-Level Dependency Edges: `pregolya-console → pregolya-server` row added (ADR-031 §Decision 1; BC-2.24.001 {PC-004}, BC-2.24.002 {PC-003}). Topological sort: Wave-3 sub-waves 3A–3F added (parallel batches within E-console). BC-to-Stories Matrix: SS-24 row added covering BC-2.24.001–008 across 10 stories (full spec coverage). VP-to-Stories Matrix: 20 new VP-2.24 rows added (VP-2.24.001-A/B/C through VP-2.24.008-A/B; all P1, Phase 3). DAG acyclicity confirmed: S-console sub-graph is a DAG; no cross-wave edges introduced; full augmented graph remains a DAG. Census delta (state-manager to propagate): +8 BCs, +10 stories, +1 epic.
 - **1.8 (round-77/F-P2A249-01+F-P2A249-02/2026-09-02):** Full VP-to-Stories Matrix re-derivation from source-of-truth (VP-INDEX.md §VP Catalog BC-Anchor column + STORY-INDEX §VP-to-Story Anchor Map + S-6.01 frontmatter `verification_properties`). (F-P2A249-01 MED) VP-017 BC anchor corrected `BC-2.02.007` → `BC-2.02.007 + BC-2.02.008` (dual anchor; VP-INDEX §VP Catalog VP-017 row, VP-017 body frontmatter `bc_anchor`, and STORY-INDEX §VP-to-Story Anchor Map all confirm dual form). (F-P2A249-02 MED) VP-006-B Additional-Stories corrected `S-6.01` → `—` (S-6.01 frontmatter `verification_properties: [VP-001...VP-014]` does not include VP-006-B; sibling Phase-3 proptests VP-016/017/018/020 all show `—` consistently). Clause tags synced to VP-INDEX exact BC-Anchor form in four additional rows: VP-015 `BC-2.09.007` → `BC-2.09.007 {INV-003}`; VP-016 `BC-2.09.008` → `BC-2.09.008 {INV-001}`; VP-018 `BC-2.04.011` → `BC-2.04.011 {INV-001}`; VP-006-B `BC-2.18.004` → `BC-2.18.004 {PC-005}`. All other 15 rows confirmed correct (no additional drift). Total changes: 6 cells across 5 rows.
 - **1.7 (round-62/D-340/2026-09-01):** VP-020 row added to VP-to-Stories Matrix (BC-2.02.009 {INV-001}+{INV-002} / proptest / 3 / P1 / S-1.28 / —); matrix now enumerates all 21 VPs. Version bump for census parity with VP-INDEX §VP-020.

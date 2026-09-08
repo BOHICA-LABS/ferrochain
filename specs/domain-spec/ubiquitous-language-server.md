@@ -12,11 +12,11 @@ inputs:
   - .factory/comparative/COMPARATIVE-ASSESSMENT.md
   - .factory/semport/reference-manifest.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "be93076"
+input-hash: "d3f4f80"
 traces_to: L2-INDEX.md
 decisions: [D2, D13, D17, D356]
 changelog:
-  - "1.7 (D-356/2026-09-06, business-analyst): D-356 dev-console scope expansion — Dev Console Terms section added (§Dev Console Terms). New terms: Developer Console, Developer-Operator, Graph Descriptor, Trajectory Replay, Console Run Inspector. Research memo (.factory/planning/devconsole-adk-research.md) added to inputs; input-hash set to pending-recompute (state-manager updates). D356 added to decisions list."
+  - "1.7 (D-356/2026-09-06, business-analyst): D-356 dev-console scope expansion — Dev Console Terms section added (§Dev Console Terms). New terms: Developer Console, Developer-Operator, Graph Descriptor, Trajectory Replay, Console Run Inspector. Research memo (.factory/planning/devconsole-adk-research.md) added to inputs; input-hash refreshed to d3f4f80 (inputs changed: +devconsole-adk-research.md; state-manager DC-10). D356 added to decisions list."
   - "1.6 (burst-291/D-134/2026-08-16): §-anchor phantom sweep — §TrustLevel (line 77 context) is a phantom anchor (TrustLevel is a bold term entry within '## Prompts, Serialization, and Retrieval Terms (D21 Additions)' in ubiquitous-language-core.md; no ## or ### TrustLevel heading exists). Corrected to ubiquitous-language-core.md §Prompts, Serialization, and Retrieval Terms."
   - "1.5 (fix-burst-276/F-P173-505/2026-07-27): D-28 banner added to body ## Changelog section, declaring Form A (frontmatter changelog:) authoritative; body table preserved as historical record."
   - "1.4 (2026-07-21): F-P131-05 adjudication (burst-226) — §ProvenanceTag: disambiguation note added clarifying that ProvenanceTag (SS-11, no trust-level dimension) is distinct from TrustLevel (SS-18, pregolya-prompts: prompts::template; ADR-015 §Decision 3). Changelog table updated. TD-VSDD-060 sweep: no ProvenanceTag trust-variant residue in this file."

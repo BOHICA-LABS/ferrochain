@@ -3,13 +3,14 @@ document_type: story
 level: ops
 story_id: S-console-03
 epic_id: E-console
-version: "1.1"
+version: "1.2"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
 changelog:
   - "1.0 (D-356/2026-09-06, story-writer): Initial story — debug-endpoints Cargo feature on pregolya-server, trace-read HTTP endpoints, E-SERVER-023 not-configured response."
   - "1.1 (D-356/2026-09-07, story-writer): F-PDC07-01 — renamed SecurityConfig field debug_api_key → debug_route_key throughout (BC-2.12.005 PRE-004/INV-001; ADR-021 §Decision 1); AC-005 updated to cover startup refusal E-SERVER-013 InvalidDebugRouteKey when key absent/empty (BC-2.24.002 PC-007/EC-007)."
+  - "1.2 (D-356/2026-09-07, story-writer): F-PDC10-02 — dependency inversion applied per ADR-031 Decision 7: server reads via Arc<dyn DebugSpanSource> (server-owned trait); pregolya-console path dep row removed from Library requirements; server::debug_span (own module) replaces it; AC-001/AC-002 SpanData attributed as server::debug_span server-owned type; AC-008 Arc<DebugSpanExporter> -> Arc<dyn DebugSpanSource>; Task 5 and Previous Story Intelligence updated."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.002.md
@@ -17,7 +18,7 @@ inputs:
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
   - .factory/specs/prd-supplements/error-taxonomy.md
-input-hash: "718d986"
+input-hash: "2d81652"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-02]
@@ -42,6 +43,8 @@ tdd_mode: strict
 
 > **D-356 adversary fix DC-07 (2026-09-07, story-writer).** F-PDC07-01: `SecurityConfig.debug_api_key` renamed to `SecurityConfig.debug_route_key` in all live-body locations (AC-005, Task 7, Architecture Compliance Rules) per ADR-021 §Decision 1 (canonical SecurityConfig field name). AC-005 now covers both behaviours from BC-2.24.002 PC-007/EC-007: (1) empty/absent `debug_route_key` with `debug-endpoints` feature enabled → E-SERVER-013 InvalidDebugRouteKey at startup (refuse to start); (2) valid key present + unauthenticated request → E-SERVER-004 403 at runtime.
 
+> **D-356 adversary fix DC-10 (2026-09-07, story-writer).** F-PDC10-02: dependency inversion applied (ADR-031 Decision 7). `SpanData` type + `DebugSpanSource` trait live in `pregolya-server/server::debug_span` (server-owned). `console::span_exporter` implements `DebugSpanSource` — `console→server` direction only; pregolya-server has zero compile dep on pregolya-console. All story locations updated: Architecture Mapping row, Library & Framework Requirements row (pregolya-console path dep removed; server::debug_span own-module row added), Task 5, AC-001/AC-002 SpanData ownership note, AC-008 `Arc<dyn DebugSpanSource>`, Previous Story Intelligence, Forbidden Patterns.
+
 ## Narrative
 
 - **As a** developer running `pregolya console --dev`
@@ -57,10 +60,10 @@ tdd_mode: strict
 ## Acceptance Criteria
 
 ### AC-001 (traces to BC-2.24.002 postcondition PC-003)
-`GET /debug/trace/session/{session_id}` returns `200 OK` with a JSON array of `SpanData` objects ordered by `start_time_ms` ascending for the given `session_id`. When no spans match the `session_id`, returns `200 OK` with empty array `[]` (not 404). Verified by `test_BC_2_24_002_trace_session_found()` and `test_BC_2_24_002_trace_session_empty()`.
+`GET /debug/trace/session/{session_id}` returns `200 OK` with a JSON array of `SpanData` objects (`SpanData` is a server-owned type defined in `pregolya-server/server::debug_span`) ordered by `start_time_ms` ascending for the given `session_id`. When no spans match the `session_id`, returns `200 OK` with empty array `[]` (not 404). Verified by `test_BC_2_24_002_trace_session_found()` and `test_BC_2_24_002_trace_session_empty()`.
 
 ### AC-002 (traces to BC-2.24.002 postcondition PC-004)
-`GET /debug/trace/{event_id}` returns `200 OK` with a single `SpanData` JSON object when the `event_id` matches a span in the buffer. Returns `404 Not Found` when no span matches. Verified by `test_BC_2_24_002_trace_event_found()` and `test_BC_2_24_002_trace_event_not_found()`.
+`GET /debug/trace/{event_id}` returns `200 OK` with a single `SpanData` JSON object (`SpanData` is a server-owned type defined in `pregolya-server/server::debug_span`) when the `event_id` matches a span in the buffer. Returns `404 Not Found` when no span matches. Verified by `test_BC_2_24_002_trace_event_found()` and `test_BC_2_24_002_trace_event_not_found()`.
 
 ### AC-003 (traces to BC-2.24.002 postcondition PC-005)
 When `DebugSpanExporter` is NOT injected into pregolya-server (standalone mode without dev_mode), both endpoints return `503 Service Unavailable` with body `{"error": "E-SERVER-023", "message": "DebugExporterNotConfigured: debug span exporter is not configured; start server via pregolya console --dev"}`. Error code is `E-SERVER-023` exactly. Verified by `test_BC_2_24_002_no_exporter_503()` (VP-2.24.002-C).
@@ -78,7 +81,7 @@ A production build of `pregolya-server` compiled WITHOUT the `debug-endpoints` f
 `GET /debug/trace/session/x` when the exporter is not configured returns `503` with the exact error body: `{"error": "E-SERVER-023", "message": "DebugExporterNotConfigured: debug span exporter is not configured; start server via pregolya console --dev"}`. No other response shape is acceptable. Verified by `test_BC_2_24_002_exporter_not_configured_body_exact()`.
 
 ### AC-008 (traces to BC-2.24.002 edge case EC-006)
-Concurrent `GET /debug/trace/session/{id}` requests against the shared `Arc<DebugSpanExporter>` return consistent snapshots with no data race. The `RwLock` inside `DebugSpanExporter` allows multiple concurrent readers. Verified by `test_BC_2_24_002_concurrent_read_consistent()`.
+Concurrent `GET /debug/trace/session/{id}` requests against the shared `Arc<dyn DebugSpanSource>` return consistent snapshots with no data race. The `RwLock` inside the concrete `DebugSpanExporter` (injected by the console layer) allows multiple concurrent readers. Verified by `test_BC_2_24_002_concurrent_read_consistent()`.
 
 ## Architecture Mapping
 
@@ -86,7 +89,7 @@ Concurrent `GET /debug/trace/session/{id}` requests against the shared `Arc<Debu
 |-----------|--------|----------------|
 | `debug-endpoints` feature gate | `pregolya-server/Cargo.toml` | N/A (build config) |
 | Trace-read HTTP handlers | `pregolya-server/src/server/debug_routes.rs` [feature debug-endpoints] | Effectful Shell |
-| `DebugSpanExporter` Arc receiver | `pregolya-server/src/server/debug_routes.rs` | Boundary (reads from Arc<DebugSpanExporter>) |
+| `DebugSpanSource` trait receiver | `pregolya-server/src/server/debug_routes.rs` | Boundary (reads via `Arc<dyn DebugSpanSource>`; trait + `SpanData` type owned by `server::debug_span`) |
 | `E-SERVER-023` error response | `pregolya-server/src/server/debug_routes.rs` | Effectful Shell |
 
 ## Purity Classification
@@ -126,7 +129,7 @@ Concurrent `GET /debug/trace/session/{id}` requests against the shared `Arc<Debu
 2. [ ] Verify Red Gate — `cargo nextest run -p pregolya-server --features debug-endpoints` shows failures
 3. [ ] Add `debug-endpoints = []` feature (default false) to `pregolya-server/Cargo.toml`
 4. [ ] Create `pregolya-server/src/server/debug_routes.rs` behind `#[cfg(feature = "debug-endpoints")]`; implement `GET /debug/trace/session/{session_id}` and `GET /debug/trace/{event_id}` handlers
-5. [ ] Wire `Arc<DebugSpanExporter>` into the server state via Axum extension (injected by pregolya-console dev-mode, from S-console-02)
+5. [ ] `server::debug_routes` reads via `Arc<dyn DebugSpanSource>` injected at launch by the console layer (`DebugSpanExporter` implements `DebugSpanSource`); pregolya-server has ZERO compile dependency on pregolya-console (ADR-031 Decision 7)
 6. [ ] Implement `E-SERVER-023 DebugExporterNotConfigured` response when exporter is `None`
 7. [ ] Add `SecurityConfig.debug_route_key` gate — refuse to start with E-SERVER-013 InvalidDebugRouteKey when key empty/absent and `debug-endpoints` feature is on (BC-2.24.002 EC-007); return E-SERVER-004 403 on unauthenticated runtime requests (BC-2.24.002 PC-007)
 8. [ ] Register debug routes into the Axum router conditionally behind feature flag
@@ -137,7 +140,7 @@ Concurrent `GET /debug/trace/session/{id}` requests against the shared `Arc<Debu
 
 ## Previous Story Intelligence (MANDATORY)
 
-Predecessor: S-console-02 (DebugSpanExporter + Arc DI). The `DebugSpanExporter` is now available as an `Arc<DebugSpanExporter>` that pregolya-console injects into pregolya-server at dev-mode startup. This story adds the HTTP endpoint surface. The injection mechanism (Axum extension or constructor arg) was established in S-console-02; follow the same DI pattern.
+Predecessor: S-console-02 (DebugSpanExporter + Arc DI). S-console-02 establishes the `DebugSpanSource` trait and `SpanData` type in `pregolya-server/server::debug_span`; `console::span_exporter::DebugSpanExporter` implements `DebugSpanSource`. At dev-mode startup the console layer injects `Arc<dyn DebugSpanSource>` into pregolya-server — pregolya-server has zero compile dep on pregolya-console (ADR-031 Decision 7). This story adds the HTTP endpoint surface. Follow the same Arc-DI injection pattern established in S-console-02.
 
 ## Architecture Compliance Rules (MANDATORY)
 
@@ -149,7 +152,7 @@ Predecessor: S-console-02 (DebugSpanExporter + Arc DI). The `DebugSpanExporter` 
 | No `unwrap()` / `expect()` in `debug_routes.rs` | CLAUDE.md, BC-2.24.002 (DI-014) | `cargo xtask check-no-panic -p pregolya-server` |
 | `SecurityConfig.debug_route_key` gate applied | BC-2.24.002 PC-007, EC-007 | Startup absent/empty key → E-SERVER-013 (refuse to start); runtime unauthenticated request → E-SERVER-004 403 |
 
-**Forbidden patterns:** Returning 404 instead of 503 when exporter is absent. Error code E-SERVER-020 is incorrect — use E-SERVER-023 only.
+**Forbidden patterns:** Returning 404 instead of 503 when exporter is absent. Error code E-SERVER-020 is incorrect — use E-SERVER-023 only. Adding a compile-time dependency on `pregolya-console` from `pregolya-server` — `debug_routes` must only reference `Arc<dyn DebugSpanSource>` (ADR-031 Decision 7); `DebugSpanExporter` must not appear in any `use` or `impl` statement inside `pregolya-server/`.
 
 ## Library & Framework Requirements (MANDATORY)
 
@@ -157,7 +160,7 @@ Predecessor: S-console-02 (DebugSpanExporter + Arc DI). The `DebugSpanExporter` 
 |------|---------|---------|
 | `axum` | workspace pin | HTTP handlers for debug trace endpoints |
 | `serde_json` | workspace pin | JSON serialization of `SpanData` array / object |
-| `pregolya-console` | path dep (dev/feature) | `DebugSpanExporter` type via Arc extension |
+| `server::debug_span` | own module (pregolya-server) | `SpanData` type + `DebugSpanSource` trait — server-owned; zero compile dep on pregolya-console |
 
 ## File Structure Requirements (MANDATORY)
 

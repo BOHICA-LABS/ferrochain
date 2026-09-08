@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-console-06
 epic_id: E-console
-version: "1.2"
+version: "1.3"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -11,13 +11,14 @@ changelog:
   - "1.0 (D-356/2026-09-06, story-writer): Initial story — run inspection event timeline, live SSE monitoring, live node highlighting via graph descriptor."
   - "1.1 (D-356/2026-09-06, story-writer): F-PDC01-02 adversary fix — correct AC-001 StreamEvent variant list: drop phantom run_error, remove duplicate run_stream, add step_start and tool_stream to reach exactly 16 canonical variants per BC-2.24.004 PC-001 and ADR-006."
   - "1.2 (D-356/2026-09-07, story-writer): Adversary fix DC-02 — replace phantom graph_interrupt with error as the 16th canonical StreamEvent variant in AC-001. DC-01 introduced graph_interrupt believing it canonical; DC-02 corrects to the verified 16-variant list per BC-2.24.004 PC-001."
+  - "1.3 (D-356/2026-09-07, story-writer): F-PDC10-03 records fix — append inline superseded-marker to DC-01 blockquote's variant list to flag graph_interrupt as phantom and point to DC-02 correction. Historical record preserved; annotation added per sibling BC-2.24.004 pattern."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.004.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "2b5f8be"
+input-hash: "1358551"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 8
 depends_on: [S-console-03, S-console-04, S-console-05]
@@ -40,7 +41,7 @@ tdd_mode: strict
 > **D-356 dev-console scope expansion (2026-09-06, story-writer).** Roadmap-only.
 > Wave 3 — not built in the current Phase 3 implementation cycle.
 
-> **D-356 adversary fix DC-01 (2026-09-06, story-writer).** F-PDC01-02 sibling-sweep: corrected AC-001 StreamEvent variant list to the canonical 16 per BC-2.24.004 PC-001 and ADR-006 rev-3. Dropped phantom `run_error` (never existed in the grammar), removed duplicate `run_stream` (was listed at positions 8 and 16 yielding only 15 distinct entries), and added the two omitted variants `step_start` and `tool_stream`. The canonical ordered set is now: `run_start`, `run_stream`, `run_end`, `step_start`, `step_end`, `node_start`, `node_stream`, `node_end`, `tool_start`, `tool_stream`, `tool_end`, `guardrail_decision`, `tool_approval_request`, `tool_approval_resolved`, `graph_interrupt`, `compaction_event`.
+> **D-356 adversary fix DC-01 (2026-09-06, story-writer).** F-PDC01-02 sibling-sweep: corrected AC-001 StreamEvent variant list to the canonical 16 per BC-2.24.004 PC-001 and ADR-006 rev-3. Dropped phantom `run_error` (never existed in the grammar), removed duplicate `run_stream` (was listed at positions 8 and 16 yielding only 15 distinct entries), and added the two omitted variants `step_start` and `tool_stream`. The canonical ordered set is now: `run_start`, `run_stream`, `run_end`, `step_start`, `step_end`, `node_start`, `node_stream`, `node_end`, `tool_start`, `tool_stream`, `tool_end`, `guardrail_decision`, `tool_approval_request`, `tool_approval_resolved`, `graph_interrupt`, `compaction_event`. **(SUPERSEDED by DC-02 — `graph_interrupt` is phantom; the canonical 16th variant is `error`; see the DC-02 blockquote below)**
 
 > **D-356 adversary fix DC-02 (2026-09-07, story-writer).** AC-001 StreamEvent variant list corrected again: the 16th canonical variant is `error`, not `graph_interrupt`. `graph_interrupt` is phantom — it does not exist in the 16-variant StreamEvent grammar per BC-2.24.004 PC-001 confirmed variant registry. The DC-01 fix (v1.1) replaced `run_error` with `graph_interrupt` while incrementing the position count to 16, but `graph_interrupt` was never a real variant. DC-02 corrects: slot 15 = `compaction_event`, slot 16 = `error`. Verified canonical set: `run_start`, `run_stream`, `run_end`, `step_start`, `step_end`, `node_start`, `node_stream`, `node_end`, `tool_start`, `tool_stream`, `tool_end`, `guardrail_decision`, `tool_approval_request`, `tool_approval_resolved`, `compaction_event`, `error`.
 

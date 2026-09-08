@@ -1,11 +1,12 @@
 ---
 document_type: story-index
 level: L3
-version: "1.68"
+version: "1.69"
 status: active
 producer: state-manager
 timestamp: 2026-09-07T00:00:00Z
 changelog:
+  - "1.69 (D-356/DC-10/2026-09-07, state-manager): S-console-03 v1.1→v1.2 (story-writer; F-PDC10-02: dependency inversion per ADR-031 Decision 7 — Arc<dyn DebugSpanSource> DI; server::debug_span own-module replaces pregolya-console path dep; AC-001/AC-002/AC-008/Task 5 updated). S-console-06 v1.2→v1.3 (story-writer; F-PDC10-03 records: inline superseded-marker appended to DC-01 blockquote flagging graph_interrupt as phantom → DC-02 correction). dependency-graph.md v2.0→v2.1 (story-writer; no-cycle explanation updated to dependency-inversion; F-PDC10-04 (v1.47) version-pin removed). Input hashes: S-console-03 2d81652; S-console-06 1358551. Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.68 (D-356/DC-09 fix-burst/2026-09-07, state-manager): S-console-07 v1.1→v1.2 (story-writer; F-PDC09-01 BC-2.12.001 BC-table Title cell corrected to canonical H1 'Thread Resource CRUD (Create, Read, List, Delete Durable Conversation History)' per POL-7/L-276 verbatim-H1 rule; consumed-slice scope note (?checkpoint_id PC-015 variant) preserved in AC-002/AC-007 body prose). input-hash unchanged (STORY-INDEX inputs not modified). Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.67 (D-356/DC-07-residue/2026-09-07, state-manager): STORY-S-console-03 v1.0→v1.1 (story-writer; F-PDC07-01 residual: debug_api_key→debug_route_key in ×3 live-body sites — AC-005, Task 7, Architecture Compliance Rules; AC-005 updated to cover both behaviours per BC-2.24.002 PC-007/EC-007: E-SERVER-013 InvalidDebugRouteKey startup-refusal + E-SERVER-004 DebugRouteUnauthorized runtime-403). input-hash 718d986. Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.66 (D-356/DC-06-sweep fix-burst/2026-09-07, state-manager): F3–F6 [MED] — §VP-to-Story-Anchor-Map Crate column corrected for 4 rows: VP-2.24.002-C pregolya-console→pregolya-server (server::debug_routes per VP-INDEX §VP-Catalog); VP-2.24.003-A pregolya-console→pregolya-graph (graph::descriptor per VP-INDEX §VP-Catalog); VP-2.24.003-B pregolya-console→pregolya-graph (graph::descriptor Kani per VP-INDEX §VP-Catalog); VP-2.24.003-C pregolya-console→pregolya-server (server::debug_routes per VP-INDEX §VP-Catalog). Story column was already correct for all 4 rows. input-hash refreshed (VP-INDEX §VP-Catalog updated). Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41."
