@@ -1,15 +1,16 @@
 ---
 document_type: bc-index
 level: L3
-version: "4.35"
+version: "4.36"
 status: active
 producer: state-manager
-timestamp: 2026-09-08T00:00:00Z
+timestamp: 2026-09-08T04:00:00Z
 project: pregolya
 cycle: v1.0.0-greenfield
 input-hash: "[live-index]"
 traces_to: .factory/specs/prd.md
 changelog:
+  - "4.36 (D-356/DC-16/2026-09-08, state-manager): BC-2.12.003 v1.20→v1.21 (product-owner; F-PDC16-01 [MED] — reverse-anchor completeness: §Related BCs +BC-2.24.005 fork-from-checkpoint consumer; §Story Anchor +S-console-07 roadmap Wave 3 consumer of {INV-009} via BC-2.24.005 {PC-003}; mirrors DC-04/BC-2.12.001 pattern). STORY-INDEX v1.74→v1.75 (state-manager; F-PDC16-02 [LOW, records] — BC-to-Story map BC-2.12.003 row updated S-1.26→S-1.26 + S-console-07 roadmap Wave 3; S-1.26 v1.14→v1.15 frontmatter changelog reordered ascending + v1.13 backfilled). Census UNCHANGED: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24."
   - "4.35 (D-356/DC-14/2026-09-08, state-manager): BC-2.24.002 v1.7→v1.8 (product-owner; F-PDC14-03[MED]: TV-006 redaction output corrected to canonical `<redacted>` form; entire Bearer span replaced per S-1.26 AC-020 / BC-2.12.003 INV-008). STORY-INDEX v1.72→v1.73 (state-manager; F-PDC14-01[MED]: S-console-04 crate pregolya-console→[pregolya-graph, pregolya-server] in STORY-INDEX story-inventory row + sprint-state.yaml; F-PDC14-02[MED]: blanket 'all 10 Wave-3 stories target pregolya-console' claim reworded — S-console-03 pregolya-server + S-console-04 pregolya-graph+pregolya-server excepted). census UNCHANGED: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24."
   - "4.34 (D-356/DC-11/2026-09-07, state-manager): BC-2.24.002 v1.6→v1.7 (product-owner; F-PDC11-03[MED]: VP-2.24.002-C annotation corrected — server::debug_routes ONLY (not ring-buffer); server::debug_span annotated 'no dedicated VP; exercised via VP-2.24.002-C/D' per DC-10 dep-inversion split). census UNCHANGED: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24."
   - "4.33 (D-356/DC-10/2026-09-07, state-manager): BC-2.24.002 v1.5→v1.6 (F-PDC10-02: §Module ADR-031 Decision 7 dependency-inversion split — server::debug_span Boundary module added to pregolya-server owning SpanData data type + DebugSpanSource read-trait; server::debug_routes reads via Arc<dyn DebugSpanSource>; console::span_exporter implements DebugSpanSource; zero server→console compile dependency). F-PDC10-01[MED] 3 stale pending-recompute markers cleared: api-surface.md v1.30/31/32 + purity-boundary-map v1.44/45/46/47 + ubiquitous-language-server v1.7 (D-196 bookkeeping). Input hashes recomputed: ADR-031 42dc253; BC-2.24.002 5ff81d4; purity-boundary-map c0cfd11; S-console-03 2d81652; S-console-06 1358551; ubiquitous-language-server d3f4f80; api-surface.md 4c5f776 (unchanged). ZERO 0000000 remain. Census UNCHANGED: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24."

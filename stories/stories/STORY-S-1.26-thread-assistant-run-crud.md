@@ -3,12 +3,11 @@ document_type: story
 level: ops
 story_id: S-1.26
 epic_id: E-14
-version: "1.14"
+version: "1.15"
 status: draft
 producer: story-writer
 timestamp: 2026-08-24T00:00:00Z
 changelog:
-  - "1.14 (D-356/DC-13/2026-09-08): F-PDC13-02 — AC-021 and AC-022 added covering D-356-amended BC-2.12.001 {PC-015} checkpoint historical-state read and BC-2.12.003 {INV-009} fork-start. EC-022 and EC-023 added (checkpoint-absent 422 E-CHKPT-011 paths). Token budget updated (~55,000). No new VPs minted (BCs' test vectors TV-010, TV-011, TV-014 suffice)."
   - "1.1 (M3/ADR-027/2026-08-24): AC traces re-cited to stable clause anchors; 10 mis-anchors corrected (AC-001 PC1→PC-005, AC-002 PC2→PC-009, AC-003 PC3→PC-011, AC-004 BC2.PC1→INV-001, AC-005 BC2.PC2→EC-006, AC-006 BC3.PC1→PC-005, AC-007 BC3.PC2→PC-007, AC-008 BC3.PC3→PC-008, AC-009 BC3.PC4→INV-006, AC-010 BC3.INV1→PC-010)"
   - "1.2 (M3c/ADR-027/2026-08-24): ADR-027 M3c: escalation-resolution AC corrections"
   - "1.3 (M3c collision-fix + EC-006 coverage restore/2026-08-24): AC-005 E-SERVER-012→E-SERVER-017 (AssistantAlreadyExists); AC-009 stale AC-005 cross-ref removed, EC-006 configurable-merge stated directly, BC-2.12.002 EC-006 trace added"
@@ -21,6 +20,9 @@ changelog:
   - "1.10 (round-47/F-P2A197-01+F-P2A197-02/2026-08-30): F-P2A197-01 [HIGH, CWE-209, SEC-BOUND-001] — BC-2.12.003 {INV-007} extended: E-GRAPH-011 ConditionalEdgePanic added to HTTP-boundary panic-text-isolation scope alongside E-GRAPH-019 NodePanic. AC-019 added: run-executor static-replaces E-GRAPH-011 message before populating Run.error.message; source_node + panic text suppressed; TV-012 anchored. EC-020 added (E-GRAPH-011 edge case). F-P2A197-02 [MED, CWE-209/532, SEC-BOUND-001] — BC-2.12.003 {INV-008} new: External-Boundary Error-Sanitization mandatory 3-step pipeline (internal-panic static-replace → redact_credentials → sanitize_internal_ids; order mandatory) before Run.error.message surfaced via {PC-013}/{PC-016}. AC-020 added: TV-013 anchored; ADR-029 SEC-BOUND-001 cited. EC-021 added (credential-redaction edge case). Architecture Compliance Rule 9 extended: E-GRAPH-011 named alongside E-GRAPH-019; {INV-008} 3-step pipeline added. BC table BC-2.12.003 row updated. Failing-test range extended to AC-001..AC-020. Token budget updated (~53,500). input-hash refreshed (3d8fb63 — BC-2.12.003 round-47 computed hash)."
   - "1.11 (round-48/F-P2A200-01+F-P2A200-02+F-P2A202-01/2026-08-30): F-P2A200-01 [HIGH] — AC-019 catch-boundary mislocation corrected: conditional-edge path_fn panic is caught by the Pregel executor (synchronous std::panic::catch_unwind in graph::bsp_engine per BC-2.02.005 {PC-005}; path_fn is sync per BC-2.02.005 {PRE-004}); E-GRAPH-011 arrives at the server as an already-formed Err; server applies {INV-007} STATIC message replacement before writing to Run.error.message (NOT FutureExt::catch_unwind at server boundary); AC-019 rewritten; Task and Architecture Compliance Rule 9 updated (E-GRAPH-011 removed from catch_unwind scope; Pregel-caught Err path clarified). F-P2A200-02 [MED] — AC-020 steps 2 and 3 aligned to BC-2.12.003 {INV-008} canonical form: step 2 redact_credentials now cites explicit 4-pattern set (BC-2.09.007 {INV-003}(b)); step 3 sanitize_internal_ids now specifies UUID-shaped identifiers only with token <redacted-id> and u64-CheckpointId carve-out (not node/edge IDs; not <sanitized>). F-P2A202-01 [LOW/records] — v1.10 changelog severity label corrected: F-P2A197-02 relabelled [MED] (was [HIGH] in error; canonical severity per BC-INDEX and STATE.md). Token budget updated (~54,000). input-hash refreshed (6483719 — BC-2.12.003 round-48 computed hash)."
   - "1.12 (round-49/BC-propagation/2026-08-31): BC-2.09.007 {INV-003} extended from 4 to 6 patterns (URL-userinfo + HTTP Basic). AC-020 step 2: 'canonical four-pattern set' → 'canonical six-pattern set'; patterns (e) URL-embedded userinfo `[a-zA-Z][a-zA-Z0-9+.\-]*://[^/\s:@]+:[^/\s:@]+@` (TV-012) and (f) HTTP Basic auth `Basic\\s+[A-Za-z0-9+/=]+` (base64 padding prevents pattern (c) match; TV-013) added. Architecture Compliance Rule 9 {INV-008} and sanitize_error_message Task updated to cite 6-pattern set. input-hash refreshed (033617f — BC-2.12.003 round-49 computed hash)."
+  - "1.13 (round-79/F-P2A251-02/2026-09-02): round-79/F-P2A251-02: BC table title cells corrected to verbatim canonical H1 per POL-7/F-P2A251-02."
+  - "1.14 (D-356/DC-13/2026-09-08): F-PDC13-02 — AC-021 and AC-022 added covering D-356-amended BC-2.12.001 {PC-015} checkpoint historical-state read and BC-2.12.003 {INV-009} fork-start. EC-022 and EC-023 added (checkpoint-absent 422 E-CHKPT-011 paths). Token budget updated (~55,000). No new VPs minted (BCs' test vectors TV-010, TV-011, TV-014 suffice)."
+  - "1.15 (D-356/DC-16/2026-09-08): Frontmatter changelog reordered to strict ascending (1.1→1.15); v1.13 entry backfilled from body changelog table (round-79/F-P2A251-02 wording verbatim per F-PDC16-02)."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-12/BC-2.12.001.md
@@ -28,7 +30,7 @@ inputs:
   - .factory/specs/behavioral-contracts/ss-12/BC-2.12.003.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "6cac245"
+input-hash: "5e6586a"
 traces_to:
   - behavioral-contracts/BC-2.12.001
   - behavioral-contracts/BC-2.12.002
@@ -331,5 +333,6 @@ crates/pregolya-server/
 
 | Version | Date | Change | Source |
 |---------|------|--------|--------|
+| 1.15 | 2026-09-08 | DC-16/F-PDC16-02: Frontmatter changelog reordered to strict ascending order (1.1→1.15); v1.13 entry backfilled from body changelog table (round-79/F-P2A251-02 wording verbatim). | DC-16 F-PDC16-02 |
 | 1.14 | 2026-09-08 | DC-13/F-PDC13-02: AC-021 (BC-2.12.001 {PC-015}/{EC-010} checkpoint historical-state read, happy TV-010 + 422 E-CHKPT-011 TV-011) and AC-022 (BC-2.12.003 {INV-009}/{EC-008} fork-start, happy TV-014 + 422 E-CHKPT-011) added. EC-022 and EC-023 added. Token budget ~55,000. No new VPs. | DC-13 F-PDC13-02 |
 | 1.13 | 2026-09-02 | round-79/F-P2A251-02: BC table title cells corrected to verbatim canonical H1 per POL-7/F-P2A251-02. | round-79 F-P2A251-02 |

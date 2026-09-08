@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.12.003
-version: "1.20"
+version: "1.21"
 status: active
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -21,7 +21,7 @@ inputs:
   - .factory/specs/prd.md
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/semport/platform/behavioral-intent.md
-input-hash: "25528ef"
+input-hash: "faac9bb"
 changelog:
   - "1.1 (ADV-P1D-PASS-31): F-P31-01 PC18 list-runs endpoint — add limit (default 10, max 100; values > 100 clamped) and offset pagination params + declare created_at DESC ordering (pagination coherence canon)."
   - "1.2 (ADV-P1D-PASS-33): F-P33-02 add Run-Config Merge Precedence invariant — run-supplied config/metadata/context deep-merge over Assistant's stored values, run wins at leaf key. Upstream-check result: no contradicting semantics in BC-2.01.003 or semport behavioral-intent §2.3; leaf-level deep-merge adopted as spec canon."
@@ -40,6 +40,7 @@ changelog:
   - "1.15 (round-43/F-P2A181-01-sibling/2026-08-30): F-P2A181-01 sibling — EC-003 SEC-008 clause and TV-011 Notes refined to workspace-root `[profile.release]` precision, aligning with ADR-029 §Decision 5 v2.16 and S-2.11 AC-037 v1.31. EC-003: 'on the `pregolya-server` release profile' → 'in the workspace-root `[profile.release]` governing the `pregolya-server` binary; a library-member `[profile.release] panic` override is silently ignored by Cargo and MUST NOT be relied upon'. TV-011 Notes: same workspace-root precision added. BC-2.09.008 EC-010 SEC-008 was the primary fix (F-P2A181-01); this sibling corrects residual release-profile framing for consistency."
   - "1.16 (round-47/F-P2A197-01+F-P2A197-02/2026-08-30): F-P2A197-01 [HIGH, CWE-209] — E-GRAPH-011 ConditionalEdgePanic panic text leaks at HTTP boundary. {INV-007} extended from E-GRAPH-019-only to ALL internal-panic codes: E-GRAPH-011 ConditionalEdgePanic STATIC message added ('ConditionalEdgePanic: conditional edge function panicked during execution — see server error log for details'); source_node topology and captured panic text suppressed; MCP-boundary uniform treatment parity (ADR-029 §Decision 5). EC-003 'node returns Err' path extended with Internal-panic Err sanitization clause: pregolya-server run-executor MUST static-replace E-GRAPH-011 message before writing to Run.error.message. TV-012 minted (E-GRAPH-011 → STATIC message, source_node suppressed; TV count 11→12). F-P2A197-02 [MED, CWE-209/CWE-532] — no redaction contract on Run.error.message HTTP surface. {INV-008} External-Boundary Error-Sanitization invariant added: mandatory 3-step pipeline (internal-panic static-replace → redact_credentials → sanitize_internal_ids) on Run.error.message before surfacing via {PC-013}/{PC-016}; mirrors BC-2.09.008 {INV-003}; closes DI-010 Credential Opacity gap on HTTP Run-status surface. TV-013 minted (credential redaction path; TV count 12→13). Traceability Error Codes updated to reference E-GRAPH-011 STATIC replacement obligation."
   - "1.17 (round-48/F-P2A201-02+F-P2A203-02/2026-08-30): F-P2A201-02 [MED, CWE-209/670] — {INV-008} step 3 falsely claimed 'checkpoint IDs' as UUID-shaped identifiers covered by `sanitize_internal_ids`. CheckpointId is a u64 newtype (ADR-005 / BC-2.04.003) — NOT UUID-shaped; the UUID regex cannot match it. 'checkpoint IDs' removed from the UUID-covered example list; u64-CheckpointId authoring-site-discipline carve-out added (mirrors BC-2.09.008 {INV-001} / ADR-029 SEC-BOUND-001 step 3). Canonical replacement token `<redacted-id>` confirmed. F-P2A203-02 propagation — {INV-008} step 2 updated from vague 'Bearer tokens, API key prefixes, and patterns matching the DI-010 credential opacity regex' to explicit four-pattern enumeration (BC-2.09.007 {INV-003}(b)): OpenAI sk-, Anthropic sk-ant-, generic 64+ alphanumeric, Bearer `Bearer\\s+[A-Za-z0-9._~+/=\\-]+`. Symmetry claim 'Symmetric with BC-2.09.008 {INV-003}' remains TRUE; BC-2.09.008 {INV-003} now also enumerates the four patterns. No new TVs minted in this BC (TV count unchanged at 13; TV-013 already tests credential redaction; Bearer coverage is tested via TV-010 in BC-2.09.007)."
+  - "1.21 (D-356-fix/DC-16/2026-09-08, product-owner): F-PDC16-01: Reverse-anchor completeness — BC-2.24.005 {PC-003} (forward edge) consumes {INV-009} via S-console-07, but BC-2.12.003 had no reverse edge back. §Related BCs: BC-2.24.005 added as fork-from-checkpoint consumer. §Story Anchor: S-console-07 appended (roadmap, Wave 3 — consumes {INV-009} fork-start via BC-2.24.005 {PC-003}); S-1.26 remains primary. Mirrors the F-PDC12/DC-04 fix applied to BC-2.12.001."
   - "1.20 (D-356-fix/DC-03/2026-09-07, state-manager): Code collision fix — 'E-CHKPT-002' (used in v1.19 for CheckpointNotFound) is already assigned to MonotonicClockRegression (BC-2.04.003, INTERNAL); per append-only-numbering policy IDs are never reused; E-CHKPT-011 is the next available CHKPT code. All occurrences of 'E-CHKPT-002' meaning CheckpointNotFound in {INV-009}, EC-008, delta-note, and Traceability corrected to 'E-CHKPT-011'. No normative behavior changed; only the code identifier updated."
   - "1.19 (D-356-fix/DC-03/2026-09-07, product-owner): {INV-009} added — config.configurable.checkpoint_id fork-start semantic: when set on Create-Run, executor initializes thread state from the specified checkpoint's stored ChannelValues rather than current_checkpoint (fork-from-checkpoint pattern; cited by BC-2.24.005 {PC-003}). EC-008 added for CheckpointNotFound path (E-CHKPT-002 minted; TODO: register in error-taxonomy.md by product-owner). TV-014 added for fork-from-checkpoint happy path (TV count 13→14). Delta note blockquote added. D-356 human-authorized reopening scope."
   - "1.18 (round-49/F-P2A205-02-sibling/2026-08-31): F-P2A205-02 sibling sweep — {INV-008} step 2 canonical pattern set extended from 4 to 6 patterns: pattern 5 URL-embedded userinfo `[a-zA-Z][a-zA-Z0-9+.\\-]*://[^/\\s:@]+:[^/\\s:@]+@` → `<redacted>`; pattern 6 HTTP Basic auth `Basic\\s+[A-Za-z0-9+/=]+` → `<redacted>`. 'four-pattern set' → 'six-pattern set'. BC-2.09.007 {INV-003}(b) is the canonical authority. No new TVs minted (TV-013 already tests the credential-redaction path; URL-userinfo and Basic-auth coverage tested via TV-012/TV-013 in BC-2.09.007)."
@@ -54,6 +55,8 @@ removal_reason: null
 ---
 
 # BC-2.12.003: Run Creation and Execution Lifecycle (queued → in_progress → completed/failed/cancelled/summary_halt; interrupted is pausable/resumable)
+
+> **D-356 adversary fix DC-16 (2026-09-08, product-owner).** F-PDC16-01: Reverse-anchor completeness — BC-2.24.005 {PC-003} consumes {INV-009} (fork-from-checkpoint) via S-console-07, but this BC had no reverse edge. §Related BCs updated to include BC-2.24.005; §Story Anchor updated to append S-console-07 (roadmap, Wave 3 — consumes {INV-009} fork-start via BC-2.24.005 {PC-003}). Mirrors the F-PDC12/DC-04 pattern applied to BC-2.12.001.
 
 > **D-356-fix DC-03 (2026-09-07, product-owner/state-manager).** {INV-009} added: `config.configurable.checkpoint_id` fork-start semantic on `POST /threads/{id}/runs` — used by BC-2.24.005 {PC-003} for developer-console fork-from-checkpoint. EC-008 and TV-014 added for the new path. E-CHKPT-011 CheckpointNotFound registered in error-taxonomy.md v1.73 (code collision fix: E-CHKPT-002 occupied by MonotonicClockRegression; E-CHKPT-011 is next available). No existing postconditions, invariants, or state-machine arcs changed. D-356 human-authorized reopening scope.
 
@@ -321,6 +324,7 @@ pregolya-graph engine are sufficient._
 - BC-2.12.001 — depends on: Runs are executed against Threads; thread must exist before run creation
 - BC-2.12.002 — depends on: Runs reference an Assistant config at creation time
 - BC-2.05.002 — sibling: HITL interrupt resume contract covers the `interrupted` pausable state resume path (interrupted → in_progress transition)
+- BC-2.24.005 — fork-from-checkpoint consumer ({INV-009} via {PC-003})
 
 ## Architecture Anchors
 
@@ -330,7 +334,9 @@ pregolya-graph engine are sufficient._
 
 ## Story Anchor
 
-S-1.26
+S-1.26 (primary — Run CRUD and execution lifecycle)
+
+S-console-07 (roadmap, Wave 3 — consumes {INV-009} fork-start via BC-2.24.005 {PC-003})
 
 ## VP Anchors
 
