@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-console-05
 epic_id: E-console
-version: "1.2"
+version: "1.3"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -11,6 +11,7 @@ changelog:
   - "1.0 (D-356/2026-09-06, story-writer): Initial story — SPA build pipeline, framework selection (deferred per ADR-031 Decision 4), bundler config, rust_embed binding, CI integration, <500KB gzip target."
   - "1.1 (D-356/2026-09-07, story-writer): Adversary fix DC-06 sweep — remove VP-2.24.001-A from verification_properties; VP-2.24.001-A anchors to S-console-01 (console server lifecycle unit test) per VP-INDEX; S-console-05 SPA build coverage is AC-level only (AC-002 test_BC_2_24_001_spa_index_present_in_bundle traces to BC-2.24.001 PC-002); no registered VP warranted for a bundle-presence AC check."
   - "1.2 (D-356/DC-27/L-288/2026-09-08, story-writer): F-L288-007 — AC-005 trace corrected from BC-2.24.001 INV-002 (TLS-loopback exception) to ADR-031 Decision 3 / BC-2.24.004 INV-002 (SSE-only transport; no WebSocket)."
+  - "1.3 (D-356/DC-28/2026-09-08, story-writer): F-PDC28-01 — Token Budget table backfilled with BC-2.24.004.md row (~300 tokens); total updated to ~8,400 (POL-8 step 4: Token Budget BC count matches len(bcs))."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.001.md
@@ -18,7 +19,7 @@ inputs:
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "3d013e2"
+input-hash: "a675a8d"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 8
 depends_on: [S-console-01]
@@ -44,6 +45,8 @@ tdd_mode: strict
 > **D-356 adversary fix DC-06 sweep (2026-09-07, story-writer).** VP-2.24.001-A removed from `verification_properties` (`[]` is now correct). VP-2.24.001-A anchors to S-console-01 per VP-INDEX (console server lifecycle unit test built by the scaffold story). S-console-05 SPA build pipeline coverage is AC-level: AC-002 (`test_BC_2_24_001_spa_index_present_in_bundle`) is an acceptance-criterion test tracing to BC-2.24.001 PC-002, not a separately-registered VP. No new VP minted; `[]` is the correct scoping. No body references to VP-2.24.001-A were present; POLICY-8 gate remains satisfied.
 
 > **D-356 adversary fix DC-27/L-288 (2026-09-08, story-writer).** F-L288-007 — AC-005 trace annotation corrected. The INV-002 clause in the console startup behavioral contract is the TLS-loopback exception, not the SSE-only rule. The SSE-only transport mandate is Decision 3 in the console architecture ADR, reflected in the run inspection event-timeline behavioral contract's SSE-only invariant. AC-005 trace and body BC table updated accordingly.
+
+> **D-356 adversary fix DC-28 (2026-09-08, story-writer).** F-PDC28-01 — Token Budget Estimate table backfilled with run-inspection event-timeline behavioral contract row (~300 tokens, INV-002 SSE-only clause). Total updated from ~8,100 to ~8,400. POL-8 step 4: Token Budget BC count now matches `len(behavioral_contracts)` = 2.
 
 ## Narrative
 
@@ -109,12 +112,13 @@ The gzip-compressed total bundle size is < 500 KB. `gzip -c dist/assets/*.js | w
 |----------------|-----------------|
 | This story spec | ~3,500 |
 | BC-2.24.001.md (PRE-002, asset-serving clauses) | ~1,500 |
+| BC-2.24.004.md (INV-002 SSE-only clause) | ~300 |
 | ADR-031 §Decision 4 (SPA constraints) | ~600 |
 | SPA build config files (vite/webpack/rollup, ~100 lines) | ~1,200 |
 | `package.json` + lockfile excerpts | ~500 |
 | CI task additions (~30 lines Justfile) | ~400 |
 | Tool outputs | ~400 |
-| **Total** | **~8,100** |
+| **Total** | **~8,400** |
 | Agent context window | 200K (Sonnet) |
 | **Budget usage** | **~4%** |
 
