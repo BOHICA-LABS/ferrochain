@@ -3,11 +3,12 @@ document_type: story
 level: ops
 story_id: S-1.26
 epic_id: E-14
-version: "1.13"
+version: "1.14"
 status: draft
 producer: story-writer
 timestamp: 2026-08-24T00:00:00Z
 changelog:
+  - "1.14 (D-356/DC-13/2026-09-08): F-PDC13-02 — AC-021 and AC-022 added covering D-356-amended BC-2.12.001 {PC-015} checkpoint historical-state read and BC-2.12.003 {INV-009} fork-start. EC-022 and EC-023 added (checkpoint-absent 422 E-CHKPT-011 paths). Token budget updated (~55,000). No new VPs minted (BCs' test vectors TV-010, TV-011, TV-014 suffice)."
   - "1.1 (M3/ADR-027/2026-08-24): AC traces re-cited to stable clause anchors; 10 mis-anchors corrected (AC-001 PC1→PC-005, AC-002 PC2→PC-009, AC-003 PC3→PC-011, AC-004 BC2.PC1→INV-001, AC-005 BC2.PC2→EC-006, AC-006 BC3.PC1→PC-005, AC-007 BC3.PC2→PC-007, AC-008 BC3.PC3→PC-008, AC-009 BC3.PC4→INV-006, AC-010 BC3.INV1→PC-010)"
   - "1.2 (M3c/ADR-027/2026-08-24): ADR-027 M3c: escalation-resolution AC corrections"
   - "1.3 (M3c collision-fix + EC-006 coverage restore/2026-08-24): AC-005 E-SERVER-012→E-SERVER-017 (AssistantAlreadyExists); AC-009 stale AC-005 cross-ref removed, EC-006 configurable-merge stated directly, BC-2.12.002 EC-006 trace added"
@@ -27,7 +28,7 @@ inputs:
   - .factory/specs/behavioral-contracts/ss-12/BC-2.12.003.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "c6273e3"
+input-hash: "6cac245"
 traces_to:
   - behavioral-contracts/BC-2.12.001
   - behavioral-contracts/BC-2.12.002
@@ -59,13 +60,13 @@ As an API consumer, I want Thread, Assistant, and Run CRUD endpoints so that I c
 
 | Context Component | Estimated Tokens |
 |-------------------|-----------------|
-| This story spec | ~8,000 |
+| This story spec | ~9,000 |
 | BC files (3 BCs: BC-2.12.001–003) | ~13,000 |
 | Architecture module-decomposition.md | ~3,000 |
 | Target source files (pregolya-server/src/routes/) | ~12,000 |
 | Test files | ~15,000 |
 | S-1.16 (BSP super-step determinism) route scaffolding | ~2,000 |
-| **Total estimate** | **~54,000** |
+| **Total estimate** | **~55,000** |
 
 Comfortable within context window. No split required.
 
@@ -159,6 +160,28 @@ Per BC-2.12.003 {INV-007}, a conditional-edge `path_fn` is synchronous; its pani
 Before `Run.error.message` is surfaced via `{PC-013}` (GET run response) or `{PC-016}` (failed terminal state), the `pregolya-server` run-executor MUST apply the mandatory 3-step External-Boundary Error-Sanitization pipeline in exact order: (1) internal-panic static-replace per {INV-007} — E-GRAPH-019 NodePanic and E-GRAPH-011 ConditionalEdgePanic messages replaced with their respective STATIC variants before any other processing; (2) `redact_credentials` — scan `error.message` for credential-shaped substrings matching the canonical six-pattern set (per BC-2.12.003 {INV-008} step 2) and replace each match with `"<redacted>"`: (a) OpenAI key `sk-[A-Za-z0-9_\-]{20,}`, (b) Anthropic key `sk-ant-[A-Za-z0-9_\-]{32,}`, (c) generic long alphanumeric token `[A-Za-z0-9]{64,}`, (d) Bearer token `Bearer\s+[A-Za-z0-9._~+/=\-]+` (entire `Bearer <token>` span), (e) URL-embedded userinfo `[a-zA-Z][a-zA-Z0-9+.\-]*://[^/\s:@]+:[^/\s:@]+@` (strips scheme+userinfo prefix from URL; TV-012), (f) HTTP Basic auth `Basic\s+[A-Za-z0-9+/=]+` (base64 padding `+`/`=` prevents pattern (c) from matching; TV-013); (3) `sanitize_internal_ids` — replace UUID-shaped internal identifiers (internal trace IDs, node instance IDs, run IDs not already disclosed to the caller via the HTTP path or request body) with `"<redacted-id>"`; `u64` CheckpointId carve-out: `CheckpointId` is a `u64` newtype (ADR-005) — NOT UUID-shaped; the UUID regex cannot match it; `u64` checkpoint IDs are NOT covered by this pass — authoring-site discipline (node implementations MUST NOT embed checkpoint IDs in externally surfaced error messages) is their sole framework guarantee. No step may be skipped or reordered (ADR-029 §External-Boundary Error-Sanitization Parity, SEC-BOUND-001). Test vector BC-2.12.003 TV-013: a graph node error message contains a credential string (e.g., `"Bearer sk-..."`) in its message; poll `GET /threads/t1/runs/r1`; result: `error.message` does NOT contain the credential string; credential replaced with `<redacted>`; if the error is also an internal-panic, step (1) applies before `redact_credentials` in step (2).
 (traces to BC-2.12.003 {INV-008} External-Boundary Error-Sanitization; BC-2.12.003 TV-013; ADR-029 SEC-BOUND-001)
 
+### AC-021: Checkpoint historical-state read — GET /threads/{id}/state?checkpoint_id=<N>
+
+> **D-356 adversary fix DC-13 (2026-09-08, story-writer).** BC-2.12.001 {PC-015} historical-state read: D-356 added this endpoint variant; no Red Gate AC existed before this fix.
+
+**Happy path (TV-010):** `GET /threads/{id}/state?checkpoint_id=<N>` (where `N` is a u64 checkpoint identifier) returns HTTP 200 with the thread's `ChannelValues` snapshot as stored at checkpoint `N`. The response body is the checkpoint's state, NOT the current (latest) thread state. The current thread state is unaffected.
+
+**Error path (TV-011):** If checkpoint `N` does not exist for the given thread, the server responds with HTTP 422 `E-CHKPT-011` `CheckpointNotFound`. The response MUST NOT be a 404 (thread found; the checkpoint is what's absent).
+
+checkpoint_id is a u64 newtype (ADR-005); it is passed as a numeric query parameter, not as a string label.
+(traces to BC-2.12.001 postcondition {PC-015} — `?checkpoint_id` variant, TV-010; BC-2.12.001 edge case {EC-010} CheckpointNotFound → HTTP 422 E-CHKPT-011, TV-011)
+
+### AC-022: Fork-start — POST /threads/{id}/runs with checkpoint_id
+
+> **D-356 adversary fix DC-13 (2026-09-08, story-writer).** BC-2.12.003 {INV-009} fork-start: D-356 added this invariant; no Red Gate AC existed before this fix.
+
+**Happy path (TV-014):** `POST /threads/{id}/runs` with `config.configurable.checkpoint_id: <N>` (u64) in the request body initializes the new run's starting state from the `ChannelValues` stored at checkpoint `N` for that thread. The run is enqueued in `queued` state and eventually executes from that checkpoint's state. Existing checkpoints for the thread are NOT deleted — fork is additive (contrast: `multitask_strategy: rollback`, which deletes checkpoints above `latest_completed_checkpoint_id`). The thread's `latest_completed_checkpoint_id` pointer is unchanged by the fork-start request itself.
+
+**Error path (EC-008):** If checkpoint `N` does not exist for the given thread, the server responds with HTTP 422 `E-CHKPT-011` `CheckpointNotFound` before enqueuing any run. No run is created.
+
+checkpoint_id is a u64 newtype (ADR-005); it is passed as a JSON integer field in `config.configurable`, not as a string.
+(traces to BC-2.12.003 invariant {INV-009} fork-start initialize from checkpoint ChannelValues, TV-014; BC-2.12.003 edge case {EC-008} fork-start checkpoint absent → HTTP 422 E-CHKPT-011)
+
 ## Architecture Mapping
 
 | Component | Module | Crate | Pure/Effectful |
@@ -212,6 +235,8 @@ Before `Run.error.message` is surfaced via `{PC-013}` (GET run response) or `{PC
 | EC-019 | BC-2.12.003 EC-003 — node-body-panic path | Graph node body panics during execution | `in_progress → failed`; `error.code == "E-GRAPH-019"`; `error.message` is the STATIC E-GRAPH-019 message (no raw panic text); panic text logged at ERROR server-side; {INV-007} panic-text-isolation; {INV-005} no orphan runs upheld |
 | EC-020 | BC-2.12.003 {INV-007} — E-GRAPH-011 ConditionalEdgePanic path | Conditional edge function panics during graph execution | `in_progress → failed`; `error.code == "E-GRAPH-011"`; `error.message` is the STATIC E-GRAPH-011 message (no source_node, no raw panic text); panic text logged at ERROR server-side; {INV-007} panic-text-isolation (extended); {INV-005} no orphan runs upheld |
 | EC-021 | BC-2.12.003 {INV-008} — credential-redaction path (TV-013) | Run error message contains credential material before surfacing | `redact_credentials` applied in step (2) of {INV-008} mandatory pipeline; credential pattern absent from `Run.error.message` in any HTTP response; step (1) internal-panic static-replace precedes step (2) when applicable |
+| EC-022 | BC-2.12.001 EC-010 | `GET /threads/{id}/state?checkpoint_id=<N>` where checkpoint N not found | HTTP 422 E-CHKPT-011 CheckpointNotFound (not 404; thread exists, checkpoint absent) — AC-021 TV-011 |
+| EC-023 | BC-2.12.003 EC-008 | `POST /threads/{id}/runs` fork-start with `config.configurable.checkpoint_id=<N>` where checkpoint N not found | HTTP 422 E-CHKPT-011 CheckpointNotFound; no run created — AC-022 error path |
 
 ## Tasks
 
@@ -306,4 +331,5 @@ crates/pregolya-server/
 
 | Version | Date | Change | Source |
 |---------|------|--------|--------|
+| 1.14 | 2026-09-08 | DC-13/F-PDC13-02: AC-021 (BC-2.12.001 {PC-015}/{EC-010} checkpoint historical-state read, happy TV-010 + 422 E-CHKPT-011 TV-011) and AC-022 (BC-2.12.003 {INV-009}/{EC-008} fork-start, happy TV-014 + 422 E-CHKPT-011) added. EC-022 and EC-023 added. Token budget ~55,000. No new VPs. | DC-13 F-PDC13-02 |
 | 1.13 | 2026-09-02 | round-79/F-P2A251-02: BC table title cells corrected to verbatim canonical H1 per POL-7/F-P2A251-02. | round-79 F-P2A251-02 |
