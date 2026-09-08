@@ -8,15 +8,15 @@ status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
 changelog:
-  - "1.1 (D-356/DC-12/2026-09-07, story-writer): F-PDC12-01 — blocks list updated to include S-console-03 (invariant: blocks is exact inverse of depends_on; S-console-03 declares depends_on [S-console-01])."
   - "1.0 (D-356/2026-09-06, story-writer): Initial story — pregolya-console crate scaffolding, ConsoleConfig, CLI subcommand, rust_embed SPA serving, runtime-config.json, localhost :7437."
+  - "1.1 (D-356/DC-12/2026-09-07, story-writer): F-PDC12-01 — blocks list updated to include S-console-03 (invariant: blocks is exact inverse of depends_on; S-console-03 declares depends_on [S-console-01])."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.001.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "1e04879"
+input-hash: "8fe60e4"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: []

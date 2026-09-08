@@ -8,15 +8,15 @@ status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
 changelog:
-  - "1.1 (D-356/DC-15/2026-09-08, story-writer): F-PDC15-01 — target_module corrected from scalar `pregolya-server` to list `[pregolya-graph, pregolya-server]`; story CREATEs descriptor.rs in pregolya-graph (primary Pure Core deliverable) and MODIFYs debug_routes.rs in pregolya-server; VP-2.24.003-A/B are pregolya-graph, VP-2.24.003-C is pregolya-server; aligns with STORY-INDEX and sprint-state."
   - "1.0 (D-356/2026-09-06, story-writer): Initial story — graph::descriptor Pure Core extraction + GET /assistants/{id}/graph endpoint, E-SERVER-009 AssistantNotFound."
+  - "1.1 (D-356/DC-15/2026-09-08, story-writer): F-PDC15-01 — target_module corrected from scalar `pregolya-server` to list `[pregolya-graph, pregolya-server]`; story CREATEs descriptor.rs in pregolya-graph (primary Pure Core deliverable) and MODIFYs debug_routes.rs in pregolya-server; VP-2.24.003-A/B are pregolya-graph, VP-2.24.003-C is pregolya-server; aligns with STORY-INDEX and sprint-state."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.003.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "0b706dc"
+input-hash: "5ca2a1f"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-03]

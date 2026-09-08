@@ -1,11 +1,12 @@
 ---
 document_type: story-index
 level: L3
-version: "1.75"
+version: "1.76"
 status: active
 producer: state-manager
-timestamp: 2026-09-08T04:00:00Z
+timestamp: 2026-09-08T08:00:00Z
 changelog:
+  - "1.76 (D-356/DC-18/2026-09-08, state-manager): S-console-01 v1.1 (story-writer; DC-18 F-PDC18-01[HIGH] — frontmatter changelog reordered strict ascending [1.0, 1.1]; input-hash 1e04879→8fe60e4; pure reorder, no content change). S-console-04 v1.1 (story-writer; DC-18 F-PDC18-01[HIGH] — frontmatter changelog reordered strict ascending [1.0, 1.1]; input-hash 0b706dc→5ca2a1f; pure reorder, no content change). epics.md v1.9 (story-writer; DC-18 F-PDC18-02[MED] — v1.9 body changelog entry added at TOP documenting DC-10+DC-11 dep-inversion + sub-wave restructure 3A-3F→3A-3E; descending-class body changelog, version==first confirmed). verify-form-a-changelog-direction.sh FAIL=0 BC_UNVERIFIED=0 perimeter-wide confirmed. Input-hash: STORY-INDEX inputs not modified. Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.75 (D-356/DC-16/2026-09-08, state-manager): S-1.26 v1.14→v1.15 (story-writer; F-PDC16-02 [LOW, records] — frontmatter changelog reordered to strict ascending (1.1→1.15); v1.13 entry backfilled from body table verbatim (round-79/F-P2A251-02 wording)). BC-to-Story map BC-2.12.003 row updated: S-1.26→S-1.26 + S-console-07 (roadmap, Wave 3 — consumes {INV-009} fork-start via BC-2.24.005 {PC-003}). Input-hash: 5e6586a (S-1.26 current hash; no other index inputs modified). Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.74 (D-356/DC-15/2026-09-08, state-manager): S-console-04 v1.0→v1.1 (story-writer; F-PDC15-01 [MED] — target_module scalar `pregolya-server`→list `[pregolya-graph, pregolya-server]`; third-carrier completion of DC-14 crate-drift fix; story-inventory row + sprint-state.yaml were already corrected in DC-14; story frontmatter now aligned; all three crate carriers consistent). input-hash: 34034c0 UNCHANGED (index inputs not modified). Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.73 (D-356/DC-14/2026-09-08, state-manager): F-PDC14-01 [MED] — S-console-04 crate corrected pregolya-console→[pregolya-graph, pregolya-server] in §Story-Inventory row (Target Crate column) and sprint-state.yaml (crate: field); story builds graph::descriptor (pregolya-graph; VP-2.24.003-A/B) + GET /assistants/{id}/graph endpoint (pregolya-server; VP-2.24.003-C); ZERO pregolya-console footprint per §File Structure. F-PDC14-02 [MED] — §Wave-3 blockquote blanket claim 'All 10 Wave-3 stories target pregolya-console' reworded — S-console-03 (pregolya-server) + S-console-04 (pregolya-graph + pregolya-server) explicitly excepted. BC-INDEX v4.34→v4.35 (F-PDC14-03 BC-2.24.002 v1.7→v1.8 TV-006 canonical redaction). Input-hash: f963961→34034c0 (BC-INDEX updated). Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
