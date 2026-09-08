@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.005
-version: "1.2"
+version: "1.3"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -19,6 +19,7 @@ di_anchors: [DI-002, DI-004, DI-014]
 vp_seed: false
 red_gate: false
 changelog:
+  - "1.3 (D-356-fix/DC-05/2026-09-07, product-owner): F-PDC05-01: EC-002 HTTP status corrected 404→422 for E-CHKPT-011 CheckpointNotFound (HTTP 422 per taxonomy definition and BC-2.12.001 EC-010; DC-04 missed this site)."
   - "1.2 (D-356-fix/DC-04/2026-09-07, product-owner): F-PDC04-01: all checkpoint_id occurrences corrected from JSON string form to canonical u64 numeric form (CheckpointId newtype over u64 per BC-2.04.003 §Architecture Anchors; BC-2.12.003 TV-014 precedent). TV-002 ?checkpoint_id=ckpt-2 → ?checkpoint_id=2; TV-003 checkpoint_id: \"ckpt-1\" → checkpoint_id: 1; PC-003 placeholder quotes removed. F-PDC04-02: PC-002 citation updated to reference BC-2.12.001 {PC-015} ?checkpoint_id variant (added in BC-2.12.001 v1.11 DC-04 burst)."
   - "1.1 (D-356-fix/DC-03/2026-09-07, product-owner): F-PDC03-02: PC-003 fork mechanism made concrete — specifies config.configurable.checkpoint_id as the fork-start key (idiomatic LangGraph fork-start pattern; executor semantic defined in BC-2.12.003 {INV-009} added in this same fix burst). PC-005 wording corrected: 'no new server machinery' → 'no new server endpoints'; config.configurable.checkpoint_id is new documented server BEHAVIOR on the existing POST /threads/{id}/runs endpoint, not a new endpoint. TV-003 updated to show correct fork request shape."
   - "1.0 (D-356/2026-09-06, product-owner): Initial BC — D-356 dev-console scope expansion. Checkpoint history browser and fork-from-checkpoint trajectory replay."
@@ -29,7 +30,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "805b7eb"
+input-hash: "c0ff9f0"
 extracted_from: null
 modified: []
 deprecated: null
@@ -44,6 +45,8 @@ removal_reason: null
 
 > **D-356 dev-console scope expansion (2026-09-06, product-owner).** Roadmap-only.
 > Not built in the current cycle — spec and storyboard only. Build in Wave 3.
+
+> **D-356 adversary fix DC-05 (2026-09-07, product-owner).** F-PDC05-01: EC-002 HTTP status corrected `404` → `422` for E-CHKPT-011 CheckpointNotFound. E-CHKPT-011 is defined as HTTP 422 in the taxonomy (POLICY); the `404` in EC-002 was a DC-04 residue missed by the 404→422 sweep.
 
 > **D-356 adversary fix DC-04 (2026-09-07, product-owner).** F-PDC04-01: all `checkpoint_id` values corrected from JSON string form (`"ckpt-1"`, `"ckpt-2"`) to canonical u64 numeric form (`1`, `2`) — `CheckpointId` is a newtype over `u64` (BC-2.04.003 §Architecture Anchors; BC-2.12.003 TV-014 uses `checkpoint_id: 5`). F-PDC04-02: PC-002 state-inspection citation updated to reference BC-2.12.001 {PC-015} `?checkpoint_id` variant (added in BC-2.12.001 v1.11 this burst). S-console-07 sibling-sweep: implementer must use numeric `CheckpointId` in all `GET /threads/{id}/state?checkpoint_id=<N>` calls and all `POST /threads/{id}/runs` fork payloads.
 
@@ -87,7 +90,7 @@ Fork-from-checkpoint creates a new run via `POST /threads/{id}/runs` with `confi
 | ID | Description | Expected Behavior |
 |----|-------------|-------------------|
 | {EC-001} | Thread has no checkpoints (new thread, no run completed) | History panel shows empty state ("no checkpoints yet") |
-| {EC-002} | `GET /threads/{id}/state?checkpoint_id=<CheckpointId>` returns 404 E-CHKPT-011 (checkpoint evicted or compacted — BC-2.12.001 EC-010) | Panel shows "checkpoint no longer available" message for that entry; does not crash |
+| {EC-002} | `GET /threads/{id}/state?checkpoint_id=<CheckpointId>` returns 422 E-CHKPT-011 (checkpoint evicted or compacted — BC-2.12.001 EC-010; HTTP 422 per taxonomy definition) | Panel shows "checkpoint no longer available" message for that entry; does not crash |
 | {EC-003} | Fork-from-checkpoint: `POST /threads/{id}/runs` returns an error (e.g., E-SERVER-012 ConcurrentRun) | Error message displayed in the console; fork not started; operator can retry |
 | {EC-004} | Very large history (`?limit` pagination) | Console loads first page and shows "load more" control; `step_idx` ordering preserved across pages |
 | {EC-005} | Checkpoint state contains deeply nested JSON | State rendered with collapsible JSON tree; no truncation of the structure (truncation of individual string values is acceptable for display) |

@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.12.001
-version: "1.12"
+version: "1.13"
 status: active
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -31,8 +31,9 @@ retired: null
 removed: null
 removal_reason: null
 changelog:
+  - "1.13 (D-356-fix/DC-05/2026-09-07, product-owner): F-PDC05-02: changelog v1.11 entry self-contradiction corrected — 'HTTP 404' → 'HTTP 422' in the v1.11 changelog line (records fix; normative body already correct at HTTP 422 throughout)."
   - "1.12 (D-356-fix/DC-04/2026-09-07, product-owner): §Story Anchor: S-console-07 appended as roadmap consumer of the PC-015 ?checkpoint_id variant (Wave 3); S-1.26 remains primary implementation anchor. Reverse-anchor completeness fix."
-  - "1.11 (D-356-fix/DC-04/2026-09-07, product-owner): F-PDC04-02: PC-015 amended — GET /threads/{thread_id}/state gains optional ?checkpoint_id=<CheckpointId> (u64) selector returning historical checkpoint state at the specified ID; checkpoint not found raises E-CHKPT-011 CheckpointNotFound HTTP 404 (EC-010). TV-010 and TV-011 added covering the happy-path read and not-found path respectively."
+  - "1.11 (D-356-fix/DC-04/2026-09-07, product-owner): F-PDC04-02: PC-015 amended — GET /threads/{thread_id}/state gains optional ?checkpoint_id=<CheckpointId> (u64) selector returning historical checkpoint state at the specified ID; checkpoint not found raises E-CHKPT-011 CheckpointNotFound HTTP 422 (EC-010; HTTP 422 per taxonomy — corrected by v1.13/DC-05). TV-010 and TV-011 added covering the happy-path read and not-found path respectively."
   - "1.1 (ADV-P1D-PASS-31): F-P31-01 PC17 history endpoint — declare limit default 10, max 100, values > 100 clamped to 100, offset default 0 (pagination coherence canon; clamp out-of-range semantics)."
   - "1.2 (ADV-P1D-PASS-34): F-P34-01 PC8 — add clamp semantics (values > 100 silently clamped to 100) and offset default 0 (partial-fix propagation gap from pass-31). PC9 — declare created_at DESC ordering (canonical; F-P31-01). interface-definitions.md §Canonical Pagination Convention cites BC-2.12.001 PC8 as threads-list clamp+ordering anchor; PC8 now matches."
   - "1.3 (2026-07-15, F-P78-SWEEP/D18-P78-A): E-SERVER-007 message-prefix correction at two BC sites. (1) PC3 (Create Thread): added 'ThreadAlreadyExists:' prefix and lowercased 'Thread' to 'thread' in message string (was 'Thread'; now 'thread'). (2) EC-001: same corrections applied. Taxonomy already carried the prefix and lowercase; BC was the lagging artifact. Both sites now produce the canonical form 'ThreadAlreadyExists: thread <id> already exists'."
