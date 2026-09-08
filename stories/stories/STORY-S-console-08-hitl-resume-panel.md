@@ -3,20 +3,21 @@ document_type: story
 level: ops
 story_id: S-console-08
 epic_id: E-console
-version: "1.1"
+version: "1.2"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
 changelog:
   - "1.0 (D-356/2026-09-06, story-writer): Initial story — HITL approval dialog, Approve/Deny/Edit decisions, FIFO multi-interrupt ordering, resume dispatch, post-resume live monitoring."
   - "1.1 (D-356/2026-09-07, story-writer): Adversary fix DC-02 — remove phantom graph_interrupt as an SSE stream event. Re-scope interrupt detection to BC-2.24.006's two-mechanism model: (a) node/graph-boundary interrupts detected via run STATUS transitioning to interrupted (interrupt halts SSE stream; no dedicated event); (b) tool-approval interrupts via tool_approval_request SSE event. All references treating graph_interrupt as an observable SSE event removed."
+  - "1.2 (D-356/DC-23/2026-09-08, story-writer): F-PDC23-01 — resume is SAME run_id (architect ruling per BC-2.24.006 v1.3). AC-006 rewritten: run transitions in_progress on the SAME run_id; console continues monitoring same SSE stream (GET .../runs/{run_id}/stream); re-navigates to run inspection panel for same run_id. EC-006 corrected: same run_id unchanged. Task 8 corrected: post-resume continuation uses existing run_id. Zero new_run_id / {new_run_id} residue confirmed."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.006.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "55bd187"
+input-hash: "92e7a23"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-06]
@@ -71,7 +72,7 @@ Clicking Edit allows the operator to modify the tool call args JSON inline in th
 When multiple pending approvals exist (multiple `tool_approval_request` events), the console surfaces them in FIFO arrival order — first-received first. Only one interrupt is shown at a time. After dispatching resume for the first, if the run remains interrupted, the next interrupt is surfaced automatically. Verified by `test_BC_2_24_006_multi_interrupt_fifo_order()` (VP-2.24.006-B).
 
 ### AC-006 (traces to BC-2.24.006 postcondition PC-005)
-After a successful `POST .../resume`, the server returns a new `run_id`. The console subscribes to the new run's SSE stream (`GET /threads/{id}/runs/{new_run_id}/stream`) and transitions to the run inspection panel (S-console-06). Verified by `test_BC_2_24_006_post_resume_live_monitoring()`.
+After a successful `POST .../resume`, the run transitions to `in_progress` on the SAME run_id — no new run_id is issued. The console continues monitoring the same run's SSE stream (`GET /threads/{id}/runs/{run_id}/stream`) and re-navigates to the run inspection panel (S-console-06) for the same run_id. Verified by `test_BC_2_24_006_post_resume_live_monitoring()`.
 
 ### AC-007 (traces to BC-2.24.006 invariant INV-003)
 Client-side JSON validation blocks submission when the edited tool call args field contains invalid JSON. The submit button is disabled until the field is valid JSON. An inline error message shows below the edit field. Verified by `test_BC_2_24_006_json_validation_client_side()`.
@@ -103,7 +104,7 @@ When `POST .../resume` returns a server error, the error message is displayed in
 | EC-003 | Two pending `tool_approval_request` events | First shown; second surfaced after first is resolved in FIFO order |
 | EC-004 | Node-boundary interrupt with null scratchpad | Dialog shows node name + "no scratchpad data"; Approve/Deny available |
 | EC-005 | `POST .../resume` returns server error | Error shown in dialog; dialog stays open; operator can retry |
-| EC-006 | New `run_id` returned after resume | Console navigates to live monitoring for new run |
+| EC-006 | Resume succeeds (same run_id; `interrupted` → `in_progress`) | Console continues live monitoring for same run (run_id unchanged) |
 
 ## Token Budget Estimate (MANDATORY)
 
@@ -128,7 +129,7 @@ When `POST .../resume` returns a server error, the error message is displayed in
 5. [ ] Implement Deny action: require reason text input; POST `Command { resume: PreToolDecision::Deny(reason) }`
 6. [ ] Implement Edit action: inline JSON editor; client-side JSON validation; submit disabled on invalid JSON
 7. [ ] Implement FIFO queue: multiple pending interrupts surfaced one at a time in arrival order
-8. [ ] Implement post-resume navigation: fetch new `run_id`; transition to run inspection panel
+8. [ ] Implement post-resume continuation: run_id is UNCHANGED after resume; re-navigate to run inspection panel (S-console-06) using the existing run_id
 9. [ ] Handle resume server errors: show error in dialog; keep dialog open
 10. [ ] Run SPA tests — all AC tests pass
 

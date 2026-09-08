@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-console-04
 epic_id: E-console
-version: "1.2"
+version: "1.3"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -11,13 +11,14 @@ changelog:
   - "1.0 (D-356/2026-09-06, story-writer): Initial story — graph::descriptor Pure Core extraction + GET /assistants/{id}/graph endpoint, E-SERVER-009 AssistantNotFound."
   - "1.1 (D-356/DC-15/2026-09-08, story-writer): F-PDC15-01 — target_module corrected from scalar `pregolya-server` to list `[pregolya-graph, pregolya-server]`; story CREATEs descriptor.rs in pregolya-graph (primary Pure Core deliverable) and MODIFYs debug_routes.rs in pregolya-server; VP-2.24.003-A/B are pregolya-graph, VP-2.24.003-C is pregolya-server; aligns with STORY-INDEX and sprint-state."
   - "1.2 (D-356/DC-19/2026-09-08, story-writer): F-PDC19-02 — VP-2.24.003-C is pregolya-graph (graph::descriptor, start-node-present property, unit/phase-3), NOT pregolya-server; stale claim in v1.1 entry corrected. AC-007 already correctly anchors VP-2.24.003-A and VP-2.24.003-C to test_BC_2_24_003_compile_graph_descriptor_pure() in pregolya-graph."
+  - "1.3 (D-356/DC-23/2026-09-08, story-writer): F-PDC23-02 — AC-006 error envelope corrected: {\"error\":} → {\"code\":}; message placeholder genericized to <id> per BC-2.24.003 v1.3. Zero {\"error\":} residue in live body."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.003.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "5ca2a1f"
+input-hash: "c7b2c44"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-03]
@@ -70,7 +71,7 @@ When the `dot` binary is not in `PATH`, `dot_src` is `null` in the response but 
 The descriptor is a structural snapshot — it carries no runtime state. The same assistant returns the identical descriptor on two consecutive calls (deterministic). Verified by `test_BC_2_24_003_static_snapshot_deterministic()`.
 
 ### AC-006 (traces to BC-2.24.003 postcondition PC-006)
-`GET /assistants/nonexistent-id/graph` returns `404 Not Found` with `{"error": "E-SERVER-009", "message": "AssistantNotFound: assistant 'nonexistent-id' does not exist"}`. Error code is `E-SERVER-009` exactly (existing code — no new code minted). Verified by `test_BC_2_24_003_assistant_not_found_404()`.
+`GET /assistants/nonexistent-id/graph` returns `404 Not Found` with `{"code": "E-SERVER-009", "message": "AssistantNotFound: assistant '<id>' does not exist"}`. Error code is `E-SERVER-009` exactly (existing code — no new code minted). Verified by `test_BC_2_24_003_assistant_not_found_404()`.
 
 ### AC-007 (traces to BC-2.24.003 invariant INV-001)
 The transformation function `fn compile_graph_descriptor(graph: &CompiledStateGraph) -> GraphDescriptor` is extracted as a free function in module `graph::descriptor` in `pregolya-graph` (Pure Core). It has no I/O, no async, no global state. A unit test calls it without an async runtime. Verified by `test_BC_2_24_003_compile_graph_descriptor_pure()` (VP-2.24.003-A, VP-2.24.003-C).

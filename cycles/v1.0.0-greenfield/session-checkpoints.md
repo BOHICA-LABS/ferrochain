@@ -4576,3 +4576,20 @@ PR #1 MERGEABLE but requires GENUINE HUMAN MERGE (self-authored PR, DIRECTIVE 4 
 
 ### PENDING USER-APPROVED WORK
 DC-10 adversary pass PENDING (orchestrator, streak 0/3). PR #1 merge (human action required). DEV-TOOLING-D255: v1 dev-tooling expansion — ready to start post-merge. DTU clones (openai/anthropic/ollama): Phase-4 prerequisite.
+
+---
+<!-- D-356/DC-17 checkpoint archived from STATE.md §Session Resume Checkpoint (2026-09-08; replaced by DC-23 checkpoint). -->
+
+## Archived: D-356/DC-17 fix-burst Session Resume Checkpoint
+
+### RESUME IN ONE BREATH
+pregolya Phase-2 CONVERGED+gate-APPROVED (anchor 81d16ca); Phase-3 IN PROGRESS at workspace-init. D-356 Phase-1 spec amendment COMPLETE (developer-console ROADMAP-ONLY; census: BC 148 / VP 41 / EC 145 / stories 52 / pts 372). D-356/DC-01 through DC-17 fix-bursts COMPLETE: DC-01 5 (3H+1M+1L); DC-02 6 (2H+3M+1L); DC-03 4 (1H+1M+2L); DC-04 4 (2H+2M); DC-05 3 (2M+1L); DC-06 3 (2H+1M); DC-06-sweep 6 (2H+4M); DC-07 5 (1H+2M+2OBS); DC-08 4 (2M+2L); DC-09 2 (1MED+1OBS); DC-10 4 (1H+1M+2L); DC-11 3 (2H+1MED); DC-12 1 (1MED); DC-13 2 (1MED+1LOW); DC-14 3 (3MED); DC-15 1 (1MED); DC-16 2 (1MED+1LOW); DC-17 2+pgap (1H+1M+1process-gap). Full trajectory: →5→6→4→4→3→3→6→5→4→2→4→3→1→2→3→1→2→2+pgap. Streak 0/3 (DC-17 fix push); DC-18 gates new HEAD. DC-17 closed: 10 BC frontmatter changelogs reordered strict ascending + 7 SS-24 input-hash drifts corrected + L-284 codified. PR #1 (workspace scaffold) REVIEWED-CLEAN + MERGEABLE at c9712c20 but BLOCKED from agent-merge (self-authored PR) — needs GENUINE HUMAN MERGE.
+
+### HEADS
+- develop: `bfe0592` — LOCAL ONLY (2 commits ahead of origin/develop at `644d1ad`; push required before Phase-3); factory-artifacts: HEAD updated by DC-17 fix-burst commit. Main worktree on `chore/phase3-workspace-init` (NOT develop; return to develop post-merge). PR #1 branch `chore/phase3-workspace-init`: head `c9712c20` (OPEN, MERGEABLE, CI 17/17 green, cycle-13 APPROVE 0-blocking).
+
+### RESUME NEXT-ACTION
+(1) Dispatch DC-18 adversary pass (fresh-context) against current factory-artifacts HEAD; streak 0/3. (2) Get PR #1 human-merged (squash-merge targeting develop). (3) Post-merge: return main worktree to develop; push develop 2 local-only commits; launch S-1.01 (PregolyaError) in pregolya-core. Standing directives DIRECTIVE 1/2/3/4 in force. 8 open deferrals (C-1/PG-1/PG-2/PG-3/PG-4/PG-5/PG-6/PG-7).
+
+### DECISION-LOG DELTA (D-356/DC-17 fix-burst)
+D-356/DC-17 (2026-09-08): DC-17 fix-burst CLOSED. trajectory-tail →3→1→2→2+pgap (DC-14=3 [3MED]; DC-15=1 [1MED]; DC-16=2 [1MED+1LOW]; DC-17=2+pgap [1H+1M+1pgap] ALL CLOSED). F-PDC17-01[HIGH] 10 BC frontmatter changelogs reordered strict ascending (8 SS-24 BCs born descending at v1.0 + BC-2.12.001/003 non-monotonic via prepend→fixed). Input-hash drift corrected 7 SS-24 BCs (stale→5ff81d4). Hook PASS: FAIL=0 BC_UNVERIFIED=0. F-PDC17-02[MED] (PO): BC-2.12.001 v1.13→v1.14 §Related BCs +BC-2.24.005; §Story Anchor +S-console-07. L-284 codified. PG-7: POL-14 advisory→BLOCKING promotion deferred factory self-improvement wave (devops-engineer). BC-INDEX v4.36→v4.37. Census UNCHANGED: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31. Streak 0/3 (fix push; DC-18 gates new HEAD).

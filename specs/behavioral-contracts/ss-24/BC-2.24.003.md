@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.003
-version: "1.2"
+version: "1.3"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -22,6 +22,7 @@ changelog:
   - "1.0 (D-356/2026-09-06, product-owner): Initial BC — D-356 dev-console scope expansion. Graph-descriptor structural contract for GET /assistants/{id}/graph endpoint."
   - "1.1 (D-356-fix/DC-01/2026-09-06, product-owner): F-PDC01-01 Story Anchor corrected: was S-console-03, now S-console-04. Verified against S-console-04 frontmatter behavioral_contracts: [BC-2.24.003]."
   - "1.2 (D-356-fix/DC-07/2026-09-07, product-owner): F-PDC07-01: PC-007 corrected — debug_api_key→debug_route_key (canonical field: SecurityConfig.debug_route_key per BC-2.12.005 PRE-004/INV-001; ADR-021 §Decision 1)."
+  - "1.3 (D-356-fix/DC-23/2026-09-08, product-owner): F-PDC23-02: PC-006 aligned to canonical pregolya-server error envelope {code, message} — explicit JSON body added: {\"code\": \"E-SERVER-009\", \"message\": \"AssistantNotFound: assistant '<id>' does not exist\"} per BC-2.12.001 EC-010 / BC-2.12.003 EC-008 canonical form. EC-001 and TV-002 updated to match explicit form."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-042
   - architecture/decisions/ADR-031-developer-console-architecture.md
@@ -29,7 +30,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "5ff81d4"
+input-hash: "1f87a7c"
 extracted_from: null
 modified: []
 deprecated: null
@@ -44,6 +45,8 @@ removal_reason: null
 
 > **D-356 dev-console scope expansion (2026-09-06, product-owner).** Roadmap-only.
 > Not built in the current cycle — spec and storyboard only. Build in Wave 3.
+
+> **D-356 adversary fix DC-23 (2026-09-08, product-owner).** F-PDC23-02: PC-006, EC-001, and TV-002 updated — added explicit `{"code": "E-SERVER-009", "message": "AssistantNotFound: ..."}` JSON body (canonical `{code, message}` envelope per BC-2.12.001 {EC-010} / BC-2.12.003 {EC-008}). E-SERVER-009 is an existing server code; the body envelope was previously implicit.
 
 > **D-356 adversary fix DC-07 (2026-09-07, product-owner).** F-PDC07-01: PC-007 corrected — `debug_api_key` → `debug_route_key`. `SecurityConfig.debug_route_key: Option<String>` is the canonical gate field (BC-2.12.005 PRE-004/PC-006/PC-007/INV-001; ADR-021 §Decision 1).
 
@@ -83,7 +86,7 @@ AssistantNotFound`.
 3. {PC-003} **`edges` completeness:** Every directed edge in the compiled graph (including conditional edges) appears in the `edges` array. Conditional edges carry their condition label; unconditional edges carry `"condition": null`.
 4. {PC-004} **`dot_src` optional:** `dot_src` is populated when the `dot` binary (Graphviz) is available in PATH at runtime. When absent, `dot_src` is `null`. The absence of `dot_src` does not affect `nodes`/`edges` completeness.
 5. {PC-005} **Static snapshot semantics:** The descriptor is a structural snapshot of the compiled graph — it carries no runtime state (no current node position, no message content, no checkpoint IDs). Repeated calls return the same descriptor for the same graph version.
-6. {PC-006} **Assistant not found:** When `{id}` does not match any registered assistant, returns HTTP 404 with `E-SERVER-009 AssistantNotFound` (existing code — no new code minted for this case).
+6. {PC-006} **Assistant not found:** When `{id}` does not match any registered assistant, returns HTTP 404 with `{"code": "E-SERVER-009", "message": "AssistantNotFound: assistant '<id>' does not exist"}` (existing code — no new code minted for this case; canonical envelope per BC-2.12.001 {EC-010}).
 7. {PC-007} **`debug_route_key` gate:** Subject to `SecurityConfig.debug_route_key` (BC-2.12.005) — same gate as all `/debug/*` endpoints (BC-2.12.005 PC-006/PC-007).
 
 ## Invariants
@@ -98,7 +101,7 @@ AssistantNotFound`.
 
 | ID | Description | Expected Behavior |
 |----|-------------|-------------------|
-| {EC-001} | `{id}` does not match any registered assistant | `404 Not Found` with `E-SERVER-009 AssistantNotFound: assistant '<id>' does not exist` |
+| {EC-001} | `{id}` does not match any registered assistant | HTTP 404 with `{"code": "E-SERVER-009", "message": "AssistantNotFound: assistant '<id>' does not exist"}` |
 | {EC-002} | `dot` binary not in PATH | `dot_src: null` in response; `nodes`/`edges` still fully populated; `200 OK` |
 | {EC-003} | Graph has no conditional edges (linear pipeline) | All edges have `"condition": null`; response valid |
 | {EC-004} | Graph has branch nodes (conditional routing) | Branch node has kind `"branch"`; outgoing conditional edges carry condition labels |
@@ -110,7 +113,7 @@ AssistantNotFound`.
 | # | Input | Expected Output | Category |
 |---|-------|-----------------|----------|
 | TV-001 | `GET /assistants/my-assistant/graph`; assistant has 3 nodes (start, agent, end) and 2 edges | `200 OK`; `nodes` has 3 entries; `edges` has 2 entries with `condition: null`; `dot_src: null` (no dot binary in test env) | happy-path |
-| TV-002 | `GET /assistants/nonexistent/graph` | `404 Not Found`; `E-SERVER-009 AssistantNotFound` | EC-001 |
+| TV-002 | `GET /assistants/nonexistent/graph` | HTTP 404; `{"code": "E-SERVER-009", "message": "AssistantNotFound: assistant 'nonexistent' does not exist"}` | EC-001 |
 | TV-003 | Graph with a branch node and 2 outgoing conditional edges | `200 OK`; branch node has `kind: "branch"`; 2 edges have non-null `condition` labels | EC-004 |
 | TV-004 | `debug-endpoints` feature disabled; request to endpoint | `404 Not Found` | EC-005 |
 

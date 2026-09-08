@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-console-03
 epic_id: E-console
-version: "1.3"
+version: "1.4"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -12,6 +12,7 @@ changelog:
   - "1.1 (D-356/2026-09-07, story-writer): F-PDC07-01 — renamed SecurityConfig field debug_api_key → debug_route_key throughout (BC-2.12.005 PRE-004/INV-001; ADR-021 §Decision 1); AC-005 updated to cover startup refusal E-SERVER-013 InvalidDebugRouteKey when key absent/empty (BC-2.24.002 PC-007/EC-007)."
   - "1.2 (D-356/2026-09-07, story-writer): F-PDC10-02 — dependency inversion applied per ADR-031 Decision 7: server reads via Arc<dyn DebugSpanSource> (server-owned trait); pregolya-console path dep row removed from Library requirements; server::debug_span (own module) replaces it; AC-001/AC-002 SpanData attributed as server::debug_span server-owned type; AC-008 Arc<DebugSpanExporter> -> Arc<dyn DebugSpanSource>; Task 5 and Previous Story Intelligence updated."
   - "1.3 (D-356/2026-09-07, story-writer): F-PDC11-02 — S-console-03 is now the build-owner of server::debug_span; dep-edge flipped (depends_on now [S-console-01]; blocks now [S-console-02, S-console-04, S-console-06]); debug_span.rs CREATE task added; compile-fail gate tests/external/span-data-non-exhaustive/ relocated here; PSI corrected to note S-console-03 creates server::debug_span."
+  - "1.4 (D-356/DC-23/2026-09-08, story-writer): F-PDC23-02 — error envelope corrected to canonical {code, message} form per BC-2.24.002 v1.9: AC-003 and AC-007 updated from {\"error\":} to {\"code\":}; message text updated to single-quoted 'pregolya console --dev' form per O-PDC23-A. EC-004 updated to show canonical envelope. Zero {\"error\":} residue in live body."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.002.md
@@ -19,7 +20,7 @@ inputs:
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
   - .factory/specs/prd-supplements/error-taxonomy.md
-input-hash: "fcf62aa"
+input-hash: "aa32503"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-01]
@@ -69,7 +70,7 @@ tdd_mode: strict
 `GET /debug/trace/{event_id}` returns `200 OK` with a single `SpanData` JSON object (`SpanData` is a server-owned type defined in `pregolya-server/server::debug_span`) when the `event_id` matches a span in the buffer. Returns `404 Not Found` when no span matches. Verified by `test_BC_2_24_002_trace_event_found()` and `test_BC_2_24_002_trace_event_not_found()`.
 
 ### AC-003 (traces to BC-2.24.002 postcondition PC-005)
-When `DebugSpanExporter` is NOT injected into pregolya-server (standalone mode without dev_mode), both endpoints return `503 Service Unavailable` with body `{"error": "E-SERVER-023", "message": "DebugExporterNotConfigured: debug span exporter is not configured; start server via pregolya console --dev"}`. Error code is `E-SERVER-023` exactly. Verified by `test_BC_2_24_002_no_exporter_503()` (VP-2.24.002-C).
+When `DebugSpanExporter` is NOT injected into pregolya-server (standalone mode without dev_mode), both endpoints return `503 Service Unavailable` with body `{"code": "E-SERVER-023", "message": "DebugExporterNotConfigured: debug span exporter is not configured; start server via 'pregolya console --dev'"}`. Error code is `E-SERVER-023` exactly. Verified by `test_BC_2_24_002_no_exporter_503()` (VP-2.24.002-C).
 
 ### AC-004 (traces to BC-2.24.002 postcondition PC-006)
 The `debug-endpoints` Cargo feature defaults to `false` in `pregolya-server/Cargo.toml`. When the feature is disabled, neither `/debug/trace/session/{id}` nor `/debug/trace/{event_id}` routes exist — all requests to these paths return `404 Not Found`. No debug routing code is compiled in. Verified by `test_BC_2_24_002_feature_disabled_404()`.
@@ -81,7 +82,7 @@ When the `debug-endpoints` feature is enabled and `SecurityConfig.debug_route_ke
 A production build of `pregolya-server` compiled WITHOUT the `debug-endpoints` feature has zero debug routing code. The CI gate `check-debug-endpoints-default` verifies `debug-endpoints = false` in `pregolya-server/Cargo.toml` feature defaults. Verified by `just check-debug-endpoints-default` CI task.
 
 ### AC-007 (traces to BC-2.24.002 edge case EC-005)
-`GET /debug/trace/session/x` when the exporter is not configured returns `503` with the exact error body: `{"error": "E-SERVER-023", "message": "DebugExporterNotConfigured: debug span exporter is not configured; start server via pregolya console --dev"}`. No other response shape is acceptable. Verified by `test_BC_2_24_002_exporter_not_configured_body_exact()`.
+`GET /debug/trace/session/x` when the exporter is not configured returns `503` with the exact error body: `{"code": "E-SERVER-023", "message": "DebugExporterNotConfigured: debug span exporter is not configured; start server via 'pregolya console --dev'"}`. No other response shape is acceptable. Verified by `test_BC_2_24_002_exporter_not_configured_body_exact()`.
 
 ### AC-008 (traces to BC-2.24.002 edge case EC-006)
 Concurrent `GET /debug/trace/session/{id}` requests against the shared `Arc<dyn DebugSpanSource>` return consistent snapshots with no data race. The `RwLock` inside the concrete `DebugSpanExporter` (injected by the console layer) allows multiple concurrent readers. Verified by `test_BC_2_24_002_concurrent_read_consistent()`.
@@ -109,7 +110,7 @@ Concurrent `GET /debug/trace/session/{id}` requests against the shared `Arc<dyn 
 | EC-001 | `session_id` with no matching spans | Returns `200 OK` with empty array `[]` |
 | EC-002 | `event_id` with no matching span | Returns `404 Not Found` |
 | EC-003 | `debug-endpoints` feature disabled | Route does not exist; `404 Not Found` |
-| EC-004 | No exporter injected | `503` with `E-SERVER-023` body |
+| EC-004 | No exporter injected | `503` with `{"code": "E-SERVER-023", "message": "DebugExporterNotConfigured: ..."}` canonical envelope |
 | EC-005 | Concurrent reads | Thread-safe RwLock; consistent snapshots |
 
 ## Token Budget Estimate (MANDATORY)

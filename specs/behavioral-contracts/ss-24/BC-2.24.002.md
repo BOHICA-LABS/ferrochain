@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.002
-version: "1.8"
+version: "1.9"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -27,6 +27,7 @@ changelog:
   - "1.5 (D-356-fix/DC-08/2026-09-07, product-owner): F-PDC08-02: §Story Anchor updated — S-console-03 appended as Wave 3 secondary anchor (debug-endpoints feature / server::debug_routes; builds VP-2.24.002-C). S-console-02 remains primary."
   - "1.6 (D-356-fix/DC-10/2026-09-07, product-owner): F-PDC10-02: §Module updated to canonical 4-entry ADR-031 Decision 7 split — server::debug_span (Boundary) added as pregolya-server module owning SpanData data type and DebugSpanSource read-trait (consumer-owns-interface). Body sweep: Description clarified that server reads via Arc<dyn DebugSpanSource> with zero server→console compile dependency; PRE-002 injection language updated to Arc<dyn DebugSpanSource>; PC-005 and TV-004 updated from DebugSpanExporter to DebugSpanSource abstraction; INV-003 SpanData attributed to server::debug_span; INV-005 corrected from Arc<DebugSpanExporter> to Arc<dyn DebugSpanSource> (ADR-031 Decision 7 dependency inversion); Architecture Anchors updated to cite Decision 7; Traceability Module and Architecture Authority rows updated."
   - "1.7 (D-356-fix/DC-11/2026-09-07, product-owner): F-PDC11-03: §Module server::debug_span clause had duplicate [VP-2.24.002-C target] annotation — VP-2.24.002-C targets server::debug_routes ONLY (VP-INDEX §VP Catalog). Removed [VP-2.24.002-C target] from server::debug_span clause; replaced with [no dedicated VP; exercised via VP-2.24.002-C/D] to document the indirect coverage. server::debug_routes [VP-2.24.002-C target] annotation unchanged."
+  - "1.9 (D-356-fix/DC-23/2026-09-08, product-owner): F-PDC23-03: INV-002 Mutex→RwLock per architect ruling (purity-map v1.48 + ADR-031 v1.5): DebugSpanExporter owns Arc<RwLock<RingBuffer<SpanData>>> (write lock at insertion; read locks for concurrent readers); Module row updated. F-PDC23-02: PC-005 and TV-004 error body key corrected 'error' → 'code' to match canonical pregolya-server envelope {code, message} (BC-2.12.001 EC-010 / BC-2.12.003 EC-008). O-PDC23-A: PC-005 and TV-004 E-SERVER-023 message string sync — single-quotes added around 'pregolya console --dev' to match error-taxonomy §E-SERVER-023 registry (byte-identical for test_BC_2_24_002_exporter_not_configured_body_exact)."
   - "1.8 (D-356-fix/DC-14/2026-09-08, product-owner): F-PDC14-03: TV-006 Expected Output corrected — previous form 'Bearer [REDACTED]' (retaining Bearer prefix, bracketed-caps token) is non-canonical. Canonical form per S-1.26 AC-020 step 2(d) and BC-2.12.003 {INV-008} step 2: the entire 'Bearer <token>' span (Bearer\\s+[A-Za-z0-9._~+/=\\-]+) is replaced with '<redacted>' (lowercase, angle-bracketed). Corrected: 'Bearer sk-abc123' → '<redacted>'; served content reads '<redacted> is the key'."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-042
@@ -35,7 +36,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "5ff81d4"
+input-hash: "1f87a7c"
 extracted_from: null
 modified: []
 deprecated: null
@@ -60,6 +61,8 @@ removal_reason: null
 > **D-356 adversary fix DC-08 (2026-09-07, product-owner).** F-PDC08-02: §Story Anchor updated — S-console-03 appended as Wave 3 secondary anchor (debug-endpoints feature / `server::debug_routes`; builds VP-2.24.002-C). S-console-02 remains primary.
 
 > **D-356 adversary fix DC-07 (2026-09-07, product-owner).** F-PDC07-01: `debug_api_key` → `debug_route_key` throughout (PC-007, EC-007, changelog v1.1, DC-02 blockquote). Canonical field is `SecurityConfig.debug_route_key: Option<String>` (BC-2.12.005 PRE-004/PC-006/PC-007/INV-001; ADR-021 §Decision 1). F-PDC07-02: PC-007 and EC-007 now explicitly cite E-SERVER-013 InvalidDebugRouteKey for the startup boot-refusal path (distinct from E-SERVER-004 runtime 403). F-PDC07-05: stale `(update in progress by architect)` removed from PC-007 and DC-02 blockquote (ADR-031 D6-2 landed).
+
+> **D-356 adversary fix DC-23 (2026-09-08, product-owner).** F-PDC23-03: INV-002 corrected to RwLock per architect ruling (purity-map v1.48 + ADR-031 v1.5) — `DebugSpanExporter` owns `Arc<RwLock<RingBuffer<SpanData>>>` (write lock at insertion; concurrent readers acquire read locks at query time). F-PDC23-02: PC-005 and TV-004 error body key `"error"` → `"code"` (canonical `{code, message}` envelope per BC-2.12.001 {EC-010} / BC-2.12.003 {EC-008}). O-PDC23-A: E-SERVER-023 message string sync — single-quotes added around `'pregolya console --dev'` to match error-taxonomy §E-SERVER-023 registry (byte-exact for `test_BC_2_24_002_exporter_not_configured_body_exact`).
 
 > **D-356 adversary fix DC-14 (2026-09-08, product-owner).** F-PDC14-03: TV-006 Expected Output corrected — the previous form `Bearer [REDACTED]` (retaining `Bearer` prefix, uppercase bracketed token) is non-canonical. Per S-1.26 AC-020 step 2(d) and BC-2.12.003 {INV-008} step 2, the `redact_credentials` function replaces the entire `Bearer <token>` span (`Bearer\s+[A-Za-z0-9._~+/=\-]+`) with `"<redacted>"` (lowercase, angle-bracketed, no retained prefix). Corrected TV-006 expected output: served `llm_request.messages[0].content` reads `"<redacted> is the key"`.
 
@@ -95,7 +98,7 @@ removal_reason: null
    ```
 3. {PC-003} **`GET /debug/trace/session/{session_id}` response:** Returns HTTP 200 with a JSON array of `SpanData` ordered by `start_time_ms` ascending for the given `session_id`. Returns an empty array `[]` when no spans match (not 404).
 4. {PC-004} **`GET /debug/trace/{event_id}` response:** Returns HTTP 200 with a JSON object containing the `SpanData` for the identified event. Returns HTTP 404 when no span matches `event_id`.
-5. {PC-005} **No exporter configured:** When no `DebugSpanSource` implementation is injected (standalone pregolya-server without co-launch, or feature disabled), both endpoints return HTTP 503 with body `{"error": "E-SERVER-023", "message": "DebugExporterNotConfigured: debug span exporter is not configured; start server via pregolya console --dev"}`.
+5. {PC-005} **No exporter configured:** When no `DebugSpanSource` implementation is injected (standalone pregolya-server without co-launch, or feature disabled), both endpoints return HTTP 503 with body `{"code": "E-SERVER-023", "message": "DebugExporterNotConfigured: debug span exporter is not configured; start server via 'pregolya console --dev'"}`.
 6. {PC-006} **Debug-endpoints default OFF:** The `debug-endpoints` feature defaults to `false` in `pregolya-server/Cargo.toml`. Production builds without this feature compile out all debug routing (zero overhead). CI gate `check-debug-endpoints-default` verifies this (ADR-031 Decision 6).
 7. {PC-007} **`debug_route_key` mandatory gate:** When the `debug-endpoints` Cargo feature is enabled, `SecurityConfig.debug_route_key` is REQUIRED — a missing or empty key triggers E-SERVER-013 InvalidDebugRouteKey at startup (the server MUST refuse to start before binding the HTTP listener; error-taxonomy §E-SERVER-013; BC-2.12.005 EC-005 startup-only). Per ADR-031 Decision 6-2. Two distinct failure modes: (a) empty/absent `debug_route_key` + feature on → E-SERVER-013 at startup (refuse to start before accepting any requests); (b) valid key configured + unauthenticated request → E-SERVER-004 DebugRouteUnauthorized HTTP 403 at runtime.
 8. {PC-008} **SpanData sanitization before ring-buffer insertion:** In `console::span_exporter`, `SpanData.llm_request`, `SpanData.llm_response`, and `SpanData.attributes` MUST be passed through the SEC-BOUND-001 sanitization pipeline (internal-panic static-replace → redact_credentials → sanitize_internal_ids) **before the span is inserted into the ring buffer** — the same pipeline applied to `StreamEvent::Error.error_message` at the run-stream boundary (BC-2.06.001 §Postconditions PC-002 and BC-2.12.007 §Invariants INV-004, authority ADR-029 §External-Boundary Error-Sanitization Parity). Sanitization at insertion-time is the canonical location (S-console-02 AC-011); this subsumes and guarantees the "before serving" property. Unsanitized values MUST NOT enter the ring buffer; SEC-BOUND-001 is the only path to storage and therefore to the wire.
@@ -103,7 +106,7 @@ removal_reason: null
 ## Invariants
 
 - {INV-001} **Bounded memory:** The ring buffer NEVER exceeds `span_retention_cap` entries. FIFO eviction is the only growth-control mechanism — no dynamic resizing, no memory limit override.
-- {INV-002} **Pure-core ring buffer:** `RingBuffer<T>` — pure data structure in `console::ring_buffer` (Pure Core); deterministic read/write, index arithmetic, extractable for Kani/proptest verification. `DebugSpanExporter` in `console::span_exporter` (Boundary) owns an `Arc<Mutex<RingBuffer<SpanData>>>` and applies SEC-BOUND-001 sanitization at insertion. The effectful OTel exporter registration lives in the Boundary layer (ADR-031 Decision 5).
+- {INV-002} **Pure-core ring buffer:** `RingBuffer<SpanData>` storage lives in `console::ring_buffer` (Pure Core); `DebugSpanExporter` in `console::span_exporter` (Boundary) is the sole writer via `Arc<RwLock<RingBuffer<SpanData>>>` (acquires write lock at insertion; multiple concurrent readers acquire read locks at query time); reads served by `server::debug_routes` via the same Arc handle (ADR-031 Decision 5).
 - {INV-003} **`SpanData` is `#[non_exhaustive]`:** `SpanData` is a public API-surface type defined in `server::debug_span` (pregolya-server; consumer-owns-interface per ADR-031 Decision 7) and MUST carry `#[non_exhaustive]` per workspace conventions.
 - {INV-004} **DI-014:** Span-export errors (OTel export callback failure) are logged via `tracing::warn!` and do not propagate to the engine; engine execution continues uninterrupted.
 - {INV-005} **Shared via `Arc<dyn DebugSpanSource>`:** `server::debug_routes` holds `Arc<dyn DebugSpanSource>` (injected at launch) to read spans — dyn-dispatch dependency inversion (ADR-031 Decision 7): pregolya-server has ZERO compile dependency on pregolya-console. `DebugSpanExporter` (in `console::span_exporter`, pregolya-console) implements `DebugSpanSource` and is injected as `Arc<dyn DebugSpanSource>` when the console co-launches the server. This satisfies Arc-DI wiring per workspace convention while eliminating the server→console crate coupling.
@@ -128,7 +131,7 @@ removal_reason: null
 | TV-001 | Ring buffer cap=3; 4 spans exported in order A, B, C, D | Buffer contains [B, C, D]; A evicted | ring-buffer FIFO |
 | TV-002 | `GET /debug/trace/session/sess-123` when buffer has 2 spans for sess-123 | `200 OK`, JSON array of 2 `SpanData` ordered by `start_time_ms` | happy-path trace read |
 | TV-003 | `GET /debug/trace/evt-456` when event_id not in buffer | `404 Not Found` | EC-003 |
-| TV-004 | Server started without a `DebugSpanSource` implementation (no co-launch); `GET /debug/trace/session/x` | `503` with `{"error": "E-SERVER-023", "message": "DebugExporterNotConfigured: ..."}` | EC-005 |
+| TV-004 | Server started without a `DebugSpanSource` implementation (no co-launch); `GET /debug/trace/session/x` | `503` with `{"code": "E-SERVER-023", "message": "DebugExporterNotConfigured: debug span exporter is not configured; start server via 'pregolya console --dev'"}` | EC-005 |
 | TV-005 | `debug-endpoints` feature disabled; request to `/debug/trace/session/x` | `404 Not Found` (route does not exist) | EC-004 |
 | TV-006 | `SpanData.llm_request` contains `{"messages": [{"role": "user", "content": "Bearer sk-abc123 is the key"}]}` | Served `llm_request` field has credential span replaced per `redact_credentials` canonical form (S-1.26 AC-020 step 2(d); BC-2.12.003 {INV-008} step 2): entire `Bearer sk-abc123` span → `<redacted>`; stored/served field reads `"<redacted> is the key"`; original credential not transmitted in HTTP response | PC-008, SEC-BOUND-001 |
 
@@ -175,7 +178,7 @@ S-console-03 (Wave 3 — debug-endpoints feature / server::debug_routes; builds 
 | Architecture Authority | ADR-031 Decision 2 (debug endpoint paths, SpanData shape, E-SERVER-023, debug-endpoints feature gate, default OFF), Decision 5 (purity boundary: ring buffer Pure Core, OTel registration Boundary), Decision 7 (consumer-owns-interface: SpanData + DebugSpanSource trait in server::debug_span; server holds Arc<dyn DebugSpanSource>; zero server→console compile dependency) |
 | Binding Decisions | D-356 (developer console scope expansion, 2026-09-06) |
 | VP Registration | VP-2.24.002-A/B/C/D |
-| Module | pregolya-server / server::debug_span (Boundary): SpanData data type + DebugSpanSource read-trait [consumer-owns-interface; no dedicated VP; exercised via VP-2.24.002-C/D] + pregolya-console / console::ring_buffer (Pure Core): RingBuffer<T> [VP-2.24.002-A/B targets] + pregolya-console / console::span_exporter (Boundary): DebugSpanExporter implements DebugSpanSource; SEC-BOUND-001 at insertion; owns Arc<Mutex<RingBuffer<SpanData>>> [VP-2.24.002-D target] + pregolya-server / server::debug_routes [feature debug-endpoints] (Effectful Shell): holds Arc<dyn DebugSpanSource>; dyn-dispatch per ADR-031 Decision 7 [VP-2.24.002-C target] |
+| Module | pregolya-server / server::debug_span (Boundary): SpanData data type + DebugSpanSource read-trait [consumer-owns-interface; no dedicated VP; exercised via VP-2.24.002-C/D] + pregolya-console / console::ring_buffer (Pure Core): RingBuffer<T> [VP-2.24.002-A/B targets] + pregolya-console / console::span_exporter (Boundary): DebugSpanExporter implements DebugSpanSource; SEC-BOUND-001 at insertion; owns Arc<RwLock<RingBuffer<SpanData>>> [VP-2.24.002-D target] + pregolya-server / server::debug_routes [feature debug-endpoints] (Effectful Shell): holds Arc<dyn DebugSpanSource>; dyn-dispatch per ADR-031 Decision 7 [VP-2.24.002-C target] |
 | Priority | P1 |
 | Wave | 3 |
 | Test Types | unit + proptest + integration |

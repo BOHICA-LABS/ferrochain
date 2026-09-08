@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.06.002
-version: "1.6"
+version: "1.7"
 status: active
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -20,6 +20,7 @@ changelog:
   - "1.3 (F-P140-01, 2026-07-23): Fix burst 240 Wave 2 — sweep stale pregel/*.rs Architecture Anchor file-path references to canonical flat graph:: layout per ADR-001 / module-decomposition v1.21."
   - "1.4 (story-anchor-backfill/2026-08-22): §Story Anchor backfilled to S-1.17 from STORY-INDEX forward map (CANONICAL PRINCIPLE Rule 6; no behavioral change)."
   - "1.5 (M1/ADR-027/2026-08-23): stable clause anchors {PC/INV/PRE-NNN} added; purely additive, no content change."
+  - "1.7 (D-356-fix/DC-23/2026-09-08, product-owner): F-PDC23-01: Architect ruling (BC-2.12.003 SS-12 lifecycle is authoritative) — resume is SAME run_id. {INV-001} second/third sentences corrected: 'A resumed run transitions the existing Run record from interrupted → in_progress; no new Run record is created and no new run_id is issued. The interrupted run's run_id is preserved and continues to identify the run through completion.' EC-001 heading + expected behavior corrected to match: same run, same run_id, existing Run record transitions interrupted → in_progress. Prior wording (new run_id issued on resume) is architecturally incorrect per BC-2.12.003."
   - "1.6 (P2-BC-SS04-06-hardening/2026-08-26): EC-001 concrete rule added — resume-run parent_ids is no longer 'impl-choice, must document in ADR'. Decision: the resumed run's `parent_ids` is copied from the interrupted run's `parent_ids` at interrupt time; the interrupted run's `run_id` is NOT added to the resume run's `parent_ids`. Rationale: a resume run is a continuation of the interrupted run at the same nesting level, not a child of it; {INV-001} (new run_id) + {INV-002} (parent_ids assigned once at creation) anchor the decision; correlation between interrupted and resumed runs is provided by `parent_checkpoint_id` in checkpoint metadata (BC-2.04.004), not by run_id inheritance. Stale 'server implementation choice, must be documented in ADR' language removed. BC-completeness-scan Phase-2 BURST-B gap BC-2.06.002."
 traces_to:
   - domain-spec/capabilities-p0.md#CAP-007
@@ -29,7 +30,7 @@ inputs:
   - .factory/specs/domain-spec/events.md
   - .factory/semport/core/behavioral-intent.md
   - .factory/comparative/assessment-parts/part-3-conflicts-negative-evidence.md
-input-hash: "a26235e"
+input-hash: "168c3aa"
 extracted_from: null
 modified: []
 deprecated: null
@@ -41,6 +42,8 @@ removal_reason: null
 ---
 
 # BC-2.06.002: run_id + parent_ids Correlation Across All Streaming Events
+
+> **D-356 adversary fix DC-23 (2026-09-08, product-owner).** F-PDC23-01: {INV-001} and EC-001 corrected — per architect ruling (BC-2.12.003 §lifecycle is authoritative), a resumed run is the SAME run: the existing Run record transitions `interrupted` → `in_progress`; no new Run record is created and no new run_id is issued. Prior wording ("A resumed run that creates a new `Run` record issues a new `run_id`") was architecturally incorrect.
 
 ## Description
 
@@ -78,8 +81,9 @@ run. The contract follows the astream_events v2 7-key shape (semport/core/behavi
 ## Invariants
 
 - {INV-001} `run_id` is immutable for the lifetime of a run — it is never regenerated at super-step
-  boundaries, interrupts, or resumes. A resumed run that creates a new `Run` record issues a
-  new `run_id` (not a reuse of the interrupted run's `run_id`).
+  boundaries, interrupts, or resumes. A resumed run transitions the existing Run record from
+  `interrupted` → `in_progress`; no new Run record is created and no new run_id is issued.
+  The interrupted run's run_id is preserved and continues to identify the run through completion.
 - {INV-002} `parent_ids` is assigned once at run creation and is read-only thereafter. It is not
   mutated by sub-events within the run.
 - {INV-003} The transitivity rule must hold: if run A is an ancestor of run B, then `run_id(A)` appears
@@ -90,13 +94,11 @@ run. The contract follows the astream_events v2 7-key shape (semport/core/behavi
 
 ## Edge Cases
 
-### EC-001: Interrupted run resumed as a new Run record
-**Scenario:** A run is interrupted (via `interrupt()`), checkpointed, then resumed. The server
-creates a new `Run` record for the resumed execution.
-**Expected behavior:** The resumed run receives a new `run_id` per {INV-001}; it does NOT
-reuse the interrupted run's `run_id`. The resumed run's `parent_ids` is **copied verbatim
-from the interrupted run's `parent_ids` at interrupt time**; the interrupted run's `run_id`
-is NOT added to the resume run's `parent_ids`.
+### EC-001: Interrupted run resumed {EC-001}
+**Scenario:** A run is interrupted (via `interrupt()`), checkpointed, then resumed.
+**Expected behavior:** The resumed run is the SAME run — the existing Run record transitions
+`interrupted` → `in_progress` per {INV-001}. The run_id does not change. All streaming events
+for the resumed execution reference the same run_id.
 
 **Rationale (resume-run parent_ids rule):** A resume run is a continuation of the
 interrupted run at the same nesting level — not a child of it. Per {INV-002}, `parent_ids`

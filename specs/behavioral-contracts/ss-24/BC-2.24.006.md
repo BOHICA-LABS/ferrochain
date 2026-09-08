@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.006
-version: "1.2"
+version: "1.3"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -21,6 +21,7 @@ red_gate: false
 changelog:
   - "1.0 (D-356/2026-09-06, product-owner): Initial BC — D-356 dev-console scope expansion. HITL approval dialog and resume dispatch."
   - "1.1 (D-356-fix/DC-01/2026-09-06, product-owner): F-PDC01-01 Story Anchor corrected: was S-console-06, now S-console-08. Verified against S-console-08 frontmatter behavioral_contracts: [BC-2.24.006]."
+  - "1.3 (D-356-fix/DC-23/2026-09-08, product-owner): F-PDC23-01: Architect ruling — resume is SAME run_id (BC-2.12.003 SS-12 lifecycle is authoritative). PC-005 corrected: 'server returns a new run_id' → 'run transitions to in_progress on the SAME run_id — no new run_id is issued; console continues monitoring existing run SSE stream'. EC-006 corrected: 'Run resumes with new run_id' → 'Run resumes (same run_id; interrupted → in_progress)'. TV-002: 'live monitoring opens for new run' → 'live monitoring continues for same run (run_id unchanged)'. §Related BCs §Composes: 'for new run' → 'for same run (run_id unchanged)'."
   - "1.2 (D-356-fix/DC-02/2026-09-07, product-owner): F-PDC02-01 PRE-002 and PC-001 graph_interrupt SSE-event references removed. Node-boundary interrupt detection re-scoped: detected via interrupted run-status (CAP-006 interrupt() machinery), NOT via any SSE event — there is no graph_interrupt StreamEvent. Tool-approval interrupt detection remains via tool_approval_request StreamEvent (CAP-034). Related BCs section updated to remove graph_interrupt reference."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-045
@@ -29,7 +30,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "5ff81d4"
+input-hash: "1f87a7c"
 extracted_from: null
 modified: []
 deprecated: null
@@ -74,7 +75,7 @@ subscribes to the new run stream (BC-2.24.004 live monitoring).
    - **Deny (with reason text):** maps to `Command { resume: PreToolDecision::Deny(reason) }`. Sends `POST .../resume`.
    - **Edit (modify args inline):** operator edits the tool call args JSON in the dialog. Console maps the modified args to the resume payload. Sends `POST .../resume` with edited args.
 4. {PC-004} **FIFO multi-interrupt ordering (DI-003):** When multiple pending approvals exist in the queue, the console surfaces them in FIFO arrival order (first-received first). Only one interrupt is shown at a time; after dispatching resume for the first, the next is surfaced if the run remains interrupted.
-5. {PC-005} **Post-resume live monitoring:** After a successful `POST .../resume`, the server returns a new `run_id`. The console subscribes to the new run's SSE stream (`GET /threads/{id}/runs/{new_run_id}/stream`, BC-2.24.004) to continue live monitoring.
+5. {PC-005} **Post-resume live monitoring:** After a successful `POST .../resume`, the run transitions to `in_progress` on the SAME run_id — no new run_id is issued. The console continues monitoring the existing run's SSE stream (`GET /threads/{id}/runs/{run_id}/stream`, BC-2.24.004); the run_id is unchanged.
 6. {PC-006} **All operations via existing endpoints:** No new server endpoints are introduced. The console is a pure consumer of BC-2.05.004 (resume) and BC-2.12.007 (stream).
 
 ## Invariants
@@ -93,14 +94,14 @@ subscribes to the new run stream (BC-2.24.004 live monitoring).
 | {EC-003} | Multiple pending tool-call approvals (2 `tool_approval_request` events) | First interrupt shown; after dispatching resume, if run remains `interrupted`, second interrupt surfaced in FIFO order |
 | {EC-004} | Node-boundary interrupt with null scratchpad | Dialog shows node name with "no scratchpad data"; Approve/Deny still available |
 | {EC-005} | `POST .../resume` returns server error | Error displayed in dialog; dialog remains open; operator can retry |
-| {EC-006} | Run resumes with new `run_id` | Console navigates to live monitoring panel for the new `run_id` (BC-2.24.004) |
+| {EC-006} | Run resumes (same run_id; `interrupted` → `in_progress`) | Console continues live monitoring for the same run (run_id unchanged) |
 
 ## Canonical Test Vectors
 
 | # | Input | Expected Output | Category |
 |---|-------|-----------------|----------|
 | TV-001 | `tool_approval_request` event with `tool_name: "WriteFile"`, `ActionRisk::High`, args `{path: "/tmp/out"}` | Dialog shows tool name, High risk, args JSON; Approve/Deny/Edit buttons enabled | happy-path, tool interrupt |
-| TV-002 | Operator clicks Approve | `POST .../resume` with `Command { resume: PreToolDecision::Allow }` dispatched; dialog closes; live monitoring opens for new run | approve decision |
+| TV-002 | Operator clicks Approve | `POST .../resume` with `Command { resume: PreToolDecision::Allow }` dispatched; dialog closes; live monitoring continues for same run (run_id unchanged) | approve decision |
 | TV-003 | Operator clicks Deny with reason "too risky" | `POST .../resume` with `Command { resume: PreToolDecision::Deny("too risky") }` dispatched | deny decision |
 | TV-004 | Operator edits args to `{invalid json}` and clicks submit | Submit rejected client-side; JSON parse error shown; no POST dispatched | EC-002 |
 | TV-005 | Node-boundary interrupt at node `"agent"`; scratchpad `{"question": "proceed?"}` | Dialog shows node name "agent" and scratchpad JSON; Approve/Deny available | node-boundary interrupt |
@@ -116,7 +117,7 @@ subscribes to the new run stream (BC-2.24.004 live monitoring).
 
 - BC-2.05.004 — depends on: `POST /threads/{id}/runs/{run_id}/resume` endpoint (exact contract consumed)
 - BC-2.12.007 — depends on: SSE stream for detecting `tool_approval_request` events (tool-approval interrupts; node-boundary interrupts detected via run-status polling, not SSE — there is no `graph_interrupt` StreamEvent)
-- BC-2.24.004 — composes with: after resume, console transitions to live monitoring (BC-2.24.004) for new run
+- BC-2.24.004 — composes with: after resume, console continues live monitoring (BC-2.24.004) for same run (run_id unchanged)
 
 ## Architecture Anchors
 
@@ -126,6 +127,8 @@ subscribes to the new run stream (BC-2.24.004 live monitoring).
 ## Story Anchor
 
 S-console-08 (Wave 3 — HITL console resume dialog)
+
+> **D-356 adversary fix DC-23 (2026-09-08, product-owner).** F-PDC23-01: PC-005, EC-006, TV-002, and §Related-BCs §Composes corrected — per architect ruling (BC-2.12.003 §lifecycle is authoritative), resume is the SAME run: `interrupted` → `in_progress` on the same run_id; no new run_id issued. Prior wording ("server returns a new `run_id`"; "Console navigates to live monitoring panel for the new `run_id`") was architecturally incorrect.
 
 > **D-356 adversary fix DC-01 (2026-09-06, product-owner).** Story Anchor corrected S-console-06 → S-console-08. story-writer split BC-2.24.002 across S-console-02+03 and added S-console-05 (SPA build, no BC), shifting the numbering. Verified: S-console-08 frontmatter carries `behavioral_contracts: [BC-2.24.006]`.
 
