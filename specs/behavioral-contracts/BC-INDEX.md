@@ -1,7 +1,7 @@
 ---
 document_type: bc-index
 level: L3
-version: "4.27"
+version: "4.28"
 status: active
 producer: state-manager
 timestamp: 2026-09-07T00:00:00Z
@@ -10,6 +10,7 @@ cycle: v1.0.0-greenfield
 input-hash: "[live-index]"
 traces_to: .factory/specs/prd.md
 changelog:
+  - "4.28 (DC-04 addendum/2026-09-07, state-manager): BC-2.12.001 v1.11→v1.12 — §Story Anchor: S-console-07 appended as roadmap consumer of the PC-015 ?checkpoint_id variant (Wave 3); S-1.26 remains primary; reverse-anchor completeness fix. Census UNCHANGED: BC 148 / VP 41 / EC 145 / stories 52."
   - "4.27 (D-356/DC-04 fix-burst/2026-09-07, state-manager): BC-2.24.005 v1.2 (F-PDC04-01: checkpoint_id string→u64; frontmatter updated). BC-2.12.001 v1.11 (F-PDC04-02: PC-015 ?checkpoint_id=<u64> variant added; EC-010 E-CHKPT-011 not-found; TV-010/TV-011). BC-2.24.008 v1.4 (F-PDC04-03: Traceability boundary_type/GuardrailSeverity→boundary/GuardrailSeverityWire). BC-2.24.002 v1.3 (F-PDC04-04: §Module/INV-002 name console::ring_buffer + console::span_exporter). ADR-031 v1.2 (Decision 5 split: console::ring_buffer canonical Pure Core; console::span_exporter Boundary). purity-boundary-map v1.46 (+console::ring_buffer Pure Core row; 97 rows / 40 Pure Core / 5 PLANNED). VP-INDEX v1.47 + verification-architecture v2.43 + vcm v3.40 + ARCH-INDEX v1.75: VP-2.24.002-A/B repointed console::span_exporter→console::ring_buffer. error-taxonomy v1.74: E-CHKPT-011 second raise site BC-2.12.001 {EC-010} (GET /state?checkpoint_id read path); E-SERVER-004 message correction. S-console-07 v1.1 (u64 checkpoint_id; BC-2.12.001 {PC-015} consumption; POLICY-8 behavioral_contracts override). Input hashes recomputed: ADR-031 00c95fd, vcm 82e8ad9, purity-boundary-map 83d67fc (were 0000000). EC UNCHANGED 145. VP UNCHANGED 41. Census: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24."
   - "4.26 (D-356/DC-03 fix-burst/2026-09-07, state-manager): BC-2.24.008 v1.3 (F-PDC03-01 boundary_type→boundary/IngressBoundary/RagChunk/MemoryItem; F-PDC03-03 GuardrailSeverityWire; F-PDC03-04 two→three sites; TV-002/EC-003 severity=None-on-Transform). BC-2.24.005 v1.1 (F-PDC03-02 fork mechanism now cites config.configurable.checkpoint_id; PC-005 wording). BC-2.12.003 v1.20 (E-CHKPT-002 collision fix: code renamed E-CHKPT-011; E-CHKPT-002 is MonotonicClockRegression, already live; delta note + INV-009 + EC-008 + Traceability updated). S-console-10 v1.1 (story-writer sibling-sweep corrections). error-taxonomy.md v1.73: E-CHKPT-011 CheckpointNotFound registered (POLICY; HTTP 422; BC-2.12.003 {EC-008}; CHKPT namespace 10→11 live codes). EC 143→145 (two-gap propagation fix: E-SERVER-023 gap from v1.72 + E-CHKPT-011 new). Census: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24."
   - "4.25 (D-356/DC-02 fix-burst/2026-09-07, state-manager): F-PDC02-06 [LOW records] — v4.24 entry description corrected: 'LLM tool-call type list' → 'StreamEvent variant list' (those 16 are StreamEvent variants per BC-2.06.001 §PC-002, not LLM tool-call types). VP census updated: VP 40→41 (VP-2.24.002-D registered by architect). Census: BC 148 / VP 41 / EC 143 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24."

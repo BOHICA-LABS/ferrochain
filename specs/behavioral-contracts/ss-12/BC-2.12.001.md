@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.12.001
-version: "1.11"
+version: "1.12"
 status: active
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -31,6 +31,7 @@ retired: null
 removed: null
 removal_reason: null
 changelog:
+  - "1.12 (D-356-fix/DC-04/2026-09-07, product-owner): §Story Anchor: S-console-07 appended as roadmap consumer of the PC-015 ?checkpoint_id variant (Wave 3); S-1.26 remains primary implementation anchor. Reverse-anchor completeness fix."
   - "1.11 (D-356-fix/DC-04/2026-09-07, product-owner): F-PDC04-02: PC-015 amended — GET /threads/{thread_id}/state gains optional ?checkpoint_id=<CheckpointId> (u64) selector returning historical checkpoint state at the specified ID; checkpoint not found raises E-CHKPT-011 CheckpointNotFound HTTP 404 (EC-010). TV-010 and TV-011 added covering the happy-path read and not-found path respectively."
   - "1.1 (ADV-P1D-PASS-31): F-P31-01 PC17 history endpoint — declare limit default 10, max 100, values > 100 clamped to 100, offset default 0 (pagination coherence canon; clamp out-of-range semantics)."
   - "1.2 (ADV-P1D-PASS-34): F-P34-01 PC8 — add clamp semantics (values > 100 silently clamped to 100) and offset default 0 (partial-fix propagation gap from pass-31). PC9 — declare created_at DESC ordering (canonical; F-P31-01). interface-definitions.md §Canonical Pagination Convention cites BC-2.12.001 PC8 as threads-list clamp+ordering anchor; PC8 now matches."
@@ -47,6 +48,8 @@ changelog:
 # BC-2.12.001: Thread Resource CRUD (Create, Read, List, Delete Durable Conversation History)
 
 > **D-356 adversary fix DC-04 (2026-09-07, product-owner).** F-PDC04-02: PC-015 amended — `GET /threads/{thread_id}/state` gains optional `?checkpoint_id=<CheckpointId>` (u64 newtype per BC-2.04.003 §Architecture Anchors) selector returning historical checkpoint state at the specified ID (same response shape as the no-selector form). Checkpoint not found → E-CHKPT-011 CheckpointNotFound HTTP 422 (EC-010; HTTP 422 per taxonomy definition — POLICY, CheckpointId semantically unprocessable). E-CHKPT-011 is semantically correct for both the fork-start path (BC-2.12.003 {INV-009}) and this state-read path — the semantic is identical: a requested CheckpointId does not exist. TV-010 (happy-path historical read) and TV-011 (not-found) added. This variant is the substrate cited by BC-2.24.005 PC-002.
+
+> **D-356 adversary fix DC-04 (2026-09-07, product-owner).** BC-2.12.001 §Story Anchor: S-console-07 appended as roadmap consumer of the PC-015 `?checkpoint_id` variant. S-1.26 remains the primary implementation anchor.
 
 ## Description
 
@@ -202,7 +205,9 @@ _No Kani VP seed required. Integration tests against in-process pregolya-server 
 
 ## Story Anchor
 
-S-1.26
+S-1.26 (primary — Thread CRUD implementation)
+
+S-console-07 (roadmap, Wave 3 — consumes the `?checkpoint_id` PC-015 historical-state read variant)
 
 ## VP Anchors
 
