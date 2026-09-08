@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.008
-version: "1.3"
+version: "1.4"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -19,6 +19,7 @@ di_anchors: [DI-012, DI-014]
 vp_seed: false
 red_gate: false
 changelog:
+  - "1.4 (D-356-fix/DC-04/2026-09-07, product-owner): F-PDC04-03: Traceability Capability Anchor Justification corrected — field name boundary_type→boundary, severity type GuardrailSeverity→GuardrailSeverityWire, matching the PC-002 corrections already applied in v1.3 (DC-03). The Justification now cites the canonical field and type names as they appear in BC-2.06.001 §Postconditions PC-002 and ADR-006 §Decision."
   - "1.3 (D-356-fix/DC-03/2026-09-07, product-owner): F-PDC03-01 + F-PDC03-03: PC-002 boundary field corrected — field name boundary_type→boundary, type ProvenanceTag/BoundaryType→IngressBoundary, values RAGRetrieval→RagChunk, MemoryIngress→MemoryItem; severity type GuardrailSeverity→GuardrailSeverityWire (Transform decisions carry severity: None and reason: None per BC-2.06.001 §Postconditions PC-002); TV-001/TV-002/TV-004 updated to match corrected field names and enum values; EC-003 severity-for-Transform corrected (None, not High). Authority: BC-2.06.001 §Postconditions PC-002 StreamEvent::GuardrailDecision and ADR-006 §Decision. F-PDC03-04: DC-02 blockquote count corrected two sites→three sites (POL-46; changelog v1.2 correctly stated three)."
   - "1.2 (D-356-fix/DC-02/2026-09-07, product-owner): F-PDC02-04 guardrail_decision variant ordinal corrected from 16th to 12th (per BC-2.06.001 §Postconditions PC-002 canonical ordering and ADR-006 rev-3): three sites updated — Description, Architecture Anchors section, and Traceability §Architecture Authority row."
   - "1.1 (D-356-fix/DC-01/2026-09-06, product-owner): F-PDC01-01 Story Anchor corrected: was S-console-09, now S-console-10. Verified against S-console-10 frontmatter behavioral_contracts: [BC-2.24.008]."
@@ -30,7 +31,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "c630fca"
+input-hash: "805b7eb"
 extracted_from: null
 modified: []
 deprecated: null
@@ -49,6 +50,8 @@ removal_reason: null
 > **D-356 adversary fix DC-02 (2026-09-07, product-owner).** F-PDC02-04: `guardrail_decision` variant ordinal corrected from 16th to 12th at three sites — Description, Architecture Anchors, and Traceability §Architecture Authority row. Authority: BC-2.06.001 §Postconditions PC-002 canonical StreamEvent ordering and ADR-006 rev-3. The `guardrail_decision` variant is the 12th of the 16 canonical variants; `error` is the 16th (not `guardrail_decision`).
 
 > **D-356 adversary fix DC-03 (2026-09-07, product-owner).** F-PDC03-01 + F-PDC03-03: PC-002 boundary field corrected — field `boundary_type` (type `ProvenanceTag`/`BoundaryType`, values `RAGRetrieval`/`MemoryIngress`) is WRONG; the authoritative `guardrail_decision` event carries field `boundary` of type `IngressBoundary` with values `ToolResult | RagChunk | MemoryItem` (BC-2.06.001 §Postconditions PC-002 `StreamEvent::GuardrailDecision`; ADR-006 §Decision). Severity type corrected `GuardrailSeverity` → `GuardrailSeverityWire`. `Transform` decisions carry `severity: None` and `reason: None` (both `Some` for `Fail` only). Affected sites: PC-002, TV-001, TV-002, TV-004, EC-003. **Story-writer S-console-10 sibling sweep required** under `bc_array_changes_propagate_to_body_and_acs`: update `boundary_type` → `boundary`, `BoundaryType`/`ProvenanceTag` → `IngressBoundary`, `RAGRetrieval` → `RagChunk`, `MemoryIngress` → `MemoryItem`, `GuardrailSeverity` → `GuardrailSeverityWire` in S-console-10 BC table and ACs. F-PDC03-04: DC-02 blockquote count corrected `two sites` → `three sites` (POL-46; changelog v1.2 correctly stated three).
+
+> **D-356 adversary fix DC-04 (2026-09-07, product-owner).** F-PDC04-03: Traceability Capability Anchor Justification row corrected — `boundary_type` → `boundary`, `GuardrailSeverity` → `GuardrailSeverityWire` (matching the PC-002 canonical field names restored in v1.3 DC-03). The Justification now cites the authoritative field and type names as they appear in BC-2.06.001 §Postconditions PC-002 and ADR-006 §Decision.
 
 ## Description
 
@@ -141,7 +144,7 @@ S-console-10 (Wave 3 — guardrail/security decision review panel)
 | Field | Value |
 |-------|-------|
 | Source L2 Capability | CAP-047 |
-| Capability Anchor Justification | CAP-047 ("Guardrail/Security Decision Review Panel") per capabilities-p1-p2.md §CAP-047 — this BC specifies the security feed filtering (Fail/Transform only, not Pass per F-P99-01), per-entry fields (boundary_type, GuardrailSeverity, outcome, reason), real-time SSE update, completed-run reconstruction, and DI-012 completeness requirement that constitute the guardrail review panel described in CAP-047 |
+| Capability Anchor Justification | CAP-047 ("Guardrail/Security Decision Review Panel") per capabilities-p1-p2.md §CAP-047 — this BC specifies the security feed filtering (Fail/Transform only, not Pass per F-P99-01), per-entry fields (boundary: IngressBoundary, GuardrailSeverityWire, decision, reason), real-time SSE update, completed-run reconstruction, and DI-012 completeness requirement that constitute the guardrail review panel described in CAP-047 |
 | L2 Domain Invariants | DI-012 (No guardrail bypass — all qualifying Fail/Transform events appear in feed; no silent omission), DI-014 (Error Propagation — malformed events render as placeholder; no crash) |
 | Architecture Authority | ADR-031 §Traceability (CAP-047 — SS-24, SS-11); ADR-006 rev-3 (guardrail_decision 12th variant per canonical ordering, F-P99-01 Pass-not-streamed) |
 | Binding Decisions | D-356 (developer console scope expansion, 2026-09-06) |

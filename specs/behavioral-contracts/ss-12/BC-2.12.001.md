@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.12.001
-version: "1.10"
+version: "1.11"
 status: active
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -21,7 +21,7 @@ inputs:
   - .factory/specs/prd.md
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/semport/platform/behavioral-intent.md
-input-hash: "68ed851"
+input-hash: "25528ef"
 extracted_from: null
 modified: []
 deprecated: null
@@ -31,6 +31,7 @@ retired: null
 removed: null
 removal_reason: null
 changelog:
+  - "1.11 (D-356-fix/DC-04/2026-09-07, product-owner): F-PDC04-02: PC-015 amended — GET /threads/{thread_id}/state gains optional ?checkpoint_id=<CheckpointId> (u64) selector returning historical checkpoint state at the specified ID; checkpoint not found raises E-CHKPT-011 CheckpointNotFound HTTP 404 (EC-010). TV-010 and TV-011 added covering the happy-path read and not-found path respectively."
   - "1.1 (ADV-P1D-PASS-31): F-P31-01 PC17 history endpoint — declare limit default 10, max 100, values > 100 clamped to 100, offset default 0 (pagination coherence canon; clamp out-of-range semantics)."
   - "1.2 (ADV-P1D-PASS-34): F-P34-01 PC8 — add clamp semantics (values > 100 silently clamped to 100) and offset default 0 (partial-fix propagation gap from pass-31). PC9 — declare created_at DESC ordering (canonical; F-P31-01). interface-definitions.md §Canonical Pagination Convention cites BC-2.12.001 PC8 as threads-list clamp+ordering anchor; PC8 now matches."
   - "1.3 (2026-07-15, F-P78-SWEEP/D18-P78-A): E-SERVER-007 message-prefix correction at two BC sites. (1) PC3 (Create Thread): added 'ThreadAlreadyExists:' prefix and lowercased 'Thread' to 'thread' in message string (was 'Thread'; now 'thread'). (2) EC-001: same corrections applied. Taxonomy already carried the prefix and lowercase; BC was the lagging artifact. Both sites now produce the canonical form 'ThreadAlreadyExists: thread <id> already exists'."
@@ -44,6 +45,8 @@ changelog:
 ---
 
 # BC-2.12.001: Thread Resource CRUD (Create, Read, List, Delete Durable Conversation History)
+
+> **D-356 adversary fix DC-04 (2026-09-07, product-owner).** F-PDC04-02: PC-015 amended — `GET /threads/{thread_id}/state` gains optional `?checkpoint_id=<CheckpointId>` (u64 newtype per BC-2.04.003 §Architecture Anchors) selector returning historical checkpoint state at the specified ID (same response shape as the no-selector form). Checkpoint not found → E-CHKPT-011 CheckpointNotFound HTTP 422 (EC-010; HTTP 422 per taxonomy definition — POLICY, CheckpointId semantically unprocessable). E-CHKPT-011 is semantically correct for both the fork-start path (BC-2.12.003 {INV-009}) and this state-read path — the semantic is identical: a requested CheckpointId does not exist. TV-010 (happy-path historical read) and TV-011 (not-found) added. This variant is the substrate cited by BC-2.24.005 PC-002.
 
 ## Description
 
@@ -94,6 +97,7 @@ pregolya-checkpoint subsystem. Thread-not-found returns `E-SERVER-003`.
 
 15. {PC-015} `GET /threads/{thread_id}/state` — returns the latest checkpoint state for the thread:
     `{ values: GraphState, checkpoint: CheckpointId, next: [NodeId] }`.
+    Accepts optional query parameter `?checkpoint_id=<CheckpointId>` (u64 newtype; BC-2.04.003 §Architecture Anchors); when supplied, returns the state at the specified historical checkpoint (same response shape). If the checkpoint does not exist → HTTP 422 `E-CHKPT-011 CheckpointNotFound` (EC-010; error-taxonomy.md §CHKPT component, HTTP 422 per taxonomy definition). E-CHKPT-011 covers both the fork-start path (BC-2.12.003 {INV-009} / EC-008) and this state-read path — the semantic is identical: a requested CheckpointId does not exist. RetryHint: Never (POLICY default).
 16. {PC-016} `POST /threads/{thread_id}/state` — updates checkpoint state by applying a delta:
     `{ values: Map<String, Value>, as_node?: NodeId }`. Returns `{ checkpoint: CheckpointId }` on success.
     Failure paths: (a) if the thread does not exist → HTTP 404 `E-SERVER-003 ThreadNotFound` (EC-007);
@@ -157,6 +161,10 @@ ThreadStateConflict code established by EC-005 (state writes during active run),
 **Scenario:** `POST /threads/t1/state { values: { "x": 1 }, as_node: "nonexistent_node" }` where `"nonexistent_node"` is not a valid node ID in the thread's associated graph definition.
 **Expected behavior:** HTTP 422 `{ code: "E-SERVER-022", message: "StateUpdateInvalid: state update for thread '<thread_id>' rejected: as_node 'nonexistent_node' is not registered in the graph" }`. (`<thread_id>` = the thread ID; `<reason>` = the specific rejection cause, here the unrecognised `as_node` node name.) E-SERVER-022 StateUpdateInvalid (VAL, broken, HTTP 422, Never; see error-taxonomy.md §Component: SERVER (pregolya-server)).
 
+### EC-010: GET /state with non-existent checkpoint_id {EC-010}
+**Scenario:** `GET /threads/t1/state?checkpoint_id=999` where checkpoint 999 does not exist on thread t1.
+**Expected behavior:** HTTP 422 `{ code: "E-CHKPT-011", message: "CheckpointNotFound: checkpoint '999' does not exist on thread 't1'" }`. E-CHKPT-011 is defined as HTTP 422 in the taxonomy (POLICY — the CheckpointId is semantically unprocessable because it references a non-existent checkpoint). E-CHKPT-011 covers both the fork-start path (BC-2.12.003 {INV-009} / EC-008) and this state-read path — a requested CheckpointId does not exist in the `CheckpointSaver`.
+
 ### EC-009: POST /state with malformed delta {EC-009}
 **Scenario:** `POST /threads/t1/state { values: { "messages": 42 } }` where the thread's graph state schema expects `messages` to be an array; the integer value is type-incompatible.
 **Expected behavior:** HTTP 422 `{ code: "E-SERVER-022", message: "StateUpdateInvalid: state update for thread '<thread_id>' rejected: field 'messages' type incompatible: expected array, got integer" }`. (`<reason>` = the schema validation failure detail.) E-SERVER-022 StateUpdateInvalid is the single reason-discriminated code for both EC-008 and EC-009 — the `<reason>` field distinguishes invalid-as_node from malformed-delta failures (VAL, broken, HTTP 422, Never; see error-taxonomy.md §Component: SERVER (pregolya-server)).
@@ -174,6 +182,8 @@ ThreadStateConflict code established by EC-005 (state writes during active run),
 | TV-007 | `GET /threads/t1/state` (no runs) | HTTP 200 `{ values: {}, checkpoint: null, next: [] }` | Empty state |
 | TV-008 | `POST /threads/ghost/state { values: { "x": 1 } }` (thread does not exist) | HTTP 404 E-SERVER-003 | POST /state thread-not-found |
 | TV-009 | `POST /threads/t1/state { values: { "x": 1 }, as_node: "fake_node" }` (node not in graph) | HTTP 422 `{ code: "E-SERVER-022", message: "StateUpdateInvalid: state update for thread 't1' rejected: as_node 'fake_node' is not registered in the graph" }` | POST /state invalid as_node (EC-008) |
+| TV-010 | `GET /threads/t1/state?checkpoint_id=5` where checkpoint 5 exists on thread t1 | HTTP 200 `{ values: <state at checkpoint 5>, checkpoint: 5, next: [...] }` | PC-015 ?checkpoint_id variant — historical state read |
+| TV-011 | `GET /threads/t1/state?checkpoint_id=999` where checkpoint 999 does not exist on thread t1 | HTTP 422 `{ code: "E-CHKPT-011", message: "CheckpointNotFound: checkpoint '999' does not exist on thread 't1'" }` | EC-010: checkpoint-not-found |
 
 ## Verification Properties
 

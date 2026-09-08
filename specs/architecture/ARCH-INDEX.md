@@ -1,7 +1,7 @@
 ---
 document_type: architecture-index
 level: L3
-version: "1.74"
+version: "1.75"
 status: active
 producer: state-manager
 timestamp: 2026-09-07T00:00:00Z
@@ -17,6 +17,7 @@ traces_to: prd.md
 deployment_topology: single-service
 decisions: [D4, D6, D9, D11, D13, D17, D20, D21, D23, D356]
 changelog:
+  - "1.75 (D-356/DC-04/2026-09-07, architect): F-PDC04-04 — VP-2.24.002-A/B Module column repointed console::span_exporter → console::ring_buffer (console::ring_buffer is now canonical Pure Core for RingBuffer<T> per ADR-031 Decision 5 DC-04 split). VP-2.24.002-C (server::debug_routes) and VP-2.24.002-D (console::span_exporter) unchanged. VP census UNCHANGED: 41 total."
   - "1.74 (D-356/DC-02 fix-burst/2026-09-07, state-manager): §Verification Properties preamble count corrected 40→41: '40 VPs total' → '41 VPs total'; unit breakdown 7→8; matches VP-2.24.002-D (architect v1.73 addendum). Architect v1.73 added VP-2.24.002-D to the catalog table and noted census 41 but body preamble was not updated in that pass."
   - "1.73 (D-356/DC-02-addendum/2026-09-07, architect): VP-2.24.002-D registered in §Verification Properties — SpanData SEC-BOUND-001 sanitization before ring-buffer insertion (unit P1; console::span_exporter; BC-2.24.002). Census note: VP 41 total (state-manager to reconcile STATE.md 40→41)."
   - "1.72 (D-356/DC-02/2026-09-07, architect): F-PDC02-02+F-PDC02-03 — VP-2.24.002-A/B BC Anchor description and Module column repointed console::ring_buffer → console::span_exporter (ADR-031 Decision 5 canonical; DC-01 had used non-canonical name). VP-2.24.004-008 A/B BC Anchor descriptions rewritten to canonical postcondition wording per BCs; Module column corrected from console::server to SPA panel modules: console::run_inspector (004-A/B), console::checkpoint_panel (005-A/B), console::hitl_panel (006-A/B), console::budget_panel (007-A/B), console::guardrail_panel (008-A/B). VP census unchanged: 40 total."
@@ -277,8 +278,8 @@ R6 namespace reservation: publish-all.sh must cover all 21 currently-published c
 | VP-2.24.001-A | BC-2.24.001 (console::server lifecycle — unit) | `console::server` | unit | P1 | draft |
 | VP-2.24.001-B | BC-2.24.001 (console::server zero-cap error — unit) | `console::server` | unit | P1 | draft |
 | VP-2.24.001-C | BC-2.24.001 (console::server type safety — compile-fail) | `console::server` | compile-fail | P1 | draft |
-| VP-2.24.002-A | BC-2.24.002 (ring buffer bounded invariant — proptest) | `console::span_exporter` | proptest | P1 | draft |
-| VP-2.24.002-B | BC-2.24.002 (ring buffer FIFO invariant — proptest) | `console::span_exporter` | proptest | P1 | draft |
+| VP-2.24.002-A | BC-2.24.002 (ring buffer bounded invariant — proptest) | `console::ring_buffer` | proptest | P1 | draft |
+| VP-2.24.002-B | BC-2.24.002 (ring buffer FIFO invariant — proptest) | `console::ring_buffer` | proptest | P1 | draft |
 | VP-2.24.002-C | BC-2.24.002 (debug trace session endpoint — integration) | `server::debug_routes` | integration | P1 | draft |
 | VP-2.24.002-D | BC-2.24.002 (SpanData llm_request/llm_response/attributes sanitized via SEC-BOUND-001 before ring-buffer insertion — unit) | `console::span_exporter` | unit | P1 | draft |
 | VP-2.24.003-A | BC-2.24.003 (graph descriptor serialization — unit) | `graph::descriptor` | unit | P1 | draft |
@@ -300,5 +301,7 @@ R6 namespace reservation: publish-all.sh must cover all 21 currently-published c
 > **D-356 adversary fix DC-02 (2026-09-07, architect).** F-PDC02-03: VP-2.24.002-A/B Module column repointed `console::ring_buffer` → `console::span_exporter` (ADR-031 Decision 5 canonical). F-PDC02-02: VP-2.24.004-008 A/B BC Anchor descriptions rewritten to canonical postcondition wording per BCs; Module column corrected from `console::server` to SPA panel modules: `console::run_inspector` (004-A/B), `console::checkpoint_panel` (005-A/B), `console::hitl_panel` (006-A/B), `console::budget_panel` (007-A/B), `console::guardrail_panel` (008-A/B). F-PDC02-05 companion: ADR-031 D6-2 and api-surface.md updated to make `debug_api_key` MANDATORY when `debug-endpoints` feature is enabled. VP census 40→41 (VP-2.24.002-D addendum; see below).
 
 > **D-356 adversary fix DC-02 addendum (2026-09-07, architect).** VP-2.24.002-D registered — SpanData SEC-BOUND-001 sanitization before ring-buffer insertion (unit P1; `console::span_exporter`; BC-2.24.002). Sanitization-location ruling: AT INSERTION. PO follow-up: BC-2.24.002 PC-008 wording needs updating to "before ring-buffer insertion". Census 40→41; unit 7→8; state-manager to reconcile STATE.md VP 40→41.
+
+> **D-356 adversary fix DC-04 (2026-09-07, architect).** F-PDC04-04: VP-2.24.002-A/B Module column repointed `console::span_exporter` → `console::ring_buffer`. `console::ring_buffer` is now canonical Pure Core for `RingBuffer<T>` per ADR-031 Decision 5 (DC-04 split). VP-2.24.002-C (`server::debug_routes`) and VP-2.24.002-D (`console::span_exporter`) unchanged. VP census UNCHANGED: 41 total.
 
 > **D23 VPs SEEDED (burst-232):** VP-011/012/013 minted with BC anchors, Kani harness skeletons, and input-hashes. VP-011 (graph::hitl / PreToolCallHook fail-closed — Kani P0); VP-012 (core-budget / OnWatermark arithmetic — Kani P1); VP-013 (tools-shell / BashTool risk floor — Kani P1). BC-2.23.005 category RESOLVED: BC-2.23.005 §Postconditions (PC-4) category amended to VAL in burst-232 (error-taxonomy.md §Component: TOOLS; consistent with VP-013 harness).

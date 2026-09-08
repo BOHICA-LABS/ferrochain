@@ -8,7 +8,7 @@ status: accepted
 date: "2026-09-06"
 producer: architect
 timestamp: 2026-09-07T00:00:00Z
-version: "1.1"
+version: "1.2"
 phase: 1b
 traces_to: ARCH-INDEX.md
 decisions: [D356]
@@ -23,8 +23,9 @@ inputs:
   - .factory/specs/architecture/decisions/ADR-021-server-config-surface-runnable-config-configurable.md
   - .factory/specs/architecture/decisions/ADR-028-server-run-lifecycle-semantics.md
   - .factory/specs/architecture/ARCH-INDEX.md
-input-hash: "7a99f6a"
+input-hash: "00c95fd"
 changelog:
+  - "1.2 (D-356/DC-04/2026-09-07, architect): F-PDC04-04 — Decision 5 split: `console::ring_buffer` added as canonical Pure Core module (RingBuffer<T> deterministic bounded FIFO; no I/O deps; Kani/proptest-provable; VP-2.24.002-A/B targets). `console::span_exporter` updated to Boundary (owns Arc<Mutex<RingBuffer<SpanData>>>, depends on console::ring_buffer; performs SEC-BOUND-001 sanitization AT insertion). This split is the canonical arbiter; prevents future flip-flop. VP-2.24.002-A/B repointed to console::ring_buffer in all four VP mirrors. input-hash pending-recompute."
   - "1.1 (D-356/DC-02/2026-09-07, architect): F-PDC02-05 — D6-2 security strengthened: debug_api_key is now MANDATORY (not opt-in) when debug-endpoints feature is enabled; unauthenticated /debug/* requests → 403 E-SERVER-004 DebugRouteUnauthorized. §Security interaction updated from 'opt-in debug-key gate' to mandatory gate with explicit error code and DNS-rebinding rationale. SpanData sanitization (SEC-BOUND-001 parity; llm_request/llm_response strips from SpanData) cross-referenced to BC-2.24.002. Companion api-surface.md §Security note updated. input-hash pending-recompute."
   - "1.0 (D-356/2026-09-06, architect): Initial ADR — developer console scope expansion. Six decisions: (1) pregolya-console new binary crate (Wave 3, roadmap); (2) debug-endpoints feature-gated on pregolya-server; (3) SSE transport confirmed, WebSocket-vs-SSE discrepancy closed; (4) SPA framework deferred to Wave 3; (5) purity boundary: console::server Effectful Shell, console::span_exporter Boundary, server::debug_routes Effectful Shell; (6) NFR/security deltas: localhost-bind, no external auth in dev mode, debug-endpoints OFF by default."
 ---
@@ -200,7 +201,8 @@ and verification-coverage-matrix.md will be updated at Wave 3 planning.
 | Module | Crate | Classification | Rationale |
 |--------|-------|----------------|-----------|
 | `console::server` | pregolya-console | **Effectful Shell** | Axum HTTP server: binds network port, serves assets over I/O, manages in-process server lifecycle, async tokio runtime |
-| `console::span_exporter` | pregolya-console | **Boundary** | Pure part: `RingBuffer<SpanData>` deterministic read/write, index arithmetic — extractable for Kani. Effectful part: `opentelemetry::sdk::export::SpanExporter` async trait impl, registers into OTel SDK global |
+| `console::ring_buffer` | pregolya-console | **Pure Core** | `RingBuffer<T>` deterministic bounded FIFO data structure: capacity-enforcement arithmetic, index-wrap computation, head-pointer advance on enqueue overflow — no I/O, no `tokio`, no `opentelemetry` deps; Kani/proptest-provable; VP-2.24.002-A (`ring_buffer_bounded_invariant`) and VP-2.24.002-B (`ring_buffer_fifo_invariant`) targets; canonical pure vehicle for `RingBuffer<SpanData>` storage |
+| `console::span_exporter` | pregolya-console | **Boundary** | Effectful OTel exporter: `DebugSpanExporter` owns `Arc<Mutex<RingBuffer<SpanData>>>` — **depends on `console::ring_buffer` (Pure Core)**; performs SEC-BOUND-001 sanitization (strip `llm_request`/`llm_response`/`attributes` from `SpanData`) AT insertion before delegating write to the ring buffer; implements `opentelemetry::sdk::export::SpanExporter` async trait; Arc-DI injected into co-launched pregolya-server |
 | `server::debug_routes` [feature `debug-endpoints`] | pregolya-server | **Effectful Shell** | HTTP handlers: reads from `DebugSpanExporter` (shared state I/O), queries AssistantStore (async I/O); feature-gated, excluded from production builds by default |
 | `graph::descriptor` [Pure Core, extracted] | pregolya-graph | **Pure Core** | `fn compile_graph_descriptor(graph: &CompiledStateGraph) -> GraphDescriptor` — deterministic, no I/O, no global state; required extraction before Phase 6 (Purity Enforcement Rule 3) |
 
@@ -234,6 +236,8 @@ These are **additive exceptions** to the workspace-wide NFR catalog for the cons
   CLI entrypoint may use `println!` for UX output (port announcement).
 
 > **D-356 adversary fix DC-02 (2026-09-07, architect).** F-PDC02-05: D6-2 security posture strengthened per adversary finding. `debug_api_key` is now MANDATORY (not opt-in) when the `debug-endpoints` Cargo feature is enabled; unauthenticated requests to `/debug/*` return `403` with `E-SERVER-004 DebugRouteUnauthorized`. Rationale: `SpanData` exposes `llm_request`/`llm_response` payloads; loopback bind alone is insufficient against the DNS-rebinding/CSRF-to-127.0.0.1 vector. `SpanData` sanitization (SEC-BOUND-001 parity — strip LLM payload fields before export) is cross-referenced to BC-2.24.002. Companion: api-surface.md §Security note updated to reflect mandatory auth.
+
+> **D-356 adversary fix DC-04 (2026-09-07, architect).** F-PDC04-04: Decision 5 purity table split into two canonical modules. `console::ring_buffer` is now the **canonical Pure Core** module hosting `RingBuffer<T>` (deterministic bounded FIFO, no I/O deps, Kani/proptest-provable; VP-2.24.002-A/B targets). `console::span_exporter` remains **Boundary** but is now explicitly defined as the OTel exporter that **DEPENDS ON** `console::ring_buffer` — it owns `Arc<Mutex<RingBuffer<SpanData>>>` and performs SEC-BOUND-001 sanitization AT insertion before delegating to the ring buffer. This ADR text is the canonical arbiter for the module split; it prevents future reversion (DC-01 introduced `console::ring_buffer` non-canonically; DC-02 collapsed both into `console::span_exporter`; DC-04 resolves by canonicalizing the split with explicit dependency direction). VP-2.24.002-A/B repointed to `console::ring_buffer` in all four VP mirrors. VP-2.24.002-D (sanitization) stays at `console::span_exporter`. BC-2.24.002 §Module wording for PO: "`pregolya-console` — two modules: `console::ring_buffer` (Pure Core, `RingBuffer<T>` data structure) and `console::span_exporter` (Boundary, `DebugSpanExporter` OTel exporter owning `Arc<Mutex<RingBuffer<SpanData>>>`).". INV-002 wording for PO: "`RingBuffer<SpanData>` storage lives in `console::ring_buffer` (Pure Core); `DebugSpanExporter` in `console::span_exporter` (Boundary) is the sole writer via `Arc<Mutex<RingBuffer<SpanData>>>`; reads served by `server::debug_routes` via the same Arc handle."
 
 ---
 

@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.002
-version: "1.2"
+version: "1.3"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -19,6 +19,7 @@ di_anchors: [DI-014]
 vp_seed: false
 red_gate: false
 changelog:
+  - "1.3 (D-356-fix/DC-04/2026-09-07, product-owner): F-PDC04-04: INV-002 tightened — explicit module attribution added: RingBuffer<T> lives in `console::ring_buffer` (Pure Core); DebugSpanExporter lives in `console::span_exporter` (Boundary) and holds Arc<Mutex<RingBuffer<SpanData>>>. Module field in Traceability updated to include `console::ring_buffer (Pure Core)` alongside `console::span_exporter (Boundary)`. Prior wording cited the purity split without naming the module boundary."
   - "1.2 (D-356-fix/DC-02/2026-09-07, product-owner): Architect adjudication — sanitization location tightened from 'before serving' to before ring-buffer insertion in console::span_exporter (S-console-02 AC-011). PC-008, INV-006, VP-2.24.002-D updated to canonical location wording. Delta note added."
   - "1.1 (D-356-fix/DC-02/2026-09-07, product-owner): F-PDC02-05 security finding — SpanData external-boundary sanitization added (PC-008 new postcondition, INV-006 new invariant): llm_request, llm_response, and attributes must pass SEC-BOUND-001 pipeline before crossing /debug/trace/* boundary, parity with ADR-029 §External-Boundary Error-Sanitization Parity. PC-007 strengthened: debug_api_key is REQUIRED when debug-endpoints feature is enabled, not merely when configured; server must refuse to start without it. EC-007 and TV-006 added. VP-2.24.002-D added."
   - "1.0 (D-356/2026-09-06, product-owner): Initial BC — D-356 dev-console scope expansion. DebugSpanExporter FIFO ring-buffer retention cap and trace-read debug endpoints."
@@ -29,7 +30,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "56ca87a"
+input-hash: "805b7eb"
 extracted_from: null
 modified: []
 deprecated: null
@@ -48,6 +49,8 @@ removal_reason: null
 > **D-356 adversary fix DC-02 (2026-09-07, product-owner).** F-PDC02-05 security finding: (a) SpanData external-boundary sanitization obligation added — `llm_request`, `llm_response`, and `attributes` must pass the SEC-BOUND-001 pipeline (internal-panic static-replace → redact_credentials → sanitize_internal_ids) before crossing the `/debug/trace/*` HTTP boundary, achieving parity with the run-stream error path (BC-2.06.001 §Postconditions PC-002 / BC-2.12.007 §Invariants INV-004 / ADR-029 §External-Boundary Error-Sanitization Parity). (b) PC-007 strengthened: `debug_api_key` is REQUIRED whenever `debug-endpoints` feature is enabled — absence is a server startup error, not a runtime bypass. Consistent with ADR-031 Decision 6 update in progress by architect.
 
 > **D-356 adversary fix DC-02 location adjudication (2026-09-07, product-owner).** Architect adjudication (S-console-02 AC-011): sanitization location tightened to **before ring-buffer insertion in `console::span_exporter`** — the in-memory buffer must never hold unsanitized fields; this subsumes "before serving." PC-008, INV-006, and VP-2.24.002-D updated to canonical location wording.
+
+> **D-356 adversary fix DC-04 (2026-09-07, product-owner).** F-PDC04-04: INV-002 and §Module updated — explicit module attribution added for the Pure Core / Boundary split: `RingBuffer<T>` lives in `console::ring_buffer` (Pure Core); `DebugSpanExporter` lives in `console::span_exporter` (Boundary) and owns `Arc<Mutex<RingBuffer<SpanData>>>`. Prior wording cited the purity split correctly but did not name the module boundary by canonical module path.
 
 ## Description
 
@@ -91,7 +94,7 @@ configured, both endpoints return HTTP 503 with `E-SERVER-023 DebugExporterNotCo
 ## Invariants
 
 - {INV-001} **Bounded memory:** The ring buffer NEVER exceeds `span_retention_cap` entries. FIFO eviction is the only growth-control mechanism — no dynamic resizing, no memory limit override.
-- {INV-002} **Pure-core ring buffer:** The `RingBuffer<SpanData>` data structure (deterministic read/write, index arithmetic) is extractable as Pure Core for Kani/proptest verification. The effectful OTel exporter registration is the Boundary layer (ADR-031 Decision 5).
+- {INV-002} **Pure-core ring buffer:** `RingBuffer<T>` — pure data structure in `console::ring_buffer` (Pure Core); deterministic read/write, index arithmetic, extractable for Kani/proptest verification. `DebugSpanExporter` in `console::span_exporter` (Boundary) owns an `Arc<Mutex<RingBuffer<SpanData>>>` and applies SEC-BOUND-001 sanitization at insertion. The effectful OTel exporter registration lives in the Boundary layer (ADR-031 Decision 5).
 - {INV-003} **`SpanData` is `#[non_exhaustive]`:** `SpanData` is a public API-surface type and MUST carry `#[non_exhaustive]` per workspace conventions.
 - {INV-004} **DI-014:** Span-export errors (OTel export callback failure) are logged via `tracing::warn!` and do not propagate to the engine; engine execution continues uninterrupted.
 - {INV-005} **Shared via `Arc`:** `DebugSpanExporter` is shared between the console server and the pregolya-server debug routes via `Arc<DebugSpanExporter>` — required for Arc-DI wiring per workspace convention.
@@ -161,7 +164,7 @@ S-console-02 (Wave 3 — DebugSpanExporter implementation + debug-endpoints feat
 | Architecture Authority | ADR-031 Decision 2 (debug endpoint paths, SpanData shape, E-SERVER-023, debug-endpoints feature gate, default OFF), Decision 5 (purity boundary: ring buffer Pure Core, OTel registration Boundary) |
 | Binding Decisions | D-356 (developer console scope expansion, 2026-09-06) |
 | VP Registration | VP-2.24.002-A/B/C/D |
-| Module | pregolya-console / console::span_exporter (Boundary) + pregolya-server / server::debug_routes [feature debug-endpoints] (Effectful Shell) |
+| Module | pregolya-console / console::ring_buffer (Pure Core) + pregolya-console / console::span_exporter (Boundary) + pregolya-server / server::debug_routes [feature debug-endpoints] (Effectful Shell) |
 | Priority | P1 |
 | Wave | 3 |
 | Test Types | unit + proptest + integration |

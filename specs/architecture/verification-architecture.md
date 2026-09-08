@@ -2,7 +2,7 @@
 document_type: architecture-section
 level: L3
 section: verification-architecture
-version: "2.42"
+version: "2.43"
 status: active
 producer: architect
 timestamp: 2026-09-07T00:00:00Z
@@ -32,6 +32,7 @@ input-hash: "472a877"
 traces_to: ARCH-INDEX.md
 decisions: [D17, D21, D23, D356]
 changelog:
+  - "2.43 (D-356/DC-04/2026-09-07, architect): F-PDC04-04 — VP-2.24.002-A/B module repointed console::span_exporter → console::ring_buffer (console::ring_buffer is now canonical Pure Core for RingBuffer<T> per ADR-031 Decision 5 DC-04 split). VP-2.24.002-C (server::debug_routes) and VP-2.24.002-D (console::span_exporter sanitization) unchanged. Census UNCHANGED: 41 total. input-hash pending-recompute."
   - "2.42 (D-356/DC-02-addendum/2026-09-07, architect): VP-2.24.002-D registered — SpanData SEC-BOUND-001 sanitization before ring-buffer insertion (unit P1; console::span_exporter; BC-2.24.002; DI-014). Sanitization location: AT INSERTION (stricter than BC PC-008 'before serving'; ensures ring buffer never holds unsanitized llm_request/llm_response/attributes; satisfies PC-008 as a postcondition). Census 40→41; unit ×7→×8; P1 34→35. Preamble Forty→Forty-one. input-hash pending-recompute."
   - "2.41 (D-356/DC-02/2026-09-07, architect): F-PDC02-02+F-PDC02-03 — VP-2.24.002-A/B module repointed console::ring_buffer → console::span_exporter (ADR-031 Decision 5 canonical; DC-01 had used non-canonical name; console::span_exporter is the Boundary module hosting RingBuffer<SpanData>, per ADR-031 Decision 5 purity table). VP-2.24.004-008 A/B module columns corrected from console::server to SPA panel modules: console::run_inspector (004-A/B), console::checkpoint_panel (005-A/B), console::hitl_panel (006-A/B), console::budget_panel (007-A/B), console::guardrail_panel (008-A/B), per respective BCs. Tool census UNCHANGED: Kani ×10, proptest ×10, integration ×12, unit ×7, compile-fail ×1 (40 total VPs). input-hash pending-recompute."
   - "2.40 (D-356/DC-01/2026-09-06, architect): F-PDC01-03+F-PDC01-04 — VP-2.24.002-A/B repointed to console::ring_buffer / pregolya-console (RingBuffer<SpanData> Pure Core; ADR-031 Decision 5 + S-console-02). Tool reconciled vs BC Proof Methods for 8 rows: 001-A/B integration/proptest→unit; 001-C integration→compile-fail; 002-B integration→proptest (module/crate also fixed); 003-A proptest→unit; 003-C integration→unit; 007-A integration→unit; 008-B integration→unit. Total line updated: proptest ×10, integration ×12, unit ×7, compile-fail ×1 (40 VPs total unchanged). input-hash pending-recompute."
@@ -111,8 +112,8 @@ Forty-one VPs committed before v1.0 release — VP-001..005 (original five) plus
 | VP-2.24.001-A | BC-2.24.001 | DI-014 | `console::server` | unit | 3 | P1 |
 | VP-2.24.001-B | BC-2.24.001 | DI-014 | `console::server` | unit | 3 | P1 |
 | VP-2.24.001-C | BC-2.24.001 | DI-014 | `console::server` | compile-fail | 3 | P1 |
-| VP-2.24.002-A | BC-2.24.002 | DI-014 | `console::span_exporter` | proptest | 3 | P1 |
-| VP-2.24.002-B | BC-2.24.002 | DI-014 | `console::span_exporter` | proptest | 3 | P1 |
+| VP-2.24.002-A | BC-2.24.002 | DI-014 | `console::ring_buffer` | proptest | 3 | P1 |
+| VP-2.24.002-B | BC-2.24.002 | DI-014 | `console::ring_buffer` | proptest | 3 | P1 |
 | VP-2.24.002-C | BC-2.24.002 | DI-014 | `server::debug_routes` | integration | 3 | P1 |
 | VP-2.24.002-D | BC-2.24.002 | DI-014 | `console::span_exporter` | unit | 3 | P1 |
 | VP-2.24.003-A | BC-2.24.003 | DI-014 | `graph::descriptor` | unit | 3 | P1 |
@@ -142,6 +143,8 @@ Forty-one VPs committed before v1.0 release — VP-001..005 (original five) plus
 > **D-356 adversary fix DC-01 (2026-09-06, architect).** F-PDC01-03: VP-2.24.002-A/B module repointed to `console::ring_buffer` / `pregolya-console` — `RingBuffer<SpanData>` is Pure Core in pregolya-console (ADR-031 Decision 5 + S-console-02 target_module); harness_fn updated (`ring_buffer_bounded_invariant`, `ring_buffer_fifo_invariant`). F-PDC01-04: 8 rows reconciled against BC Proof Methods: 001-A/B integration/proptest→unit; 001-C integration→compile-fail (BC-2.24.001 AC-007 compile-fail test; new tool category); 002-B integration→proptest; 003-A proptest→unit; 003-C integration→unit; 007-A integration→unit; 008-B integration→unit. Updated tool breakdown: Kani ×10, proptest ×10, integration ×12, unit ×7, compile-fail ×1.
 > **D-356 adversary fix DC-02 (2026-09-07, architect).** F-PDC02-03: VP-2.24.002-A/B module repointed `console::ring_buffer` → `console::span_exporter` (ADR-031 Decision 5 canonical; `console::ring_buffer` was a non-canonical invention; canonical module is `console::span_exporter` — Boundary module hosting `RingBuffer<SpanData>`, per ADR-031 Decision 5 purity table). F-PDC02-02: VP-2.24.004-008 A/B module columns corrected from `console::server` to SPA panel modules per respective BCs: `console::run_inspector` (004-A/B), `console::checkpoint_panel` (005-A/B), `console::hitl_panel` (006-A/B), `console::budget_panel` (007-A/B), `console::guardrail_panel` (008-A/B). Tool census UNCHANGED. See companion fixes in api-surface.md and ADR-031 (F-PDC02-05 mandatory debug_api_key).
 > **D-356 adversary fix DC-02 addendum (2026-09-07, architect).** VP-2.24.002-D registered — SpanData SEC-BOUND-001 sanitization before ring-buffer insertion (unit P1; BC-2.24.002; DI-014; `console::span_exporter`; harness `test_BC_2_24_002_span_data_sanitization_sec_bound_001`). Sanitization-location ruling: AT INSERTION (stricter; in-memory ring buffer never holds unsanitized `llm_request`/`llm_response`/`attributes`; satisfies BC-2.24.002 PC-008 as a postcondition). Census 40→41; unit ×7→×8; P1 34→35. PO follow-up: BC-2.24.002 PC-008 wording needs "before ring-buffer insertion" instead of "before being served at /debug/trace/*".
+
+> **D-356 adversary fix DC-04 (2026-09-07, architect).** F-PDC04-04: VP-2.24.002-A/B module repointed `console::span_exporter` → `console::ring_buffer`. `console::ring_buffer` is now the canonical Pure Core module for `RingBuffer<T>` per ADR-031 Decision 5 (DC-04 split). VP-2.24.002-C (`server::debug_routes`) and VP-2.24.002-D (`console::span_exporter` sanitization) unchanged. Census UNCHANGED: 41 total.
 
 ## Provable Properties Catalog
 

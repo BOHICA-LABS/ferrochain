@@ -1,11 +1,12 @@
 ---
 document_type: story-index
 level: L3
-version: "1.63"
+version: "1.64"
 status: active
 producer: state-manager
 timestamp: 2026-09-07T00:00:00Z
 changelog:
+  - "1.64 (D-356/DC-04 fix-burst/2026-09-07, state-manager): S-console-07 v1.1 (story-writer; F-PDC04-01 u64 checkpoint_id; F-PDC04-02 BC-2.12.001 {PC-015} v1.11 + E-CHKPT-011 EC-010; POLICY-8 behavioral_contracts [BC-2.24.005]→[BC-2.24.005, BC-2.12.001]). S-console-07 Story-Inventory BCs column updated: BC-2.24.005→BC-2.24.005 + BC-2.12.001 (POLICY-8 hard gate — legitimate override). BC-to-Story map BC-2.12.001 row: S-1.26→S-1.26 + S-console-07 (roadmap, Wave 3; consumes ?checkpoint_id PC-015 variant). Version bumps: BC-2.24.005 v1.2, BC-2.12.001 v1.11, BC-2.24.008 v1.4, BC-2.24.002 v1.3. error-taxonomy v1.74 (E-CHKPT-011 second raise site + E-SERVER-004 msg correction). Input hashes: ADR-031 00c95fd, vcm 82e8ad9, purity-boundary-map 83d67fc. Story/pts UNCHANGED: 52 / 372. Census: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.63 (D-356/DC-03 fix-burst/2026-09-07, state-manager): S-console-10 v1.1 (story-writer sibling-sweep corrections; F-PDC03-01/03/04 BC-2.24.008 updates propagated). BC-2.24.005 v1.1 (F-PDC03-02 fork mechanism). BC-2.12.003 v1.20 (supporting; E-CHKPT-011 registered). EC 143→145 (E-CHKPT-011 CheckpointNotFound + E-SERVER-023 gap fix). Census: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.62 (D-356/DC-02 fix-burst/2026-09-07, state-manager): F-PDC02-06 [LOW records] — v1.61 entry description corrected: 'LLM tool-call type list' → 'StreamEvent variant list' (those 16 are StreamEvent variants per BC-2.06.001 §PC-002, not LLM tool-call types). VP census updated: VPs 40→41 (VP-2.24.002-D registered by architect). Census: stories 52 / pts 372 / BCs 148 / VPs 41."
   - "1.61 (D-356/DC-01 fix-burst/2026-09-06, state-manager): STORY-S-console-06 v1.0→v1.1 (story-writer): AC-001 corrected to canonical 16-variant StreamEvent variant list (F-PDC01-04). Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 40."
@@ -244,7 +245,7 @@ input-hash: "5135b35"
 | S-console-04 | `graph::descriptor` Pure Core Module and `GET /assistants/{id}/graph` Endpoint | BC-2.24.003 | SS-24 | pregolya-console | P1 | 5 | [S-console-03] | roadmap |
 | S-console-05 | Web SPA Build Pipeline | BC-2.24.001 | SS-24 | pregolya-console | P1 | 8 | [S-console-01] | roadmap |
 | S-console-06 | Run Inspection Event Timeline and Live SSE Monitoring Panel | BC-2.24.004 | SS-24 | pregolya-console | P1 | 8 | [S-console-03, S-console-04, S-console-05] | roadmap |
-| S-console-07 | Checkpoint History Browser and Fork-from-Checkpoint Trajectory Replay | BC-2.24.005 | SS-24 | pregolya-console | P1 | 5 | [S-console-05] | roadmap |
+| S-console-07 | Checkpoint History Browser and Fork-from-Checkpoint Trajectory Replay | BC-2.24.005, BC-2.12.001 | SS-24 | pregolya-console | P1 | 5 | [S-console-05] | roadmap |
 | S-console-08 | HITL Approval Dialog and Resume Dispatch | BC-2.24.006 | SS-24 | pregolya-console | P1 | 5 | [S-console-06] | roadmap |
 | S-console-09 | Token/Context Budget Monitoring Panel | BC-2.24.007 | SS-24 | pregolya-console | P1 | 5 | [S-console-06] | roadmap |
 | S-console-10 | Guardrail/Security Decision Review Panel | BC-2.24.008 | SS-24 | pregolya-console | P1 | 5 | [S-console-06] | roadmap |
@@ -435,7 +436,7 @@ input-hash: "5135b35"
 
 | BC ID | Title (abbreviated) | Story | Priority |
 |-------|---------------------|-------|---------|
-| BC-2.12.001 | Thread Resource CRUD | S-1.26 | P1 |
+| BC-2.12.001 | Thread Resource CRUD | S-1.26; S-console-07 (roadmap, Wave 3 — ?checkpoint_id PC-015 variant) | P1 |
 | BC-2.12.002 | Assistant Resource CRUD | S-1.26 | P1 |
 | BC-2.12.003 | Run Creation and Execution Lifecycle | S-1.26 | P1 |
 | BC-2.12.004 | CronSchedule Creation and Proactive Run | S-1.27 | P1 |

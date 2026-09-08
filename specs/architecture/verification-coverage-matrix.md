@@ -2,7 +2,7 @@
 document_type: architecture-section
 level: L3
 section: verification-coverage-matrix
-version: "3.39"
+version: "3.40"
 status: active
 producer: state-manager
 timestamp: 2026-09-07T00:00:00Z
@@ -11,9 +11,10 @@ inputs:
   - .factory/specs/verification-properties/VP-INDEX.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/module-criticality.md
-input-hash: "c475841"
+input-hash: "82e8ad9"
 traces_to: ARCH-INDEX.md
 changelog:
+  - "3.40 (D-356/DC-04/2026-09-07, architect): F-PDC04-04 — VP-2.24.002-A/B Module column repointed console::span_exporter → console::ring_buffer (canonical Pure Core for RingBuffer<T> per ADR-031 Decision 5 DC-04 split). VP-2.24.002-C (server::debug_routes) and VP-2.24.002-D (console::span_exporter) unchanged. Totals UNCHANGED: 41 VPs | Kani: 10 | proptest: 10 | integration: 12 | unit: 8 | compile-fail: 1. input-hash pending-recompute."
   - "3.39 (D-356/DC-02 fix-burst/2026-09-07, state-manager): Arithmetic invariant preamble corrected 40→41 (P0 6 unchanged, P1 34→35, unit 7→8). Architect v3.38 changelog noted 'Totals updated' for the VP-to-Module table; preamble text was not updated in that pass. Preamble now reads: VP total (41) = P0 (6) + P1 (35) = Kani (10) + proptest (10) + integration (12) + unit (8) + compile-fail (1)."
   - "3.38 (D-356/DC-02-addendum/2026-09-07, architect): VP-2.24.002-D registered — SpanData SEC-BOUND-001 Sanitization Before Ring-Buffer Insertion (unit; console::span_exporter; pregolya-console; BC-2.24.002; Phase 3). Census 40→41; unit 7→8; P1 34→35. Totals updated."
   - "3.37 (D-356/DC-02/2026-09-07, architect): F-PDC02-02+F-PDC02-03 — VP-2.24.002-A/B Module column repointed console::ring_buffer → console::span_exporter (ADR-031 Decision 5 canonical). VP-2.24.004-008 A/B Title column rewritten to BC exact property wording (10 descriptions replaced with canonical postcondition text per BCs 2.24.004–008); Module column corrected to SPA panel modules: console::run_inspector (004-A/B), console::checkpoint_panel (005-A/B), console::hitl_panel (006-A/B), console::budget_panel (007-A/B), console::guardrail_panel (008-A/B). Totals UNCHANGED: 40 VPs | Kani: 10 | proptest: 10 | integration: 12 | unit: 7 | compile-fail: 1. input-hash pending-recompute."
@@ -111,8 +112,8 @@ changelog:
 | VP-2.24.001-A | Console Server Lifecycle (unit) | console::server | pregolya-console | unit | BC-2.24.001 | 3 | draft |
 | VP-2.24.001-B | Console Server Zero-Cap Error (unit) | console::server | pregolya-console | unit | BC-2.24.001 | 3 | draft |
 | VP-2.24.001-C | Console Server Type Safety (compile-fail) | console::server | pregolya-console | compile-fail | BC-2.24.001 | 3 | draft |
-| VP-2.24.002-A | Ring Buffer Bounded Invariant (proptest) | console::span_exporter | pregolya-console | proptest | BC-2.24.002 | 3 | draft |
-| VP-2.24.002-B | Ring Buffer FIFO Invariant (proptest) | console::span_exporter | pregolya-console | proptest | BC-2.24.002 | 3 | draft |
+| VP-2.24.002-A | Ring Buffer Bounded Invariant (proptest) | console::ring_buffer | pregolya-console | proptest | BC-2.24.002 | 3 | draft |
+| VP-2.24.002-B | Ring Buffer FIFO Invariant (proptest) | console::ring_buffer | pregolya-console | proptest | BC-2.24.002 | 3 | draft |
 | VP-2.24.002-C | Debug Trace Session Endpoint (integration) | server::debug_routes | pregolya-server | integration | BC-2.24.002 | 3 | draft |
 | VP-2.24.002-D | SpanData SEC-BOUND-001 Sanitization Before Ring-Buffer Insertion (unit) | console::span_exporter | pregolya-console | unit | BC-2.24.002 | 3 | draft |
 | VP-2.24.003-A | Graph Descriptor Serialization (unit) | graph::descriptor | pregolya-graph | unit | BC-2.24.003 | 3 | draft |
@@ -133,6 +134,8 @@ changelog:
 > **D-356 adversary fix DC-01 (2026-09-06, architect).** F-PDC01-03: VP-2.24.002-A/B repointed to `console::ring_buffer` / `pregolya-console` (`RingBuffer<SpanData>` Pure Core; ADR-031 Decision 5 + S-console-02). F-PDC01-04: 8 rows reconciled against BC Proof Methods; compile-fail added as tool category. Totals corrected: proptest 10, integration 12, unit 7, compile-fail 1.
 > **D-356 adversary fix DC-02 (2026-09-07, architect).** F-PDC02-03: VP-2.24.002-A/B Module column repointed `console::ring_buffer` → `console::span_exporter` (ADR-031 Decision 5 canonical; `console::ring_buffer` was non-canonical). F-PDC02-02: VP-2.24.004-008 A/B Title column rewritten to BC exact postcondition wording (10 descriptions); Module column corrected from `console::server` to panel-specific modules: `console::run_inspector` (004-A/B), `console::checkpoint_panel` (005-A/B), `console::hitl_panel` (006-A/B), `console::budget_panel` (007-A/B), `console::guardrail_panel` (008-A/B). Totals UNCHANGED.
 > **D-356 adversary fix DC-02 addendum (2026-09-07, architect).** VP-2.24.002-D row added — SpanData SEC-BOUND-001 Sanitization Before Ring-Buffer Insertion (unit; `console::span_exporter`; BC-2.24.002). Census 40→41; unit 7→8. Totals updated above.
+
+> **D-356 adversary fix DC-04 (2026-09-07, architect).** F-PDC04-04: VP-2.24.002-A/B Module column repointed `console::span_exporter` → `console::ring_buffer`. `console::ring_buffer` is now canonical Pure Core for `RingBuffer<T>` per ADR-031 Decision 5 (DC-04 split). VP-2.24.002-C (`server::debug_routes`) and VP-2.24.002-D (`console::span_exporter`) unchanged. Totals UNCHANGED: 41 VPs.
 
 **Totals: 41 VPs | Kani: 10 | proptest: 10 | fuzz: 0 | integration: 12 | unit: 8 | compile-fail: 1**
 
