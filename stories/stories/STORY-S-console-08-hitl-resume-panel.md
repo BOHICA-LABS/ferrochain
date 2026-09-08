@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-console-08
 epic_id: E-console
-version: "1.2"
+version: "1.3"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -11,13 +11,14 @@ changelog:
   - "1.0 (D-356/2026-09-06, story-writer): Initial story — HITL approval dialog, Approve/Deny/Edit decisions, FIFO multi-interrupt ordering, resume dispatch, post-resume live monitoring."
   - "1.1 (D-356/2026-09-07, story-writer): Adversary fix DC-02 — remove phantom graph_interrupt as an SSE stream event. Re-scope interrupt detection to BC-2.24.006's two-mechanism model: (a) node/graph-boundary interrupts detected via run STATUS transitioning to interrupted (interrupt halts SSE stream; no dedicated event); (b) tool-approval interrupts via tool_approval_request SSE event. All references treating graph_interrupt as an observable SSE event removed."
   - "1.2 (D-356/DC-23/2026-09-08, story-writer): F-PDC23-01 — resume is SAME run_id (architect ruling per BC-2.24.006 v1.3). AC-006 rewritten: run transitions in_progress on the SAME run_id; console continues monitoring same SSE stream (GET .../runs/{run_id}/stream); re-navigates to run inspection panel for same run_id. EC-006 corrected: same run_id unchanged. Task 8 corrected: post-resume continuation uses existing run_id. Zero new_run_id / {new_run_id} residue confirmed."
+  - "1.3 (D-356/DC-25/2026-09-08, story-writer): F-PDC25-01 — node-boundary interrupt detection corrected to terminal __interrupt__ frame model (BC-2.24.006 v1.4). AC-001: detection now via terminal {\"__interrupt__\": [InterruptPayload]} SSE frame (not onclose/status-poll). AC-002: dialog sources value (scratchpad) + interrupt_id (hash) from frame; node_name claim removed (no node_name field in InterruptPayload). Task 3(b): populate dialog from terminal frame, not onclose handler. EC-004: node name removed; shows interrupt_id + null value. PSI: terminal frame reference. DC-02 body note: terminal frame correction noted. Zero node_name residue and zero no-dedicated-event over-correction residue confirmed."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.006.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "92e7a23"
+input-hash: "bf6d9ac"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-06]
@@ -40,7 +41,7 @@ tdd_mode: strict
 > **D-356 dev-console scope expansion (2026-09-06, story-writer).** Roadmap-only.
 > Wave 3 — not built in the current Phase 3 implementation cycle.
 
-> **D-356 adversary fix DC-02 (2026-09-07, story-writer).** Removed `graph_interrupt` as an SSE stream event throughout this story. `graph_interrupt` is phantom — it does not exist in the confirmed 16-variant StreamEvent grammar (see S-console-06 AC-001 for the canonical variant list). BC-2.24.006's corrected two-mechanism interrupt model: (a) node/graph-boundary interrupts cause the SSE stream to halt and run STATUS transitions to `interrupted` — detected via run list status field or run-status endpoint, NOT via a dedicated stream event; (b) tool-approval interrupts arrive as `tool_approval_request` SSE events on the active stream. All AC, task, and intelligence references treating `graph_interrupt` as an observable SSE event have been re-scoped accordingly.
+> **D-356 adversary fix DC-02 (2026-09-07, story-writer).** Removed `graph_interrupt` as an SSE stream event throughout this story. `graph_interrupt` is phantom — it does not exist in the confirmed 16-variant StreamEvent grammar (see S-console-06 AC-001 for the canonical variant list). BC-2.24.006's corrected two-mechanism interrupt model: (a) node/graph-boundary interrupts terminate the SSE stream with a terminal `{"__interrupt__": [InterruptPayload]}` envelope frame carrying the payload (DC-25 correction: the terminal frame IS the detection mechanism — `onclose`/status-poll was an over-correction; `graph_interrupt` as a named StreamEvent variant remains phantom); run STATUS also transitions to `interrupted` (corroboration); (b) tool-approval interrupts arrive as `tool_approval_request` SSE events on the active stream. All AC, task, and intelligence references treating `graph_interrupt` as an observable SSE event have been re-scoped accordingly.
 
 ## Narrative
 
@@ -57,10 +58,10 @@ tdd_mode: strict
 ## Acceptance Criteria
 
 ### AC-001 (traces to BC-2.24.006 postcondition PC-001)
-The console identifies runs in `interrupted` status via two mechanisms: (a) from the run list — when a run's STATUS field shows `interrupted`; (b) from the live SSE stream — by observing a `tool_approval_request` event (tool-approval interrupt path) or by detecting that the active SSE stream has ended and the run STATUS has transitioned to `interrupted` (node/graph-boundary interrupt path — the interrupt halts the stream; there is no dedicated `graph_interrupt` stream event). Interrupted runs are visually flagged (e.g., a badge or status indicator distinct from `in_progress` or `completed`). Verified by `test_BC_2_24_006_interrupt_detection_flagged()`.
+The console identifies runs in `interrupted` status via two mechanisms: (a) from the run list — when a run's STATUS field shows `interrupted`; (b) from the live SSE stream — by observing a `tool_approval_request` event (tool-approval interrupt path) or by receiving the terminal `{"__interrupt__": [InterruptPayload]}` SSE envelope frame (node/graph-boundary interrupt path — the stream terminates with this frame carrying the interrupt payload; run STATUS also transitions to `interrupted`). Interrupted runs are visually flagged (e.g., a badge or status indicator distinct from `in_progress` or `completed`). Verified by `test_BC_2_24_006_interrupt_detection_flagged()`.
 
 ### AC-002 (traces to BC-2.24.006 postcondition PC-002)
-For node-boundary interrupts (detected via run STATUS = `interrupted` after the SSE stream ends — no dedicated stream event exists), the dialog shows the interrupt's `scratchpad` value (arbitrary JSON) and the node name where the interrupt fired, obtained from the run or thread state endpoint. For per-tool-call interrupts (detected via `tool_approval_request` SSE event on the active stream), the dialog shows the `ToolCallPreview`: tool name, args as JSON, and `ActionRisk` level. Both variants surface Approve and Deny buttons. Verified by `test_BC_2_24_006_dialog_node_interrupt()` and `test_BC_2_24_006_dialog_tool_interrupt()`.
+For node-boundary interrupts (detected via the terminal `{"__interrupt__": [InterruptPayload]}` SSE frame), the dialog sources its data directly from that frame. `InterruptPayload` has two fields: `value` (arbitrary JSON passed to `interrupt()` — the scratchpad) and `interrupt_id` (hash). There is NO `node_name` field in `InterruptPayload` — the dialog does NOT display a node name for node-boundary interrupts. For per-tool-call interrupts (detected via `tool_approval_request` SSE event on the active stream), the dialog shows the `ToolCallPreview`: tool name, args as JSON, and `ActionRisk` level. Both variants surface Approve and Deny buttons. Verified by `test_BC_2_24_006_dialog_node_interrupt()` and `test_BC_2_24_006_dialog_tool_interrupt()`.
 
 ### AC-003 (traces to BC-2.24.006 postcondition PC-003)
 Clicking Approve sends `POST /threads/{id}/runs/{run_id}/resume` with `Command { resume: PreToolDecision::Allow }` for tool-call interrupts (or the appropriate node-boundary resume variant). Clicking Deny requires a reason text input and sends `Command { resume: PreToolDecision::Deny(reason) }`. The exact `Command` shape is derived from the server contract — no new resume semantics introduced. Verified by `test_BC_2_24_006_approve_sends_allow()` and `test_BC_2_24_006_deny_sends_deny_reason()` (VP-2.24.006-A).
@@ -102,7 +103,7 @@ When `POST .../resume` returns a server error, the error message is displayed in
 | EC-001 | Run transitions to `cancelled` while dialog is open | Server error on resume; dialog shows "run no longer active" |
 | EC-002 | Edit produces invalid JSON | Submit button disabled; inline error shown |
 | EC-003 | Two pending `tool_approval_request` events | First shown; second surfaced after first is resolved in FIFO order |
-| EC-004 | Node-boundary interrupt with null scratchpad | Dialog shows node name + "no scratchpad data"; Approve/Deny available |
+| EC-004 | Node-boundary interrupt with null `value` in InterruptPayload | Dialog shows `interrupt_id` (hash) + null scratchpad (`value: null`); Approve/Deny available (no node name shown — `node_name` is not a field of InterruptPayload) |
 | EC-005 | `POST .../resume` returns server error | Error shown in dialog; dialog stays open; operator can retry |
 | EC-006 | Resume succeeds (same run_id; `interrupted` → `in_progress`) | Console continues live monitoring for same run (run_id unchanged) |
 
@@ -124,7 +125,7 @@ When `POST .../resume` returns a server error, the error message is displayed in
 
 1. [ ] Write failing tests for all ACs (test-writer; E2E/component tests)
 2. [ ] Create `spa/src/components/HitlApprovalDialog.*` — modal dialog for approval; Approve/Deny/Edit buttons; FIFO queue management
-3. [ ] Implement interrupt detection: (a) SSE event handler filters `tool_approval_request` events for the tool-approval interrupt path; (b) SSE `onclose`/stream-end handler checks run STATUS via run-status endpoint — if `interrupted`, trigger the node/graph-boundary interrupt dialog path. No `graph_interrupt` stream event exists.
+3. [ ] Implement interrupt detection: (a) SSE event handler filters `tool_approval_request` events for the tool-approval interrupt path; (b) on the terminal `{"__interrupt__": [InterruptPayload]}` SSE frame, populate the HITL dialog from `value` (scratchpad JSON) + `interrupt_id` (hash); corroborate via `interrupted` run status. No `onclose`/stream-end status poll required — the payload arrives in the terminal frame itself.
 4. [ ] Implement Approve action: POST `Command { resume: PreToolDecision::Allow }` to `/threads/{id}/runs/{run_id}/resume`
 5. [ ] Implement Deny action: require reason text input; POST `Command { resume: PreToolDecision::Deny(reason) }`
 6. [ ] Implement Edit action: inline JSON editor; client-side JSON validation; submit disabled on invalid JSON
@@ -135,7 +136,7 @@ When `POST .../resume` returns a server error, the error message is displayed in
 
 ## Previous Story Intelligence (MANDATORY)
 
-Predecessor: S-console-06 (run inspection panel). The `sse.ts` SSE subscription library and `api.ts` REST client are established by S-console-06. The HITL dialog reuses the SSE event stream already open for run inspection — it listens for `tool_approval_request` SSE events and monitors SSE stream-end events (for node/graph-boundary interrupts, which halt the stream rather than emitting a dedicated event) on the same `EventSource` instance. Post-resume, the console transitions to the run inspection panel using the same navigation pattern established in S-console-06.
+Predecessor: S-console-06 (run inspection panel). The `sse.ts` SSE subscription library and `api.ts` REST client are established by S-console-06. The HITL dialog reuses the SSE event stream already open for run inspection — it listens for `tool_approval_request` SSE events and monitors the terminal `{"__interrupt__": [InterruptPayload]}` SSE envelope frame (for node/graph-boundary interrupts, which terminate the stream with this frame carrying `value` + `interrupt_id`) on the same `EventSource` instance. Post-resume, the console transitions to the run inspection panel using the same navigation pattern established in S-console-06.
 
 ## Architecture Compliance Rules (MANDATORY)
 

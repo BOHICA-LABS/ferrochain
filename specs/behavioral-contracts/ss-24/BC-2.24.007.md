@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.007
-version: "1.2"
+version: "1.3"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -22,6 +22,7 @@ changelog:
   - "1.0 (D-356/2026-09-06, product-owner): Initial BC — D-356 dev-console scope expansion. Token/context budget monitoring panel driven by compaction_event StreamEvents."
   - "1.1 (D-356-fix/DC-01/2026-09-06, product-owner): F-PDC01-01 Story Anchor corrected: was S-console-08, now S-console-09. Verified against S-console-09 frontmatter behavioral_contracts: [BC-2.24.007]."
   - "1.2 (D-356-fix/DC-24/2026-09-08, product-owner): F-PDC24-04: {PC-003} updated — 'via the server's run-read endpoint' made precise: cites `evidence_journal?` field on `GET /threads/{thread_id}/runs/{run_id}` response (BC-2.12.003 {PC-013}), present when run status is terminal. BC-2.12.003 {PC-013} was amended in the same burst to project this field."
+  - "1.3 (D-356-fix/DC-25/2026-09-08, product-owner): F-PDC25-02 (MED): EvidenceJournal scope broadened from 'completed runs' to 'terminal-status (finished) runs' throughout. Description, PC-003, EC-005, and TV-004 updated to include all four terminal states: completed, failed, cancelled, summary_halt. BC-2.12.003 {PC-013} already projects evidence_journal? for all four states; BC-2.24.007 was the outlier."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-046
   - architecture/decisions/ADR-031-developer-console-architecture.md
@@ -51,7 +52,7 @@ The developer console provides a live context-window gauge panel driven by
 `compaction_event` StreamEvents (BC-2.06.006, 15th variant). The gauge shows remaining
 context budget as a proportional indicator using `tokens_remaining_after` and
 `summary_token_count` from the `compaction_event` payload. Each compaction event annotates
-the run timeline with a compaction boundary marker. For completed runs, the full
+the run timeline with a compaction boundary marker. For terminal-status (finished) runs (`completed`, `failed`, `cancelled`, `summary_halt`), the full
 `EvidenceJournal` decision history (via the Run record) surfaces `PolicyDecision` values
 per evaluation point. No new server machinery is required — `compaction_event` is already
 part of the StreamEvent grammar.
@@ -70,7 +71,7 @@ part of the StreamEvent grammar.
    - `summary_token_count`: the token count of the injected summary.
    - `tokens_remaining_after`: remaining capacity after compaction.
    - `trigger`: which `CompactionTrigger` variant fired (`OnWatermark`, `OnMessageCount`, `OnTokenCount`).
-3. {PC-003} **EvidenceJournal for completed runs:** For completed runs, the panel surfaces the run's full `EvidenceJournal` decision history. Each entry shows the `PolicyDecision` (`Allow`, `Escalate`, `Deny`) and the evaluation point that produced it. (Source: `evidence_journal?` field on the `GET /threads/{thread_id}/runs/{run_id}` response, BC-2.12.003 {PC-013}; present when run `status` is a terminal state — `completed`, `failed`, `cancelled`, or `summary_halt`.)
+3. {PC-003} **EvidenceJournal for terminal-status (finished) runs:** For terminal-status (finished) runs (`completed`, `failed`, `cancelled`, `summary_halt`), the panel surfaces the run's full `EvidenceJournal` decision history. Each entry shows the `PolicyDecision` (`Allow`, `Escalate`, `Deny`) and the evaluation point that produced it. (Source: `evidence_journal?` field on the `GET /threads/{thread_id}/runs/{run_id}` response, BC-2.12.003 {PC-013}; present when run `status` is a terminal state — `completed`, `failed`, `cancelled`, or `summary_halt`.)
 4. {PC-004} **Real-time for live runs:** For in-progress runs, the gauge updates incrementally as `compaction_event` variants arrive via the SSE subscription (shared with BC-2.24.004 — same `EventSource` instance).
 5. {PC-005} **No new server machinery:** The panel is a pure SSE consumer of `compaction_event` events already in the grammar. No new endpoints are added.
 
@@ -89,7 +90,7 @@ part of the StreamEvent grammar.
 | {EC-002} | `tokens_remaining_after = null` (OnMessageCount trigger, no token ceiling) | Gauge shows "budget unknown" / "N/A"; timeline annotation still shows turn range and summary_token_count |
 | {EC-003} | `tokens_remaining_after` is negative (Deny path: `accumulated > ceiling`) | Gauge renders 0% or a visual "overrun" state (negative budget displayed as 0 with a warning indicator) |
 | {EC-004} | Two `compaction_event` variants in one run | Two boundary markers on the timeline; gauge updates twice; latest `tokens_remaining_after` drives the gauge |
-| {EC-005} | EvidenceJournal fetch fails for a completed run | Inline error "Evidence journal unavailable" in panel; rest of panel (gauge, timeline annotations) still rendered from stored events |
+| {EC-005} | EvidenceJournal fetch fails for a terminal-status (finished) run | Inline error "Evidence journal unavailable" in panel; rest of panel (gauge, timeline annotations) still rendered from stored events |
 
 ## Canonical Test Vectors
 
@@ -98,7 +99,7 @@ part of the StreamEvent grammar.
 | TV-001 | `compaction_event { trigger: "OnWatermark", compacted_start: 0, compacted_end: 9, summary_token_count: 250, tokens_remaining_after: 45000 }` | Gauge updates to reflect 45000 remaining; timeline shows boundary marker at turns 0–9; trigger label "OnWatermark" | happy-path |
 | TV-002 | `tokens_remaining_after: null` | Gauge shows "N/A"; boundary marker still shows `summary_token_count` | EC-002 |
 | TV-003 | `compaction_trigger = Disabled`; no events | Budget panel shows "compaction not configured" | EC-001 |
-| TV-004 | Completed run with 2 compaction events and EvidenceJournal | Two timeline markers; EvidenceJournal table shows Allow/Escalate/Deny decisions per point | completed-run |
+| TV-004 | Terminal-status (finished) run with 2 compaction events and EvidenceJournal | Two timeline markers; EvidenceJournal table shows Allow/Escalate/Deny decisions per point | completed-run |
 
 ## Verification Properties
 
@@ -123,6 +124,8 @@ part of the StreamEvent grammar.
 S-console-09 (Wave 3 — token/context budget monitoring panel)
 
 > **D-356 adversary fix DC-24 (2026-09-08, product-owner).** F-PDC24-04: {PC-003} Source citation made precise — "via the server's run-read endpoint" was unresolvable because BC-2.12.003 {PC-013} (`GET /threads/{thread_id}/runs/{run_id}`) did not project `evidence_journal`. BC-2.12.003 {PC-013} was amended in the same burst to add `evidence_journal?` (present on terminal-status runs). {PC-003} now cites `evidence_journal?` on BC-2.12.003 {PC-013} explicitly.
+
+> **D-356 adversary fix DC-25 (2026-09-08, product-owner).** F-PDC25-02 (MED): EvidenceJournal display scope was narrowed to `completed` runs only. Broadened throughout — Description, PC-003, EC-005, TV-004 — to "terminal-status (finished) runs (`completed`, `failed`, `cancelled`, `summary_halt`)". BC-2.12.003 {PC-013} already has the correct `evidence_journal?` projection for all four terminal states; BC-2.24.007 was the outlier.
 
 > **D-356 adversary fix DC-01 (2026-09-06, product-owner).** Story Anchor corrected S-console-08 → S-console-09. story-writer split BC-2.24.002 across S-console-02+03 and added S-console-05 (SPA build, no BC), shifting the numbering. Verified: S-console-09 frontmatter carries `behavioral_contracts: [BC-2.24.007]`.
 
