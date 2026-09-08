@@ -3,25 +3,26 @@ document_type: story
 level: ops
 story_id: S-console-05
 epic_id: E-console
-version: "1.0"
+version: "1.1"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
 changelog:
   - "1.0 (D-356/2026-09-06, story-writer): Initial story — SPA build pipeline, framework selection (deferred per ADR-031 Decision 4), bundler config, rust_embed binding, CI integration, <500KB gzip target."
+  - "1.1 (D-356/2026-09-07, story-writer): Adversary fix DC-06 sweep — remove VP-2.24.001-A from verification_properties; VP-2.24.001-A anchors to S-console-01 (console server lifecycle unit test) per VP-INDEX; S-console-05 SPA build coverage is AC-level only (AC-002 test_BC_2_24_001_spa_index_present_in_bundle traces to BC-2.24.001 PC-002); no registered VP warranted for a bundle-presence AC check."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.001.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "94119d2"
+input-hash: "b8bf3e9"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 8
 depends_on: [S-console-01]
 blocks: [S-console-06, S-console-07]
 behavioral_contracts: [BC-2.24.001]
-verification_properties: [VP-2.24.001-A]
+verification_properties: []
 priority: P1
 cycle: v1.0.0-greenfield
 wave: 3
@@ -37,6 +38,8 @@ tdd_mode: strict
 
 > **D-356 dev-console scope expansion (2026-09-06, story-writer).** Roadmap-only.
 > Wave 3 — not built in the current Phase 3 implementation cycle.
+
+> **D-356 adversary fix DC-06 sweep (2026-09-07, story-writer).** VP-2.24.001-A removed from `verification_properties` (`[]` is now correct). VP-2.24.001-A anchors to S-console-01 per VP-INDEX (console server lifecycle unit test built by the scaffold story). S-console-05 SPA build pipeline coverage is AC-level: AC-002 (`test_BC_2_24_001_spa_index_present_in_bundle`) is an acceptance-criterion test tracing to BC-2.24.001 PC-002, not a separately-registered VP. No new VP minted; `[]` is the correct scoping. No body references to VP-2.24.001-A were present; POLICY-8 gate remains satisfied.
 
 ## Narrative
 

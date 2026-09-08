@@ -3,13 +3,14 @@ document_type: story
 level: ops
 story_id: S-console-02
 epic_id: E-console
-version: "1.1"
+version: "1.2"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
 changelog:
   - "1.0 (D-356/2026-09-06, story-writer): Initial story — DebugSpanExporter FIFO ring buffer, OTel SpanExporter trait, dev-mode co-launch wiring, Arc DI."
   - "1.1 (D-356/2026-09-07, story-writer): Adversary fix DC-02 — add VP-2.24.002-D (SpanData SEC-BOUND-001 sanitization unit test) to verification_properties frontmatter; add AC-011 asserting that DebugSpanExporter sanitizes credential-pattern field values before ring buffer insertion."
+  - "1.2 (D-356/2026-09-07, story-writer): Adversary fix DC-06 sweep — remove VP-2.24.002-C from verification_properties; VP-2.24.002-C anchors to S-console-03 (server::debug_routes integration test) per VP-INDEX; this story builds DebugSpanExporter and SpanData covered by VP-2.24.002-A/B/D; no body references to VP-2.24.002-C were present."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.001.md
@@ -17,13 +18,13 @@ inputs:
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "daa692b"
+input-hash: "48bd0f8"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-01]
 blocks: [S-console-03]
 behavioral_contracts: [BC-2.24.001, BC-2.24.002]
-verification_properties: [VP-2.24.002-A, VP-2.24.002-B, VP-2.24.002-C, VP-2.24.002-D]
+verification_properties: [VP-2.24.002-A, VP-2.24.002-B, VP-2.24.002-D]
 priority: P1
 cycle: v1.0.0-greenfield
 wave: 3
@@ -39,6 +40,8 @@ tdd_mode: strict
 
 > **D-356 dev-console scope expansion (2026-09-06, story-writer).** Roadmap-only.
 > Wave 3 — not built in the current Phase 3 implementation cycle.
+
+> **D-356 adversary fix DC-06 sweep (2026-09-07, story-writer).** VP-2.24.002-C removed from `verification_properties`. VP-2.24.002-C anchors to S-console-03 per VP-INDEX (`server::debug_routes` /debug/trace/* integration test, built by S-console-03 — not the ring buffer this story builds). S-console-03 already correctly carries VP-2.24.002-C. Corrected array: `[VP-2.24.002-A, VP-2.24.002-B, VP-2.24.002-D]`. No body or AC references to VP-2.24.002-C were present; POLICY-8 gate remains satisfied.
 
 > **D-356 adversary fix DC-02 (2026-09-07, story-writer).** Product-owner added VP-2.24.002-D (`test_BC_2_24_002_span_data_sanitization_sec_bound_001`) to BC-2.24.002 — a sanitization unit test verifying that `SpanData` field values matching the SEC-BOUND-001 credential pattern are stripped before ring buffer insertion. Added `VP-2.24.002-D` to this story's `verification_properties` frontmatter (this story builds `DebugSpanExporter` and `SpanData`, which are the types BC-2.24.002 covers). Added AC-011 asserting the sanitization behavior.
 
