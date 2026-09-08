@@ -3,11 +3,12 @@ document_type: story
 level: ops
 story_id: S-console-04
 epic_id: E-console
-version: "1.0"
+version: "1.1"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
 changelog:
+  - "1.1 (D-356/DC-15/2026-09-08, story-writer): F-PDC15-01 — target_module corrected from scalar `pregolya-server` to list `[pregolya-graph, pregolya-server]`; story CREATEs descriptor.rs in pregolya-graph (primary Pure Core deliverable) and MODIFYs debug_routes.rs in pregolya-server; VP-2.24.003-A/B are pregolya-graph, VP-2.24.003-C is pregolya-server; aligns with STORY-INDEX and sprint-state."
   - "1.0 (D-356/2026-09-06, story-writer): Initial story — graph::descriptor Pure Core extraction + GET /assistants/{id}/graph endpoint, E-SERVER-009 AssistantNotFound."
 phase: 2
 inputs:
@@ -15,7 +16,7 @@ inputs:
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "047d418"
+input-hash: "0b706dc"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-03]
@@ -25,7 +26,7 @@ verification_properties: [VP-2.24.003-A, VP-2.24.003-B, VP-2.24.003-C]
 priority: P1
 cycle: v1.0.0-greenfield
 wave: 3
-target_module: pregolya-server
+target_module: [pregolya-graph, pregolya-server]
 subsystems: [SS-24, SS-02]
 estimated_days: 2
 assumption_validations: []

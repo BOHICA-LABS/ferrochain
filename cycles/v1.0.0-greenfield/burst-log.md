@@ -7095,3 +7095,30 @@ DC-14 = 3 MED findings, ALL CLOSED. crate-assignment drift from DC-10/DC-11 dep-
 ### Census
 
 BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24 — UNCHANGED.
+
+---
+
+## D-356/DC-15 Fix-Burst (2026-09-08) — ARCHIVED FROM STATE.md Current Phase Steps
+
+**Archived step (DC-10 row, evicted to keep last-5 discipline):**
+
+| D-356/DC-10 fix-burst (2026-09-07) — DC-10 fix-burst CLOSED. trajectory-tail →5→4→2→4 (DC-07=5; DC-08=4; DC-09=2; DC-10=4 [1HIGH+1MED+2LOW] ALL CLOSED). F-PDC10-02[HIGH] BC-2.24.002 v1.6 (ADR-031 Decision 7: server::debug_span Boundary module owning SpanData+DebugSpanSource trait; Arc<dyn DebugSpanSource> abstraction; zero server→console dep). S-console-03 v1.2 + S-console-06 v1.3 + dependency-graph v2.1. F-PDC10-01[MED] 3 stale pending-recompute markers cleared: api-surface.md v1.30/31/32 + purity-boundary-map v1.44/45/46/47 + ubiquitous-language-server v1.7. Input hashes: purity-boundary-map c0cfd11; S-console-03 2d81652; S-console-06 1358551; UL-server d3f4f80; ADR-031 42dc253; BC-2.24.002 5ff81d4. ZERO 0000000 remain. BC-INDEX v4.33; STORY-INDEX v1.69. Census UNCHANGED: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31. Streak 0/3 (fix push; DC-11 gates new HEAD). | state-manager | COMPLETE | STATE.md §D-356/DC-10. Single commit per TD-VSDD-053. |
+
+### DC-15 Burst Summary
+
+**Finding:** F-PDC15-01 [MED] — S-console-04 target_module scalar `pregolya-server`→list `[pregolya-graph, pregolya-server]` (story-writer; third carrier of the DC-14 crate-drift fix; DC-14 corrected STORY-INDEX inventory row + sprint-state.yaml but missed story frontmatter). input-hash 047d418→0b706dc. S-console-04 v1.0→v1.1.
+
+**Carriers now consistent:**
+- Story frontmatter `target_module`: `[pregolya-graph, pregolya-server]` (fixed DC-15)
+- STORY-INDEX story-inventory Target Crate column: `[pregolya-graph, pregolya-server]` (fixed DC-14)
+- sprint-state.yaml `crate:`: `[pregolya-graph, pregolya-server]` (fixed DC-14)
+
+**STORY-INDEX:** v1.73→v1.74 (input-hash 34034c0 UNCHANGED).
+
+### Convergence Status
+
+DC-15 = 1 MED finding, CLOSED. All crate-label carriers for S-console-04 consistent. DC-15 re-derivation confirmed all other classes CONVERGED clean. Streak 0/3 (fix push resets); DC-16 gates on new HEAD.
+
+### Census
+
+BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24 — UNCHANGED.
