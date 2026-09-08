@@ -37,19 +37,22 @@
 #
 # MACHINE GATE COVERAGE
 # ─────────────────────
-# BLOCKING gate today (13 validators per pre-commit-validators.sh):
+# BLOCKING gate today (20 validators per pre-commit-validators.sh):
+#   POL-6 (verify-arch-anchor-resolution, verify-module-canonicality — promoted from advisory),
 #   POL-12 (records-lint + verify-no-version-pins), POL-13 (records-lint),
+#   POL-14 (verify-form-a-changelog-direction — promoted from advisory, PG-7/DC-17/DC-24),
 #   POL-15 (verify-changelog-date-monotonicity), POL-16 (verify-enum-variant-casing),
 #   POL-17 (verify-error-notation-canon), POL-18 (verify-signature-canon),
-#   POL-19 (verify-adr-decision-refs §Decision N integer form + verify-adr-self-version-refs;
-#     §Named-Section form: adversary-only pending ADR-022 §Decision 3 implementation);
+#   POL-19 (verify-adr-decision-refs §Decision N integer form;
+#     §Named-Section form: adversary-only pending ADR-022 §Decision 3 implementation),
+#   POL-20 (verify-bc-frontmatter-schema — promoted from advisory),
+#   POL-48 (verify-ac-pc-trace);
 #   also blocking (no POL-N assigned): verify-changelog-date-validity.sh,
-#   verify-form-a-changelog-direction.sh, verify-arch-anchor-resolution.sh,
-#   verify-module-canonicality.sh, verify-bc-frontmatter-schema.sh,
-#   verify-tv-registry-count.sh (added fix-burst-287).
-# ADVISORY gate today: POL-6 (verify-arch-anchor-resolution, verify-module-canonicality),
-#   POL-14 (verify-form-a-changelog-direction), POL-20 (verify-bc-frontmatter-schema),
-#   POL-21 (verify-changelog-claim-applied).
+#   verify-tv-registry-count.sh, verify-vp-anchors-grammar.sh,
+#   verify-adr-anchor-citations.sh, verify-story-count-propagation.sh,
+#   verify-vp-count-parity.sh, verify-bc-story-anchor-resolution.sh,
+#   verify-holdout-reverse-leak.sh.
+# ADVISORY gate today: POL-21 (verify-changelog-claim-applied).
 # MANUAL-ONLY: POL-3, POL-22..POL-45.
 #
 # CHANGELOG
@@ -137,10 +140,26 @@
 #   description, matching verify-form-a-changelog-direction.sh's classification
 #   table (indexes: DESCENDING, version == FIRST entry). Prevents recurrence of
 #   STORY-INDEX ascending-outlier finding. metadata.version bumped 1.3→1.4.
+# 1.6 (PG-7/DC-17+DC-24/2026-09-08): MACHINE GATE COVERAGE updated to match
+#   current pre-commit-validators.sh reality (EXPECTED_BLOCKING_COUNT=20).
+#   (1) POL-14 (verify-form-a-changelog-direction) promoted from ADVISORY to
+#   BLOCKING in MACHINE GATE COVERAGE section. Rationale: mis-ordered changelogs
+#   escaped to adversary twice — DC-17 (8 SS-24 BCs born descending) and DC-24
+#   (3 BCs with DC-23 entries mis-filed) — each costing a convergence pass.
+#   Exit-code semantics confirmed correct: script exits 1 only when FAIL>0 or
+#   BC_UNVERIFIED>0; WARN (9 pre-authorized both-forms false-positives) is
+#   non-blocking. Corpus was clean at promotion: PASS=236 WARN=9 FAIL=0
+#   BC_UNVERIFIED=0. Validator was wired into run_blocking roster at fix-burst-283;
+#   this update synchronizes the policies.yaml documentation with that reality.
+#   (2) POL-6 (verify-arch-anchor-resolution, verify-module-canonicality) and
+#   POL-20 (verify-bc-frontmatter-schema) also moved to BLOCKING in MACHINE GATE
+#   COVERAGE — their validators have been in the blocking roster since fix-burst-283
+#   but the comment incorrectly listed them as ADVISORY. POL-21 remains the only
+#   truly advisory gate. Blocking count updated 13→20. metadata.version bumped 1.5→1.6.
 
 metadata:
-  version: "1.5"
-  last_updated: "2026-08-26"
+  version: "1.6"
+  last_updated: "2026-09-08"
 
 policies:
 
@@ -228,8 +247,8 @@ policies:
       - "For sampled BCs, verify subsystem: frontmatter matches registry exactly (no casing or spacing variants)"
       - "For sampled stories, verify subsystems: field uses registry-exact names"
       - "Check BC-INDEX subsystem column matches ARCH-INDEX"
-      - "Run hooks/verify-arch-anchor-resolution.sh: check FAIL=0 (currently advisory — promotion when FAIL=0)"
-      - "Run hooks/verify-module-canonicality.sh: check FAIL=0 (currently advisory)"
+      - "Run hooks/verify-arch-anchor-resolution.sh: verify FAIL=0 (BLOCKING — promoted from advisory at fix-burst-283)"
+      - "Run hooks/verify-module-canonicality.sh: verify FAIL=0 (BLOCKING — promoted from advisory at fix-burst-283)"
 
   - id: 7
     name: bc_h1_is_title_source_of_truth
@@ -343,7 +362,7 @@ policies:
     scope: [bc, architecture, prd, nfr]
     lint_hook: null
     verification_steps:
-      - "Run hooks/verify-form-a-changelog-direction.sh: check FAIL=0 and BC_UNVERIFIED=0 (currently advisory — promote when both are 0)"
+      - "Run hooks/verify-form-a-changelog-direction.sh: verify FAIL=0 and BC_UNVERIFIED=0 (BLOCKING — gate exits 1 when FAIL>0 or BC_UNVERIFIED>0; WARN is non-blocking for pre-authorized both-forms false-positives)"
       - "For BC files: verify the newest (highest) version entry is the LAST item in the changelog"
       - "For ADR/prd/domain-spec/prd-supplements: verify the newest entry is the FIRST item"
       - "Verify BC frontmatter version: field equals the last BC changelog entry (ascending rule)"
@@ -430,7 +449,7 @@ policies:
     scope: [bc]
     lint_hook: null
     verification_steps:
-      - "Run hooks/verify-bc-frontmatter-schema.sh: verify PASS count and FAIL=0 (currently advisory)"
+      - "Run hooks/verify-bc-frontmatter-schema.sh: verify PASS count and FAIL=0 (BLOCKING — promoted from advisory at fix-burst-283)"
       - "For sampled BC files: verify required frontmatter fields present (subsystem, scope, phase, wave, lifecycle_status, behavioral_contracts)"
       - "Verify subsystem values match ARCH-INDEX Subsystem Registry verbatim (POL-6)"
       - "Verify wave values are consistent with the wave schedule in STORY-INDEX"
