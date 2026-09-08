@@ -15,16 +15,23 @@
 #        Routing: spec owner (reorder changelog entries so newest appears first).
 #
 #   L9 — Line-Cite and Version-Pin Ban (D-50 + P2A-050 extended, 2026-08-25):
-#        L9a (extended, P2A-050 2026-08-25): newly-authored lines must not contain
-#        any of three volatile line-citation forms. All three decay on the next diff
-#        and rot the trace (TD-VSDD-091 / POL-12); all use addition-only git diff
-#        HEAD scoping (hooks excluded; no separate date-boundary required):
-#          (i)  file:NNN — line-number citations of the form `word.ext:digits`
-#               (the original L9a form; e.g. `lib.rs:42`, `CLAUDE.md:156`)
-#         (ii)  bare line references — `line ~N` or `line N` in normative prose
-#               (e.g. `§Changelog line ~44`; caught by BARE_LINE_CITE_PATTERN)
-#        (iii)  ID-anchored line pins — `DOCID:NNN` citations
-#               (e.g. `BC-2.10.001:141`, `ADR-020:224`; caught by ID_LINE_PIN_PATTERN)
+#        L9a (extended, P2A-050 2026-08-25 + DC-29/F-PDC29-03 2026-09-08):
+#        newly-authored lines must not contain any of four volatile line-citation
+#        forms. All four decay on the next diff and rot the trace (TD-VSDD-091 /
+#        POL-12); all use addition-only git diff HEAD scoping (hooks excluded; no
+#        separate date-boundary required):
+#          (i)   file:NNN — line-number citations of the form `word.ext:digits`
+#                (the original L9a form; e.g. `lib.rs:42`, `CLAUDE.md:156`)
+#         (ii)   bare line references — `line ~N` or `line N` in normative prose
+#                (e.g. `§Changelog line ~44`; caught by BARE_LINE_CITE_PATTERN)
+#        (iii)   ID-anchored line pins — `DOCID:NNN` citations
+#                (e.g. `BC-2.10.001:141`, `ADR-020:224`; caught by ID_LINE_PIN_PATTERN)
+#         (iv)   prose file:line — `filename.ext line NNN` or `filename.ext lines NNN`
+#                (e.g. `api-surface.md line 258`; caught by PROSE_LINE_CITE_PATTERN)
+#                Anchoring on the `.ext` before `line NNN` avoids false-positives
+#                from compound words ending in "line" (pipeline, baseline, guideline,
+#                deadline, timeline, airline, etc.).
+#                Closes hook-coverage gap F-PDC29-03 (DC-29, 2026-09-08).
 #        L9b (D-50): newly-authored lines must not contain `<doc> vN.N` version pins
 #        (e.g. `ADR-014 v1.2`, `BC-2.01.001 v1.0`, `error-taxonomy.md v1.31`).
 #        L9a sub-checks use `git diff HEAD` restricted to `+` addition lines (not
@@ -36,10 +43,11 @@
 #        entry-date boundary: a + line whose YYYY-MM-DD date is before 2026-07-24 is
 #        exempt (pre-D-50 text); no parseable date → in scope. This deliberately
 #        disagrees with verify-no-version-pins.sh (full-corpus; changelog exempt).
-#        L9a (all three forms) grandfathers pre-existing committed content via the
+#        L9a (all four forms) grandfathers pre-existing committed content via the
 #        addition-only `git diff HEAD` scoping — no date-boundary needed.
-#        Routing: finding author (replace file:NNN / bare line~N / DOCID:NNN with
-#                 symbol/anchor cite; replace doc vN.N with doc §Section-Anchor).
+#        Routing: finding author (replace file:NNN / bare line~N / DOCID:NNN /
+#                 file.ext line NNN with symbol/anchor cite; replace doc vN.N with
+#                 doc §Section-Anchor).
 #
 #   L10 — Hash-Digest Ban (ADVISORY): newly-authored changelog prose must not contain
 #        standalone 7-hex-literal git SHA fragments (e.g. `5fc3abe → baaf36d`). These
@@ -171,6 +179,17 @@ BARE_LINE_CITE_PATTERN='\bline[[:space:]]+~?[0-9]{1,6}\b'
 # Does NOT catch: "BC-2.10.001:" without trailing digits (YAML key syntax), or
 #   bare doc IDs without a colon+digits suffix.
 ID_LINE_PIN_PATTERN='\b(BC-2\.[0-9]{2}\.[0-9]{3}|ADR-[0-9]+|VP-[0-9]{3}|CAP-[0-9]{3}):[0-9]{1,6}\b'
+
+# Form (iv): prose file:line — `filename.ext line NNN` or `filename.ext lines NNN`.
+# Catches: "api-surface.md line 258", "lib.rs lines 42", "CLAUDE.md line 156"
+# Anchored on a known code/doc file extension immediately before `lines?` + digits.
+# The extension anchor prevents false-positives from compound words that END in "line":
+#   "pipeline 5", "baseline 3", "guideline 12", "deadline 7", "timeline 8",
+#   "airline 2", "hotline 1", "outline 9", "skyline 4", "mainline 6" — none of
+#   these have a `.ext` token before the word "line", so they do NOT match.
+# Does NOT match: "command line 3" (no dot-extension before "line").
+# Closes hook-coverage gap F-PDC29-03 (DC-29, 2026-09-08).
+PROSE_LINE_CITE_PATTERN='\b[a-zA-Z0-9_.-]+\.(rs|md|toml|yaml|yml|ts|js|py|json|sh|txt)[[:space:]]+lines?[[:space:]]+[0-9]{1,6}\b'
 
 # L9 version-pin class pattern (D-50, ratified 2026-07-24).
 #
@@ -436,6 +455,50 @@ EOF
   fi
   probe_must_fail "L9d-id-pin" "addition line containing 'BC-2.10.001:141'"
 
+  # ── L9e self-probe: prose file.ext line NNN pattern (DC-29/F-PDC29-03) ───────
+  # Synthetic violation: a new line containing `filename.ext line NNN` prose form.
+  # This is the shape DC-29 found: "api-surface.md line 258" escaped the old gate.
+  PROBE_L9E_DIFF="+The response shape is defined in api-surface.md line 258 of the endpoint spec."
+  PROBE_EXIT=0
+  if echo "$PROBE_L9E_DIFF" | grep -qE "^\+[^+].*${PROSE_LINE_CITE_PATTERN}"; then
+    PROBE_EXIT=1
+  fi
+  probe_must_fail "L9e-prose-cite" "addition line containing 'api-surface.md line 258'"
+
+  # ── L9e plural self-probe: prose `file.ext lines NNN` form ───────────────────
+  # Covers the plural form `lines NNN` which is equally volatile.
+  PROBE_L9E_PLURAL_DIFF="+See error-taxonomy.md lines 42 through 47 for the error-code table."
+  PROBE_EXIT=0
+  if echo "$PROBE_L9E_PLURAL_DIFF" | grep -qE "^\+[^+].*${PROSE_LINE_CITE_PATTERN}"; then
+    PROBE_EXIT=1
+  fi
+  probe_must_fail "L9e-prose-cite-plural" "addition line containing 'error-taxonomy.md lines 42'"
+
+  # ── L9e false-positive probes: compound words ending in 'line' ───────────────
+  # Verify PROSE_LINE_CITE_PATTERN does NOT fire on compound words that end in
+  # "line" (e.g. "pipeline", "baseline", "guideline") when followed by a number.
+  # None of these have a `.ext` token before "line", so they must NOT match.
+  PROBE_L9E_FP1="+The pipeline 5 builds ran in parallel without contention."
+  PROBE_EXIT=0
+  if echo "$PROBE_L9E_FP1" | grep -qE "^\+[^+].*${PROSE_LINE_CITE_PATTERN}"; then
+    PROBE_EXIT=1
+  fi
+  probe_must_not_fail "L9e-fp-pipeline" "'pipeline 5' does not false-positive as prose file:line citation"
+
+  PROBE_L9E_FP2="+The baseline 3 measurement was taken before any optimization pass."
+  PROBE_EXIT=0
+  if echo "$PROBE_L9E_FP2" | grep -qE "^\+[^+].*${PROSE_LINE_CITE_PATTERN}"; then
+    PROBE_EXIT=1
+  fi
+  probe_must_not_fail "L9e-fp-baseline" "'baseline 3' does not false-positive as prose file:line citation"
+
+  PROBE_L9E_FP3="+The deadline 7 days from now is firm; no extensions."
+  PROBE_EXIT=0
+  if echo "$PROBE_L9E_FP3" | grep -qE "^\+[^+].*${PROSE_LINE_CITE_PATTERN}"; then
+    PROBE_EXIT=1
+  fi
+  probe_must_not_fail "L9e-fp-deadline" "'deadline 7' does not false-positive as prose file:line citation"
+
   # ── L9c/L9d clean-pass probe (POL-31 negative case) ──────────────────────
   # Verify neither L9c nor L9d fires on a legitimate non-cite line.
   # Uses "command line tool" (has "line" but not followed by a digit) to verify
@@ -692,10 +755,14 @@ check_l7() {
 
 # ── Check L9 — Line-Cite and Version-Pin Ban ─────────────────────────────────
 # Newly-authored additions since HEAD must not contain:
-#   L9a (extended, P2A-050 2026-08-25): any of three volatile line-citation forms:
+#   L9a (extended, P2A-050 2026-08-25 + DC-29/F-PDC29-03 2026-09-08):
+#     any of four volatile line-citation forms:
 #     (i)   file:NNN — word.ext:digits line-number citations
 #     (ii)  bare line references — `line ~N` or `line N` in normative prose
 #     (iii) ID-anchored line pins — DOCID:NNN citations (e.g. BC-2.10.001:141)
+#     (iv)  prose file:line — `filename.ext line NNN` / `filename.ext lines NNN`
+#           (e.g. `api-surface.md line 258`; anchored on extension to avoid
+#           false-positives from pipeline, baseline, guideline, etc.)
 #   All L9a forms use addition-only git diff HEAD scoping (hooks excluded).
 #   Pre-existing committed content is grandfathered by the addition-only scoping.
 #   L9b: <doc> vN.N version pins (D-50, ratified 2026-07-24)
@@ -744,6 +811,16 @@ check_l9() {
     | grep -oE "${ID_LINE_PIN_PATTERN}" \
     || true)"
 
+  # Sub-check L9e — prose `filename.ext line NNN` / `filename.ext lines NNN` ban
+  # (DC-29/F-PDC29-03, 2026-09-08). Anchored on the file extension token immediately
+  # before `lines? NNN` — avoids false-positives from compound words ending in "line"
+  # (pipeline, baseline, guideline, etc.). Uses addition-only scoping (same as L9a);
+  # pre-existing committed content is grandfathered by git diff HEAD.
+  L9E_VIOLATIONS="$(echo "$DIFF_OUTPUT" \
+    | grep -E '^\+[^+]' \
+    | grep -oE "${PROSE_LINE_CITE_PATTERN}" \
+    || true)"
+
   # Sub-check L9b — version-pin class ban (D-50, ratified 2026-07-24).
   # Python3 scanner: runs git diff internally (avoids pipe+heredoc stdin conflict);
   # avoids VERSION_PIN_PATTERN alternation-precedence issues in embedded grep ERE
@@ -786,7 +863,7 @@ for v in violations:
 PYEOF
 )"
 
-  if [ -n "$L9A_VIOLATIONS" ] || [ -n "$L9B_VIOLATIONS" ] || [ -n "$L9C_VIOLATIONS" ] || [ -n "$L9D_VIOLATIONS" ]; then
+  if [ -n "$L9A_VIOLATIONS" ] || [ -n "$L9B_VIOLATIONS" ] || [ -n "$L9C_VIOLATIONS" ] || [ -n "$L9D_VIOLATIONS" ] || [ -n "$L9E_VIOLATIONS" ]; then
     if [ -n "$L9A_VIOLATIONS" ]; then
       emit FAIL "L9a: line-cite ban — newly-added text contains file:NNN citations (retire with symbol/anchor cites):"
       while IFS= read -r cite; do
@@ -821,6 +898,18 @@ PYEOF
       echo "  P2A-050 grounding: TD-VSDD-091 / POL-12 — DOCID:NNN pins decay on next diff."
       echo "  Replace 'BC-2.10.001:141' with the behavioral anchor (e.g. 'BC-2.10.001 §AC-3')."
     fi
+    if [ -n "$L9E_VIOLATIONS" ]; then
+      emit FAIL "L9a (DC-29/F-PDC29-03 extended): prose-file-line-pin ban — newly-added text contains 'filename.ext line NNN' or 'filename.ext lines NNN' prose citations (retire with symbol/anchor cites):"
+      while IFS= read -r cite; do
+        echo "       $cite"
+      done <<< "$L9E_VIOLATIONS"
+      echo ""
+      echo "  Affected lines (L9e — prose file:line violations):"
+      echo "$DIFF_OUTPUT" | grep -n -E "^\+[^+].*${PROSE_LINE_CITE_PATTERN}" \
+        | sed 's/^/       /' || true
+      echo "  DC-29/F-PDC29-03 grounding: TD-VSDD-091 / POL-12 — 'filename.ext line NNN' decays on next diff."
+      echo "  Replace 'api-surface.md line 258' with the section anchor (e.g. 'api-surface.md §Section-Name')."
+    fi
     if [ -n "$L9B_VIOLATIONS" ]; then
       L9B_COUNT=0
       L9B_REPORT=""
@@ -836,7 +925,7 @@ PYEOF
       echo "  Replace 'ADR-014 v1.2' with 'ADR-014 §Decision N' or equivalent section anchor."
     fi
   else
-    emit PASS "L9 (D-50 + P2A-050 extended): line-cite and version-pin ban — no file:NNN, bare line~N, DOCID:NNN, or <doc> vN.N pins in newly-authored additions"
+    emit PASS "L9 (D-50 + P2A-050 + DC-29 extended): line-cite and version-pin ban — no file:NNN, bare line~N, DOCID:NNN, file.ext line NNN, or <doc> vN.N pins in newly-authored additions"
   fi
 }
 
@@ -1096,7 +1185,7 @@ if [ "$FAIL" -gt 0 ]; then
   echo "Routing guide:"
   echo "  L1 violations → state-manager (frontmatter) or spec owner (changelog body)"
   echo "  L7 violations → spec owner (reorder changelog entries, newest first)"
-  echo "  L9a violations → finding author (replace file:NNN / bare line~N / DOCID:NNN with symbol/anchor cite) [P2A-050]"
+  echo "  L9a violations → finding author (replace file:NNN / bare line~N / DOCID:NNN / file.ext line NNN with symbol/anchor cite) [P2A-050 + DC-29]"
   echo "  L9b violations → finding author (replace doc vN.N with doc §Section-Anchor) [D-50]"
   echo "  L10 violations → finding author (replace 7-hex SHA with artifact+section anchor cite) [ADVISORY]"
   echo "  L11 violations → finding author (replace 8+ char hex digest with artifact+section anchor cite)"

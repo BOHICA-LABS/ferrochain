@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.12.003
-version: "1.22"
+version: "1.23"
 status: active
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -21,7 +21,7 @@ inputs:
   - .factory/specs/prd.md
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/semport/platform/behavioral-intent.md
-input-hash: "faac9bb"
+input-hash: "ee11a8c"
 changelog:
   - "1.1 (ADV-P1D-PASS-31): F-P31-01 PC18 list-runs endpoint — add limit (default 10, max 100; values > 100 clamped) and offset pagination params + declare created_at DESC ordering (pagination coherence canon)."
   - "1.2 (ADV-P1D-PASS-33): F-P33-02 add Run-Config Merge Precedence invariant — run-supplied config/metadata/context deep-merge over Assistant's stored values, run wins at leaf key. Upstream-check result: no contradicting semantics in BC-2.01.003 or semport behavioral-intent §2.3; leaf-level deep-merge adopted as spec canon."
@@ -45,6 +45,7 @@ changelog:
   - "1.20 (D-356-fix/DC-03/2026-09-07, state-manager): Code collision fix — 'E-CHKPT-002' (used in v1.19 for CheckpointNotFound) is already assigned to MonotonicClockRegression (BC-2.04.003, INTERNAL); per append-only-numbering policy IDs are never reused; E-CHKPT-011 is the next available CHKPT code. All occurrences of 'E-CHKPT-002' meaning CheckpointNotFound in {INV-009}, EC-008, delta-note, and Traceability corrected to 'E-CHKPT-011'. No normative behavior changed; only the code identifier updated."
   - "1.21 (D-356-fix/DC-16/2026-09-08, product-owner): F-PDC16-01: Reverse-anchor completeness — BC-2.24.005 {PC-003} (forward edge) consumes {INV-009} via S-console-07, but BC-2.12.003 had no reverse edge back. §Related BCs: BC-2.24.005 added as fork-from-checkpoint consumer. §Story Anchor: S-console-07 appended (roadmap, Wave 3 — consumes {INV-009} fork-start via BC-2.24.005 {PC-003}); S-1.26 remains primary. Mirrors the F-PDC12/DC-04 fix applied to BC-2.12.001."
   - "1.22 (D-356-fix/DC-24/2026-09-08, product-owner): F-PDC24-04: {PC-013} amended to project `evidence_journal?` on the run-read response — present when `status` is a terminal state (completed, failed, cancelled, summary_halt); null/omitted for active/queued runs. Adjudication: 1:1 entity field on Run (entities-server.md); optional projection on GET /threads/{thread_id}/runs/{run_id} is the cleanest mechanism (consistent with output?, error?, completed_at? pattern; no new sub-resource route needed). BC-2.24.007 {PC-003} now cites this field as its substrate."
+  - "1.23 (D-356-fix/DC-29/2026-09-08, product-owner): F-PDC29-03 (LOW/records): DC-24 blockquote contained a volatile prose file:line citation for api-surface.md (TD-VSDD-091/POL-12). Replaced with stable section anchor 'api-surface.md §pregolya-server HTTP Endpoints'."
 extracted_from: null
 modified: []
 deprecated: null
@@ -57,7 +58,7 @@ removal_reason: null
 
 # BC-2.12.003: Run Creation and Execution Lifecycle (queued → in_progress → completed/failed/cancelled/summary_halt; interrupted is pausable/resumable)
 
-> **D-356 adversary fix DC-24 (2026-09-08, product-owner).** F-PDC24-04: {PC-013} amended — `evidence_journal?` added to the run-read response shape (`GET /threads/{thread_id}/runs/{run_id}`), present only when `status` is a terminal state (completed/failed/cancelled/summary_halt); null/omitted for active/queued runs. This exposes the 1:1 Run entity field required by BC-2.24.007 {PC-003} (dev-console budget panel). api-surface.md line 258 defers response shape to BC-2.12.003 — no architect follow-up needed.
+> **D-356 adversary fix DC-24 (2026-09-08, product-owner).** F-PDC24-04: {PC-013} amended — `evidence_journal?` added to the run-read response shape (`GET /threads/{thread_id}/runs/{run_id}`), present only when `status` is a terminal state (completed/failed/cancelled/summary_halt); null/omitted for active/queued runs. This exposes the 1:1 Run entity field required by BC-2.24.007 {PC-003} (dev-console budget panel). api-surface.md §pregolya-server HTTP Endpoints defers the run-read response shape to BC-2.12.003 — no architect follow-up needed.
 
 > **D-356 adversary fix DC-16 (2026-09-08, product-owner).** F-PDC16-01: Reverse-anchor completeness — BC-2.24.005 {PC-003} consumes {INV-009} (fork-from-checkpoint) via S-console-07, but this BC had no reverse edge. §Related BCs updated to include BC-2.24.005; §Story Anchor updated to append S-console-07 (roadmap, Wave 3 — consumes {INV-009} fork-start via BC-2.24.005 {PC-003}). Mirrors the F-PDC12/DC-04 pattern applied to BC-2.12.001.
 
