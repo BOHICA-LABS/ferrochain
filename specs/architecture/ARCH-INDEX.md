@@ -1,7 +1,7 @@
 ---
 document_type: architecture-index
 level: L3
-version: "1.78"
+version: "1.79"
 status: active
 producer: state-manager
 timestamp: 2026-09-07T00:00:00Z
@@ -17,6 +17,7 @@ traces_to: prd.md
 deployment_topology: single-service
 decisions: [D4, D6, D9, D11, D13, D17, D20, D21, D23, D356]
 changelog:
+  - "1.79 (D-356/DC-21/2026-09-08, architect): F-PDC21-01 — §Verification Properties VP-2.24.005-A and VP-2.24.005-B description cells corrected: DI-002 → DI-004 (DC-20 DI mirror sync; source of truth: VP-INDEX v1.51; DI-004 Monotonic Checkpoint Clock governs step_idx ordering and fork lineage; DI-002 is durability). Census UNCHANGED: VP 41 total."
   - "1.78 (D-356/DC-19/2026-09-08, architect): F-PDC19-01+F-PDC19-02 — VP-2.24.003-B BC Anchor description corrected: graph descriptor pure termination → no self-loops (a node does not edge to itself) — Kani. VP-2.24.003-C Module/description corrected: server::debug_routes/graph endpoint unit → graph::descriptor/start node always present in descriptor. Census UNCHANGED: VP 41 total."
   - "1.77 (D-356/DC-08/2026-09-07, state-manager): F-PDC08-03 — DC-02 blockquote §Verification Properties annotation corrected: `debug_api_key` → `debug_route_key` (DC-07-rename consistency sweep; records-tier annotation; canonical field per BC-2.12.005 PRE-004/INV-001; ADR-021 §Decision 1). Census UNCHANGED: VP 41 total."
   - "1.76 (D-356/DC-07/2026-09-07, architect): F-PDC07-03 — 10 panel-VP Module column cells repointed to canonical SPA component path form: spa/components/run_inspector (VP-2.24.004-A/B), spa/components/checkpoint_panel (VP-2.24.005-A/B), spa/components/hitl_panel (VP-2.24.006-A/B), spa/components/budget_panel (VP-2.24.007-A/B), spa/components/guardrail_panel (VP-2.24.008-A/B). CORRECTION: v1.72 (DC-02) set these to console::* Rust module notation — non-canonical for SPA components. VP census UNCHANGED: 41 total."
@@ -290,8 +291,8 @@ R6 namespace reservation: publish-all.sh must cover all 21 currently-published c
 | VP-2.24.003-C | BC-2.24.003 (start node always present in descriptor) | `graph::descriptor` | unit | P1 | draft |
 | VP-2.24.004-A | BC-2.24.004 (all 16 StreamEvent variants render without error — integration) | `spa/components/run_inspector` | integration | P1 | draft |
 | VP-2.24.004-B | BC-2.24.004 (live node highlight fires on node_start, clears on node_end — integration) | `spa/components/run_inspector` | integration | P1 | draft |
-| VP-2.24.005-A | BC-2.24.005 (checkpoint history rendered in step_idx monotone order — integration; DI-002) | `spa/components/checkpoint_panel` | integration | P1 | draft |
-| VP-2.24.005-B | BC-2.24.005 (fork-from-checkpoint produces a new run_id — integration; DI-002) | `spa/components/checkpoint_panel` | integration | P1 | draft |
+| VP-2.24.005-A | BC-2.24.005 (checkpoint history rendered in step_idx monotone order — integration; DI-004) | `spa/components/checkpoint_panel` | integration | P1 | draft |
+| VP-2.24.005-B | BC-2.24.005 (fork-from-checkpoint produces a new run_id — integration; DI-004) | `spa/components/checkpoint_panel` | integration | P1 | draft |
 | VP-2.24.006-A | BC-2.24.006 (approve sends PreToolDecision::Allow; deny sends Deny(reason) — integration) | `spa/components/hitl_panel` | integration | P1 | draft |
 | VP-2.24.006-B | BC-2.24.006 (multiple interrupts surfaced in FIFO order — integration) | `spa/components/hitl_panel` | integration | P1 | draft |
 | VP-2.24.007-A | BC-2.24.007 (gauge renders without crash when tokens_remaining_after is null — unit) | `spa/components/budget_panel` | unit | P1 | draft |
@@ -308,6 +309,8 @@ R6 namespace reservation: publish-all.sh must cover all 21 currently-published c
 > **D-356 adversary fix DC-04 (2026-09-07, architect).** F-PDC04-04: VP-2.24.002-A/B Module column repointed `console::span_exporter` → `console::ring_buffer`. `console::ring_buffer` is now canonical Pure Core for `RingBuffer<T>` per ADR-031 Decision 5 (DC-04 split). VP-2.24.002-C (`server::debug_routes`) and VP-2.24.002-D (`console::span_exporter`) unchanged. VP census UNCHANGED: 41 total.
 
 > **D-356 adversary fix DC-07 (2026-09-07, architect).** F-PDC07-03: 10 panel-VP Module column cells repointed to canonical SPA component path form — `spa/components/run_inspector` (VP-2.24.004-A/B), `spa/components/checkpoint_panel` (VP-2.24.005-A/B), `spa/components/hitl_panel` (VP-2.24.006-A/B), `spa/components/budget_panel` (VP-2.24.007-A/B), `spa/components/guardrail_panel` (VP-2.24.008-A/B). CORRECTION: v1.72 (DC-02) set these to `console::*` Rust module notation — non-canonical for SPA components. Canonical form: `spa/components/<component_name>` (see VP-INDEX preamble SPA convention note). VP census UNCHANGED: 41 total.
+
+> **D-356 adversary fix DC-21 (2026-09-08, architect).** F-PDC21-01: §Verification Properties VP-2.24.005-A and VP-2.24.005-B description cells DI-002 → DI-004 — DC-20 DI-column sync residue. Source of truth: VP-INDEX v1.51 (step_idx monotone ordering and fork-lineage creation are DI-004 "Monotonic Checkpoint Clock"; DI-002 is per-task durability). VP-018/VP-019 DI-002 rows are CORRECT (BC-2.04.011 durability — left unchanged). Census UNCHANGED: VP 41 total.
 
 > **D-356 adversary fix DC-19 (2026-09-08, architect).** F-PDC19-01+F-PDC19-02 — VP-2.24.003-B BC Anchor description corrected: "graph descriptor pure termination — Kani" → "no self-loops (a node does not edge to itself) — Kani" (BC-2.24.003 §VP table is source of truth). VP-2.24.003-C Module/description corrected: `server::debug_routes` / "graph endpoint unit" → `graph::descriptor` / "start node always present in descriptor" (BC-2.24.003 §VP table declares start-node-always-present targeting graph::descriptor/pregolya-graph). VP census UNCHANGED: 41 total.
 
