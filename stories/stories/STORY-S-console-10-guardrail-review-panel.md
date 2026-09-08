@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-console-10
 epic_id: E-console
-version: "1.2"
+version: "1.3"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -11,13 +11,14 @@ changelog:
   - "1.0 (D-356/2026-09-06, story-writer): Initial story — guardrail/security decision review panel, Fail/Transform filtering, DI-012 completeness, F-P99-01 Pass-not-shown."
   - "1.1 (D-356/2026-09-07, story-writer): DC-03 adversary fix — corrected BC-2.24.008 wire field/enum names in AC-002, EC-003, and Forbidden Patterns: boundary_type→boundary, BoundaryType→IngressBoundary, RAGRetrieval→RagChunk, MemoryIngress→MemoryItem, GuardrailSeverity→GuardrailSeverityWire; clarified Transform carries severity=None AND reason=None."
   - "1.2 (D-356/DC-29/2026-09-08, story-writer): F-PDC29-01 — AC-004 + AC-005 + Task 4 + File Structure corrected for ADR-031 Decision 8: completed-run reconstruction uses evidence_journal from run-read, not stored event list (StreamEvent is transient)."
+  - "1.3 (D-356/DC-32/2026-09-08, story-writer): F-PDC32-03 — ADR-030 bare §Decision ordinal-gap fixed: AC-004 body occurrence of ADR-030 §Decision updated to ADR-030 §Decision 2 per POL-19."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.008.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "ca02ba8"
+input-hash: "bfafb0c"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-06]
@@ -44,6 +45,8 @@ tdd_mode: strict
 
 > **D-356 adversary fix DC-29 (2026-09-08, story-writer).** F-PDC29-01 — AC-004, AC-005, Task 4, File Structure corrected for ADR-031 Decision 8. StreamEvent is transient; there is no stored StreamEvent list for completed-run reconstruction. The guardrail security feed for terminal-status runs reconstructs from the `evidence_journal?` field on the run-read endpoint. AC-005 completeness invariant updated: "SSE stream or stored event list" → "live SSE stream (in_progress) or evidence_journal reconstruction (terminal-status)". Live (in_progress) SSE path (AC-003) is unchanged.
 
+> **D-356 adversary fix DC-32 (2026-09-08, story-writer).** F-PDC32-03 — Bare `ADR-030 §Decision` ordinal-gap corrected to `ADR-030 §Decision 2` in AC-004 body. ADR-030 has no bare `## Decision` heading; Decision 2 is the transience authority for StreamEvent. Fixes POL-19 ambiguous-heading citation.
+
 ## Narrative
 
 - **As a** developer-operator or SOC analyst reviewing agent behavior on untrusted inputs
@@ -68,7 +71,7 @@ Each entry in the security feed shows: `boundary` (an `IngressBoundary` value �
 For in-progress runs, new `guardrail_decision` events are appended to the security feed as they arrive via the shared `EventSource`. The shared SSE subscription from S-console-06 is reused — there is ONE `EventSource` per run. Verified by `test_BC_2_24_008_realtime_append_shared_sse()`.
 
 ### AC-004 (traces to BC-2.24.008 postcondition PC-004)
-For completed (terminal-status) runs, the security feed reconstructs from the `evidence_journal?` field returned by the run-read endpoint (`GET /threads/{thread_id}/runs/{run_id}`). The `evidence_journal` contains the durable record of all guardrail evaluation results for the run; the console filters and displays entries corresponding to `Fail` or `Transform` outcomes. No `EventSource` is opened for completed runs. There is NO stored StreamEvent list — StreamEvent is transient (ADR-030 §Decision; ADR-031 Decision 8). Verified by `test_BC_2_24_008_completed_run_reconstruction()`.
+For completed (terminal-status) runs, the security feed reconstructs from the `evidence_journal?` field returned by the run-read endpoint (`GET /threads/{thread_id}/runs/{run_id}`). The `evidence_journal` contains the durable record of all guardrail evaluation results for the run; the console filters and displays entries corresponding to `Fail` or `Transform` outcomes. No `EventSource` is opened for completed runs. There is NO stored StreamEvent list — StreamEvent is transient (ADR-030 §Decision 2; ADR-031 Decision 8). Verified by `test_BC_2_24_008_completed_run_reconstruction()`.
 
 ### AC-005 (traces to BC-2.24.008 invariant INV-002)
 Every `guardrail_decision` event with a Fail or Transform outcome that appears in the live SSE stream (in_progress runs) or in the `evidence_journal` reconstruction (terminal-status runs) MUST appear in the security feed. No silent omission. The feed is a complete audit log of all qualifying events. Filtering is limited to outcome type (Fail/Transform only) — no other filtering that could drop events is permitted. Verified by `test_BC_2_24_008_complete_audit_no_omission()`.

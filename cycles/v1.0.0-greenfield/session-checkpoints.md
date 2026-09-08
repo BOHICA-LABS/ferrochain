@@ -4578,6 +4578,32 @@ PR #1 MERGEABLE but requires GENUINE HUMAN MERGE (self-authored PR, DIRECTIVE 4 
 DC-10 adversary pass PENDING (orchestrator, streak 0/3). PR #1 merge (human action required). DEV-TOOLING-D255: v1 dev-tooling expansion — ready to start post-merge. DTU clones (openai/anthropic/ollama): Phase-4 prerequisite.
 
 ---
+<!-- D-356/DC-25 checkpoint archived from STATE.md §Session Resume Checkpoint (2026-09-08; replaced by DC-32 checkpoint). -->
+
+## Archived: D-356/DC-25 fix-burst Session Resume Checkpoint
+
+### RESUME IN ONE BREATH
+pregolya Phase-2 CONVERGED+gate-APPROVED (anchor 81d16ca); Phase-3 IN PROGRESS at workspace-init. D-356 Phase-1 spec amendment COMPLETE (developer-console ROADMAP-ONLY; census: BC 148 / VP 41 / EC 145 / stories 52 / pts 372). D-356/DC-01 through DC-25 fix-bursts COMPLETE: DC-01..DC-22 details in burst-log.md + STATE §DC-20..DC-25 steps. DC-22=CLEAN(strict) streak1/3 [banked, then broken]; DC-23=4 (1H+2M+1L) ALL CLOSED; DC-24=2H+2M+2OBS ALL CLOSED; DC-25=1H+1MED ALL CLOSED. Full trajectory: →5→6→4→4→3→3→6→5→4→2→4→3→1→2→3→1→2→2+pgap→2→2+pgap→2+pgap→1→0→4→2H+2M+2OBS→1H+1MED. OBS-DC05-01 RESOLVED-BY-DC-23; PG-7 RESOLVED-BY-DEVOPS-6beaa88 (POL-14→BLOCKING policies.yaml v1.6). BC-INDEX v4.40; STORY-INDEX v1.79. Streak 0/3 (DC-25 fix push); DC-26 gates new HEAD. PR #1 (workspace scaffold) REVIEWED-CLEAN + MERGEABLE at c9712c20 but BLOCKED from agent-merge (self-authored PR) — needs GENUINE HUMAN MERGE.
+
+### HEADS
+- develop: `bfe0592` — LOCAL ONLY (2 commits ahead of origin/develop at `644d1ad`; push required before Phase-3); factory-artifacts: HEAD updated by DC-25 fix-burst commit. Main worktree on `chore/phase3-workspace-init` (NOT develop; return to develop post-merge). PR #1 branch `chore/phase3-workspace-init`: head `c9712c20` (OPEN, MERGEABLE, CI 17/17 green, cycle-13 APPROVE 0-blocking).
+
+### RESUME NEXT-ACTION
+(1) Dispatch DC-26 adversary pass (fresh-context) against current factory-artifacts HEAD; streak 0/3. (2) Get PR #1 human-merged (squash-merge targeting develop). (3) Post-merge: return main worktree to develop; push develop 2 local-only commits; launch S-1.01 (PregolyaError) in pregolya-core. Standing directives DIRECTIVE 1/2/3/4 in force. 7 open convergence-close deferrals (C-1/PG-1/PG-2/PG-3/PG-4/PG-5/PG-6; PG-7 RESOLVED). OBS-DC05-01 CLOSED.
+
+### DECISION-LOG DELTA (D-356/DC-25 fix-burst)
+D-356/DC-25 (2026-09-08): DC-25 fix-burst CLOSED. trajectory-tail →0→4→2H+2M+2OBS→1H+1MED (DC-22=0/CLEAN(strict),streak1/3[banked,broken]; DC-23=4[1H+2M+1L]; DC-24=2H+2M+2OBS ALL CLOSED; DC-25=1H+1MED ALL CLOSED). F-PDC25-01[HIGH] BC-2.24.006 DC-02 over-correction: PRE-002/PC-001(a) 'no SSE event' wrong — BC-2.12.007 §EC-003 confirms terminal {\"__interrupt__\":[InterruptPayload]} frame IS interrupt signal (primary detection; carries scratchpad+interrupt_id); PC-002 dialog source corrected value+interrupt_id from terminal frame (not run-status/run-read; no node_name in InterruptPayload). BC-2.24.006 v1.4 + S-console-08 v1.3 aligned. F-PDC25-02[MED] BC-2.24.007 EvidenceJournal scope 'completed'→'terminal-status (finished)': Description/PC-003/EC-005/TV-004 updated all four terminal states (completed/failed/cancelled/summary_halt); BC-2.12.003 {PC-013} already projects all four — BC-2.24.007 was outlier; DC-24 residue. PG-7 RESOLVED-BY-DEVOPS-6beaa88: POL-14→BLOCKING in policies.yaml v1.6; hook in blocking roster FAIL-only exit + WARN non-blocking confirmed; policies.yaml docs corrected. BC-INDEX v4.39→v4.40. STORY-INDEX v1.78→v1.79. Census UNCHANGED: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31. Streak 0/3 (DC-25 fix push; DC-26 gates new HEAD).
+
+### WORKTREE INVENTORY
+Main worktree on `chore/phase3-workspace-init` (NOT develop). .worktrees/ absent. Phase-3 workspace init PENDING human merge of PR #1.
+
+### STANDING HUMAN-GATE OBS
+PR #1 MERGEABLE but requires GENUINE HUMAN MERGE (self-authored PR, DIRECTIVE 4 CAVEAT). Phase-3 TDD stories cannot start until PR #1 merges.
+
+### PENDING USER-APPROVED WORK
+DC-26 adversary pass PENDING (orchestrator, streak 0/3). PR #1 merge (human action required). DEV-TOOLING-D255: v1 dev-tooling expansion — ready to start post-merge. DTU clones (openai/anthropic/ollama): Phase-4 prerequisite.
+
+---
 <!-- D-356/DC-17 checkpoint archived from STATE.md §Session Resume Checkpoint (2026-09-08; replaced by DC-23 checkpoint). -->
 
 ## Archived: D-356/DC-17 fix-burst Session Resume Checkpoint

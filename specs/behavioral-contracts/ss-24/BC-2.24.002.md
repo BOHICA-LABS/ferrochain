@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.002
-version: "1.11"
+version: "1.12"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -31,6 +31,7 @@ changelog:
   - "1.9 (D-356-fix/DC-23/2026-09-08, product-owner): F-PDC23-03: INV-002 Mutex→RwLock per architect ruling (purity-map v1.48 + ADR-031 v1.5): DebugSpanExporter owns Arc<RwLock<RingBuffer<SpanData>>> (write lock at insertion; read locks for concurrent readers); Module row updated. F-PDC23-02: PC-005 and TV-004 error body key corrected 'error' → 'code' to match canonical pregolya-server envelope {code, message} (BC-2.12.001 EC-010 / BC-2.12.003 EC-008). O-PDC23-A: PC-005 and TV-004 E-SERVER-023 message string sync — single-quotes added around 'pregolya console --dev' to match error-taxonomy §E-SERVER-023 registry (byte-identical for test_BC_2_24_002_exporter_not_configured_body_exact)."
   - "1.10 (D-356-fix/DC-27/L-288/2026-09-08, product-owner): F-L288-008 (OBS): DC-04 historical blockquote asserted Arc<Mutex<RingBuffer<SpanData>>> with no superseded annotation; DC-23 (v1.9) corrected INV-002 to Arc<RwLock<...>>. Added inline SUPERSEDED-BY-DC-23 annotation immediately after the Arc<Mutex<...>> occurrence. Historical record preserved intact."
   - "1.11 (D-356-fix/DC-30/F-PDC30-01/2026-09-08, product-owner): F-PDC30-01 (HIGH): {INV-007} added after {INV-006} — session_id=run_id invariant per ADR-031 §Decision 8 architect ruling. DebugSpanExporter sets session_id=run_id at insertion; all spans addressable via GET /debug/trace/session/{run_id} ({PC-003}); empty [] response means: feature disabled, ring-buffer FIFO eviction ({INV-001}), or run produced no OTel ops — NOT a session key mismatch. Invariant enforced at insertion; no default or override path may produce a mismatched session_id for a run-scoped export."
+  - "1.12 (D-356-fix/DC-32/F-PDC32-02/2026-09-08, product-owner): F-PDC32-02 (HIGH): {PC-002} SpanData shape updated — session_id: String added as field 5 (8 fields total) per architect DC-32 Option A ruling. {PC-002} prose cite updated (DC-32). {INV-007} and {PC-003} wording unchanged — they already correctly state session_id=run_id; only {PC-002} was missing the field declaration. No other behavioral anchor required change."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-042
   - architecture/decisions/ADR-031-developer-console-architecture.md
@@ -38,7 +39,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "324a392"
+input-hash: "08861c1"
 extracted_from: null
 modified: []
 deprecated: null
@@ -76,6 +77,8 @@ removal_reason: null
 
 > **D-356 adversary fix DC-10 (2026-09-07, product-owner).** F-PDC10-02: §Module updated to canonical 4-entry ADR-031 Decision 7 split — `server::debug_span` (Boundary) added as the pregolya-server module owning `SpanData` and the `DebugSpanSource` read-trait (consumer-owns-interface: server owns the contract type; pregolya-console implements it). Body sweep: Description, PRE-002, PC-005, TV-004, INV-003, INV-005, Architecture Anchors, Traceability corrected to reflect that `server::debug_routes` holds `Arc<dyn DebugSpanSource>` (dyn-dispatch) with ZERO server→console compile dependency per ADR-031 Decision 7.
 
+> **D-356 adversary fix DC-32 (2026-09-08, product-owner).** F-PDC32-02 (HIGH): {PC-002} `SpanData` shape updated — `session_id: String` added as field 5 (8 fields total) per architect DC-32 Option A ruling. The `session_id` field carries `run_id` for session-keyed ring-buffer filtering, consistent with {INV-007} (ADR-031 §Decision 8) and {PC-003}. {INV-007} and {PC-003} required no wording change — they already correctly state `session_id = run_id`; only {PC-002} was missing the field declaration in the `SpanData` shape block.
+
 ## Description
 
 `DebugSpanExporter` (`pregolya-console` / `console::span_exporter`) is an in-memory span exporter that implements the OTel `SpanExporter` async trait and the `DebugSpanSource` read-trait (defined in `pregolya-server` / `server::debug_span` — consumer-owns-interface per ADR-031 Decision 7). It stores completed spans in a bounded FIFO ring buffer (`console::ring_buffer`, Pure Core). The `debug-endpoints` feature on `pregolya-server` adds two read-only HTTP endpoints that read spans via `Arc<dyn DebugSpanSource>` (dyn-dispatch, injected at co-launch — ZERO server→console compile dependency): `GET /debug/trace/session/{session_id}` (ordered span list for a session) and `GET /debug/trace/{event_id}` (single-event spans). `SpanData` is a public type defined in `server::debug_span`. When no `DebugSpanSource` implementation is injected, both endpoints return HTTP 503 with `E-SERVER-023 DebugExporterNotConfigured`.
@@ -90,13 +93,14 @@ removal_reason: null
 ## Postconditions
 
 1. {PC-001} **Ring buffer FIFO eviction:** The `DebugSpanExporter` stores up to `span_retention_cap` `SpanData` entries. When the buffer is full and a new span arrives, the oldest span is evicted (FIFO). No unbounded growth. The cap is configurable at `ConsoleConfig` construction time (default: 10,000 — matching adk-rust `trace_capacity`).
-2. {PC-002} **`SpanData` shape:** Each stored span has the following shape (source: adk-rust `convert_to_span_data()` / `Trace.ts`):
+2. {PC-002} **`SpanData` shape:** Each stored span has the following shape (source: adk-rust `convert_to_span_data()` / `Trace.ts`, extended with `session_id` for session-keyed ring-buffer filtering — DC-32):
    ```json
    {
      "span_id":       "<hex-string>",
      "trace_id":      "<hex-string>",
      "start_time_ms": <u64>,
      "end_time_ms":   <u64>,
+     "session_id":    "<run_id>",
      "attributes":    { "<key>": "<value>" },
      "llm_request":   <json_or_null>,
      "llm_response":  <json_or_null>

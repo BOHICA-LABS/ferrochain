@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-console-02
 epic_id: E-console
-version: "1.3"
+version: "1.4"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -12,6 +12,7 @@ changelog:
   - "1.1 (D-356/2026-09-07, story-writer): Adversary fix DC-02 — add VP-2.24.002-D (SpanData SEC-BOUND-001 sanitization unit test) to verification_properties frontmatter; add AC-011 asserting that DebugSpanExporter sanitizes credential-pattern field values before ring buffer insertion."
   - "1.2 (D-356/2026-09-07, story-writer): Adversary fix DC-06 sweep — remove VP-2.24.002-C from verification_properties; VP-2.24.002-C anchors to S-console-03 (server::debug_routes integration test) per VP-INDEX; this story builds DebugSpanExporter and SpanData covered by VP-2.24.002-A/B/D; no body references to VP-2.24.002-C were present."
   - "1.3 (D-356/2026-09-07, story-writer): F-PDC11-01 — dependency inversion sweep per ADR-031 Decision 7: dep-edge flipped (depends_on now [S-console-01, S-console-03]; blocks now []); AC-002 injection Arc<dyn DebugSpanSource>; AC-006 compile-fail test relocated to S-console-03; AC-007 rewritten to INV-005 updated model; SpanData row removed from Architecture Mapping (server-owned); Task 4/6/7 updated; compile-fail File Structure row relocated."
+  - "1.4 (D-356/DC-32/2026-09-08, story-writer): F-PDC32-02 — AC-004 SpanData field list corrected to 8-field shape: added session_id: String after end_time_ms (set by DebugSpanExporter at insertion per BC-2.24.002 {INV-007}). Whole-file sweep: no other 7-field or 7-item SpanData enumerations found."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.001.md
@@ -19,7 +20,7 @@ inputs:
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "e14e9b1"
+input-hash: "e102dc1"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-01, S-console-03]
@@ -48,6 +49,8 @@ tdd_mode: strict
 
 > **D-356 adversary fix DC-02 (2026-09-07, story-writer).** Product-owner added VP-2.24.002-D (`test_BC_2_24_002_span_data_sanitization_sec_bound_001`) to BC-2.24.002 — a sanitization unit test verifying that `SpanData` field values matching the SEC-BOUND-001 credential pattern are stripped before ring buffer insertion. Added `VP-2.24.002-D` to this story's `verification_properties` frontmatter (this story builds `DebugSpanExporter` and `SpanData`, which are the types BC-2.24.002 covers). Added AC-011 asserting the sanitization behavior.
 
+> **D-356 adversary fix DC-32 (2026-09-08, story-writer).** F-PDC32-02 — AC-004 `SpanData` field list corrected to 8-field shape. Added `session_id: String` after `end_time_ms: u64` — the `run_id` of the run that produced this span, set by `DebugSpanExporter` at insertion per BC-2.24.002 {INV-007}. Whole-file sweep: no other 7-field or 7-item `SpanData` enumerations found; AC-004 was the sole carrier.
+
 ## Narrative
 
 - **As a** developer using `pregolya console --dev`
@@ -73,7 +76,7 @@ When `dev_mode: true`, a `DebugSpanExporter` (ring buffer with `span_retention_c
 The `DebugSpanExporter` stores up to `span_retention_cap` `SpanData` entries. When the buffer is at capacity and a new span arrives, the oldest span is evicted (FIFO). After eviction, buffer length remains exactly `span_retention_cap`. No unbounded growth. Verified by `test_BC_2_24_002_ring_buffer_fifo_eviction()` (VP-2.24.002-A, VP-2.24.002-B).
 
 ### AC-004 (traces to BC-2.24.002 postcondition PC-002)
-Each stored span has `SpanData` with fields: `span_id: String`, `trace_id: String`, `start_time_ms: u64`, `end_time_ms: u64`, `attributes: serde_json::Map<String, Value>`, `llm_request: Option<Value>`, `llm_response: Option<Value>`. All fields are present; no field is missing. Verified by `test_BC_2_24_002_span_data_shape()`.
+Each stored span has `SpanData` with fields: `span_id: String`, `trace_id: String`, `start_time_ms: u64`, `end_time_ms: u64`, `session_id: String` (the `run_id` of the run that produced this span; set by `DebugSpanExporter` at insertion per BC-2.24.002 {INV-007}), `attributes: serde_json::Map<String, Value>`, `llm_request: Option<Value>`, `llm_response: Option<Value>`. All 8 fields are present; no field is missing. Verified by `test_BC_2_24_002_span_data_shape()`.
 
 ### AC-005 (traces to BC-2.24.002 invariant INV-002)
 The `RingBuffer<SpanData>` data structure is extractable as Pure Core — it has no I/O, no async, no global state. A unit test exercises `RingBuffer` insert, eviction, and read operations without an async runtime. Verified by `test_BC_2_24_002_ring_buffer_pure_core_sync()`.
