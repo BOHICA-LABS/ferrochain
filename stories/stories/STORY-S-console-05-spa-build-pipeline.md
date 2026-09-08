@@ -3,25 +3,27 @@ document_type: story
 level: ops
 story_id: S-console-05
 epic_id: E-console
-version: "1.1"
+version: "1.2"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
 changelog:
   - "1.0 (D-356/2026-09-06, story-writer): Initial story — SPA build pipeline, framework selection (deferred per ADR-031 Decision 4), bundler config, rust_embed binding, CI integration, <500KB gzip target."
   - "1.1 (D-356/2026-09-07, story-writer): Adversary fix DC-06 sweep — remove VP-2.24.001-A from verification_properties; VP-2.24.001-A anchors to S-console-01 (console server lifecycle unit test) per VP-INDEX; S-console-05 SPA build coverage is AC-level only (AC-002 test_BC_2_24_001_spa_index_present_in_bundle traces to BC-2.24.001 PC-002); no registered VP warranted for a bundle-presence AC check."
+  - "1.2 (D-356/DC-27/L-288/2026-09-08, story-writer): F-L288-007 — AC-005 trace corrected from BC-2.24.001 INV-002 (TLS-loopback exception) to ADR-031 Decision 3 / BC-2.24.004 INV-002 (SSE-only transport; no WebSocket)."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.001.md
+  - .factory/specs/behavioral-contracts/ss-24/BC-2.24.004.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "b8bf3e9"
+input-hash: "3d013e2"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 8
 depends_on: [S-console-01]
 blocks: [S-console-06, S-console-07]
-behavioral_contracts: [BC-2.24.001]
+behavioral_contracts: [BC-2.24.001, BC-2.24.004]
 verification_properties: []
 priority: P1
 cycle: v1.0.0-greenfield
@@ -41,6 +43,8 @@ tdd_mode: strict
 
 > **D-356 adversary fix DC-06 sweep (2026-09-07, story-writer).** VP-2.24.001-A removed from `verification_properties` (`[]` is now correct). VP-2.24.001-A anchors to S-console-01 per VP-INDEX (console server lifecycle unit test built by the scaffold story). S-console-05 SPA build pipeline coverage is AC-level: AC-002 (`test_BC_2_24_001_spa_index_present_in_bundle`) is an acceptance-criterion test tracing to BC-2.24.001 PC-002, not a separately-registered VP. No new VP minted; `[]` is the correct scoping. No body references to VP-2.24.001-A were present; POLICY-8 gate remains satisfied.
 
+> **D-356 adversary fix DC-27/L-288 (2026-09-08, story-writer).** F-L288-007 — AC-005 trace annotation corrected. The INV-002 clause in the console startup behavioral contract is the TLS-loopback exception, not the SSE-only rule. The SSE-only transport mandate is Decision 3 in the console architecture ADR, reflected in the run inspection event-timeline behavioral contract's SSE-only invariant. AC-005 trace and body BC table updated accordingly.
+
 ## Narrative
 
 - **As a** developer implementing the pregolya console frontend
@@ -52,6 +56,7 @@ tdd_mode: strict
 | BC | Title | Covered ACs |
 |----|-------|------------|
 | BC-2.24.001 | `pregolya-console` Startup, Asset Serving, and `ConsoleConfig` (CAP-041) | AC-001..AC-006 (SPA asset preconditions) |
+| BC-2.24.004 | Run Inspection Event Timeline and Live Monitoring Panel (CAP-043) | AC-005 (SSE-only transport invariant) |
 
 ## Acceptance Criteria
 
@@ -67,7 +72,7 @@ After SPA build, `assets/webui/assets/config/runtime-config.json` does NOT overr
 ### AC-004 (traces to BC-2.24.001 invariant INV-001)
 The SPA imports NO symbols from `pregolya-graph`, `pregolya-server`, or any Rust crate internal. The SPA is a pure REST+SSE client of the public wire contract. This is enforced by the framework's module system: no Wasm bindings, no shared WASM modules, no crate imports. Verified by code review of SPA's `package.json`/import graph.
 
-### AC-005 (traces to BC-2.24.001 invariant INV-002)
+### AC-005 (per ADR-031 Decision 3 / traces to BC-2.24.004 INV-002 — SSE-only transport; no WebSocket)
 The SPA build uses native browser `EventSource` for SSE — no WebSocket polyfill or client library is included. The SPA bundle does NOT contain WebSocket client code. Verified by `grep -r "WebSocket" src/` on SPA source returns zero matches; bundle analysis confirms no WebSocket dependency.
 
 ### AC-006 (traces to BC-2.24.001 postcondition PC-002)

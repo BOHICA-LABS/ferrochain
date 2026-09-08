@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.006
-version: "1.5"
+version: "1.6"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -25,6 +25,7 @@ changelog:
   - "1.3 (D-356-fix/DC-23/2026-09-08, product-owner): F-PDC23-01: Architect ruling — resume is SAME run_id (BC-2.12.003 SS-12 lifecycle is authoritative). PC-005 corrected: 'server returns a new run_id' → 'run transitions to in_progress on the SAME run_id — no new run_id is issued; console continues monitoring existing run SSE stream'. EC-006 corrected: 'Run resumes with new run_id' → 'Run resumes (same run_id; interrupted → in_progress)'. TV-002: 'live monitoring opens for new run' → 'live monitoring continues for same run (run_id unchanged)'. §Related BCs §Composes: 'for new run' → 'for same run (run_id unchanged)'."
   - "1.4 (D-356-fix/DC-25/2026-09-08, product-owner): F-PDC25-01 (HIGH): PRE-002 and PC-001(a) over-corrected 'NO SSE event' — replaced with correct terminal-frame wording per BC-2.12.007 §EC-003. Node-boundary interrupts emit no StreamEvent variant but DO terminate the SSE stream with {\"__interrupt__\": [InterruptPayload]} envelope frame; detection is via this terminal frame (primary) and/or interrupted STATUS, not STATUS-only. PC-001(a) re-labeled from 'run-status polling' to 'terminal SSE frame'. PC-002 node-boundary dialog source fixed: sources value field (arbitrary JSON scratchpad, per BC-2.05.001 TV-001) + interrupt_id hash from terminal frame — not from run-status/run-read path; field name corrected from 'scratchpad' to canonical 'value'."
   - "1.5 (D-356-fix/DC-26/2026-09-08, product-owner): F-PDC26-01 (HIGH) + F-PDC26-02 (MED): Comprehensive whole-file sweep. node_name/node-name residue removed from PRE-002 ('and node name' dropped — frame carries value+interrupt_id only), EC-004 (rewritten: shows interrupt_id+null value, explicitly NO node name), TV-005 (rewritten: canonical {\"__interrupt__\":[{value,interrupt_id}]} wire format, node-name/scratchpad field removed). §Related BCs BC-2.12.007: 'run-status polling, not SSE' replaced with terminal-frame wording (BC-2.12.007 §EC-003 + interrupted status corroboration); no-graph_interrupt clause retained. DC-02 blockquote: two SUPERSEDED-BY-DC-25 inline annotations at STATUS-only and STATUS-polling claims; historical record preserved intact."
+  - "1.6 (D-356-fix/DC-27/L-288/2026-09-08, product-owner): F-L288-001 (HIGH): §Description final sentence 'subscribes to the new run stream' → 'continues monitoring the same run's SSE stream (run_id unchanged; BC-2.24.004 live monitoring)'. DC-23 corrected PC-005/EC-006/TV-002/§Related-BCs to same-run semantics but had missed the Description."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-045
   - architecture/decisions/ADR-031-developer-console-architecture.md
@@ -32,7 +33,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "c7b041d"
+input-hash: "e17c718"
 extracted_from: null
 modified: []
 deprecated: null
@@ -56,7 +57,9 @@ approval context (interrupt scratchpad, tool call preview with action risk) and 
 an Approve, Deny, or Edit decision. The console maps the selection to the `Command` struct
 and dispatches `POST /threads/{id}/runs/{run_id}/resume` (BC-2.05.004). Multiple pending
 interrupts are surfaced in FIFO arrival order (DI-003). After resume, the console
-subscribes to the new run stream (BC-2.24.004 live monitoring).
+continues monitoring the **same** run's SSE stream (run_id unchanged; BC-2.24.004 live monitoring).
+
+> **D-356 adversary fix DC-27/L-288 (2026-09-08, product-owner).** F-L288-001 (HIGH): §Description final sentence was stale — said "subscribes to the **new** run stream". DC-23 corrected PC-005/EC-006/TV-002/§Related-BCs to same-run semantics but missed the Description. Corrected to "continues monitoring the **same** run's SSE stream (run_id unchanged)" for full consistency with PC-005.
 
 ## Preconditions
 

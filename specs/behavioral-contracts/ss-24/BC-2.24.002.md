@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.002
-version: "1.9"
+version: "1.10"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -29,6 +29,7 @@ changelog:
   - "1.7 (D-356-fix/DC-11/2026-09-07, product-owner): F-PDC11-03: §Module server::debug_span clause had duplicate [VP-2.24.002-C target] annotation — VP-2.24.002-C targets server::debug_routes ONLY (VP-INDEX §VP Catalog). Removed [VP-2.24.002-C target] from server::debug_span clause; replaced with [no dedicated VP; exercised via VP-2.24.002-C/D] to document the indirect coverage. server::debug_routes [VP-2.24.002-C target] annotation unchanged."
   - "1.8 (D-356-fix/DC-14/2026-09-08, product-owner): F-PDC14-03: TV-006 Expected Output corrected — previous form 'Bearer [REDACTED]' (retaining Bearer prefix, bracketed-caps token) is non-canonical. Canonical form per S-1.26 AC-020 step 2(d) and BC-2.12.003 {INV-008} step 2: the entire 'Bearer <token>' span (Bearer\\s+[A-Za-z0-9._~+/=\\-]+) is replaced with '<redacted>' (lowercase, angle-bracketed). Corrected: 'Bearer sk-abc123' → '<redacted>'; served content reads '<redacted> is the key'."
   - "1.9 (D-356-fix/DC-23/2026-09-08, product-owner): F-PDC23-03: INV-002 Mutex→RwLock per architect ruling (purity-map v1.48 + ADR-031 v1.5): DebugSpanExporter owns Arc<RwLock<RingBuffer<SpanData>>> (write lock at insertion; read locks for concurrent readers); Module row updated. F-PDC23-02: PC-005 and TV-004 error body key corrected 'error' → 'code' to match canonical pregolya-server envelope {code, message} (BC-2.12.001 EC-010 / BC-2.12.003 EC-008). O-PDC23-A: PC-005 and TV-004 E-SERVER-023 message string sync — single-quotes added around 'pregolya console --dev' to match error-taxonomy §E-SERVER-023 registry (byte-identical for test_BC_2_24_002_exporter_not_configured_body_exact)."
+  - "1.10 (D-356-fix/DC-27/L-288/2026-09-08, product-owner): F-L288-008 (OBS): DC-04 historical blockquote asserted Arc<Mutex<RingBuffer<SpanData>>> with no superseded annotation; DC-23 (v1.9) corrected INV-002 to Arc<RwLock<...>>. Added inline SUPERSEDED-BY-DC-23 annotation immediately after the Arc<Mutex<...>> occurrence. Historical record preserved intact."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-042
   - architecture/decisions/ADR-031-developer-console-architecture.md
@@ -36,7 +37,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "1f87a7c"
+input-hash: "e17c718"
 extracted_from: null
 modified: []
 deprecated: null
@@ -56,13 +57,15 @@ removal_reason: null
 
 > **D-356 adversary fix DC-02 location adjudication (2026-09-07, product-owner).** Architect adjudication (S-console-02 AC-011): sanitization location tightened to **before ring-buffer insertion in `console::span_exporter`** — the in-memory buffer must never hold unsanitized fields; this subsumes "before serving." PC-008, INV-006, and VP-2.24.002-D updated to canonical location wording.
 
-> **D-356 adversary fix DC-04 (2026-09-07, product-owner).** F-PDC04-04: INV-002 and §Module updated — explicit module attribution added for the Pure Core / Boundary split: `RingBuffer<T>` lives in `console::ring_buffer` (Pure Core); `DebugSpanExporter` lives in `console::span_exporter` (Boundary) and owns `Arc<Mutex<RingBuffer<SpanData>>>`. Prior wording cited the purity split correctly but did not name the module boundary by canonical module path.
+> **D-356 adversary fix DC-04 (2026-09-07, product-owner).** F-PDC04-04: INV-002 and §Module updated — explicit module attribution added for the Pure Core / Boundary split: `RingBuffer<T>` lives in `console::ring_buffer` (Pure Core); `DebugSpanExporter` lives in `console::span_exporter` (Boundary) and owns `Arc<Mutex<RingBuffer<SpanData>>>` *(SUPERSEDED by DC-23: `Arc<Mutex<…>>` corrected to `Arc<RwLock<…>>`; see DC-23 changelog / INV-002.)*. Prior wording cited the purity split correctly but did not name the module boundary by canonical module path.
 
 > **D-356 adversary fix DC-08 (2026-09-07, product-owner).** F-PDC08-02: §Story Anchor updated — S-console-03 appended as Wave 3 secondary anchor (debug-endpoints feature / `server::debug_routes`; builds VP-2.24.002-C). S-console-02 remains primary.
 
 > **D-356 adversary fix DC-07 (2026-09-07, product-owner).** F-PDC07-01: `debug_api_key` → `debug_route_key` throughout (PC-007, EC-007, changelog v1.1, DC-02 blockquote). Canonical field is `SecurityConfig.debug_route_key: Option<String>` (BC-2.12.005 PRE-004/PC-006/PC-007/INV-001; ADR-021 §Decision 1). F-PDC07-02: PC-007 and EC-007 now explicitly cite E-SERVER-013 InvalidDebugRouteKey for the startup boot-refusal path (distinct from E-SERVER-004 runtime 403). F-PDC07-05: stale `(update in progress by architect)` removed from PC-007 and DC-02 blockquote (ADR-031 D6-2 landed).
 
 > **D-356 adversary fix DC-23 (2026-09-08, product-owner).** F-PDC23-03: INV-002 corrected to RwLock per architect ruling (purity-map v1.48 + ADR-031 v1.5) — `DebugSpanExporter` owns `Arc<RwLock<RingBuffer<SpanData>>>` (write lock at insertion; concurrent readers acquire read locks at query time). F-PDC23-02: PC-005 and TV-004 error body key `"error"` → `"code"` (canonical `{code, message}` envelope per BC-2.12.001 {EC-010} / BC-2.12.003 {EC-008}). O-PDC23-A: E-SERVER-023 message string sync — single-quotes added around `'pregolya console --dev'` to match error-taxonomy §E-SERVER-023 registry (byte-exact for `test_BC_2_24_002_exporter_not_configured_body_exact`).
+
+> **D-356 adversary fix DC-27/L-288 (2026-09-08, product-owner).** F-L288-008 (OBS): DC-04 historical blockquote asserted `Arc<Mutex<RingBuffer<SpanData>>>` with no indication that DC-23 superseded it. Added inline *(SUPERSEDED by DC-23: `Arc<Mutex<…>>` corrected to `Arc<RwLock<…>>`; see DC-23 changelog / INV-002.)* annotation immediately after the `Arc<Mutex<...>>` occurrence. Historical record preserved intact — annotation only.
 
 > **D-356 adversary fix DC-14 (2026-09-08, product-owner).** F-PDC14-03: TV-006 Expected Output corrected — the previous form `Bearer [REDACTED]` (retaining `Bearer` prefix, uppercase bracketed token) is non-canonical. Per S-1.26 AC-020 step 2(d) and BC-2.12.003 {INV-008} step 2, the `redact_credentials` function replaces the entire `Bearer <token>` span (`Bearer\s+[A-Za-z0-9._~+/=\-]+`) with `"<redacted>"` (lowercase, angle-bracketed, no retained prefix). Corrected TV-006 expected output: served `llm_request.messages[0].content` reads `"<redacted> is the key"`.
 

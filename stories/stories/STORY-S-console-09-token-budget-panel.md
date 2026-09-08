@@ -3,19 +3,20 @@ document_type: story
 level: ops
 story_id: S-console-09
 epic_id: E-console
-version: "1.0"
+version: "1.1"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
 changelog:
   - "1.0 (D-356/2026-09-06, story-writer): Initial story — token/context budget monitoring panel driven by compaction_event StreamEvents, EvidenceJournal display."
+  - "1.1 (D-356/DC-27/L-288/2026-09-08, story-writer): F-L288-006 — EvidenceJournal scope broadened to all 4 terminal states (completed, failed, cancelled, summary_halt); test renamed evidence_journal_terminal_run."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.007.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "21b8ccc"
+input-hash: "401e2c9"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-06]
@@ -38,6 +39,8 @@ tdd_mode: strict
 > **D-356 dev-console scope expansion (2026-09-06, story-writer).** Roadmap-only.
 > Wave 3 — not built in the current Phase 3 implementation cycle.
 
+> **D-356 adversary fix DC-27/L-288 (2026-09-08, story-writer).** F-L288-006 — EvidenceJournal scope broadened from `completed`-only to all 4 terminal states (`completed`, `failed`, `cancelled`, `summary_halt`) per BC-2.24.007 v1.3 (AC-003, AC-007, EC-005, Task 4, Task 7, File Structure). Test renamed `test_BC_2_24_007_evidence_journal_terminal_run()`.
+
 ## Narrative
 
 - **As a** developer running a long-horizon agent with context compaction enabled
@@ -59,7 +62,7 @@ The panel displays a proportional context-window gauge (e.g., a progress bar) sh
 Each `compaction_event` adds a boundary marker to the event timeline (S-console-06 EventTimeline). The marker shows: compacted turn range (`compacted_start..=compacted_end`), `summary_token_count`, `tokens_remaining_after`, and the `trigger` label (`OnWatermark`, `OnMessageCount`, or `OnTokenCount`). Verified by `test_BC_2_24_007_timeline_boundary_marker()` (VP-2.24.007-B).
 
 ### AC-003 (traces to BC-2.24.007 postcondition PC-003)
-For completed runs, the panel surfaces the run's `EvidenceJournal` decision history. Each entry shows the `PolicyDecision` (`Allow`, `Escalate`, `Deny`) and the evaluation point that produced it. Verified by `test_BC_2_24_007_evidence_journal_completed_run()`.
+For terminal-status (finished) runs (`completed`, `failed`, `cancelled`, `summary_halt`), the panel surfaces the run's `EvidenceJournal` decision history. Each entry shows the `PolicyDecision` (`Allow`, `Escalate`, `Deny`) and the evaluation point that produced it. Verified by `test_BC_2_24_007_evidence_journal_terminal_run()`.
 
 ### AC-004 (traces to BC-2.24.007 postcondition PC-004)
 For in-progress runs, the gauge updates incrementally as `compaction_event` variants arrive via the shared `EventSource`. The shared SSE subscription from S-console-06 is reused — there is ONE `EventSource` per run, not one per panel. Verified by `test_BC_2_24_007_realtime_update_shared_sse()`.
@@ -71,7 +74,7 @@ When `tokens_remaining_after` is `null` (no token ceiling configured), the gauge
 When `compaction_trigger = Disabled` (default) and no `compaction_event` arrives, the budget panel shows a "compaction not configured" placeholder message. No gauge is rendered. Verified by `test_BC_2_24_007_compaction_disabled_placeholder()`.
 
 ### AC-007 (traces to BC-2.24.007 edge case EC-005)
-When the `EvidenceJournal` fetch fails for a completed run (server error), the panel shows an inline error message "Evidence journal unavailable" within the panel area. The gauge, timeline annotations, and other panel elements remain rendered from stored events. Verified by `test_BC_2_24_007_evidence_journal_fetch_error()`.
+When the `EvidenceJournal` fetch fails for a terminal-status (finished) run (server error), the panel shows an inline error message "Evidence journal unavailable" within the panel area. The gauge, timeline annotations, and other panel elements remain rendered from stored events. Verified by `test_BC_2_24_007_evidence_journal_fetch_error()`.
 
 ## Architecture Mapping
 
@@ -96,7 +99,7 @@ When the `EvidenceJournal` fetch fails for a completed run (server error), the p
 | EC-002 | `tokens_remaining_after = null` | Gauge shows "N/A"; timeline annotation still shows turn range |
 | EC-003 | `tokens_remaining_after` is negative | Gauge renders at 0% with overrun indicator |
 | EC-004 | Two `compaction_event` entries in one run | Two timeline markers; gauge updates twice |
-| EC-005 | EvidenceJournal fetch fails | Inline error; rest of panel still rendered |
+| EC-005 | EvidenceJournal fetch fails for terminal-status run | Inline error; rest of panel still rendered |
 
 ## Token Budget Estimate (MANDATORY)
 
@@ -117,10 +120,10 @@ When the `EvidenceJournal` fetch fails for a completed run (server error), the p
 1. [ ] Write failing tests for all ACs (test-writer; unit + E2E/component tests)
 2. [ ] Create `spa/src/components/BudgetGauge.*` — proportional gauge component; handles null and negative `tokens_remaining_after` without crash
 3. [ ] Extend `spa/src/components/EventTimeline.*` to render compaction boundary markers (AC-002) — coordinate with S-console-06 implementer
-4. [ ] Create `spa/src/components/EvidenceJournalPanel.*` — completed-run `PolicyDecision` history table
+4. [ ] Create `spa/src/components/EvidenceJournalPanel.*` — terminal-status (finished) run `PolicyDecision` history table
 5. [ ] Add `compaction_event` handler in `spa/src/lib/sse.ts`: filter event type, update gauge state, add timeline marker
 6. [ ] Add "compaction not configured" placeholder state when no compaction events arrive
-7. [ ] Implement EvidenceJournal fetch for completed runs via run-read endpoint
+7. [ ] Implement EvidenceJournal fetch for terminal-status (finished) runs via run-read endpoint
 8. [ ] Handle EvidenceJournal fetch error with inline error message (AC-007)
 9. [ ] Run SPA tests — all AC tests pass
 
@@ -152,7 +155,7 @@ Predecessor: S-console-06 (run inspection panel). The `sse.ts` SSE subscription 
 | File | Action | Purpose |
 |------|--------|---------|
 | `crates/pregolya-console/spa/src/components/BudgetGauge.*` | CREATE | Context-window gauge; null/negative safe |
-| `crates/pregolya-console/spa/src/components/EvidenceJournalPanel.*` | CREATE | PolicyDecision history table for completed runs |
+| `crates/pregolya-console/spa/src/components/EvidenceJournalPanel.*` | CREATE | PolicyDecision history table for terminal-status (finished) runs |
 | `crates/pregolya-console/spa/src/components/EventTimeline.*` | MODIFY | Add compaction boundary marker rendering |
 | `crates/pregolya-console/spa/src/lib/sse.ts` | MODIFY | Add `compaction_event` handler; update gauge state |
-| `crates/pregolya-console/spa/src/lib/api.ts` | MODIFY | Add EvidenceJournal fetch for completed runs |
+| `crates/pregolya-console/spa/src/lib/api.ts` | MODIFY | Add EvidenceJournal fetch for terminal-status (finished) runs |

@@ -1,11 +1,12 @@
 ---
 document_type: story-index
 level: L3
-version: "1.79"
+version: "1.80"
 status: active
 producer: state-manager
-timestamp: 2026-09-08T20:00:00Z
+timestamp: 2026-09-08T22:00:00Z
 changelog:
+  - "1.80 (D-356/DC-27/L-288/2026-09-08, state-manager): L-288 exhaustive semantic-coherence sweep of ALL 8 SS-24 BCs complete — 8 findings [F-L288-001..008] ALL CLOSED. BC-2.24.006 v1.6 (F-L288-001[HIGH] §Description 'new run stream'→'same run SSE stream (run_id unchanged)'). capabilities-p1-p2.md v1.35 (F-L288-002[MED] CAP-042 dotSrc→dot_src; F-L288-005[MED] CAP-046 'completed'→'terminal-status (finished)'). BC-2.24.007 v1.4 (F-L288-003[MED] INV-004 'completed'→'terminal-status (finished)'; F-L288-004[MED] §Related BCs BC-2.10.006 'completed-run'→'terminal-status (finished) run'). S-console-09 v1.1 (F-L288-006 — 7 sites 'completed'→'terminal-status'; test renamed evidence_journal_terminal_run). S-console-05 v1.2 (F-L288-007 — AC-005 trace corrected BC-2.24.001 INV-002→ADR-031 D3/BC-2.24.004 INV-002; BC-2.24.004 added to behavioral_contracts per POLICY-8). BC-2.24.002 v1.10 (F-L288-008[OBS] DC-04 blockquote Arc<Mutex<...>> SUPERSEDED-BY-DC-23 annotation). BC-2.24.004 v1.3 (reverse-anchor: §Story-Anchor +S-console-05; 4 of 8 SS-24 BCs verified fully coherent). Story-Inventory S-console-05 BCs column: BC-2.24.001→BC-2.24.001, BC-2.24.004. BC-to-Story map BC-2.24.004: S-console-06→S-console-05, S-console-06. BC-INDEX v4.41→v4.42. L2-INDEX v1.32→v1.33. Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.79 (D-356/DC-25/2026-09-08, state-manager): S-console-08 v1.3 (story-writer; F-PDC25-01 sibling-sweep — AC-001/AC-002/Task-3b/EC-004/PSI corrected to terminal {\"__interrupt__\":[InterruptPayload]} frame model; zero node_name residue; zero no-dedicated-event over-correction residue). Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.78 (D-356/DC-23/2026-09-08, state-manager): S-console-08 v1.2 (story-writer; F-PDC23-01[HIGH] — resume same-run per BC-2.12.003 canonical SAME-run_id; BC-2.24.006 PC-005/EC-006/TV-002/§Composes aligned). S-console-03 v1.4 (story-writer; F-PDC23-02[MED] — error envelope {code,message} per BC-2.24.002 v1.9/BC-2.24.003 v1.3). S-console-04 v1.3 (story-writer; F-PDC23-02[MED] — envelope {code,message}). All three changelogs ascending, version==last. OBS-DC05-01 RESOLVED-BY-DC-23. Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.77 (D-356/DC-19/2026-09-08, state-manager): VP-2.24.003-C Crate cell corrected pregolya-server→pregolya-graph in §VP-to-Story-Anchor-Map (architect re-anchored VP-2.24.003-C to graph::descriptor/pregolya-graph per BC-2.24.003 §VP property table — 'start node always present in descriptor', unit/phase-3; VP-INDEX §VP-Catalog v1.50 source of truth). VP-2.24.003-B confirmed pregolya-graph (no change needed). sprint-state.yaml unchanged (S-console-04 crate list [pregolya-graph, pregolya-server] correct — both crates still apply to story). S-console-04 v1.2 (story-writer; DC-19 F-PDC19-02 — stale v1.1 changelog claim 'VP-2.24.003-C is pregolya-server' corrected to pregolya-graph; AC-007 already correct; VP-2.24.003-B Kani/phase-6 correctly needs no Phase-3 AC). L-285 codified: BC §VP-property ↔ VP-harness/description/module semantic-coherence sub-check missing from byte-agreement consistency checks. input-hash: fc84e85 (VP-INDEX §VP-Catalog v1.50). ZERO 0000000 remain. Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
@@ -258,7 +259,7 @@ input-hash: "34034c0"
 | S-console-02 | `DebugSpanExporter` FIFO Ring Buffer | BC-2.24.001, BC-2.24.002 | SS-24 | pregolya-console | P1 | 5 | [S-console-01, S-console-03] | roadmap |
 | S-console-03 | `debug-endpoints` Cargo Feature and Trace-Read HTTP Endpoints | BC-2.24.002 | SS-24 | pregolya-server | P1 | 5 | [S-console-01] | roadmap |
 | S-console-04 | `graph::descriptor` Pure Core Module and `GET /assistants/{id}/graph` Endpoint | BC-2.24.003 | SS-24 | [pregolya-graph, pregolya-server] | P1 | 5 | [S-console-03] | roadmap |
-| S-console-05 | Web SPA Build Pipeline | BC-2.24.001 | SS-24 | pregolya-console | P1 | 8 | [S-console-01] | roadmap |
+| S-console-05 | Web SPA Build Pipeline | BC-2.24.001, BC-2.24.004 | SS-24 | pregolya-console | P1 | 8 | [S-console-01] | roadmap |
 | S-console-06 | Run Inspection Event Timeline and Live SSE Monitoring Panel | BC-2.24.004 | SS-24 | pregolya-console | P1 | 8 | [S-console-03, S-console-04, S-console-05] | roadmap |
 | S-console-07 | Checkpoint History Browser and Fork-from-Checkpoint Trajectory Replay | BC-2.24.005, BC-2.12.001 | SS-24 | pregolya-console | P1 | 5 | [S-console-05] | roadmap |
 | S-console-08 | HITL Approval Dialog and Resume Dispatch | BC-2.24.006 | SS-24 | pregolya-console | P1 | 5 | [S-console-06] | roadmap |
@@ -572,7 +573,7 @@ input-hash: "34034c0"
 | BC-2.24.001 | `pregolya-console` Startup, Asset Serving, and `ConsoleConfig` | S-console-01, S-console-02, S-console-05 | P1 |
 | BC-2.24.002 | `DebugSpanExporter` Retention-Capped Ring Buffer and Trace-Read Debug Endpoints | S-console-02, S-console-03 | P1 |
 | BC-2.24.003 | Graph-Descriptor Structural Contract — `GET /assistants/{id}/graph` | S-console-04 | P1 |
-| BC-2.24.004 | Run Inspection Event Timeline and Live Monitoring Panel | S-console-06 | P1 |
+| BC-2.24.004 | Run Inspection Event Timeline and Live Monitoring Panel | S-console-05, S-console-06 | P1 |
 | BC-2.24.005 | Checkpoint History Browser and Fork-from-Checkpoint Trajectory Replay | S-console-07 | P1 |
 | BC-2.24.006 | HITL Approval Dialog and Resume Dispatch | S-console-08 | P1 |
 | BC-2.24.007 | Token/Context Budget Monitoring Panel | S-console-09 | P1 |

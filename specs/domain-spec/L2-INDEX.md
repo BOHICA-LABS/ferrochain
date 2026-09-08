@@ -1,10 +1,10 @@
 ---
 document_type: domain-spec-index
 level: L2
-version: "1.32"
+version: "1.33"
 status: active
 producer: state-manager
-timestamp: 2026-09-08T21:00:00Z
+timestamp: 2026-09-08T22:00:00Z
 phase: 1a
 inputs:
   - .factory/specs/product-brief.md
@@ -33,6 +33,7 @@ sections:
   - bounded-contexts.md
 decisions: [D1, D2, D3, D4, D6, D7, D8, D11, D12, D13, D17, D19, D20, D21, D23, D356]
 changelog:
+  - "v1.33 (D-356/DC-27/L-288/2026-09-08, state-manager): capabilities-p1-p2.md v1.35 — F-L288-002[MED] CAP-042 graph-descriptor field: dotSrc→dot_src (snake_case per BC-2.24.003 PC-001/PC-004 + S-console-04; CAP-042 was the lone camelCase outlier in the D-356 delta). F-L288-005[MED] CAP-046 EvidenceJournal scope: 'For completed runs' → 'For terminal-status (finished) runs (completed, failed, cancelled, summary_halt)' per DC-24/DC-25 broadening in BC-2.24.007 + BC-2.12.003 {PC-013} evidence_journal? projection. Counts UNCHANGED: CAP 48 / DI 16."
   - "v1.32 (D-356/DC-26/2026-09-08, state-manager): capabilities-p1-p2.md v1.34 — CAP-045 two-site drift correction (F-PDC26-03[MED]): (1) node-boundary interrupt dialog 'scratchpad value and node name' corrected to 'value (scratchpad JSON) and interrupt_id' per BC-2.24.006 PC-002 + S-console-08 (InterruptPayload has only value+interrupt_id, not node_name); (2) 'subscribes to the new run stream' corrected to 'same run stream (run_id unchanged)' per DC-23 canonical ruling (resume is interrupted→in_progress on SAME run_id). Counts UNCHANGED: CAP 48 / DI 16."
   - "v1.31 (D-356/DC-06 fix-burst/2026-09-07, state-manager): capabilities-p1-p2.md v1.33 — CAP-047 guardrail field-name correction (F-PDC06-03 site 1, HIGH): boundary_type:RAGRetrieval/MemoryIngress → boundary:IngressBoundary ToolResult|RagChunk|MemoryItem; GuardrailSeverity → severity:Option<GuardrailSeverityWire>. Counts UNCHANGED: CAP 48 / DI 16."
   - "v1.30 (D-356/2026-09-06): D-356 dev-console scope expansion. ID Registry: CAP-NNN 39→48 (+CAP-040 from D-327 previously missed + CAP-041..048 from D-356: developer-console surface, ROADMAP-ONLY). Priority Distribution: P1 27→36 (CAP-040 P1 + CAP-041..048 all P1). Document Map: capabilities-p1-p2.md row description extended (CAP-040..048; Developer-Operator actor entry). entities-server.md row description extended (Developer-Operator actor). ubiquitous-language-server.md row description extended (Developer-Operator term). D356 added to decisions. CAP count correction note: L2-INDEX v1.28 registered CAP count 38→39 (CAP-039); D-327 (2026-08-31) added CAP-040 to capabilities-p1-p2.md but was not propagated to L2-INDEX at the time; this entry closes both the D-327 gap and the D-356 additions atomically."

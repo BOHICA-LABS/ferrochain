@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.004
-version: "1.2"
+version: "1.3"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -22,6 +22,7 @@ changelog:
   - "1.0 (D-356/2026-09-06, product-owner): Initial BC — D-356 dev-console scope expansion. Run inspection event timeline and live monitoring panel."
   - "1.1 (D-356-fix/DC-01/2026-09-06, product-owner): F-PDC01-01 Story Anchor corrected: was S-console-05, now S-console-06. Verified against S-console-06 frontmatter behavioral_contracts: [BC-2.24.004]. F-PDC01-02 PC-001 StreamEvent variant list corrected: removed phantom run_error, added missing step_start and tool_stream, reordered to canonical 16 per ADR-006 — count is now exactly 16 distinct variants."
   - "1.2 (D-356-fix/DC-02/2026-09-07, product-owner): F-PDC02-01 paper-fix regression — DC-01 replaced run_error but left phantom graph_interrupt at position 15 and compaction_event at position 16, omitting error (the true 16th variant). Corrected: graph_interrupt removed; compaction_event moved to 15th; error added as 16th. DC-01 blockquote false claim annotated. Final list is exactly the 16 verified canonical variants."
+  - "1.3 (D-356-fix/DC-27/L-288/2026-09-08, product-owner): Reverse-anchor completeness: story-writer added BC-2.24.004 to S-console-05 behavioral_contracts frontmatter (POLICY-8: AC-005 cites {INV-002} SSE-only/no-WebSocket rule). §Story Anchor updated to list S-console-05 as secondary consumer alongside primary S-console-06."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-043
   - architecture/decisions/ADR-031-developer-console-architecture.md
@@ -29,7 +30,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "5ff81d4"
+input-hash: "e17c718"
 extracted_from: null
 modified: []
 deprecated: null
@@ -129,7 +130,11 @@ is a pure SSE+REST client — no new server additions are required for this capa
 
 ## Story Anchor
 
-S-console-06 (Wave 3 — run inspection panel + live node highlighting)
+S-console-06 (Wave 3 — run inspection panel + live node highlighting) ← primary
+
+S-console-05 (roadmap, Wave 3 — SPA build pipeline; consumes {INV-002} SSE-only/no-WebSocket transport rule)
+
+> **D-356 adversary fix DC-27/L-288 (2026-09-08, product-owner).** F-L288 reverse-anchor: story-writer added BC-2.24.004 to S-console-05's `behavioral_contracts` frontmatter (POLICY-8: S-console-05 AC-005 cites {INV-002} SSE-only/no-WebSocket rule). §Story Anchor updated to list S-console-05 as secondary consumer; S-console-06 remains primary.
 
 > **D-356 adversary fix DC-01 (2026-09-06, product-owner).** Story Anchor corrected S-console-05 → S-console-06. story-writer split BC-2.24.002 across S-console-02+03 and added S-console-05 (SPA build, no BC), shifting the numbering. Verified: S-console-06 frontmatter carries `behavioral_contracts: [BC-2.24.004]`.
 

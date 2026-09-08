@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.007
-version: "1.3"
+version: "1.4"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -23,6 +23,7 @@ changelog:
   - "1.1 (D-356-fix/DC-01/2026-09-06, product-owner): F-PDC01-01 Story Anchor corrected: was S-console-08, now S-console-09. Verified against S-console-09 frontmatter behavioral_contracts: [BC-2.24.007]."
   - "1.2 (D-356-fix/DC-24/2026-09-08, product-owner): F-PDC24-04: {PC-003} updated — 'via the server's run-read endpoint' made precise: cites `evidence_journal?` field on `GET /threads/{thread_id}/runs/{run_id}` response (BC-2.12.003 {PC-013}), present when run status is terminal. BC-2.12.003 {PC-013} was amended in the same burst to project this field."
   - "1.3 (D-356-fix/DC-25/2026-09-08, product-owner): F-PDC25-02 (MED): EvidenceJournal scope broadened from 'completed runs' to 'terminal-status (finished) runs' throughout. Description, PC-003, EC-005, and TV-004 updated to include all four terminal states: completed, failed, cancelled, summary_halt. BC-2.12.003 {PC-013} already projects evidence_journal? for all four states; BC-2.24.007 was the outlier."
+  - "1.4 (D-356-fix/DC-27/L-288/2026-09-08, product-owner): F-L288-003 (MED): INV-004 'completed run' → 'terminal-status (finished) run'. F-L288-004 (MED): §Related BCs BC-2.10.006 row 'completed-run budget history' → 'terminal-status (finished) run budget history'. DC-25 scope-broadening was incomplete — missed INV-004 and §Related BCs."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-046
   - architecture/decisions/ADR-031-developer-console-architecture.md
@@ -30,7 +31,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "1f87a7c"
+input-hash: "e17c718"
 extracted_from: null
 modified: []
 deprecated: null
@@ -80,7 +81,7 @@ part of the StreamEvent grammar.
 - {INV-001} **Null `tokens_remaining_after` handled:** When `tokens_remaining_after` is `null` (per BC-2.06.006 {INV-002}: `None` when no token ceiling is configured; negative `i64` is possible when `accumulated > ceiling` on Deny path), the gauge MUST NOT crash or render an invalid value. Display "N/A" or "budget unknown" in the null case.
 - {INV-002} **Post-commit semantics respected:** The `compaction_event` arrives AFTER the compacted checkpoint is written (BC-2.06.006 {INV-001}). The console trusts this ordering — when the event arrives, the active message window has already been replaced by the summary.
 - {INV-003} **Shared SSE subscription:** The budget panel reuses the same `EventSource` connection as the run inspection panel (BC-2.24.004) — there is ONE SSE connection per run, not one per panel. Both panels observe the same event stream.
-- {INV-004} **DI-014:** Display errors (e.g., failed EvidenceJournal fetch for completed run) surface as user-visible inline error messages within the panel, not as page crashes.
+- {INV-004} **DI-014:** Display errors (e.g., failed EvidenceJournal fetch for terminal-status (finished) run) surface as user-visible inline error messages within the panel, not as page crashes.
 
 ## Edge Cases
 
@@ -99,7 +100,7 @@ part of the StreamEvent grammar.
 | TV-001 | `compaction_event { trigger: "OnWatermark", compacted_start: 0, compacted_end: 9, summary_token_count: 250, tokens_remaining_after: 45000 }` | Gauge updates to reflect 45000 remaining; timeline shows boundary marker at turns 0–9; trigger label "OnWatermark" | happy-path |
 | TV-002 | `tokens_remaining_after: null` | Gauge shows "N/A"; boundary marker still shows `summary_token_count` | EC-002 |
 | TV-003 | `compaction_trigger = Disabled`; no events | Budget panel shows "compaction not configured" | EC-001 |
-| TV-004 | Terminal-status (finished) run with 2 compaction events and EvidenceJournal | Two timeline markers; EvidenceJournal table shows Allow/Escalate/Deny decisions per point | completed-run |
+| TV-004 | Terminal-status (finished) run with 2 compaction events and EvidenceJournal | Two timeline markers; EvidenceJournal table shows Allow/Escalate/Deny decisions per point | terminal-run |
 
 ## Verification Properties
 
@@ -112,7 +113,7 @@ part of the StreamEvent grammar.
 
 - BC-2.06.006 — depends on: `compaction_event` StreamEvent payload (15th variant, trigger/compacted_start/end/summary_token_count/tokens_remaining_after fields)
 - BC-2.24.004 — composes with: shared SSE EventSource; compaction events annotate the timeline (BC-2.24.004 renders them); budget panel adds the gauge
-- BC-2.10.006 — depends on: `EvidenceJournal` is populated by the compaction execution path (for completed-run budget history)
+- BC-2.10.006 — depends on: `EvidenceJournal` is populated by the compaction execution path (for terminal-status (finished) run budget history)
 
 ## Architecture Anchors
 
@@ -126,6 +127,8 @@ S-console-09 (Wave 3 — token/context budget monitoring panel)
 > **D-356 adversary fix DC-24 (2026-09-08, product-owner).** F-PDC24-04: {PC-003} Source citation made precise — "via the server's run-read endpoint" was unresolvable because BC-2.12.003 {PC-013} (`GET /threads/{thread_id}/runs/{run_id}`) did not project `evidence_journal`. BC-2.12.003 {PC-013} was amended in the same burst to add `evidence_journal?` (present on terminal-status runs). {PC-003} now cites `evidence_journal?` on BC-2.12.003 {PC-013} explicitly.
 
 > **D-356 adversary fix DC-25 (2026-09-08, product-owner).** F-PDC25-02 (MED): EvidenceJournal display scope was narrowed to `completed` runs only. Broadened throughout — Description, PC-003, EC-005, TV-004 — to "terminal-status (finished) runs (`completed`, `failed`, `cancelled`, `summary_halt`)". BC-2.12.003 {PC-013} already has the correct `evidence_journal?` projection for all four terminal states; BC-2.24.007 was the outlier.
+
+> **D-356 adversary fix DC-27/L-288 (2026-09-08, product-owner).** F-L288-003 (MED) + F-L288-004 (MED): DC-25 scope-broadening missed two remaining "completed" sites. INV-004: "failed EvidenceJournal fetch for completed run" → "terminal-status (finished) run". §Related BCs BC-2.10.006: "for completed-run budget history" → "for terminal-status (finished) run budget history".
 
 > **D-356 adversary fix DC-01 (2026-09-06, product-owner).** Story Anchor corrected S-console-08 → S-console-09. story-writer split BC-2.24.002 across S-console-02+03 and added S-console-05 (SPA build, no BC), shifting the numbering. Verified: S-console-09 frontmatter carries `behavioral_contracts: [BC-2.24.007]`.
 

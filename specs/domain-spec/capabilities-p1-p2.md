@@ -2,7 +2,7 @@
 document_type: domain-spec-section
 level: L2
 section: capabilities-p1-p2
-version: "1.34"
+version: "1.35"
 status: active
 producer: business-analyst
 timestamp: 2026-09-06T00:00:00Z
@@ -18,6 +18,7 @@ input-hash: "371c041"
 traces_to: L2-INDEX.md
 decisions: [D1, D3, D7, D8, D13, D17, D19, D20, D21, D23, D170, D275, D356]
 changelog:
+  - "1.35 (D-356/F-L288-002+005/2026-09-08, business-analyst): Two L-288 exhaustive-sweep fixes. (1) F-L288-002 [MED] CAP-042 graph-descriptor field: dotSrc: String → dot_src: String (snake_case per BC-2.24.003 PC-001/PC-004 + S-console-04 AC-001/AC-004; CAP-042 was the lone camelCase outlier). (2) F-L288-005 [MED] CAP-046 EvidenceJournal scope: 'For completed runs' → 'For terminal-status (finished) runs (completed, failed, cancelled, summary_halt)' per DC-24/DC-25 broadening in BC-2.24.007 + BC-2.12.003 {PC-013} evidence_journal? projection. Dated delta notes added to both CAP bodies."
   - "1.34 (D-356/F-PDC26-03/2026-09-08, business-analyst): CAP-045 two-site drift correction — adversary finding F-PDC26-03 (MED). (1) node_name drift: node-boundary interrupt dialog bullet 'scratchpad value and node name' corrected to 'value (scratchpad JSON) and interrupt_id' per BC-2.24.006 PC-002 + S-console-08; InterruptPayload has only value+interrupt_id, not node_name. (2) same-run drift: 'subscribes to the new run stream' corrected to 'same run stream (run_id unchanged)' per DC-23 canonical ruling: resume is interrupted→in_progress on the SAME run_id. Dated delta note added to CAP-045 body."
   - "1.33 (D-356/F-PDC06-03/2026-09-07, business-analyst): CAP-047 field-name correction — adversary finding F-PDC06-03 site 1 (HIGH). Wrong SS-11 ProvenanceTag names replaced with correct guardrail_decision StreamEvent wire names per BC-2.06.001 §PC-002. boundary_type:RAGRetrieval/MemoryIngress → boundary:IngressBoundary ToolResult|RagChunk|MemoryItem; GuardrailSeverity → severity:Option<GuardrailSeverityWire> (Some for Fail, None for Transform); outcome bullets restructured to decision/severity/reason per BC-2.06.001 §PC-002 shape. Dated delta note added to CAP-047 body. input-hash updated."
   - "1.32 (D-356/2026-09-06, business-analyst): D-356 dev-console scope expansion — new section 'P1 — Developer Console (D-356, Wave 3)' added with CAP-041 through CAP-047 (all P1), and 'P2 — Deferred Dev Console Capability' with CAP-048 (DEFERRED). CAP count 40→48. Research memo (.factory/planning/devconsole-adk-research.md) added to inputs. D356 added to decisions list. Roadmap-only delta: no existing capabilities modified."
@@ -1001,11 +1002,15 @@ Provide two new read-only debug endpoints on `pregolya-server`, compiled in only
 
 2. **Graph descriptor endpoint:**
    `GET /assistants/{id}/graph` — emits the compiled `StateGraph` for the named assistant as
-   a JSON node/edge document plus optional Graphviz DOT source (`dotSrc: String`). Each node
+   a JSON node/edge document plus optional Graphviz DOT source (`dot_src: String`). Each node
    entry carries its name and kind; each edge entry carries source, target, and optional
    condition label. The graph descriptor is a static structural snapshot; it does NOT carry
    runtime state. These endpoints are library-consumer-useful beyond the console (CI trace
    inspection, tooling) and therefore belong in `pregolya-server` (not in `pregolya-console`).
+
+   > **D-356 adversary fix DC-27/L-288 (2026-09-08, business-analyst).** F-L288-002 [MED]:
+   > `dotSrc: String` corrected to `dot_src: String` (snake_case per BC-2.24.003 PC-001/PC-004
+   > and S-console-04 AC-001/AC-004; CAP-042 was the lone camelCase outlier in the D-356 delta).
 
 **Grounding:** research memo §4.2 gap items "Trace/span endpoints + OTel exporter wiring" and
 "Graph/DAG visualization"; §4.3 "add only the *data* endpoints the console needs that are
@@ -1132,9 +1137,15 @@ gauge is driven by `compaction_event` StreamEvents (CAP-035, 15th variant): the
 `tokens_remaining_after` and `summary_token_count` fields from the `compaction_event` payload
 fill a proportional indicator showing remaining context budget. On each compaction event, the
 panel annotates the event timeline (CAP-043) to mark the compaction boundary and which
-message range was summarized. For completed runs, the panel surfaces the full EvidenceJournal
-decision history (via the Run record's budget evaluation trace) including `PolicyDecision`
-values (Allow/Escalate/Deny) per evaluation point.
+message range was summarized. For terminal-status (finished) runs (`completed`, `failed`,
+`cancelled`, `summary_halt`), the panel surfaces the full EvidenceJournal decision history
+via the Run record's `evidence_journal?` projection (BC-2.12.003 {PC-013}), including
+`PolicyDecision` values (Allow/Escalate/Deny) per evaluation point.
+
+> **D-356 adversary fix DC-27/L-288 (2026-09-08, business-analyst).** F-L288-005 [MED]:
+> "For completed runs" broadened to "For terminal-status (finished) runs (completed, failed,
+> cancelled, summary_halt)" per DC-24/DC-25 arc — BC-2.24.007 + BC-2.12.003 {PC-013} make
+> `evidence_journal?` available for all four terminal states, not only `completed`.
 
 No new server machinery is needed; the `compaction_event` variant is already part of the
 StreamEvent grammar and the EvidenceJournal is already a Run entity field.
