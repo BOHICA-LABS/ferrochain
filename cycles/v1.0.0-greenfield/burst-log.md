@@ -7039,3 +7039,59 @@ DC-12 re-derivation by adversary confirmed: the ENTIRE dependency-inversion casc
 ### Census
 
 BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24 — UNCHANGED.
+
+---
+
+## Archived Step: D-356/DC-08 (2026-09-07 fix-burst; v6.85 5-row rolling window)
+
+*D-356/DC-08 step row removed from STATE.md §Current Phase Steps to keep last-5 window; archived verbatim.*
+
+| Step | Agent | Status | Output |
+|------|-------|--------|--------|
+| D-356/DC-08 fix-burst (2026-09-07) — DC-08 records-tier fix-burst CLOSED. trajectory-tail →3→6→5→4. 4 findings [2M+2L] ALL CLOSED. F-PDC08-01[M] BC-2.24.005 v1.4 (INV-002: '404 error path' → '422 E-CHKPT-011 CheckpointNotFound error path'). F-PDC08-02[M] BC-2.24.002 v1.5 (§Story Anchor +S-console-03 Wave 3 secondary). F-PDC08-03[L] 3 VP-mirror DC-02 blockquotes debug_api_key→debug_route_key (ARCH-INDEX v1.77; VP-INDEX v1.49; verification-architecture v2.45; DC-07-rename consistency sweep). F-PDC08-04[L] BC-2.24.001 v1.2 (§Story Anchor +S-console-02 +S-console-05 Wave 3 consumers). §Story Anchor = all-implementing-stories (DC-04 BC-2.12.001 precedent). BC-INDEX v4.31→4.32. debug_api_key: ZERO live-body + ZERO blockquote (changelog tombstones only). Census UNCHANGED: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372. Streak 0/3 (fix push; DC-09 gates new HEAD). | state-manager | COMPLETE | STATE.md §D-356/DC-08. Single commit per TD-VSDD-053. |
+
+---
+
+## Archived Step: D-356/DC-09 (2026-09-07 fix-burst; v6.85 5-row rolling window)
+
+*D-356/DC-09 step row removed from STATE.md §Current Phase Steps to keep last-5 window; archived verbatim.*
+
+| Step | Agent | Status | Output |
+|------|-------|--------|--------|
+| D-356/DC-09 fix-burst (2026-09-07) — DC-09 adversary pass fix-burst CLOSED. trajectory-tail →6→5→4→2 (DC-06-sweep=6; DC-07=5; DC-08=4; DC-09=2 [1MED+1OBS]). F-PDC09-01[MED] S-console-07 v1.1→v1.2: BC-2.12.001 BC-table Title cell corrected to canonical H1 per POL-7/L-276 (story-writer). OBS-PDC09-01 stale pending-recompute annotations cleared in ADR-031 v1.1/1.2/1.3 + verification-architecture.md v2.39-v2.44 + vcm v3.35/3.37/3.40/3.41 (D-196 bookkeeping; inputs unchanged; hashes current). STORY-INDEX v1.68 (S-console-07 v1.2 row). DC-09 confirmed 6 of 7 recurring classes FULLY CONVERGED (status-codes/phantom-variant/auth-field/VP-module/census/§citations all PASS). Census UNCHANGED: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372. Streak 0/3 (fix push; DC-10 gates new HEAD). | state-manager | COMPLETE | STATE.md §D-356/DC-09. Single commit per TD-VSDD-053. |
+
+---
+
+## Burst: D-356/DC-14 fix-burst (2026-09-08)
+
+**Phase:** 3 (spec amendment — dev-console ROADMAP-ONLY)
+**Agent:** state-manager (carrier fixes)
+**Trigger:** DC-14 adversary pass — 3 MED findings (F-PDC14-01, F-PDC14-02, F-PDC14-03)
+
+### Summary
+
+DC-14 fix-burst: 3 MED findings ALL CLOSED. S-console-04 crate-label corrected in STORY-INDEX + sprint-state.yaml (F-PDC14-01); STORY-INDEX blanket Wave-3 claim reworded (F-PDC14-02); BC-2.24.002 v1.8 TV-006 canonical redaction (F-PDC14-03, product-owner). crate-assignment drift from DC-10/DC-11 dep-inversion fully swept. Census UNCHANGED.
+
+### Files Touched
+
+| File | Change |
+|------|--------|
+| `.factory/stories/STORY-INDEX.md` | v1.72→v1.73: S-console-04 crate pregolya-console→[pregolya-graph, pregolya-server]; Wave-3 blockquote blanket claim reworded; input-hash f963961→34034c0 |
+| `.factory/stories/sprint-state.yaml` | S-console-04 crate: [pregolya-console]→[pregolya-graph, pregolya-server] |
+| `.factory/specs/behavioral-contracts/ss-24/BC-2.24.002.md` | v1.7→v1.8: TV-006 redaction token corrected to canonical `<redacted>` form; entire Bearer span replaced (product-owner; F-PDC14-03) |
+| `.factory/specs/behavioral-contracts/BC-INDEX.md` | v4.34→v4.35: DC-14 changelog entry added; BC-2.24.002 v1.7→v1.8 recorded; STORY-INDEX v1.73 recorded |
+| `.factory/STATE.md` | v6.84→v6.85: DC-14 closure recorded; trajectory →...→3; phase-progress Phase-3 row updated; DC-08/DC-09 archived to burst-log |
+
+### Findings Closed
+
+- **F-PDC14-01[MED]** S-console-04 crate mislabeled `pregolya-console` in STORY-INDEX story-inventory + sprint-state.yaml. Story builds `graph::descriptor` (pregolya-graph; VP-2.24.003-A/B) + `server::debug_routes` GET endpoint (pregolya-server; VP-2.24.003-C) — ZERO pregolya-console footprint per §File Structure. Fixed: crate corrected to `[pregolya-graph, pregolya-server]` in both carriers.
+- **F-PDC14-02[MED]** STORY-INDEX §Wave-3 blockquote blanket claim "All 10 Wave-3 stories target pregolya-console" contradicted by table (S-console-03=pregolya-server; S-console-04=[pregolya-graph,pregolya-server]). Fixed: reworded to explicitly except S-console-03 and S-console-04.
+- **F-PDC14-03[MED]** BC-2.24.002 TV-006 redaction output used truncated form instead of canonical `<redacted>` token per BC-2.12.003 INV-008 / S-1.26 AC-020. Fixed: product-owner updated BC-2.24.002 v1.7→v1.8 with canonical form.
+
+### Convergence Status
+
+DC-14 = 3 MED findings, ALL CLOSED. crate-assignment drift from DC-10/DC-11 dep-inversion fully swept. Streak 0/3 (fix push resets); DC-15 gates on new HEAD.
+
+### Census
+
+BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24 — UNCHANGED.

@@ -615,7 +615,7 @@ stories:
     points: 5
     tdd_mode: strict
     priority: P1
-    crate: [pregolya-console]
+    crate: [pregolya-graph, pregolya-server]
     depends_on: [S-console-03]
     pr_url: ~
     merged_sha: ~

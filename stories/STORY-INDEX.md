@@ -1,11 +1,12 @@
 ---
 document_type: story-index
 level: L3
-version: "1.72"
+version: "1.73"
 status: active
 producer: state-manager
-timestamp: 2026-09-08T00:00:00Z
+timestamp: 2026-09-08T01:00:00Z
 changelog:
+  - "1.73 (D-356/DC-14/2026-09-08, state-manager): F-PDC14-01 [MED] — S-console-04 crate corrected pregolya-console→[pregolya-graph, pregolya-server] in §Story-Inventory row (Target Crate column) and sprint-state.yaml (crate: field); story builds graph::descriptor (pregolya-graph; VP-2.24.003-A/B) + GET /assistants/{id}/graph endpoint (pregolya-server; VP-2.24.003-C); ZERO pregolya-console footprint per §File Structure. F-PDC14-02 [MED] — §Wave-3 blockquote blanket claim 'All 10 Wave-3 stories target pregolya-console' reworded — S-console-03 (pregolya-server) + S-console-04 (pregolya-graph + pregolya-server) explicitly excepted. BC-INDEX v4.34→v4.35 (F-PDC14-03 BC-2.24.002 v1.7→v1.8 TV-006 canonical redaction). Input-hash: f963961→34034c0 (BC-INDEX updated). Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.72 (D-356/DC-13/2026-09-08, state-manager): F-PDC13-02 [MED] — S-1.26 v1.13→v1.14 (story-writer; AC-021 added for BC-2.12.001 {PC-015} checkpoint historical-state read with TV-010 + EC-010/422; AC-022 added for BC-2.12.003 {INV-009} fork-start with TV-014 + EC-008/422; EC-022 E-CHKPT-011 on ?checkpoint_id read absent; EC-023 E-CHKPT-011 on fork ?checkpoint_id absent; input-hash 23d15a2). F-PDC13-01 [MED] — sprint-state.yaml S-console-05 vps [VP-2.24.001-A]→[] (VP-2.24.001-A anchors S-console-01 ONLY per dependency-graph VP-to-Stories matrix and VP-INDEX; double-assignment removed). F-PDC13-03 [LOW, adjudicated=populate-all] — sprint-state.yaml depends_on populated for all console stories with edges: S-console-04 [S-console-03]; S-console-05 [S-console-01]; S-console-06 [S-console-03, S-console-04, S-console-05]; S-console-07 [S-console-05]; S-console-08 [S-console-06]; S-console-09 [S-console-06]; S-console-10 [S-console-06] (dependency-graph.md v2.3 authoritative source; acyclicity unchanged — no new edges; DAG confirmed). sprint-state.yaml input-hash 788aace→8f01c71. STORY-INDEX input-hash: f963961 UNCHANGED (index inputs not modified). Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.71 (D-356/DC-12/2026-09-07, state-manager): S-console-01 v1.0→v1.1 (story-writer; F-PDC12-01: blocks list updated [S-console-02, S-console-05]→[S-console-02, S-console-03, S-console-05] — reverse-edge for S-console-03.depends_on [S-console-01]; input-hash 94119d2→1e04879). dependency-graph.md v2.2→v2.3 (story-writer; S-console-01 blocks entry updated to include S-console-03; acyclicity re-confirmed; DAG holds). Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.70 (D-356/DC-11/2026-09-07, state-manager): S-console-02 v1.2→v1.3 (story-writer; F-PDC11-01: dep-inversion sweep — depends_on [S-console-01]→[S-console-01, S-console-03]; Arc<dyn DebugSpanSource> injection; compile-fail test relocated to S-console-03; SpanData row removed from Architecture Mapping). S-console-03 v1.2→v1.3 (story-writer; F-PDC11-02: build-owner of server::debug_span; depends_on [S-console-02]→[S-console-01]; blocks [S-console-02, S-console-04, S-console-06]; debug_span.rs CREATE task added; compile-fail gate relocated here; PSI corrected). dependency-graph.md v2.1→v2.2 (story-writer; edge flip S-console-03→S-console-02; acyclicity re-confirmed; sub-waves 3A–3E). epics.md v1.8→v1.9 (story-writer; Wave-3 dep-inversion description + sub-wave table). BC-2.24.002 v1.6→v1.7 (product-owner; VP-2.24.002-C annotation corrected server::debug_routes only; server::debug_span →  'no dedicated VP; exercised via VP-2.24.002-C/D'). story-inventory S-console-02 depends_on updated + S-console-03 depends_on updated + S-console-03 Target Crate pregolya-console→pregolya-server. L-283 codified (BC sibling-sweep blast radius). Input hashes: S-console-02 e14e9b1; S-console-03 fcf62aa. Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
@@ -86,7 +87,7 @@ inputs:
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/domain-spec/L2-INDEX.md
   - .factory/specs/verification-properties/VP-INDEX.md
-input-hash: "f963961"
+input-hash: "34034c0"
 ---
 
 # STORY-INDEX: pregolya Phase 2 Story Inventory
@@ -243,14 +244,14 @@ input-hash: "f963961"
 
 ### Wave 3 — Developer Console (ROADMAP-ONLY — specced at Phase 1 / D-356; built in Wave 3)
 
-> All 10 Wave-3 stories target **pregolya-console** (crate #22; SS-24). Status: `roadmap` — not yet scheduled for implementation. No Wave-1/2 story depends on any S-console story.
+> S-console stories belong to the E-console epic (SS-24), Wave-3 roadmap; primary crate is `pregolya-console` EXCEPT S-console-03 (`pregolya-server`) and S-console-04 (`pregolya-graph` + `pregolya-server`). Status: `roadmap` — not yet scheduled for implementation. No Wave-1/2 story depends on any S-console story.
 
 | ID | Title | Behavioral Contracts | Subsystem | Target Crate | Pri | Pts | depends_on | Status |
 |----|-------|---------------------|-----------|-------------|-----|-----|------------|--------|
 | S-console-01 | `pregolya-console` Crate Scaffolding | BC-2.24.001 | SS-24 | pregolya-console | P1 | 5 | [] | roadmap |
 | S-console-02 | `DebugSpanExporter` FIFO Ring Buffer | BC-2.24.001, BC-2.24.002 | SS-24 | pregolya-console | P1 | 5 | [S-console-01, S-console-03] | roadmap |
 | S-console-03 | `debug-endpoints` Cargo Feature and Trace-Read HTTP Endpoints | BC-2.24.002 | SS-24 | pregolya-server | P1 | 5 | [S-console-01] | roadmap |
-| S-console-04 | `graph::descriptor` Pure Core Module and `GET /assistants/{id}/graph` Endpoint | BC-2.24.003 | SS-24 | pregolya-console | P1 | 5 | [S-console-03] | roadmap |
+| S-console-04 | `graph::descriptor` Pure Core Module and `GET /assistants/{id}/graph` Endpoint | BC-2.24.003 | SS-24 | [pregolya-graph, pregolya-server] | P1 | 5 | [S-console-03] | roadmap |
 | S-console-05 | Web SPA Build Pipeline | BC-2.24.001 | SS-24 | pregolya-console | P1 | 8 | [S-console-01] | roadmap |
 | S-console-06 | Run Inspection Event Timeline and Live SSE Monitoring Panel | BC-2.24.004 | SS-24 | pregolya-console | P1 | 8 | [S-console-03, S-console-04, S-console-05] | roadmap |
 | S-console-07 | Checkpoint History Browser and Fork-from-Checkpoint Trajectory Replay | BC-2.24.005, BC-2.12.001 | SS-24 | pregolya-console | P1 | 5 | [S-console-05] | roadmap |
