@@ -3,11 +3,12 @@ document_type: story
 level: ops
 story_id: S-console-01
 epic_id: E-console
-version: "1.0"
+version: "1.1"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
 changelog:
+  - "1.1 (D-356/DC-12/2026-09-07, story-writer): F-PDC12-01 — blocks list updated to include S-console-03 (invariant: blocks is exact inverse of depends_on; S-console-03 declares depends_on [S-console-01])."
   - "1.0 (D-356/2026-09-06, story-writer): Initial story — pregolya-console crate scaffolding, ConsoleConfig, CLI subcommand, rust_embed SPA serving, runtime-config.json, localhost :7437."
 phase: 2
 inputs:
@@ -15,11 +16,11 @@ inputs:
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "94119d2"
+input-hash: "1e04879"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: []
-blocks: [S-console-02, S-console-05]
+blocks: [S-console-02, S-console-03, S-console-05]
 behavioral_contracts: [BC-2.24.001]
 verification_properties: [VP-2.24.001-A, VP-2.24.001-B, VP-2.24.001-C]
 priority: P1

@@ -1,6 +1,6 @@
 ---
 document_type: dependency-graph
-version: "2.2"
+version: "2.3"
 status: active
 producer: story-writer
 timestamp: 2026-09-07T00:00:00Z
@@ -249,7 +249,7 @@ S-2.12 (Durable Audit Trajectory)
 ```
 S-console-01 (pregolya-console scaffold — ConsoleConfig, Axum bind, SPA embed)
   depends_on: []
-  blocks: S-console-02, S-console-05
+  blocks: S-console-02, S-console-03, S-console-05
 
 S-console-02 (DebugSpanExporter ring buffer + dev-mode wiring)
   depends_on: [S-console-01, S-console-03]
@@ -311,7 +311,14 @@ S-console-10 (guardrail review panel — Fail/Transform, F-P99-01 DI-012)
 > `depends_on [S-console-01, S-console-03]`. S-console-03 → S-console-02 is one-directional;
 > no back-edge. Acyclicity re-confirmed: topological sort 3A→3B→3C→3D→3E is a DAG.
 > S-console-01 is the root of the E-console sub-graph with no Wave-1/2 edges.
-> Topological sort assertion continues to hold: Graph is a DAG.
+>
+> **D-356 adversary fix DC-12 (2026-09-07, story-writer).** F-PDC12-01: `blocks` is the
+> exact inverse of `depends_on`. S-console-03 declares `depends_on [S-console-01]`, so
+> S-console-01 `blocks` must contain S-console-03. Updated: S-console-01 `blocks` from
+> `[S-console-02, S-console-05]` to `[S-console-02, S-console-03, S-console-05]`. Adding a
+> reverse-edge that mirrors an existing forward edge introduces no cycle: S-console-01 has
+> no `depends_on` edges; it remains the root node. Topological sort 3A→3B→3C→3D→3E
+> continues to be a DAG. Topological sort assertion holds: Graph is a DAG.
 
 ### Wave 6 — Formal Verification (E-22)
 
@@ -555,6 +562,7 @@ S-6.01 (Kani + cargo-fuzz)
 
 ## Changelog
 
+- **2.3 (D-356/DC-12/2026-09-07):** F-PDC12-01 — S-console-01 `blocks` updated: `[S-console-02, S-console-05]` → `[S-console-02, S-console-03, S-console-05]`. Invariant: `blocks` is exact inverse of `depends_on`; S-console-03 declares `depends_on [S-console-01]`. Adding the reverse-edge of an existing forward-edge introduces no cycle; S-console-01 remains the root node with `depends_on []`. Acyclicity re-confirmed: topological sort 3A→3B→3C→3D→3E is a DAG.
 - **2.2 (D-356/DC-11/2026-09-07):** F-PDC11-01+F-PDC11-02 — dependency-edge flip (ADR-031 Decision 7): S-console-03 (creates server::debug_span) now `depends_on [S-console-01]`, `blocks [S-console-02, S-console-04, S-console-06]`; S-console-02 (DebugSpanExporter) now `depends_on [S-console-01, S-console-03]`, `blocks []`. Wave-3 sub-waves updated: 3A-3F → 3A-3E (S-console-04 and S-console-07 move to 3C; S-console-06 to 3D; S-console-08/09/10 to 3E). Acyclicity re-confirmed: 3A→3B→3C→3D→3E is a DAG; no back-edge.
 - **2.1 (D-356/DC-10/2026-09-07):** F-PDC10-02 — Crate-Level Dependency Edges acyclicity confirmation updated: `console→server` no-cycle explanation replaced with dependency-inversion rationale (ADR-031 Decision 7; SpanData + DebugSpanSource trait server-owned; server::debug_routes reads Arc<dyn DebugSpanSource>, zero compile dep on console). F-PDC10-04 — VP-to-Stories delta note DC-06: version pin `(v1.47)` removed from "VP-INDEX §VP Catalog" citation per TD-VSDD-091/POL-12.
 - **2.0 (D-356/DC-06/2026-09-07):** F-PDC06-01 (HIGH) — SS-24 VP-to-Stories matrix rows rewritten to byte-match VP-INDEX §VP Catalog (source of truth). Twelve tool/phase/story corrections across 12 existing rows; VP-2.24.002-D row added (unit / S-console-02 / console::span_exporter SEC-BOUND-001 sanitization, DC-02 addendum). Stale BC-clause tags removed from BC Anchor column. Stale "VP-INDEX sync pending" marker retired and replaced with DC-06 sync-confirmed note. Total SS-24 VP rows: 20. See DC-06 delta note above the VP rows for full per-row correction table.

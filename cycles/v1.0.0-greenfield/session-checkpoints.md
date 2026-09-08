@@ -4550,3 +4550,29 @@ PR #1 MERGEABLE but requires GENUINE HUMAN MERGE (self-authored PR, DIRECTIVE 4 
 
 ### PENDING USER-APPROVED WORK
 DC-03 adversary pass dispatch (orchestrator, streak 0/3). PR #1 merge (human action required). DEV-TOOLING-D255: v1 dev-tooling expansion — ready to start post-merge. DTU clones (openai/anthropic/ollama): Phase-4 prerequisite.
+
+---
+<!-- D-356/DC-09 checkpoint archived from STATE.md §Session Resume Checkpoint (2026-09-07; replaced by DC-12 checkpoint). -->
+
+## Archived: D-356/DC-09 fix-burst Session Resume Checkpoint
+
+### RESUME IN ONE BREATH
+pregolya Phase-2 CONVERGED+gate-APPROVED (anchor 81d16ca); Phase-3 IN PROGRESS at workspace-init. D-356 Phase-1 spec amendment COMPLETE (developer-console ROADMAP-ONLY; census: BC 148 / VP 41 / EC 145 / stories 52 / pts 372). D-356/DC-01 through DC-09 fix-bursts COMPLETE: DC-01 5 (3H+1M+1L); DC-02 6 (2H+3M+1L+paper-fix regression); DC-03 4 (1H+1M+2L); DC-04 4 (2H+2M); DC-05 3 (2M+1L); DC-06 3 (2H+1M); DC-06-sweep 6 (2H+4M); DC-07 5 (1H+2M+2OBS); DC-08 4 (2M+2L); DC-09 2 (1MED+1OBS). Full trajectory: →5→6→4→4→3→3→6→5→4→2. Streak 0/3 (DC-09 fix push); DC-10 gates new HEAD. PR #1 (workspace scaffold) REVIEWED-CLEAN + MERGEABLE at c9712c20 but BLOCKED from agent-merge (self-authored PR) — needs GENUINE HUMAN MERGE. debug_api_key: ZERO live-body + ZERO blockquote tree-wide (changelog tombstones only).
+
+### HEADS
+- develop: `bfe0592` — LOCAL ONLY (2 commits ahead of origin/develop at `644d1ad`; push required before Phase-3); factory-artifacts: HEAD updated by DC-08 fix-burst commit (this burst). Main worktree on `chore/phase3-workspace-init` (NOT develop; return to develop post-merge). PR #1 branch `chore/phase3-workspace-init`: head `c9712c20` (OPEN, MERGEABLE, CI 17/17 green, cycle-13 APPROVE 0-blocking).
+
+### RESUME NEXT-ACTION
+(1) Dispatch DC-10 adversary pass (fresh-context) against current factory-artifacts HEAD; streak 0/3. (2) Get PR #1 human-merged (squash-merge targeting develop). (3) Post-merge: return main worktree to develop; push develop 2 local-only commits; launch S-1.01 (PregolyaError) in pregolya-core. Standing directives DIRECTIVE 1/2/3/4 in force. 7 open convergence-close deferrals (C-1/PG-1/PG-2/PG-3/PG-4/PG-5/PG-6).
+
+### DECISION-LOG DELTA (D-356/DC-09 fix-burst)
+D-356/DC-09 (2026-09-07): DC-09 adversary pass fix-burst CLOSED. trajectory-tail →6→5→4→2 (DC-06-sweep=6; DC-07=5; DC-08=4; DC-09=2 [1MED+1OBS] ALL CLOSED). F-PDC09-01[MED] S-console-07 v1.1→v1.2: BC-2.12.001 BC-table Title cell corrected to canonical H1 (story-writer; POL-7/L-276). OBS-PDC09-01 stale pending-recompute annotations cleared in ADR-031 v1.1/1.2/1.3 + vcov-arch v2.39-v2.44 + vcm v3.35/3.37/3.40/3.41 (D-196; hashes current). STORY-INDEX v1.68. DC-09 confirmed 6 of 7 recurring classes FULLY CONVERGED. Census UNCHANGED: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372. Phase stays 3. Streak 0/3 (fix push; DC-10 gates new HEAD).
+
+### WORKTREE INVENTORY
+Main worktree on `chore/phase3-workspace-init` (NOT develop). .worktrees/ absent. Phase-3 workspace init PENDING human merge of PR #1.
+
+### STANDING HUMAN-GATE OBS
+PR #1 MERGEABLE but requires GENUINE HUMAN MERGE (self-authored PR, DIRECTIVE 4 CAVEAT). Phase-3 TDD stories cannot start until PR #1 merges.
+
+### PENDING USER-APPROVED WORK
+DC-10 adversary pass PENDING (orchestrator, streak 0/3). PR #1 merge (human action required). DEV-TOOLING-D255: v1 dev-tooling expansion — ready to start post-merge. DTU clones (openai/anthropic/ollama): Phase-4 prerequisite.

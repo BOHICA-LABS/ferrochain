@@ -7010,3 +7010,32 @@ burst-306 COMPLETE (2026-08-17) — P1D-198 NOT CLEAN (0C/1H/1M): F-P198-01 HIGH
 | Step | Agent | Status | Output |
 |------|-------|--------|--------|
 | D-356/DC-07 fix-burst (2026-09-07) — DC-07 adversary pass fix-burst CLOSED. trajectory-tail →3→3→6→5. 5 findings [1H+2M+2OBS] ALL CLOSED. F-PDC07-01[H] debug_route_key propagated to BC-2.24.001/002/003 (debug_api_key→debug_route_key per ADR-021 §Decision 1). F-PDC07-02[M] E-SERVER-013 dual-anchor: error-taxonomy v1.74→1.75 (BC-2.12.005+BC-2.24.002 dual raise site). F-PDC07-03[M] 10 VP module cells in verification-architecture.md v2.43→2.44 (panel-modules→spa/components). F-PDC07-04/05[OBS] stale markers removed BC-2.24.002. Input hashes recomputed: ADR-031 19e7478; api-surface.md 4c5f776; verification-architecture.md db1e4d9; vcm d8356b2 (were 0000000; ZERO 0000000 remain). BC-INDEX v4.29→4.30 (frontmatter + body table). L-282 codified: 2 sweep blind spots. Census UNCHANGED: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372. Streak 0/3 (fix push; DC-08 gates new HEAD). DC-07 residue closed: 2 missed live-body debug_api_key sites (error-taxonomy E-SERVER-004 annotation + STORY-S-console-03 ×3) swept to debug_route_key — completes F-PDC07-01; tree-wide grep now zero live-body. BC-INDEX v4.30→4.31; STORY-INDEX v1.66→1.67. streak 0/3; DC-08 gates new HEAD. | state-manager | COMPLETE | STATE.md §D-356/DC-07+residue. Single commit per TD-VSDD-053. |
+
+---
+
+## Burst: D-356/DC-12 fix-burst (2026-09-07)
+
+**Phase:** 3 (spec amendment — dev-console ROADMAP-ONLY)
+**Agent:** story-writer (fix), state-manager (commit)
+**Trigger:** DC-12 adversary pass — 1 MED finding (F-PDC12-01)
+
+### Files Touched
+
+| File | Change |
+|------|--------|
+| `.factory/stories/stories/STORY-S-console-01-pregolya-console-scaffold.md` | v1.0→v1.1: blocks [S-console-02,S-console-05]→[S-console-02,S-console-03,S-console-05]; input-hash 94119d2→1e04879 |
+| `.factory/stories/dependency-graph.md` | v2.2→v2.3: S-console-01 blocks entry updated to include S-console-03; acyclicity re-confirmed; DAG holds |
+| `.factory/stories/STORY-INDEX.md` | v1.70→v1.71: changelog row 1.71 added |
+| `.factory/STATE.md` | v6.82→v6.83: DC-12 closure recorded; trajectory-tail →2→4→3→1; phase-progress Phase-3 row updated; session checkpoint replaced |
+
+### Finding Closed
+
+- **F-PDC12-01[MED]** S-console-01 `blocks` field omitted S-console-03 — reverse-edge invariant violated (S-console-03 declares `depends_on: [S-console-01]` but S-console-01 did not list S-console-03 in `blocks`). Fix: added S-console-03 to blocks list. This was the last untied thread of the DC-11 dependency-inversion cascade.
+
+### Convergence Status
+
+DC-12 re-derivation by adversary confirmed: the ENTIRE dependency-inversion cascade (DC-11 dep-edge flip + all 7 recurring classes) CONVERGED clean. DC-12 had exactly 1 finding — the omitted reverse-edge. Streak 0/3 (fix push resets); DC-13 gates on new HEAD.
+
+### Census
+
+BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24 — UNCHANGED.
