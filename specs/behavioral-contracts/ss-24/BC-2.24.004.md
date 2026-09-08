@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.004
-version: "1.4"
+version: "1.5"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -24,6 +24,7 @@ changelog:
   - "1.2 (D-356-fix/DC-02/2026-09-07, product-owner): F-PDC02-01 paper-fix regression — DC-01 replaced run_error but left phantom graph_interrupt at position 15 and compaction_event at position 16, omitting error (the true 16th variant). Corrected: graph_interrupt removed; compaction_event moved to 15th; error added as 16th. DC-01 blockquote false claim annotated. Final list is exactly the 16 verified canonical variants."
   - "1.3 (D-356-fix/DC-27/L-288/2026-09-08, product-owner): Reverse-anchor completeness: story-writer added BC-2.24.004 to S-console-05 behavioral_contracts frontmatter (POLICY-8: AC-005 cites {INV-002} SSE-only/no-WebSocket rule). §Story Anchor updated to list S-console-05 as secondary consumer alongside primary S-console-06."
   - "1.4 (D-356-fix/DC-29/2026-09-08, product-owner): F-PDC29-01 (HIGH): {PRE-004} dropped non-existent StreamEvent persistence claim (BC-2.12.006) — replaced with D8 realizable substrate: terminal-status run-read (BC-2.12.003 {PC-013}) + optional debug-trace spans (BC-2.24.002). {PC-006} dropped 'stored event list via run-event endpoint' — replaced with D8 run-read + trace-span fetch (static; no SSE). {TV-002} replaced '5 stored events' with D8 trace-span/run-read test vector. {INV-001} 'no new server endpoints' CONFIRMED — both endpoints pre-exist. ADR-031 Decision 8."
+  - "1.5 (D-356-fix/DC-30/F-PDC30-02/2026-09-08, product-owner): F-PDC30-02 (MED): `ADR-030 §Decision` → `ADR-030 §Decision 2` in {PRE-004} body and {PC-006} body — §Decision 2 is the canonical authority for StreamEvent transience in ADR-030. DC-29 changelog entry corrected to §Decision 2 as well."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-043
   - architecture/decisions/ADR-031-developer-console-architecture.md
@@ -31,7 +32,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "6560f8e"
+input-hash: "324a392"
 extracted_from: null
 modified: []
 deprecated: null
@@ -61,7 +62,7 @@ is a pure SSE+REST client — no new server additions are required for this capa
 1. {PRE-001} A `run_id` is selected (either from a list of runs, or from a new run initiated by the operator).
 2. {PRE-002} The pregolya-server REST+SSE API is reachable at `apiBaseUrl` (injected via `runtime-config.json`, BC-2.24.001 {PC-003}).
 3. {PRE-003} For live monitoring: the run is in `in_progress` or `pending` status; the SSE stream at `GET /threads/{id}/runs/{run_id}/stream` is open and delivering events.
-4. {PRE-004} For completed run inspection: the run has a terminal status (`completed`, `failed`, `cancelled`, or `summary_halt`); the run's final state is accessible via `GET /threads/{thread_id}/runs/{run_id}` (BC-2.12.003 {PC-013}); trace spans may be available via `GET /debug/trace/session/{run_id}` (BC-2.24.002) when `debug-endpoints` is enabled and the run's spans are within the ring buffer retention window. There is NO stored StreamEvent list and NO run-event endpoint — StreamEvent is transient (ADR-030 §Decision; ADR-031 Decision 8).
+4. {PRE-004} For completed run inspection: the run has a terminal status (`completed`, `failed`, `cancelled`, or `summary_halt`); the run's final state is accessible via `GET /threads/{thread_id}/runs/{run_id}` (BC-2.12.003 {PC-013}); trace spans may be available via `GET /debug/trace/session/{run_id}` (BC-2.24.002) when `debug-endpoints` is enabled and the run's spans are within the ring buffer retention window. There is NO stored StreamEvent list and NO run-event endpoint — StreamEvent is transient (ADR-030 §Decision 2; ADR-031 Decision 8).
 
 ## Postconditions
 
@@ -80,7 +81,7 @@ is a pure SSE+REST client — no new server additions are required for this capa
 3. {PC-003} **Live SSE subscription:** For in-progress runs, the SPA opens a native browser `EventSource` on `GET /threads/{id}/runs/{run_id}/stream`. Events are appended to the timeline as they arrive. No WebSocket; SSE is the sole transport (ADR-031 Decision 3).
 4. {PC-004} **Live node highlighting:** Incoming `node_start` events set the named node to "active" in the StateGraph DAG visualization (BC-2.24.003 graph descriptor). Incoming `node_end` events clear the active state. The highlighting is driven exclusively by matching `node_start.node_name` / `node_end.node_name` to descriptor node names.
 5. {PC-005} **Token streaming:** `run_stream` and `node_stream` events deliver token-level text deltas. The console accumulates and displays them inline in the timeline row, updating on each delta.
-6. {PC-006} **Completed run inspection:** For a terminal-status run (`completed`, `failed`, `cancelled`, `summary_halt`), the SPA fetches the run's final state via `GET /threads/{thread_id}/runs/{run_id}` (BC-2.12.003 {PC-013}) — status, `output?`, `error?`, `evidence_journal?`, and `completed_at?`. When `debug-endpoints` is enabled and the run's spans are within the ring buffer, the SPA additionally fetches span detail via `GET /debug/trace/session/{run_id}` (BC-2.24.002). The completed-run view is static (no SSE subscription). There is NO stored StreamEvent list and NO run-event endpoint; StreamEvent is transient (ADR-030 §Decision; ADR-031 Decision 8).
+6. {PC-006} **Completed run inspection:** For a terminal-status run (`completed`, `failed`, `cancelled`, `summary_halt`), the SPA fetches the run's final state via `GET /threads/{thread_id}/runs/{run_id}` (BC-2.12.003 {PC-013}) — status, `output?`, `error?`, `evidence_journal?`, and `completed_at?`. When `debug-endpoints` is enabled and the run's spans are within the ring buffer, the SPA additionally fetches span detail via `GET /debug/trace/session/{run_id}` (BC-2.24.002). The completed-run view is static (no SSE subscription). There is NO stored StreamEvent list and NO run-event endpoint; StreamEvent is transient (ADR-030 §Decision 2; ADR-031 Decision 8).
 
 ## Invariants
 
@@ -134,6 +135,8 @@ is a pure SSE+REST client — no new server additions are required for this capa
 S-console-06 (Wave 3 — run inspection panel + live node highlighting) ← primary
 
 S-console-05 (roadmap, Wave 3 — SPA build pipeline; consumes {INV-002} SSE-only/no-WebSocket transport rule)
+
+> **D-356 adversary fix DC-30 (2026-09-08, product-owner).** F-PDC30-02 (MED): `ADR-030 §Decision` → `ADR-030 §Decision 2` in {PRE-004} and {PC-006} bodies. `§Decision 2` is the canonical clause in ADR-030 establishing that StreamEvent is transient (not persisted). DC-29 changelog entry also corrected to `§Decision 2`.
 
 > **D-356 adversary fix DC-29 (2026-09-08, product-owner).** F-PDC29-01 (HIGH): {PRE-004} dropped non-existent "server persists StreamEvents per BC-2.12.006" — replaced with D8 realizable substrate: terminal-status run-read (BC-2.12.003 {PC-013}) + optional debug-trace spans (BC-2.24.002). {PC-006} dropped "stored event list via run-event endpoint" — replaced with D8 run-read + trace-span fetch (static view; no SSE). {TV-002} replaced "5 stored events fetched" with D8 trace-span/run-read test vector. {INV-001} "no new server endpoints required" CONFIRMED — both endpoints already exist. ADR-031 Decision 8 authority.
 

@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.002
-version: "1.10"
+version: "1.11"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -30,6 +30,7 @@ changelog:
   - "1.8 (D-356-fix/DC-14/2026-09-08, product-owner): F-PDC14-03: TV-006 Expected Output corrected — previous form 'Bearer [REDACTED]' (retaining Bearer prefix, bracketed-caps token) is non-canonical. Canonical form per S-1.26 AC-020 step 2(d) and BC-2.12.003 {INV-008} step 2: the entire 'Bearer <token>' span (Bearer\\s+[A-Za-z0-9._~+/=\\-]+) is replaced with '<redacted>' (lowercase, angle-bracketed). Corrected: 'Bearer sk-abc123' → '<redacted>'; served content reads '<redacted> is the key'."
   - "1.9 (D-356-fix/DC-23/2026-09-08, product-owner): F-PDC23-03: INV-002 Mutex→RwLock per architect ruling (purity-map v1.48 + ADR-031 v1.5): DebugSpanExporter owns Arc<RwLock<RingBuffer<SpanData>>> (write lock at insertion; read locks for concurrent readers); Module row updated. F-PDC23-02: PC-005 and TV-004 error body key corrected 'error' → 'code' to match canonical pregolya-server envelope {code, message} (BC-2.12.001 EC-010 / BC-2.12.003 EC-008). O-PDC23-A: PC-005 and TV-004 E-SERVER-023 message string sync — single-quotes added around 'pregolya console --dev' to match error-taxonomy §E-SERVER-023 registry (byte-identical for test_BC_2_24_002_exporter_not_configured_body_exact)."
   - "1.10 (D-356-fix/DC-27/L-288/2026-09-08, product-owner): F-L288-008 (OBS): DC-04 historical blockquote asserted Arc<Mutex<RingBuffer<SpanData>>> with no superseded annotation; DC-23 (v1.9) corrected INV-002 to Arc<RwLock<...>>. Added inline SUPERSEDED-BY-DC-23 annotation immediately after the Arc<Mutex<...>> occurrence. Historical record preserved intact."
+  - "1.11 (D-356-fix/DC-30/F-PDC30-01/2026-09-08, product-owner): F-PDC30-01 (HIGH): {INV-007} added after {INV-006} — session_id=run_id invariant per ADR-031 §Decision 8 architect ruling. DebugSpanExporter sets session_id=run_id at insertion; all spans addressable via GET /debug/trace/session/{run_id} ({PC-003}); empty [] response means: feature disabled, ring-buffer FIFO eviction ({INV-001}), or run produced no OTel ops — NOT a session key mismatch. Invariant enforced at insertion; no default or override path may produce a mismatched session_id for a run-scoped export."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-042
   - architecture/decisions/ADR-031-developer-console-architecture.md
@@ -37,7 +38,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "e17c718"
+input-hash: "324a392"
 extracted_from: null
 modified: []
 deprecated: null
@@ -62,6 +63,8 @@ removal_reason: null
 > **D-356 adversary fix DC-08 (2026-09-07, product-owner).** F-PDC08-02: §Story Anchor updated — S-console-03 appended as Wave 3 secondary anchor (debug-endpoints feature / `server::debug_routes`; builds VP-2.24.002-C). S-console-02 remains primary.
 
 > **D-356 adversary fix DC-07 (2026-09-07, product-owner).** F-PDC07-01: `debug_api_key` → `debug_route_key` throughout (PC-007, EC-007, changelog v1.1, DC-02 blockquote). Canonical field is `SecurityConfig.debug_route_key: Option<String>` (BC-2.12.005 PRE-004/PC-006/PC-007/INV-001; ADR-021 §Decision 1). F-PDC07-02: PC-007 and EC-007 now explicitly cite E-SERVER-013 InvalidDebugRouteKey for the startup boot-refusal path (distinct from E-SERVER-004 runtime 403). F-PDC07-05: stale `(update in progress by architect)` removed from PC-007 and DC-02 blockquote (ADR-031 D6-2 landed).
+
+> **D-356 adversary fix DC-30 (2026-09-08, product-owner).** F-PDC30-01 (HIGH): {INV-007} added after {INV-006} — session_id=run_id invariant per ADR-031 §Decision 8 architect ruling. `DebugSpanExporter` sets `session_id = run_id` at insertion time; all spans for a run are addressable via `GET /debug/trace/session/{run_id}` ({PC-003}). Empty `[]` response means: debug-endpoints feature disabled or no exporter injected, ring-buffer FIFO eviction ({INV-001}), or run produced no traced OTel operations — NOT a session key mismatch. The invariant MUST be enforced at insertion; no default or override path may produce a span with a different `session_id` for a run-scoped export.
 
 > **D-356 adversary fix DC-23 (2026-09-08, product-owner).** F-PDC23-03: INV-002 corrected to RwLock per architect ruling (purity-map v1.48 + ADR-031 v1.5) — `DebugSpanExporter` owns `Arc<RwLock<RingBuffer<SpanData>>>` (write lock at insertion; concurrent readers acquire read locks at query time). F-PDC23-02: PC-005 and TV-004 error body key `"error"` → `"code"` (canonical `{code, message}` envelope per BC-2.12.001 {EC-010} / BC-2.12.003 {EC-008}). O-PDC23-A: E-SERVER-023 message string sync — single-quotes added around `'pregolya console --dev'` to match error-taxonomy §E-SERVER-023 registry (byte-exact for `test_BC_2_24_002_exporter_not_configured_body_exact`).
 
@@ -114,6 +117,7 @@ removal_reason: null
 - {INV-004} **DI-014:** Span-export errors (OTel export callback failure) are logged via `tracing::warn!` and do not propagate to the engine; engine execution continues uninterrupted.
 - {INV-005} **Shared via `Arc<dyn DebugSpanSource>`:** `server::debug_routes` holds `Arc<dyn DebugSpanSource>` (injected at launch) to read spans — dyn-dispatch dependency inversion (ADR-031 Decision 7): pregolya-server has ZERO compile dependency on pregolya-console. `DebugSpanExporter` (in `console::span_exporter`, pregolya-console) implements `DebugSpanSource` and is injected as `Arc<dyn DebugSpanSource>` when the console co-launches the server. This satisfies Arc-DI wiring per workspace convention while eliminating the server→console crate coupling.
 - {INV-006} **SEC-BOUND-001 mandatory at ring-buffer insertion:** `llm_request`, `llm_response`, and `attributes` in `SpanData` may contain LLM prompts, credential fragments, or PII that originated in user input or tool results. The SEC-BOUND-001 pipeline (internal-panic static-replace → redact_credentials → sanitize_internal_ids) MUST be applied in `console::span_exporter` **before the span is written into the ring buffer** — not deferred to serving time. This is the production-grade choice: the in-memory buffer must never hold unsanitized sensitive fields; sanitization at the boundary of storage also satisfies "before serving" transitively. This enforces external-boundary sanitization parity with the run-stream error path (ADR-029 §External-Boundary Error-Sanitization Parity, BC-2.06.001 §Postconditions PC-002). The sanitization is non-optional; there is no flag or dev_mode exception that bypasses SEC-BOUND-001 at insertion time.
+- {INV-007} **Session key = run_id:** The `DebugSpanExporter` sets `session_id = run_id` on every exported span at insertion time. All spans for a given run are addressable via `GET /debug/trace/session/{run_id}` (BC-2.24.002 {PC-003}). An empty `[]` response means only: (a) the `debug-endpoints` feature is disabled or no exporter was injected, (b) the run's spans have been evicted from the ring buffer by newer spans (FIFO eviction per {INV-001}), or (c) the run produced no traced OTel operations — NOT a silent run/session key mismatch. The `session_id = run_id` invariant MUST be enforced at insertion; no default or override path may produce a span with a different `session_id` for a run-scoped export.
 
 ## Edge Cases
 
