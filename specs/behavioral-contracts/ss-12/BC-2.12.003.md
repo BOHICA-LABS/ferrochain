@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.12.003
-version: "1.21"
+version: "1.22"
 status: active
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -44,6 +44,7 @@ changelog:
   - "1.19 (D-356-fix/DC-03/2026-09-07, product-owner): {INV-009} added — config.configurable.checkpoint_id fork-start semantic: when set on Create-Run, executor initializes thread state from the specified checkpoint's stored ChannelValues rather than current_checkpoint (fork-from-checkpoint pattern; cited by BC-2.24.005 {PC-003}). EC-008 added for CheckpointNotFound path (E-CHKPT-002 minted; TODO: register in error-taxonomy.md by product-owner). TV-014 added for fork-from-checkpoint happy path (TV count 13→14). Delta note blockquote added. D-356 human-authorized reopening scope."
   - "1.20 (D-356-fix/DC-03/2026-09-07, state-manager): Code collision fix — 'E-CHKPT-002' (used in v1.19 for CheckpointNotFound) is already assigned to MonotonicClockRegression (BC-2.04.003, INTERNAL); per append-only-numbering policy IDs are never reused; E-CHKPT-011 is the next available CHKPT code. All occurrences of 'E-CHKPT-002' meaning CheckpointNotFound in {INV-009}, EC-008, delta-note, and Traceability corrected to 'E-CHKPT-011'. No normative behavior changed; only the code identifier updated."
   - "1.21 (D-356-fix/DC-16/2026-09-08, product-owner): F-PDC16-01: Reverse-anchor completeness — BC-2.24.005 {PC-003} (forward edge) consumes {INV-009} via S-console-07, but BC-2.12.003 had no reverse edge back. §Related BCs: BC-2.24.005 added as fork-from-checkpoint consumer. §Story Anchor: S-console-07 appended (roadmap, Wave 3 — consumes {INV-009} fork-start via BC-2.24.005 {PC-003}); S-1.26 remains primary. Mirrors the F-PDC12/DC-04 fix applied to BC-2.12.001."
+  - "1.22 (D-356-fix/DC-24/2026-09-08, product-owner): F-PDC24-04: {PC-013} amended to project `evidence_journal?` on the run-read response — present when `status` is a terminal state (completed, failed, cancelled, summary_halt); null/omitted for active/queued runs. Adjudication: 1:1 entity field on Run (entities-server.md); optional projection on GET /threads/{thread_id}/runs/{run_id} is the cleanest mechanism (consistent with output?, error?, completed_at? pattern; no new sub-resource route needed). BC-2.24.007 {PC-003} now cites this field as its substrate."
 extracted_from: null
 modified: []
 deprecated: null
@@ -55,6 +56,8 @@ removal_reason: null
 ---
 
 # BC-2.12.003: Run Creation and Execution Lifecycle (queued → in_progress → completed/failed/cancelled/summary_halt; interrupted is pausable/resumable)
+
+> **D-356 adversary fix DC-24 (2026-09-08, product-owner).** F-PDC24-04: {PC-013} amended — `evidence_journal?` added to the run-read response shape (`GET /threads/{thread_id}/runs/{run_id}`), present only when `status` is a terminal state (completed/failed/cancelled/summary_halt); null/omitted for active/queued runs. This exposes the 1:1 Run entity field required by BC-2.24.007 {PC-003} (dev-console budget panel). api-surface.md line 258 defers response shape to BC-2.12.003 — no architect follow-up needed.
 
 > **D-356 adversary fix DC-16 (2026-09-08, product-owner).** F-PDC16-01: Reverse-anchor completeness — BC-2.24.005 {PC-003} consumes {INV-009} (fork-from-checkpoint) via S-console-07, but this BC had no reverse edge. §Related BCs updated to include BC-2.24.005; §Story Anchor updated to append S-console-07 (roadmap, Wave 3 — consumes {INV-009} fork-start via BC-2.24.005 {PC-003}). Mirrors the F-PDC12/DC-04 pattern applied to BC-2.12.001.
 
@@ -136,7 +139,7 @@ LangGraph Platform (D13).
 
 ### Read Run (`GET /threads/{thread_id}/runs/{run_id}`)
 
-13. {PC-013} Returns `Run { run_id, thread_id, assistant_id, status, output?, error?, created_at, updated_at, completed_at? }`.
+13. {PC-013} Returns `Run { run_id, thread_id, assistant_id, status, output?, error?, evidence_journal?, created_at, updated_at, completed_at? }`. The `evidence_journal?` field is present only when `status` is a terminal state (`completed`, `failed`, `cancelled`, `summary_halt`); it is null or omitted for active/queued runs. This field exposes the run's `EvidenceJournal` decision history (consumed by BC-2.24.007 {PC-003} dev-console budget panel).
     `updated_at` is set on every state mutation. `completed_at` is set only on terminal
     transition (status → `completed` | `failed` | `cancelled` | `summary_halt`); it is `null` in all
     non-terminal states (`queued`, `in_progress`, `interrupted`). Authority: F-P24-01.

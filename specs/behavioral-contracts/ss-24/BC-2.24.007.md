@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.007
-version: "1.1"
+version: "1.2"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -21,6 +21,7 @@ red_gate: false
 changelog:
   - "1.0 (D-356/2026-09-06, product-owner): Initial BC — D-356 dev-console scope expansion. Token/context budget monitoring panel driven by compaction_event StreamEvents."
   - "1.1 (D-356-fix/DC-01/2026-09-06, product-owner): F-PDC01-01 Story Anchor corrected: was S-console-08, now S-console-09. Verified against S-console-09 frontmatter behavioral_contracts: [BC-2.24.007]."
+  - "1.2 (D-356-fix/DC-24/2026-09-08, product-owner): F-PDC24-04: {PC-003} updated — 'via the server's run-read endpoint' made precise: cites `evidence_journal?` field on `GET /threads/{thread_id}/runs/{run_id}` response (BC-2.12.003 {PC-013}), present when run status is terminal. BC-2.12.003 {PC-013} was amended in the same burst to project this field."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-046
   - architecture/decisions/ADR-031-developer-console-architecture.md
@@ -28,7 +29,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "5ff81d4"
+input-hash: "1f87a7c"
 extracted_from: null
 modified: []
 deprecated: null
@@ -69,7 +70,7 @@ part of the StreamEvent grammar.
    - `summary_token_count`: the token count of the injected summary.
    - `tokens_remaining_after`: remaining capacity after compaction.
    - `trigger`: which `CompactionTrigger` variant fired (`OnWatermark`, `OnMessageCount`, `OnTokenCount`).
-3. {PC-003} **EvidenceJournal for completed runs:** For completed runs, the panel surfaces the run's full `EvidenceJournal` decision history. Each entry shows the `PolicyDecision` (`Allow`, `Escalate`, `Deny`) and the evaluation point that produced it. (Source: Run entity's `evidence_journal` field via the server's run-read endpoint.)
+3. {PC-003} **EvidenceJournal for completed runs:** For completed runs, the panel surfaces the run's full `EvidenceJournal` decision history. Each entry shows the `PolicyDecision` (`Allow`, `Escalate`, `Deny`) and the evaluation point that produced it. (Source: `evidence_journal?` field on the `GET /threads/{thread_id}/runs/{run_id}` response, BC-2.12.003 {PC-013}; present when run `status` is a terminal state — `completed`, `failed`, `cancelled`, or `summary_halt`.)
 4. {PC-004} **Real-time for live runs:** For in-progress runs, the gauge updates incrementally as `compaction_event` variants arrive via the SSE subscription (shared with BC-2.24.004 — same `EventSource` instance).
 5. {PC-005} **No new server machinery:** The panel is a pure SSE consumer of `compaction_event` events already in the grammar. No new endpoints are added.
 
@@ -120,6 +121,8 @@ part of the StreamEvent grammar.
 ## Story Anchor
 
 S-console-09 (Wave 3 — token/context budget monitoring panel)
+
+> **D-356 adversary fix DC-24 (2026-09-08, product-owner).** F-PDC24-04: {PC-003} Source citation made precise — "via the server's run-read endpoint" was unresolvable because BC-2.12.003 {PC-013} (`GET /threads/{thread_id}/runs/{run_id}`) did not project `evidence_journal`. BC-2.12.003 {PC-013} was amended in the same burst to add `evidence_journal?` (present on terminal-status runs). {PC-003} now cites `evidence_journal?` on BC-2.12.003 {PC-013} explicitly.
 
 > **D-356 adversary fix DC-01 (2026-09-06, product-owner).** Story Anchor corrected S-console-08 → S-console-09. story-writer split BC-2.24.002 across S-console-02+03 and added S-console-05 (SPA build, no BC), shifting the numbering. Verified: S-console-09 frontmatter carries `behavioral_contracts: [BC-2.24.007]`.
 
