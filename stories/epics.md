@@ -1,6 +1,6 @@
 ---
 document_type: epics
-version: "2.2"
+version: "2.3"
 status: active
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -155,7 +155,7 @@ evaluation points (`IngressBoundary`: ToolResult | RagChunk | MemoryItem), `Guar
 successfully-returning `GuardrailHook::evaluate()` call appends a `GuardrailEntry`
 (`{ boundary: IngressBoundary, result: GuardrailResult, provenance: ProvenanceTag, timestamp_ms: u64 }`)
 sync-durably to `pregolya-checkpoint` per `evaluate()` call (BEFORE execution continues); no
-terminal flush to RunStore. `server::run_read_handler` queries the checkpoint store to assemble
+terminal flush to RunStore. The run-read handler in `server::handlers` queries the checkpoint store to assemble
 `guardrail_journal?` at read time (BC-2.11.007 PC-002/PC-003). No `GuardrailHook` registered ⇒
 `guardrail_journal? = None`. VP-2.11.007-A (integration, Phase 3, P0) anchors the persistence
 contract. Depends on S-1.19 (guardrail hook infrastructure) and S-1.26 (run-read endpoint).
@@ -281,6 +281,7 @@ is feature-gated (`debug-endpoints` Cargo feature defaults `false`) and scoped t
 
 ## Changelog
 
+- **2.3 (D-356/DC-48/2026-09-09, state-manager):** F-PDC48-02 sweep — normative body §E-11 S-1.29 description: `server::run_read_handler` → `run-read handler in server::handlers` (phantom module name retired per DC-48 architect ruling; DC-23 grandfather precedent applies to changelog occurrences only). No behavioral change.
 - **2.2 (D-356/DC-39/2026-09-09, story-writer):** F-PDC39-01 — §E-11 S-1.29 paragraph corrected to checkpoint-backed persistence model per architect re-adjudication: journal appended sync-durably to pregolya-checkpoint per evaluate() call (BEFORE execution continues); server::run_read_handler queries checkpoint store to assemble guardrail_journal? at read time. Removed false "written to RunStore on terminal-status transition" and BC-2.12.003 PC-013 reference.
 - **2.1 (D-356/DC-36/2026-09-08, story-writer):** F-PDC36-02 — §E-console CAP coverage corrected to canonical capabilities-p1-p2 / ADR-031 mapping: CAP-041 (console scaffold), CAP-042 (debug endpoints incl. graph descriptor), CAP-043 (run inspection), CAP-044 (checkpoint history), CAP-045 (HITL console resume), CAP-046 (token/context budget panel), CAP-047 (guardrail review panel) — CAP-046 and CAP-047 are separate (budget panel vs guardrail review panel; not collapsed). F-PDC36-08 — ADR-031 decision count corrected: "6 decisions" → "8 decisions" (adds Decision 7 DebugSpanSource inversion + Decision 8 completed-run substrate).
 - **2.0 (D-356/DC-35/2026-09-08, story-writer):** F-PDC35-02 — S-1.29 (GuardrailJournal Persistence, 5 pts, Wave 1, SS-11) integrated into E-11. Epic Catalog: E-11 stories S-1.19 → S-1.19, S-1.29; points 13 → 18. Epic Summary E-11 updated: 13 pts → 18 pts; "all 6 BCs are P0" → "all 7 BCs are P0"; S-1.19/S-1.29 narrative breakdown added (BC coverage, GuardrailJournal shape, VP-2.11.007-A anchor, cross-wave block on S-console-10). Intro header: 52 → 53 stories; Wave 1 (28) → Wave 1 (29).

@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.008
-version: "1.9"
+version: "1.10"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -29,6 +29,7 @@ changelog:
   - "1.7 (D-356/DC-33/2026-09-08, product-owner): F-PDC33-02: DC-29 used wrong field — `evidence_journal?` is the budget PolicyDecision journal (BC-2.10.002 / EvidenceJournal); completed-run guardrail history is `guardrail_journal?` (BC-2.11.007 / GuardrailJournal). All normative references to completed-run guardrail history updated: Description, PRE-002, PC-004 (architect-exact wording per DC-33), INV-002 — all `evidence_journal?` → `guardrail_journal?`. NOTE in PC-004 added clarifying that evidence_journal? records a SEPARATE governance dimension (budget). DC-33 human-authorized scope."
   - "1.8 (D-356/DC-34/2026-09-08, product-owner): O-PDC34-B: {PC-002} — completed-run severity mapping sentence added: guardrail_journal? entries carry Fail{severity: GuardrailSeverity} (domain type); the panel maps to GuardrailSeverityWire for display; mapping is isomorphic Critical/High/Medium/Low 1:1 (no data loss). Shape-consistency sweep: BC-2.24.008 does not enumerate GuardrailEntry fields beyond a high-level reference in {PC-004}; no transform_applied drift found."
   - "1.9 (D-356/DC-37/2026-09-08, product-owner): F-PDC37-06: DC-29 historical delta-note annotated with inline supersession marker — '(SUPERSEDED by DC-33: completed-run guardrail history is reconstructed from guardrail_journal? (BC-2.11.007), NOT evidence_journal? which is budget-only — see DC-33 note below)' appended to the DC-29 blockquote. Historical blockquote text preserved unchanged; annotation clarifies the DC-29 field-name claim (evidence_journal? as guardrail substrate) was superseded by DC-33 adjudication. Normative {PC-004} already correct per DC-33."
+  - "1.10 (D-356/DC-48/2026-09-09, product-owner): F-PDC48-05: {PRE-001} reconciled for completed-run journal path — was 'at least one guardrail_decision event in the stream' (required Fail/Transform, excluded Pass-only runs); updated to 'at least one guardrail evaluation visible in the SSE stream OR in the run's guardrail_journal?' (terminal-status runs with Pass-only journal entries now satisfy the precondition per BC-2.11.007 {PC-001}; {PC-004}/{EC-001} unchanged)."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-047
   - architecture/decisions/ADR-031-developer-console-architecture.md
@@ -36,7 +37,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "3d77ae1"
+input-hash: "70c4673"
 extracted_from: null
 modified: []
 deprecated: null
@@ -75,7 +76,7 @@ visibility during untrusted-tool-result ingestion).
 
 ## Preconditions
 
-1. {PRE-001} A run is selected (active or completed) with at least one `guardrail_decision` event in the stream (i.e., at least one guardrail check on a non-Pass decision was triggered for a qualifying boundary).
+1. {PRE-001} A run is selected (active or completed) where at least one guardrail evaluation is visible: at least one `guardrail_decision` event in the SSE stream (Fail/Transform only per F-P99-01, live-run path) OR at least one entry in the run's `guardrail_journal?` (terminal-status run path per {PRE-002}; includes Pass evaluations not emitted to the stream per BC-2.11.007 {PC-001}).
 2. {PRE-002} The run's SSE stream (BC-2.12.007) is open (live) OR the run is terminal-status and the run-read response (BC-2.12.003 {PC-013}) is accessible for post-run guardrail history via `guardrail_journal?` (ADR-031 Decision 8).
 3. {PRE-003} The server is configured with at least one `GuardrailHook` that can produce Fail or Transform decisions (CAP-013, BC-2.11.001).
 

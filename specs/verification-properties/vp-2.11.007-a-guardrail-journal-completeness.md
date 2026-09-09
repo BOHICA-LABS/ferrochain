@@ -3,14 +3,14 @@ document_type: verification-property
 level: L4
 id: VP-2.11.007-A
 title: "GuardrailJournal Completeness — One Entry Per Successfully-Returning evaluate() Call"
-version: "1.10"
+version: "1.11"
 status: draft
 producer: architect
 timestamp: 2026-09-08T00:00:00Z
 phase: 3
 inputs:
   - .factory/specs/behavioral-contracts/ss-11/BC-2.11.007.md
-input-hash: "122e08a"
+input-hash: "9293d4e"
 traces_to: VP-INDEX.md
 source_bc: BC-2.11.007
 module: graph::provenance
@@ -40,6 +40,7 @@ priority: P0
 harness_fn: "n/a (integration test)"
 file: vp-2.11.007-a-guardrail-journal-completeness.md
 changelog:
+  - "1.11 (D-356/DC-48/F-PDC48-02/2026-09-09, architect): F-PDC48-02 (MED) — phantom `server::run_read_handler` replaced with canonical `server::handlers` at two live-body sites: (1) §Property Statement NOTE block ('assembled from the checkpoint store by server::run_read_handler' → 'assembled from the checkpoint store by the run-read handler in server::handlers'); (2) §Proof Harness SCOPE NOTE comment ('assembled by server::run_read_handler from checkpoint store' → 'assembled by the run-read handler in server::handlers from checkpoint store'). server::run_read_handler is not a separate module (F-PDC48-02/DC-48). input-hash updated 122e08a→9293d4e (input drift from prior burst)."
   - "1.10 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog fix — phantom anchor `ADR-031 §DC-44 delta note` → `ADR-031 §Decision 8` (frontmatter changelog + body DC-44 note; verify-adr-anchor-citations.sh); item anchor `BC-2.11.007 §INV-002` → `BC-2.11.007 {INV-002}` in §Source Contract (BC item anchor form, not heading form). input-hash refreshed 122e08a (computed by hook during this burst)."
   - "1.9 (D-356/DC-44/F-PDC44-01/2026-09-09, architect): F-PDC44-01 (MED) — DC-44 delta note added: journal-existence/initialization mechanism ruling (init_guardrail_journal at run start). modified: array updated to add DC-44. No body content changes: harness .expect() calls are already compatible with Some([]) guarantee from init op; harness unchanged. Downstream wording for PO/BA/story-writer in ADR-031 §Decision 8. input-hash unchanged (BC-2.11.007 unchanged)."
   - "1.8 (D-356/DC-43/F-PDC43-02/2026-09-09, architect): F-PDC43-02 (LOW) — frontmatter modified: array corrected: DC-40 appended (DC-40 bumped VP body from v1.6→v1.7 and annotated DC-37 note — it was a version-bumping burst). DC-41 NOT added (VP body was not touched at DC-41; only ADR-031 and module-decomposition.md were edited then). input-hash refreshed (BC-2.11.007 input drift from prior burst)."
@@ -68,8 +69,9 @@ BC-2.06.001 §PC-002; values `ToolResult | RagChunk | MemoryItem`), `result` (`G
 `provenance` (`ProvenanceTag`), `timestamp_ms` (`u64`, monotone across entries). NOTE:
 `transform_applied` is absent — `result.Transform.new_content` is authoritative (O-PDC34-A).
 NOTE: the run-read `guardrail_journal?` None/Some projection is assembled from the
-checkpoint store by `server::run_read_handler` — a server-side concern (S-1.29 AC-002/AC-003)
-outside this VP's scope. The journal write IS graph-side (checkpoint-backed, sync-durable in
+checkpoint store by the run-read handler in `server::handlers` — a server-side concern
+(S-1.29 AC-002/AC-003; `server::run_read_handler` is not a separate module —
+F-PDC48-02/DC-48) outside this VP's scope. The journal write IS graph-side (checkpoint-backed, sync-durable in
 `graph::provenance`) — NOT a RunStore terminal write (F-PDC39-02 corrects DC-36 F-PDC36-01).
 
 ## Source Contract
@@ -137,9 +139,10 @@ outside this VP's scope. The journal write IS graph-side (checkpoint-backed, syn
 //   EvidenceJournal (BC-2.10.002 {INV-003}). graph::provenance appends each GuardrailEntry
 //   sync-durable BEFORE execution continues at that ingress boundary. The journal is NOT
 //   returned via the graph execution result; it is queried from the checkpoint store.
-//   The run-read guardrail_journal? None/Some projection is assembled by
-//   server::run_read_handler from checkpoint store — a separate server-side concern
-//   tested in crates/pregolya-server/tests/ (S-1.29 AC-002/AC-003).
+//   The run-read guardrail_journal? None/Some projection is assembled by the
+//   run-read handler in server::handlers from checkpoint store — a separate server-side
+//   concern tested in crates/pregolya-server/tests/ (S-1.29 AC-002/AC-003;
+//   `server::run_read_handler` is not a separate module — F-PDC48-02/DC-48).
 //   pregolya-graph MUST NOT depend on pregolya-server (forbidden reverse edge).
 
 #[tokio::test]

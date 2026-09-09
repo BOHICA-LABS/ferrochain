@@ -2,19 +2,20 @@
 document_type: architecture-section
 level: L3
 section: dependency-graph
-version: "1.11"
+version: "1.12"
 status: active
 producer: architect
-timestamp: 2026-08-26T00:00:00Z
+timestamp: 2026-09-09T00:00:00Z
 phase: 1b
 inputs:
   - .factory/specs/prd-supplements/module-criticality.md
   - .factory/specs/prd.md
   - .factory/specs/module-criticality.md
-input-hash: "e2207b1"
+input-hash: "90c00a6"
 traces_to: ARCH-INDEX.md
 decisions: [D4, D6, D7, D21, D23]
 changelog:
+  - "1.12 (D-356/DC-48/F-PDC48-04/2026-09-09, architect): F-PDC48-04 (LOW) — two stale edge rationales corrected. (1) pregolya-checkpoint→pregolya-core: add GuardrailEntry (core::guardrail) and associated types (GuardrailResult, IngressBoundary) as checkpoint deps — required for typed CheckpointSaver GuardrailJournal ops (append_guardrail_entry/get_guardrail_journal; BC-2.11.007); checkpoint→core dep allowed. (2) pregolya-graph→pregolya-checkpoint: add graph::provenance GuardrailJournal write-path (init_guardrail_journal, append_guardrail_entry) alongside existing graph::budget compaction read-path. input-hash updated 90c00a6 (input drift from prior burst — prd.md and module-criticality.md had changed)."
   - "1.11 (R46/F-193-01-sibling/2026-08-30): CLASS-AUDIT-2 CompiledGraph phantom sweep — Edge Table `pregolya` facade→pregolya-graph row: `CompiledGraph` (phantom bare name, non-canonical per ADR-029 §Symbol Grounding) replaced with `CompiledStateGraph` (canonical non-generic type per BC-2.02.001 {PC-001}). Sibling sweep: this was the sole remaining live-body `CompiledGraph` (bare, non-grandfathered) occurrence in this file; changelog entries v1.8/v1.10 retain old names as historical records (grandfathered per TD-VSDD-091). input-hash updated to e2207b1."
   - "1.10 (round-10-sibling-sweep/2026-08-27): GAP-01 type-grounding straggler sweep — three `CompiledGraph<S>` live-body sites replaced with `CompiledStateGraph` (non-generic; BC-2.02.001 {PC-001}): (1) Crate DAG pregolya-mcp annotation; (2) Edge Table pregolya-mcp→pregolya-graph rationale; (3) Build Order Wave 2 position-19 annotation. Sibling sweep: no additional CompiledGraph<S> or Fn(&S) sites in this file (v1.8 changelog entry retains old symbol as historical record; grandfathered per TD-VSDD-091). input-hash updated to 69778ab."
   - "1.9 (round-6/BLOCKER-3/2026-08-26): §Cross-Cutting Dependencies proptest row: add `pregolya-prompts [VP-006-B]` (injection_guard Multi-Pair FewShotExamples fail-closed; proptest P1; multi-pair injection-guard mandate SEC-003 per VP-INDEX). Proptest crate now covers 7 crates: pregolya-graph, pregolya-checkpoint, pregolya-splitters, pregolya-core, pregolya-memory, pregolya-mcp, pregolya-prompts."
@@ -87,8 +88,8 @@ pregolya (facade)             (re-exports public API from all impl crates; termi
 |------|----|------|-----------|
 | pregolya-graph | pregolya-core | runtime | Runnable, Message, ContentBlock, PregolyaError |
 | pregolya-graph | pregolya-sandbox | runtime | Tool execution dispatch (via trait object) |
-| pregolya-graph | pregolya-checkpoint | runtime | graph::budget uses CheckpointSaver::fts_search to build ConversationSnapshot for compaction engine (BC-2.04.008 / ADR-019) |
-| pregolya-checkpoint | pregolya-core | runtime | PregolyaError |
+| pregolya-graph | pregolya-checkpoint | runtime | graph::budget uses CheckpointSaver::fts_search to build ConversationSnapshot for compaction engine (BC-2.04.008 / ADR-019); graph::provenance uses CheckpointSaver journal ops (init_guardrail_journal, append_guardrail_entry) for checkpoint-backed GuardrailJournal persistence (BC-2.11.007; F-PDC48-04/DC-48) |
+| pregolya-checkpoint | pregolya-core | runtime | PregolyaError; GuardrailEntry (core::guardrail) and associated types GuardrailResult, IngressBoundary for typed CheckpointSaver GuardrailJournal ops (append_guardrail_entry, get_guardrail_journal; BC-2.11.007; checkpoint→core dep allowed; F-PDC48-04/DC-48) |
 | pregolya-server | pregolya-graph | runtime | Runs invoke the graph engine |
 | pregolya-server | pregolya-checkpoint | runtime | Threads/runs read/write checkpoints |
 | pregolya-memory | pregolya-core | runtime | PregolyaError; MemoryStore trait definition |

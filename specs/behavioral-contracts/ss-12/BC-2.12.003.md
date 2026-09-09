@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.12.003
-version: "1.26"
+version: "1.27"
 status: active
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -49,6 +49,7 @@ changelog:
   - "1.24 (D-356/DC-33/2026-09-08, product-owner): F-PDC33-01: {PC-013} extended — `guardrail_journal?` added to run-read response shape alongside `evidence_journal?`. Both fields present only when status is a terminal state; null/omitted for active/queued runs. `guardrail_journal?` exposes the run's GuardrailJournal evaluation history (consumed by BC-2.24.008 {PC-004} guardrail review panel; governed by BC-2.11.007). Separation invariant: evidence_journal = budget PolicyDecision outcomes (Allow/Escalate/Deny); guardrail_journal = content GuardrailResult evaluations (Pass/Fail/Transform). DC-33 human-authorized scope."
   - "1.25 (D-356/DC-42/2026-09-09, product-owner): F-PDC42-02: Reverse-anchor completeness — {PC-013} normatively exposes evidence_journal? (consumed by BC-2.24.007 budget panel via S-console-09) and guardrail_journal? (consumed by BC-2.24.008 guardrail panel via S-console-10), but §Related BCs and §Story Anchor had no reverse edges to those consumers. §Related BCs: BC-2.24.007 (consumer — evidence_journal? for budget panel) and BC-2.24.008 (consumer — guardrail_journal? for guardrail panel) added. §Story Anchor: S-console-09 (roadmap, Wave 3 — evidence_journal? via BC-2.24.007 {PC-003}) and S-console-10 (roadmap, Wave 3 — guardrail_journal? via BC-2.24.008 {PC-004}; declares BC-2.12.003 in behavioral_contracts, traces AC-004 to {PC-013}) added. Mirrors DC-16 F-PDC16-01 pattern."
   - "1.26 (D-356/DC-46/2026-09-09, product-owner): C-PDC46: L9b version-pin removed at 3 sites — error-taxonomy.md bare artifact name substituted (DC-03 delta-note blockquote, TV-014 expected-behavior text, Traceability Error Codes row). Bare artifact name per TD-VSDD-091 L9b. verify-no-version-pins.sh blockers cleared for this BC."
+  - "1.27 (D-356/DC-48/2026-09-09, product-owner): F-PDC48-02: §Architecture Anchors path corrected — `pregolya-server/src/api/runs.rs` → `pregolya-server/src/routes/runs.rs` (canonical impl path per S-1.26/S-1.29 precedence rule 1; architect DC-48 ruling)."
 extracted_from: null
 modified: []
 deprecated: null
@@ -339,7 +340,7 @@ pregolya-graph engine are sufficient._
 
 ## Architecture Anchors
 
-- `pregolya-server/src/api/runs.rs` — Run CRUD handlers
+- `pregolya-server/src/routes/runs.rs` — Run CRUD handlers
 - `pregolya-server/src/executor.rs` — Async executor dispatching pending runs to graph engine
 - `pregolya-server/src/store/run_store.rs` — `RunRecord` and lifecycle state persistence
 
