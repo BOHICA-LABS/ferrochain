@@ -4733,3 +4733,17 @@ pregolya Phase-2 CONVERGED+gate-APPROVED (anchor 81d16ca); Phase-3 IN PROGRESS a
 
 ### PENDING USER-APPROVED WORK (at DC-37 close)
 DC-38 adversary pass PENDING (orchestrator, strict streak 0/3). PR #1 merge (human action required). DEV-TOOLING-D255: v1 dev-tooling expansion — ready to start post-merge. DTU clones (openai/anthropic/ollama): Phase-4 prerequisite.
+
+## D-356/D-357/DC-38 Checkpoint (archived from STATE.md — post-DC-38 consistency-audit fix-burst 2026-09-08)
+
+### RESUME IN ONE BREATH (at DC-38 close)
+pregolya Phase-2 CONVERGED+gate-APPROVED (anchor 81d16ca); Phase-3 IN PROGRESS at workspace-init. D-356 Phase-1 spec amendment COMPLETE (developer-console ROADMAP-ONLY; census: BC 149 / VP 42 / EC 145 / stories 53 / pts 377). D-356/DC-01 through DC-38 fix-bursts COMPLETE: DC-01..DC-27+DC-28+DC-29+DC-31+DC-32+DC-34 details in burst-log.md + STATE §DC-33..DC-38 steps. DC-22=CLEAN(strict) streak1/3 [banked, then broken]; DC-32=3MED; DC-33=4[2H+1MED+1LOW]; DC-34=9[3H+4MED+2LOW]; DC-35=6[2H+3MED+1OBS]; DC-36=10[2H+6MED+2LOW/OBS]; DC-37=3H+2MED+1LOW; DC-38=2H+3MED+2LOW — ALL CLOSED. D-357: human-authorized Option a durable GuardrailJournal (BC-2.11.007 SS-11 P0; VP-2.11.007-A; EvidenceJournal BUDGET-ONLY). DC-38: VP §Property Statement rewritten graph-side/successfully-returning evaluate() calls; S-1.29 AC-004 successfully-returning + test rename; VP §Feasibility RunStore/SQLite struck; BC-2.11.007 {PC-002}+§Traceability §RunStore→§GuardrailJournal; S-console-10 domain→wire severity BC-2.24.008 {PC-002}; DC-33 transform_applied marker; VP retitled + 4 mirrors. OBS-DC05-01 RESOLVED-BY-DC-23; PG-7 RESOLVED-BY-DEVOPS-6beaa88 (POL-14→BLOCKING); PG-DC32 OPEN; PG-DC33 OPEN; PG-DC34 OPEN. BC-INDEX at DC-38 census; STORY-INDEX at DC-38 census (53 stories / 149 BCs). strict streak reset 0/3 (DC-38 fix push); DC-39 gates new HEAD. PR #1 BLOCKED from agent-merge (self-authored PR) — needs GENUINE HUMAN MERGE.
+
+### HEADS (at DC-38 close)
+- develop: `bfe0592` — LOCAL ONLY (2 commits ahead of origin/develop at `644d1ad`; push required before Phase-3); factory-artifacts: HEAD updated by DC-38 fix-burst commit. Main worktree on `chore/phase3-workspace-init` (NOT develop; return to develop post-merge). PR #1 branch `chore/phase3-workspace-init`: head c9712c2 prefix (OPEN, MERGEABLE, CI 17/17 green, cycle-13 APPROVE 0-blocking).
+
+### RESUME NEXT-ACTION (at DC-38 close)
+(1) Dispatch DC-39 adversary pass (fresh-context) against new factory-artifacts HEAD (DC-38 fix push); strict streak 0/3. (2) Get PR #1 human-merged (squash-merge targeting develop). (3) Post-merge: return main worktree to develop; push develop 2 local-only commits; launch S-1.01 (PregolyaError) in pregolya-core. Standing directives DIRECTIVE 1/2/3/4 in force. 8 open convergence-close deferrals (C-1/PG-1/PG-2/PG-3/PG-4/PG-5/PG-6; PG-7 RESOLVED); PG-DC32 OPEN; PG-DC33 OPEN; PG-DC34 OPEN. OBS-DC05-01 CLOSED.
+
+### PENDING USER-APPROVED WORK (at DC-38 close)
+DC-39 adversary pass PENDING (orchestrator, strict streak 0/3). PR #1 merge (human action required). DEV-TOOLING-D255: v1 dev-tooling expansion — ready to start post-merge. DTU clones (openai/anthropic/ollama): Phase-4 prerequisite.

@@ -1,7 +1,7 @@
 ---
 document_type: architecture-index
 level: L3
-version: "1.86"
+version: "1.87"
 status: active
 producer: state-manager
 timestamp: 2026-09-08T23:59:00Z
@@ -17,6 +17,7 @@ traces_to: prd.md
 deployment_topology: single-service
 decisions: [D4, D6, D9, D11, D13, D17, D20, D21, D23, D356]
 changelog:
+  - "1.87 (D-356/consistency-audit-Finding-D/2026-09-08, architect): SS-11 BC range corrected 001–006→001–007 (BC-2.11.007 minted DC-33; range drift caught by exhaustive D-356 consistency audit). No other ARCH-INDEX occurrence of the stale range."
   - "1.86 (D-356/DC-38/F-PDC38-07/2026-09-08, architect): VP-2.11.007-A description cell updated — 'every evaluate() call produces one entry' → 'one entry per successfully-returning evaluate() call'. Census UNCHANGED: ADR 31 / VP 42."
   - "1.85 (D-356/DC-34/F-PDC34-01/F-PDC34-02/2026-09-08, architect): VP-2.11.007-A bc_anchor corrected {INV-003}→{INV-002} (BC-2.11.007 {INV-002} = completeness/DI-012). VP-2.11.007-A module repointed server::guardrail_journal (phantom)→graph::provenance (pregolya-graph; canonical per module-decomposition.md §pregolya-graph). Census UNCHANGED: ADR 31 / VP 42."
   - "1.84 (D-356/DC-33/2026-09-08, architect): VP-2.11.007-A registered — GuardrailJournal completeness integration P0 (BC-2.11.007 {PC-001}/{INV-003}; DI-012; server::guardrail_journal; pregolya-server; Phase 3). §Verification Properties preamble and table updated 41→42 VPs; integration P0 added. Census: ADR 31 / VP 42. Human-authorized DC-33 core-domain amendment."
@@ -158,7 +159,7 @@ changelog:
 | SS-08 | Provider Conformance + Standard Tests | 2.08 | pregolya-openai, pregolya-anthropic, pregolya-ollama, pregolya-standard-tests, pregolya-openai-sdk, pregolya-anthropic-sdk, pregolya-ollama-sdk, pregolya-macros | BC-2.08.001–014 | 2 |
 | SS-09 | MCP Tool Adapter | 2.09 | pregolya-mcp | BC-2.09.001–008 | 2 |
 | SS-10 | Budget Governance | 2.10 | pregolya-graph, pregolya-core | BC-2.10.001–006 | 1 |
-| SS-11 | Content Provenance / Guardrail | 2.11 | pregolya-graph | BC-2.11.001–006 | 1 |
+| SS-11 | Content Provenance / Guardrail | 2.11 | pregolya-graph | BC-2.11.001–007 | 1 |
 | SS-12 | Durable-Run HTTP Server | 2.12 | pregolya-server | BC-2.12.001–007 | 1 |
 | SS-13 | Sandboxed Tool Execution | 2.13 | pregolya-sandbox | BC-2.13.001–007 | 1 |
 | SS-14 | Typed Error Taxonomy | 2.14 | pregolya-core | BC-2.14.001–006 | 1 |
