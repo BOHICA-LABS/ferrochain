@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-console-04
 epic_id: E-console
-version: "1.4"
+version: "1.5"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -13,13 +13,14 @@ changelog:
   - "1.2 (D-356/DC-19/2026-09-08, story-writer): F-PDC19-02 — VP-2.24.003-C is pregolya-graph (graph::descriptor, start-node-present property, unit/phase-3), NOT pregolya-server; stale claim in v1.1 entry corrected. AC-007 already correctly anchors VP-2.24.003-A and VP-2.24.003-C to test_BC_2_24_003_compile_graph_descriptor_pure() in pregolya-graph."
   - "1.3 (D-356/DC-23/2026-09-08, story-writer): F-PDC23-02 — AC-006 error envelope corrected: {\"error\":} → {\"code\":}; message placeholder genericized to <id> per BC-2.24.003 v1.3. Zero {\"error\":} residue in live body."
   - "1.4 (D-356/DC-46/2026-09-09, story-writer): F-PDC46-01 — AC header citation form corrected to M4-strict bare-tag: BC-S.SS.NNN TAG (section-words removed per verify-ac-pc-trace.sh CHECK-1)."
+  - "1.5 (D-356/DC-50/2026-09-09, story-writer): F-PDC50-04 — subsystems corrected to [SS-24] only: SS-02 (pregolya-graph) removed — this story CONSUMEs pregolya-graph APIs only; no pregolya-graph code is modified here."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.003.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "e59f85a"
+input-hash: "472d886"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-03]
@@ -30,7 +31,7 @@ priority: P1
 cycle: v1.0.0-greenfield
 wave: 3
 target_module: [pregolya-graph, pregolya-server]
-subsystems: [SS-24, SS-02]
+subsystems: [SS-24]
 estimated_days: 2
 assumption_validations: []
 risk_mitigations: []

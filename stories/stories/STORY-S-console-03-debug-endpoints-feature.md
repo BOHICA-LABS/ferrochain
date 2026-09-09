@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-console-03
 epic_id: E-console
-version: "1.6"
+version: "1.7"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -15,6 +15,7 @@ changelog:
   - "1.4 (D-356/DC-23/2026-09-08, story-writer): F-PDC23-02 — error envelope corrected to canonical {code, message} form per BC-2.24.002 v1.9: AC-003 and AC-007 updated from {\"error\":} to {\"code\":}; message text updated to single-quoted 'pregolya console --dev' form per O-PDC23-A. EC-004 updated to show canonical envelope. Zero {\"error\":} residue in live body."
   - "1.5 (D-356/DC-46/2026-09-09, story-writer): F-PDC46-01 — AC header citation form corrected to M4-strict bare-tag: BC-S.SS.NNN TAG (section-words removed per verify-ac-pc-trace.sh CHECK-1)."
   - "1.6 (D-356/DC-47/2026-09-09, story-writer): F-PDC47-01 — Task 3a SpanData field list corrected to 8-field shape: added session_id: String as field 5 (between end_time_ms and attributes), = run_id set by DebugSpanExporter at insertion per BC-2.24.002 {INV-007}. File Structure debug_span.rs row updated to enumerate all 8 fields. Class-sweep confirmed only this story had the 7-field defect."
+  - "1.7 (D-356/DC-50/2026-09-09, story-writer): F-PDC50-03 — Task 7 clarified: debug-route-key gate is router-creation-time, implemented as create_debug_router(config) -> Result<Router, PregolyaError> within debug_routes.rs; returns E-SERVER-013 on empty/absent debug_route_key when debug-endpoints on; caller propagates to startup failure."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.002.md
@@ -22,7 +23,7 @@ inputs:
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
   - .factory/specs/prd-supplements/error-taxonomy.md
-input-hash: "788623b"
+input-hash: "8945e42"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-01]
@@ -139,7 +140,7 @@ Concurrent `GET /debug/trace/session/{id}` requests against the shared `Arc<dyn 
 4. [ ] Create `pregolya-server/src/server/debug_routes.rs` behind `#[cfg(feature = "debug-endpoints")]`; implement `GET /debug/trace/session/{session_id}` and `GET /debug/trace/{event_id}` handlers
 5. [ ] `server::debug_routes` reads via `Arc<dyn DebugSpanSource>` injected at launch by the console layer (`DebugSpanExporter` implements `DebugSpanSource`); pregolya-server has ZERO compile dependency on pregolya-console (ADR-031 Decision 7)
 6. [ ] Implement `E-SERVER-023 DebugExporterNotConfigured` response when exporter is `None`
-7. [ ] Add `SecurityConfig.debug_route_key` gate — refuse to start with E-SERVER-013 InvalidDebugRouteKey when key empty/absent and `debug-endpoints` feature is on (BC-2.24.002 EC-007); return E-SERVER-004 403 on unauthenticated runtime requests (BC-2.24.002 PC-007)
+7. [ ] Add `SecurityConfig.debug_route_key` gate — implemented as `create_debug_router(config) -> Result<Router, PregolyaError>` within `debug_routes.rs` (returns E-SERVER-013 InvalidDebugRouteKey on empty/absent `debug_route_key` when `debug-endpoints` feature is on; caller propagates to startup failure — no server binds if this returns Err); return E-SERVER-004 403 on unauthenticated runtime requests (BC-2.24.002 PC-007)
 8. [ ] Register debug routes into the Axum router conditionally behind feature flag
 9. [ ] Add CI task `check-debug-endpoints-default` verifying feature default is false
 10. [ ] Run `cargo xtask check-file-size` — `debug_routes.rs` < 500 code lines

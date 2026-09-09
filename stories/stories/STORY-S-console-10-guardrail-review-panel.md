@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-console-10
 epic_id: E-console
-version: "1.9"
+version: "2.0"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -18,13 +18,14 @@ changelog:
   - "1.7 (D-356/DC-37/2026-09-08, story-writer): F-PDC37-04 — BC-2.12.003 title in body BC table corrected to canonical H1 (was 'Run-Read Endpoint — guardrail_journal? projection (PC-013)'; BC-2.24.008 row verified correct per available context). F-PDC37-06 — DC-29 delta-note supersession marker appended per records discipline."
   - "1.8 (D-356/DC-38/2026-09-08, story-writer): F-PDC38-05 — domain→wire severity-mapping requirement added to AC-002 (live-SSE uses GuardrailSeverityWire directly) and AC-004 (completed-run path: result.Fail.severity is GuardrailSeverity domain type; panel maps to GuardrailSeverityWire 1:1 for display, per BC-2.24.008 {PC-002}). F-PDC38-06 — DC-33 delta-note GuardrailEntry shape annotated with transform_applied drop marker."
   - "1.9 (D-356/DC-46/2026-09-09, story-writer): F-PDC46-01 — AC header citation form corrected to M4-strict bare-tag: BC-S.SS.NNN TAG (section-words removed per verify-ac-pc-trace.sh CHECK-1)."
+  - "2.0 (D-356/DC-50/2026-09-09, story-writer): F-PDC50-08 — subsystems corrected to [SS-24] only: SS-11 removed — this story CONSUMEs guardrail_journal? via run-read API only; no SS-11 code is modified here."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.008.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "426065e"
+input-hash: "b0033db"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-06, S-1.29]
@@ -35,7 +36,7 @@ priority: P1
 cycle: v1.0.0-greenfield
 wave: 3
 target_module: pregolya-console
-subsystems: [SS-24, SS-11]
+subsystems: [SS-24]
 estimated_days: 2
 assumption_validations: []
 risk_mitigations: []

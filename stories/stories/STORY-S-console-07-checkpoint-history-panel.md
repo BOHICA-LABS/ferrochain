@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-console-07
 epic_id: E-console
-version: "1.3"
+version: "1.4"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -12,13 +12,14 @@ changelog:
   - "1.1 (D-356/2026-09-07, story-writer): F-PDC04-01 — all checkpoint_id values converted to u64 numeric form; string-form IDs removed. F-PDC04-02 — GET /threads/{id}/state?checkpoint_id=<N> cited as BC-2.12.001 {PC-015} variant (v1.11); not-found response updated to HTTP 422 E-CHKPT-011 per BC-2.12.001 EC-010."
   - "1.2 (D-356/2026-09-07, story-writer): F-PDC09-01 — BC-2.12.001 BC-table Title cell corrected to canonical H1 per POL-7/L-276; scope note (?checkpoint_id PC-015 variant) preserved in AC-002 and AC-007 body prose."
   - "1.3 (D-356/DC-46/2026-09-09, story-writer): F-PDC46-01 — AC header citation form corrected to M4-strict bare-tag: BC-S.SS.NNN TAG (section-words removed per verify-ac-pc-trace.sh CHECK-1)."
+  - "1.4 (D-356/DC-50/2026-09-09, story-writer): F-PDC50-05 — subsystems corrected to [SS-24] only: SS-04 (pregolya-checkpoint) removed — this story CONSUMEs checkpoint APIs only; no pregolya-checkpoint code is modified here."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.005.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "1c62111"
+input-hash: "511d98f"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-05]
@@ -29,7 +30,7 @@ priority: P1
 cycle: v1.0.0-greenfield
 wave: 3
 target_module: pregolya-console
-subsystems: [SS-24, SS-04]
+subsystems: [SS-24]
 estimated_days: 2
 assumption_validations: []
 risk_mitigations: []

@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-console-01
 epic_id: E-console
-version: "1.2"
+version: "1.3"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -11,13 +11,14 @@ changelog:
   - "1.0 (D-356/2026-09-06, story-writer): Initial story — pregolya-console crate scaffolding, ConsoleConfig, CLI subcommand, rust_embed SPA serving, runtime-config.json, localhost :7437."
   - "1.1 (D-356/DC-12/2026-09-07, story-writer): F-PDC12-01 — blocks list updated to include S-console-03 (invariant: blocks is exact inverse of depends_on; S-console-03 declares depends_on [S-console-01])."
   - "1.2 (D-356/DC-46/2026-09-09, story-writer): F-PDC46-01 — AC header citation form corrected to M4-strict bare-tag: BC-S.SS.NNN TAG (section-words removed per verify-ac-pc-trace.sh CHECK-1)."
+  - "1.3 (D-356/DC-50/2026-09-09, story-writer): F-PDC50-02 — File Structure: added MODIFY row for crates/pregolya/Cargo.toml (add pregolya-console path dependency under [dependencies] — compile-time dep required for cli/console.rs to call pregolya_console::run_console())."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.001.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "df9e8d7"
+input-hash: "1aea225"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: []
@@ -185,4 +186,5 @@ N/A — S-console-01 is the root story in the E-console epic. No predecessor wit
 | `crates/pregolya-console/assets/webui/index.html` | CREATE | Placeholder SPA scaffold (filled in S-console-05) |
 | `crates/pregolya/src/cli/console.rs` | CREATE | `ConsoleArgs`, `fn run_console_subcommand` |
 | `crates/pregolya/src/cli/mod.rs` | MODIFY | Register `console` subcommand variant |
+| `crates/pregolya/Cargo.toml` | MODIFY | Add `pregolya-console = { path = "../pregolya-console" }` under `[dependencies]` — compile-time dep required for `cli/console.rs` to call `pregolya_console::run_console()` |
 | `tests/external/console-config-non-exhaustive/` | CREATE | Compile-fail test for `ConsoleConfig` non-exhaustive |

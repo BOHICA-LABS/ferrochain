@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-console-08
 epic_id: E-console
-version: "1.4"
+version: "1.5"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -13,13 +13,14 @@ changelog:
   - "1.2 (D-356/DC-23/2026-09-08, story-writer): F-PDC23-01 — resume is SAME run_id (architect ruling per BC-2.24.006 v1.3). AC-006 rewritten: run transitions in_progress on the SAME run_id; console continues monitoring same SSE stream (GET .../runs/{run_id}/stream); re-navigates to run inspection panel for same run_id. EC-006 corrected: same run_id unchanged. Task 8 corrected: post-resume continuation uses existing run_id. Zero new_run_id / {new_run_id} residue confirmed."
   - "1.3 (D-356/DC-25/2026-09-08, story-writer): F-PDC25-01 — node-boundary interrupt detection corrected to terminal __interrupt__ frame model (BC-2.24.006 v1.4). AC-001: detection now via terminal {\"__interrupt__\": [InterruptPayload]} SSE frame (not onclose/status-poll). AC-002: dialog sources value (scratchpad) + interrupt_id (hash) from frame; node_name claim removed (no node_name field in InterruptPayload). Task 3(b): populate dialog from terminal frame, not onclose handler. EC-004: node name removed; shows interrupt_id + null value. PSI: terminal frame reference. DC-02 body note: terminal frame correction noted. Zero node_name residue and zero no-dedicated-event over-correction residue confirmed."
   - "1.4 (D-356/DC-46/2026-09-09, story-writer): F-PDC46-01 — AC header citation form corrected to M4-strict bare-tag: BC-S.SS.NNN TAG (section-words removed per verify-ac-pc-trace.sh CHECK-1)."
+  - "1.5 (D-356/DC-50/2026-09-09, story-writer): F-PDC50-06 — subsystems corrected to [SS-24] only: SS-05 removed — this story CONSUMEs the HITL/interrupt API surface only; no SS-05 code is modified here."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.006.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "f7215c3"
+input-hash: "d527269"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-06]
@@ -30,7 +31,7 @@ priority: P1
 cycle: v1.0.0-greenfield
 wave: 3
 target_module: pregolya-console
-subsystems: [SS-24, SS-05]
+subsystems: [SS-24]
 estimated_days: 2
 assumption_validations: []
 risk_mitigations: []

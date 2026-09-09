@@ -1,11 +1,12 @@
 ---
 document_type: story-index
 level: L3
-version: "1.94"
+version: "1.95"
 status: active
 producer: state-manager
 timestamp: 2026-09-09T00:00:00Z
 changelog:
+  - "1.95 (D-356/DC-50/2026-09-09, state-manager): DC-50 (strict-streak pass 2) = F-PDC50-01 (1MED) → exhaustive story-scope audit expanded to 8-finding class, ALL CLOSED. F-1(CRIT) S-1.29 pregolya-checkpoint (SS-04) scope: saver.rs/sqlite.rs/memory.rs MODIFY rows added + three Tasks (CheckpointSaver journal methods + SQLite 3-state table + memory backend) + Task-7/Task-9 caller-not-definer corrected; subsystem field [SS-04,SS-11,SS-12]. F-2(MED) S-console-01 crates/pregolya/Cargo.toml MODIFY (pregolya-console dep) + dependency-graph pregolya→pregolya-console edge. F-3(LOW) S-console-03 Task-7 router-creation-time gate clarified. F-4..F-8(LOW) S-console-04/07/08/09/10: subsystem field corrected to [SS-24] (over-scoping removed). S-1.29 inventory row subsystem: SS-11 → SS-04, SS-11, SS-12. Census UNCHANGED: stories 53 / pts 377 / BC 149 / VP 42 / EC 145 / TV 841 / ADR 31 / crates 22. strict streak 0/3 (fix push; DC-51 gates new HEAD as pass 1)."
   - "1.94 (D-356/DC-48/2026-09-09, state-manager): DC-48 (strict-streak pass 1) = 3MED+1LOW+1OBS ALL CLOSED. F-PDC48-01[MED] S-1.29 evidence_journal retrieval routed via CheckpointSaver raw ops + graph::budget typed wrapper (avoids forbidden checkpoint→graph dep; JournalEntry stays pregolya-graph; no BC-2.10.002 change). F-PDC48-02[MED] S-1.29 canonical run-read handler = server::handlers / routes/runs.rs (server::run_read_handler phantom retired; Arc<dyn CheckpointStore>→Arc<dyn CheckpointSaver>). F-PDC48-03[MED] checkpoint trait canonicalized CheckpointSaver (CheckpointStore retired in S-1.29). F-PDC48-04[LOW] dep-graph edge rationales updated. F-PDC48-05[OBS] BC-2.24.008 {PRE-001} completed-run journal path. All 20 gates GREEN. Census UNCHANGED: stories 53 / pts 377 / BC 149 / VP 42 / EC 145 / TV 841 / ADR 31 / SS 24 / crates 22. strict streak reset 0/3 (fix push; DC-49 gates new HEAD)."
   - "1.93 (D-356/DC-47/2026-09-09, state-manager): F-PDC47-01[CRIT] DC-47 fix-burst — S-console-03 Task 3a SpanData field list corrected to 8-field shape (session_id: String field 5, = run_id per BC-2.24.002 {INV-007}); §File Structure debug_span.rs row updated to enumerate all 8 fields; class-sweep confirmed only S-console-03 had the 7-field defect (DC-32 sibling sweep was incomplete). Census UNCHANGED: stories 53 / pts 377 / BC 149 / VP 42 / EC 145 / TV 841 / ADR 31 / SS 24 / crates 22. strict streak reset 0/3 (fix push; DC-48 gates new HEAD)."
   - "1.92 (D-356/DC-45/2026-09-09, state-manager): DC-45 fix-burst CLOSED. F-PDC45-01[MED] S-1.29 §File Structure graph-side test row corrected per VP-2.11.007-A: 2-function harness (guardrail_journal_completeness_zero_ingress_boundaries asserts Some([]) + guardrail_journal_completeness_all_variants asserts Some([N])); None/no-hook case scoped server-side per AC-003 (source-of-truth precedence rule 4; VP unchanged). Census UNCHANGED: stories 53 / pts 377 / BC 149 / VP 42 / EC 145 / TV 795 / ADR 31 / SS 24 / crates 22. strict streak reset 0/3 (fix push; DC-46 gates new HEAD)."
@@ -213,7 +214,7 @@ input-hash: "34034c0"
 
 | ID | Title | Behavioral Contracts | Subsystem | Target Crate | Pri | Pts | depends_on | Status |
 |----|-------|---------------------|-----------|-------------|-----|-----|------------|--------|
-| S-1.29 | GuardrailJournal Persistence — Durable Journaling of Guardrail Evaluation Results | BC-2.11.007 | SS-11 | pregolya-graph | P0 | 5 | [S-1.19, S-1.26] | draft |
+| S-1.29 | GuardrailJournal Persistence — Durable Journaling of Guardrail Evaluation Results | BC-2.11.007 | SS-04, SS-11, SS-12 | pregolya-graph | P0 | 5 | [S-1.19, S-1.26] | draft |
 
 ---
 

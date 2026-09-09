@@ -2,7 +2,7 @@
 document_type: architecture-section
 level: L3
 section: dependency-graph
-version: "1.12"
+version: "1.13"
 status: active
 producer: architect
 timestamp: 2026-09-09T00:00:00Z
@@ -15,6 +15,7 @@ input-hash: "90c00a6"
 traces_to: ARCH-INDEX.md
 decisions: [D4, D6, D7, D21, D23]
 changelog:
+  - "1.13 (DC-50/F-2/2026-09-09, architect): F-2 (story-scope fix) — add missing Edge Table row `pregolya (facade) → pregolya-console` (runtime; facade `pregolya console` subcommand calls `pregolya_console::run_console(config)`; S-console-01 AC-001). Acyclicity confirmed: pregolya (facade) is the terminal node (position 20); pregolya-console is an impl crate that cannot depend back on the facade; no cycle introduced. input-hash unchanged (inputs did not change)."
   - "1.12 (D-356/DC-48/F-PDC48-04/2026-09-09, architect): F-PDC48-04 (LOW) — two stale edge rationales corrected. (1) pregolya-checkpoint→pregolya-core: add GuardrailEntry (core::guardrail) and associated types (GuardrailResult, IngressBoundary) as checkpoint deps — required for typed CheckpointSaver GuardrailJournal ops (append_guardrail_entry/get_guardrail_journal; BC-2.11.007); checkpoint→core dep allowed. (2) pregolya-graph→pregolya-checkpoint: add graph::provenance GuardrailJournal write-path (init_guardrail_journal, append_guardrail_entry) alongside existing graph::budget compaction read-path. input-hash updated 90c00a6 (input drift from prior burst — prd.md and module-criticality.md had changed)."
   - "1.11 (R46/F-193-01-sibling/2026-08-30): CLASS-AUDIT-2 CompiledGraph phantom sweep — Edge Table `pregolya` facade→pregolya-graph row: `CompiledGraph` (phantom bare name, non-canonical per ADR-029 §Symbol Grounding) replaced with `CompiledStateGraph` (canonical non-generic type per BC-2.02.001 {PC-001}). Sibling sweep: this was the sole remaining live-body `CompiledGraph` (bare, non-grandfathered) occurrence in this file; changelog entries v1.8/v1.10 retain old names as historical records (grandfathered per TD-VSDD-091). input-hash updated to e2207b1."
   - "1.10 (round-10-sibling-sweep/2026-08-27): GAP-01 type-grounding straggler sweep — three `CompiledGraph<S>` live-body sites replaced with `CompiledStateGraph` (non-generic; BC-2.02.001 {PC-001}): (1) Crate DAG pregolya-mcp annotation; (2) Edge Table pregolya-mcp→pregolya-graph rationale; (3) Build Order Wave 2 position-19 annotation. Sibling sweep: no additional CompiledGraph<S> or Fn(&S) sites in this file (v1.8 changelog entry retains old symbol as historical record; grandfathered per TD-VSDD-091). input-hash updated to 69778ab."
@@ -130,6 +131,7 @@ pregolya (facade)             (re-exports public API from all impl crates; termi
 | `pregolya` (facade) | pregolya-anthropic | runtime | Public API re-export: ChatAnthropic |
 | `pregolya` (facade) | pregolya-ollama | runtime | Public API re-export: ChatOllama, EmbeddingsOllama |
 | `pregolya` (facade) | pregolya-mcp | runtime | Public API re-export: MultiServerMcpClient, MCP tool adapters |
+| `pregolya` (facade) | pregolya-console | runtime | facade `pregolya console` subcommand calls `pregolya_console::run_console(config)`; compile-time dep (S-console-01 AC-001; F-2/DC-50) |
 
 ## Cross-Cutting Dependencies (Shared by All Crates)
 

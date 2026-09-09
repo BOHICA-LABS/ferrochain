@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-console-09
 epic_id: E-console
-version: "1.4"
+version: "1.5"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -13,13 +13,14 @@ changelog:
   - "1.2 (D-356/DC-29/2026-09-08, story-writer): F-PDC29-01 — AC-007 corrected: completed-run budget panel shows no gauge/timeline (compaction_event StreamEvents are transient; ADR-031 Decision 8); panel renders only EvidenceJournal area with error message on fetch failure."
   - "1.3 (D-356/DC-32/2026-09-08, story-writer): F-PDC32-01 — EC-005 corrected to align with AC-007 and BC-2.24.007 {EC-005}: for terminal-status runs there is no gauge or compaction timeline (transient StreamEvent substrate per ADR-031 Decision 8); on EvidenceJournal fetch failure only the EvidenceJournal display area is rendered showing the error message."
   - "1.4 (D-356/DC-46/2026-09-09, story-writer): F-PDC46-01 — AC header citation form corrected to M4-strict bare-tag: BC-S.SS.NNN TAG (section-words removed per verify-ac-pc-trace.sh CHECK-1)."
+  - "1.5 (D-356/DC-50/2026-09-09, story-writer): F-PDC50-07 — subsystems corrected to [SS-24] only: SS-10 removed — this story CONSUMEs the compaction/budget API surface only; no SS-10 code is modified here."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.007.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "977a1ec"
+input-hash: "e6c5de1"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-06]
@@ -30,7 +31,7 @@ priority: P1
 cycle: v1.0.0-greenfield
 wave: 3
 target_module: pregolya-console
-subsystems: [SS-24, SS-10]
+subsystems: [SS-24]
 estimated_days: 2
 assumption_validations: []
 risk_mitigations: []
