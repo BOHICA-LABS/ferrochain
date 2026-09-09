@@ -2,7 +2,7 @@
 document_type: architecture-section
 level: L3
 section: module-decomposition
-version: "1.64"
+version: "1.65"
 status: active
 producer: architect
 timestamp: 2026-09-09T00:00:00Z
@@ -15,6 +15,7 @@ input-hash: "c79f46c"
 traces_to: ARCH-INDEX.md
 decisions: [D4, D6, D7, D12, D13, D17, D20, D21, D23]
 changelog:
+  - "1.65 (D-356/DC-41/O-PDC41-01/2026-09-09, architect): O-PDC41-01 — §pregolya-checkpoint: added journal-storage note after VP anchors line documenting that the checkpoint store (checkpoint::sqlite/checkpoint::saver) backs durable per-run journal storage for both EvidenceJournal (BC-2.10.002) and GuardrailJournal (BC-2.11.007) via append_*/get_*_journal. Closes anchor-softness gap flagged by DC-39 architecture ruling (graph::provenance + BC-2.11.007 both reference pregolya-checkpoint journal storage but the §pregolya-checkpoint section had no corresponding mention). input-hash unchanged (no new BC inputs)."
   - "1.64 (D-356/DC-39/F-PDC39-02/OBS-1/2026-09-09, architect): F-PDC39-02 — graph::provenance row updated: DC-36 F-PDC36-06 model was stale (claimed Vec returned in graph result + RunStore terminal write). Checkpoint model: graph::provenance appends GuardrailEntry sync-durable to checkpoint-backed GuardrailJournal (pregolya-checkpoint; same SQLite backend as EvidenceJournal in graph::budget) BEFORE execution continues at each ingress boundary — NO Vec return, NO RunStore write; run-read projection assembled by server::run_read_handler from checkpoint store at read time. OBS-1 — core::guardrail table row and blockquote note: added IngressBoundary (3-way: ToolResult | RagChunk | MemoryItem; BC-2.06.001 §PC-002; per ADR-023 §Exempt Inventory) and GuardrailDecisionKind (binary: Fail/Transform; per ADR-023 §Exempt Inventory) to type list. input-hash unchanged (no new BC inputs)."
   - "1.63 (D-356/DC-36/F-PDC36-06/2026-09-08, architect): F-PDC36-06 — graph::provenance row updated: added GuardrailJournal accumulation responsibility (appends one GuardrailEntry after each evaluate() returns; accumulated Vec<GuardrailEntry> returned as part of graph execution result; durable RunStore persistence = pregolya-server terminal-state write, NOT graph::provenance; BC-2.11.007; DI-012). Consistent with F-PDC36-01 accumulate/persist split ruling (mirrors EvidenceJournal pattern in graph::budget). input-hash updated c79f46c (input drift from this burst)."
   - "1.62 (round-51/F-P2A212-07-confirm/2026-08-31): `graph::channels` row: confirmed directory module layout — `pregolya-graph/src/channels/` (not a single `channels.rs` file); ledger types reside in `channels/ledger.rs` (LedgerEntry trait, LedgerChannel<T>); promote/retire types reside in `channels/promote_retire.rs` (PromoteRetireOp<T>, PromoteRetireChannel<T>); re-export-only `channels/mod.rs` per CLAUDE.md §mod.rs rule. Established by S-1.14 (directory module: last_value.rs, append.rs, barrier.rs, named_barrier.rs, ephemeral.rs, mod.rs); S-1.28 adds ledger.rs and promote_retire.rs. Product-owner: BC-2.02.007 §Architecture Anchors cites channels.rs (flat file) — needs updating to channels/ledger.rs (directory module)."
@@ -198,6 +199,8 @@ Responsibilities: durable per-task checkpointing, monotonic clock, fork lineage,
 | `checkpoint::trajectory` | `TrajectoryWriter` + `TrajectoryReader` implementation; SQLite/backend storage for durable audit-grade trajectory records (`TrajectoryRecord { run_id, step_idx, event_kind, payload }`); isolated from `CheckpointSaver` compaction path per ADR-030 Decision 2; per-run evidence accumulation for research orchestrators | MEDIUM | SS-04 |
 
 **VP anchors:** `checkpoint::session_index` is VP-002 target (session tenancy Kani harness).
+
+**Journal storage:** `checkpoint::sqlite` (via `CheckpointSaver` / `checkpoint::saver`) backs durable per-run journal storage for BOTH `EvidenceJournal` (BC-2.10.002 {INV-003}; appended by `graph::scheduler`) and `GuardrailJournal` (BC-2.11.007; appended by `graph::provenance`) via `append_*_entry` / `get_*_journal` operations. `checkpoint::memory` provides the in-process equivalent for `GraphTestFixture` integration tests.
 
 ## pregolya-server (SS-12) — HIGH
 
