@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-console-10
 epic_id: E-console
-version: "1.6"
+version: "1.7"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -15,13 +15,14 @@ changelog:
   - "1.4 (D-356/DC-33/2026-09-08, story-writer): DC-33 human-authorized re-point — completed-run guardrail substrate corrected from evidence_journal? to guardrail_journal? (BC-2.11.007 persistence; BC-2.12.003 PC-013 projection); GuardrailEntry shape documented; evidence_journal? clarified as budget-only (PolicyDecision Allow/Escalate/Deny); Task 4 marked blocked-until-build on BC-2.11.007."
   - "1.5 (D-356/DC-34/2026-09-08, story-writer): DC-34 architect ruling — (1) boundary type IngressBoundary confirmed correct (ingress-boundary label semantic per BC-2.06.001 PC-002, no String/hook-identity residual); (2) transform_applied removed from GuardrailEntry shape in AC-004 and Task 4 (transform content = result.Transform.new_content, not a separate field); (3) wave wording corrected: BC-2.11.007 is Wave-1 core (S-1.29), consumed by this Wave-3 panel — not a Wave-3 blocked dependency; (4) S-1.29 added to depends_on."
   - "1.6 (D-356/DC-35/2026-09-08, story-writer): F-PDC35-05 — BC-2.11.007 title corrected to canonical H1 in body BC table."
+  - "1.7 (D-356/DC-37/2026-09-08, story-writer): F-PDC37-04 — BC-2.12.003 title in body BC table corrected to canonical H1 (was 'Run-Read Endpoint — guardrail_journal? projection (PC-013)'; BC-2.24.008 row verified correct per available context). F-PDC37-06 — DC-29 delta-note supersession marker appended per records discipline."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.008.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "4303f19"
+input-hash: "94318f5"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-06, S-1.29]
@@ -46,7 +47,7 @@ tdd_mode: strict
 
 > **D-356 adversary fix DC-03 (2026-09-07, story-writer).** BC-2.24.008 v1.3 boundary field/enum correction propagated to story body per bc_array_changes_propagate_to_body_and_acs. Corrected: `boundary_type`→`boundary`, `BoundaryType`/`ProvenanceTag`→`IngressBoundary`, `RAGRetrieval`→`RagChunk`, `MemoryIngress`→`MemoryItem`, `GuardrailSeverity`→`GuardrailSeverityWire`; clarified that `Transform` carries both severity=`None` and reason=`None` (not just no reason). Affected locations: AC-002, EC-003, Forbidden Patterns. Traceability: guardrail-output subsystem postcondition PC-002 GuardrailDecision bullet (source of truth for wire field names) + ADR-006 §Decision (IngressBoundary enum definition).
 
-> **D-356 adversary fix DC-29 (2026-09-08, story-writer).** F-PDC29-01 — AC-004, AC-005, Task 4, File Structure corrected for ADR-031 Decision 8. StreamEvent is transient; there is no stored StreamEvent list for completed-run reconstruction. The guardrail security feed for terminal-status runs reconstructs from the `evidence_journal?` field on the run-read endpoint. AC-005 completeness invariant updated: "SSE stream or stored event list" → "live SSE stream (in_progress) or evidence_journal reconstruction (terminal-status)". Live (in_progress) SSE path (AC-003) is unchanged.
+> **D-356 adversary fix DC-29 (2026-09-08, story-writer).** F-PDC29-01 — AC-004, AC-005, Task 4, File Structure corrected for ADR-031 Decision 8. StreamEvent is transient; there is no stored StreamEvent list for completed-run reconstruction. The guardrail security feed for terminal-status runs reconstructs from the `evidence_journal?` field on the run-read endpoint. AC-005 completeness invariant updated: "SSE stream or stored event list" → "live SSE stream (in_progress) or evidence_journal reconstruction (terminal-status)". Live (in_progress) SSE path (AC-003) is unchanged. *(SUPERSEDED by DC-33: guardrail history reconstructs from `guardrail_journal?` (BC-2.11.007), not `evidence_journal?`)*
 
 > **D-356 adversary fix DC-32 (2026-09-08, story-writer).** F-PDC32-03 — Bare `ADR-030 §Decision` ordinal-gap corrected to `ADR-030 §Decision 2` in AC-004 body. ADR-030 has no bare `## Decision` heading; Decision 2 is the transience authority for StreamEvent. Fixes POL-19 ambiguous-heading citation.
 
@@ -55,6 +56,8 @@ tdd_mode: strict
 > **D-356 architect ruling DC-34 (2026-09-08, story-writer).** Three corrections applied: (1) F-PDC34-03 boundary type confirmed — `boundary: IngressBoundary` is correct (IngressBoundary is the canonical ingress-boundary-label enum with values ToolResult|RagChunk|MemoryItem; semantic = label of the ingress boundary at which the hook fired, not hook identity; no String residual). (2) O-PDC34-A `transform_applied` dropped from GuardrailEntry shape — the field does not exist; Transform content is carried in `result.Transform.new_content`, not a separate field; corrected in AC-004 and Task 4. (3) F-PDC34-06 wave wording corrected — BC-2.11.007 GuardrailJournal persistence is Wave-1 core (S-1.29, created by this burst); it is already available when this Wave-3 panel is implemented; the panel's roadmap-only status is unchanged. S-1.29 added to depends_on. Affected locations: AC-004, Task 4.
 
 > **D-356 adversary fix DC-35 (2026-09-08, story-writer).** F-PDC35-05 — BC-2.11.007 title in the body BC table corrected to canonical H1 "Guardrail Evaluation Results Are Durably Journaled" (was "GuardrailJournal Persistence"). POL-7 verbatim-H1 compliance; BC-2.11.007 body BC table row is now title-accurate.
+
+> **D-356 adversary fix DC-37 (2026-09-08, story-writer).** F-PDC37-04 — BC-2.12.003 title in the body BC table corrected to canonical H1 "Run Creation and Execution Lifecycle (queued → in_progress → completed/failed/cancelled/summary_halt; interrupted is pausable/resumable)" (was "Run-Read Endpoint — guardrail_journal? projection (PC-013)" — a clause tag, not the H1). POL-7 verbatim-H1 compliance. Sweep: BC-2.24.008 row title "Guardrail/Security Decision Review Panel (CAP-047)" not changed — canonical H1 not available in this pass; flagged for next adversary verification against BC-2.24.008 source. F-PDC37-06 — DC-29 delta-note supersession marker appended: guardrail history reconstruction is from `guardrail_journal?` (BC-2.11.007), not `evidence_journal?` as the DC-29 note originally stated.
 
 ## Narrative
 
@@ -68,7 +71,7 @@ tdd_mode: strict
 |----|-------|------------|
 | BC-2.24.008 | Guardrail/Security Decision Review Panel (CAP-047) | AC-001..AC-008 |
 | BC-2.11.007 | Guardrail Evaluation Results Are Durably Journaled | AC-004 (completed-run reconstruction dependency) |
-| BC-2.12.003 | Run-Read Endpoint — guardrail_journal? projection (PC-013) | AC-004 (field projection dependency) |
+| BC-2.12.003 | Run Creation and Execution Lifecycle (queued → in_progress → completed/failed/cancelled/summary_halt; interrupted is pausable/resumable) | AC-004 (field projection dependency) |
 
 ## Acceptance Criteria
 

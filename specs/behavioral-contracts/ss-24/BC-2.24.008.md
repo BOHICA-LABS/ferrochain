@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.008
-version: "1.8"
+version: "1.9"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -28,6 +28,7 @@ changelog:
   - "1.6 (D-356-fix/DC-30/F-PDC30-02/2026-09-08, product-owner): F-PDC30-02 (MED): `ADR-030 §Decision` → `ADR-030 §Decision 2` in {PC-004} body, DC-29 delta note, and DC-29 changelog entry. `§Decision 2` is the canonical ADR-030 clause establishing StreamEvent transience."
   - "1.7 (D-356/DC-33/2026-09-08, product-owner): F-PDC33-02: DC-29 used wrong field — `evidence_journal?` is the budget PolicyDecision journal (BC-2.10.002 / EvidenceJournal); completed-run guardrail history is `guardrail_journal?` (BC-2.11.007 / GuardrailJournal). All normative references to completed-run guardrail history updated: Description, PRE-002, PC-004 (architect-exact wording per DC-33), INV-002 — all `evidence_journal?` → `guardrail_journal?`. NOTE in PC-004 added clarifying that evidence_journal? records a SEPARATE governance dimension (budget). DC-33 human-authorized scope."
   - "1.8 (D-356/DC-34/2026-09-08, product-owner): O-PDC34-B: {PC-002} — completed-run severity mapping sentence added: guardrail_journal? entries carry Fail{severity: GuardrailSeverity} (domain type); the panel maps to GuardrailSeverityWire for display; mapping is isomorphic Critical/High/Medium/Low 1:1 (no data loss). Shape-consistency sweep: BC-2.24.008 does not enumerate GuardrailEntry fields beyond a high-level reference in {PC-004}; no transform_applied drift found."
+  - "1.9 (D-356/DC-37/2026-09-08, product-owner): F-PDC37-06: DC-29 historical delta-note annotated with inline supersession marker — '(SUPERSEDED by DC-33: completed-run guardrail history is reconstructed from guardrail_journal? (BC-2.11.007), NOT evidence_journal? which is budget-only — see DC-33 note below)' appended to the DC-29 blockquote. Historical blockquote text preserved unchanged; annotation clarifies the DC-29 field-name claim (evidence_journal? as guardrail substrate) was superseded by DC-33 adjudication. Normative {PC-004} already correct per DC-33."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-047
   - architecture/decisions/ADR-031-developer-console-architecture.md
@@ -143,7 +144,7 @@ S-console-10 (Wave 3 — guardrail/security decision review panel)
 
 > **D-356 adversary fix DC-30 (2026-09-08, product-owner).** F-PDC30-02 (MED): `ADR-030 §Decision` → `ADR-030 §Decision 2` in {PC-004} body, DC-29 delta note, and DC-29 changelog entry. `§Decision 2` is the canonical ADR-030 clause establishing that StreamEvent is transient and not persisted.
 
-> **D-356 adversary fix DC-29 (2026-09-08, product-owner).** F-PDC29-01 (HIGH): Completed-run reconstruction substrate was non-existent stored StreamEvent list. ADR-031 Decision 8 defines the v1-realizable substrate: evidence_journal? on GET /threads/{id}/runs/{run_id} (BC-2.12.003 {PC-013}) is the authoritative source for completed-run guardrail history. StreamEvent is transient (ADR-030 §Decision 2). Description, PRE-002, PC-004, and INV-002 all updated to cite evidence_journal? mechanism; "stored event list" removed throughout.
+> **D-356 adversary fix DC-29 (2026-09-08, product-owner).** F-PDC29-01 (HIGH): Completed-run reconstruction substrate was non-existent stored StreamEvent list. ADR-031 Decision 8 defines the v1-realizable substrate: evidence_journal? on GET /threads/{id}/runs/{run_id} (BC-2.12.003 {PC-013}) is the authoritative source for completed-run guardrail history. StreamEvent is transient (ADR-030 §Decision 2). Description, PRE-002, PC-004, and INV-002 all updated to cite evidence_journal? mechanism; "stored event list" removed throughout. (SUPERSEDED by DC-33: completed-run guardrail history is reconstructed from `guardrail_journal?` (BC-2.11.007), NOT `evidence_journal?` which is budget-only — see DC-33 note below)
 
 > **D-356 adversary fix DC-01 (2026-09-06, product-owner).** Story Anchor corrected S-console-09 → S-console-10. story-writer split BC-2.24.002 across S-console-02+03 and added S-console-05 (SPA build, no BC), shifting the numbering. Verified: S-console-10 frontmatter carries `behavioral_contracts: [BC-2.24.008]`.
 

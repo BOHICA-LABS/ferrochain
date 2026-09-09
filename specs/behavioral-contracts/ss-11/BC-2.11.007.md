@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.11.007
-version: "1.2"
+version: "1.3"
 status: draft
 producer: product-owner
 timestamp: 2026-09-08T00:00:00Z
@@ -26,6 +26,7 @@ changelog:
   - "1.0 (D-356/DC-33/2026-09-08, product-owner): Initial BC — durable GuardrailJournal persistence. Every GuardrailHook::evaluate() call at an ingress boundary appends exactly one GuardrailEntry to the run's append-only GuardrailJournal (Pass, Fail, and Transform all recorded); journal is persisted in the RunStore record for terminal-status runs (entities-server.md §RunStore); guardrail_journal? is projected on GET /threads/{thread_id}/runs/{run_id} for terminal-status runs (BC-2.12.003 {PC-013}). GuardrailJournal is SEPARATE from EvidenceJournal (BC-2.10.002): distinct governance dimensions. DI-012 completeness invariant. VP-2.11.007-A minting requested (parallel to VP-BUDGET-03). D-356 DC-33 human-authorized scope."
   - "1.1 (D-356/DC-34/2026-09-08, product-owner): F-PDC34-03: {PC-001} GuardrailEntry shape — boundary corrected from String to IngressBoundary (existing canonical enum per BC-2.06.001 {PC-002}; values ToolResult|RagChunk|MemoryItem). O-PDC34-A: transform_applied: Option<String> dropped from GuardrailEntry shape — result.Transform{new_content: IngressContent} is authoritative; full-BC sweep applied. TV-001 updated: boundary: IngressBoundary::ToolResult; transform_applied refs removed. F-PDC34-05: three MINT-REQUIRED claims removed — VP-2.11.007-A is minted and registered in VP-INDEX; anchors {INV-002} (completeness) and module graph::provenance. F-PDC34-06: S-TBD → S-1.29 in §Story Anchor and §Traceability Stories (STORY-S-1.29-guardrail-journal-persistence, Wave-1 P0)."
   - "1.2 (D-356/DC-36/2026-09-08, product-owner): F-PDC36-03: {EC-004} rationale corrected — discriminator is hook REGISTRATION not evaluate()-call count; {EC-004} now reads 'no GuardrailHook registered → journal never initialized → None'; {EC-006} added for hook-registered + zero-ingress → Some([]) (empty journal persisted); {INV-004} updated with all three states (no-hook→None; hook+0-ingress→Some([]); hook+N-ingress→Some([N])); TV-002 rationale updated. F-PDC36-04: VP-anchor reconciled to {PC-001}/{INV-002} at all three sites (§Verification Properties, §VP Anchors, §Traceability). F-PDC36-01: §Architecture Anchors replaced with architect-exact wording (graph::provenance accumulation; server::handlers RunStore persistence; reverse-edge note); 'checkpoint put_writes' reference removed."
+  - "1.3 (D-356/DC-37/2026-09-08, product-owner): F-PDC37-02: {INV-002} panic/error carve-out — replaced unqualified 'every evaluate() call produces exactly one entry' with architect-exact wording: 'exactly one GuardrailEntry per successfully-returning evaluate() call; panicking or erroring evaluate() appends no entry per {EC-003}; accumulated journal returned as part of graph execution result and persisted to RunStore by server terminal-state write (AC-002/AC-003; F-PDC36-01)'. §Verification Properties VP-2.11.007-A property statement and §VP Anchors bullet updated to reflect successfully-returning qualifier for consistency with {INV-002}/{EC-003}. No double-count on panic path: {EC-003} (no entry on panic), {INV-002} (successful-call only), VP-2.11.007-A (successful-call count asserted) all now consistent."
 modified: []
 extracted_from: null
 deprecated: null
@@ -97,10 +98,11 @@ content evaluation results.
 - {INV-001} **Append-only:** `GuardrailJournal` entries are never mutated or deleted once
   appended. The journal represents an immutable audit trail for the run's guardrail history.
 
-- {INV-002} **Completeness — DI-012:** Entries are appended in the order `GuardrailHook::evaluate()`
-  is called within the run. Every evaluate() call produces exactly one entry; there are no
-  gaps and no double-writes. This is the DI-012 completeness invariant applied to the
-  persistence layer: every guardrail evaluation is accountable.
+- {INV-002} **Completeness — DI-012:** Exactly one `GuardrailEntry` is appended to the run's
+  accumulated journal per **successfully-returning** `GuardrailHook::evaluate()` call; a
+  panicking or erroring `evaluate()` appends no entry per {EC-003}. The accumulated journal
+  is returned as part of the graph execution result and persisted to RunStore by the server's
+  terminal-state write (AC-002/AC-003; F-PDC36-01).
 
 - {INV-003} **Separation from EvidenceJournal:** The `GuardrailJournal` (this BC) and the
   `EvidenceJournal` (BC-2.10.002) are distinct data structures with distinct semantics:
@@ -152,7 +154,7 @@ content evaluation results.
 
 | VP-ID | Property | Proof Method |
 |-------|----------|-------------|
-| VP-2.11.007-A | `GuardrailJournal` contains exactly one entry per `GuardrailHook::evaluate()` call; entries are in evaluation order; no missing evaluations | Integration test — instrument evaluate() calls; assert journal entry count == evaluate() call count; verify ordering. Minted and registered in VP-INDEX; anchors {PC-001}/{INV-002} (write-obligation and DI-012 completeness) and module `graph::provenance`. Parallel to VP-BUDGET-03 (EvidenceJournal completeness). |
+| VP-2.11.007-A | `GuardrailJournal` contains exactly one entry per **successfully-returning** `GuardrailHook::evaluate()` call; entries are in evaluation order; panicking or erroring calls append no entry (per {EC-003}/{INV-002}); no missing evaluations from successful calls | Integration test — instrument evaluate() calls; assert journal entry count == successful evaluate() call count; verify ordering. Minted and registered in VP-INDEX; anchors {PC-001}/{INV-002} (write-obligation and DI-012 completeness) and module `graph::provenance`. Parallel to VP-BUDGET-03 (EvidenceJournal completeness). |
 
 ## Related BCs
 
@@ -177,7 +179,7 @@ S-1.29 (STORY-S-1.29-guardrail-journal-persistence, Wave-1 P0 — implements BC-
 
 ## VP Anchors
 
-- VP-2.11.007-A — GuardrailJournal completeness: 1 entry per evaluate() call, evaluation order (integration test). Minted and registered in VP-INDEX; anchors {PC-001}/{INV-002} (write-obligation and DI-012 completeness) and module `graph::provenance`. Parallel to VP-BUDGET-03.
+- VP-2.11.007-A — GuardrailJournal completeness: 1 entry per successfully-returning evaluate() call (panicking/erroring calls append no entry per {EC-003}/{INV-002}), evaluation order (integration test). Minted and registered in VP-INDEX; anchors {PC-001}/{INV-002} (write-obligation and DI-012 completeness) and module `graph::provenance`. Parallel to VP-BUDGET-03.
 
 ## Traceability
 

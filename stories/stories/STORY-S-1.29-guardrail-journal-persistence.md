@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-1.29
 epic_id: E-11
-version: "1.2"
+version: "1.3"
 status: draft
 producer: story-writer
 timestamp: 2026-09-08T00:00:00Z
@@ -11,6 +11,7 @@ changelog:
   - "1.0 (D-356/DC-34/2026-09-08, story-writer): Initial story — GuardrailJournal persistence (BC-2.11.007); Wave-1 companion to S-1.19 per DC-34 architect ruling. PO must set BC-2.11.007 §Story Anchor to S-1.29."
   - "1.1 (D-356/DC-35/2026-09-08, story-writer): F-PDC35-01 — EC-001 corrected: no-hook ⇒ guardrail_journal? None (not Some([])) per BC-2.11.007 INV-004/EC-004/TV-002; AC-003 conditioned on hook-registered; test for no-hook case added. F-PDC35-03 — VP-2.11.007-A added to verification_properties (S-1.29 is anchor story); test file renamed guardrail_journal.rs → guardrail_journal_completeness.rs (canonical VP harness path). F-PDC35-05 — BC-2.11.007 title corrected to canonical H1 in body BC table."
   - "1.2 (D-356/DC-36/2026-09-08, story-writer): F-PDC36-01 — terminal GuardrailJournal persistence relocated from pregolya-graph to pregolya-server (architect ruling: pregolya-graph MUST NOT import RunStore — forbidden reverse edge). Architecture Mapping, Purity Classification, Forbidden Dependencies, File Structure, Task 5, and Token Budget updated. In-flight append stays pregolya-graph/src/provenance.rs; terminal write moves to server::handlers (same site as evidence_journal persistence)."
+  - "1.3 (D-356/DC-37/2026-09-08, story-writer): F-PDC37-01 — §Previous Story Intelligence S-1.19 panic-gotcha corrected: caught evaluate() panic ⇒ Err(E-CORE-007) fail-closed, NO GuardrailEntry appended (per BC-2.11.007 {EC-003} / S-1.19 AC-025); tdd_mode note, AC-001, and EC-006 updated accordingly. F-PDC37-03 — §File Structure split into two test files: graph-side guardrail_journal_completeness.rs (AC-001, VP-2.11.007-A) and server-side guardrail_journal_server_integration.rs (AC-002 + AC-003); §Tasks, §Token Budget, AC test-file references updated."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-11/BC-2.11.007.md
@@ -34,7 +35,7 @@ risk_mitigations: []
 tdd_mode: strict
 ---
 
-> **tdd_mode:** strict — full TDD Iron Law enforced. Journal completeness is the critical invariant: every GuardrailHook::evaluate() call must produce exactly one GuardrailEntry.
+> **tdd_mode:** strict — full TDD Iron Law enforced. Journal completeness is the critical invariant: every SUCCESSFUL GuardrailHook::evaluate() call must produce exactly one GuardrailEntry. A caught panic propagates Err(E-CORE-007) fail-closed — NO entry appended (BC-2.11.007 {EC-003}).
 
 # S-1.29: GuardrailJournal Persistence
 
@@ -43,6 +44,8 @@ tdd_mode: strict
 > **D-356/DC-35 (2026-09-08, story-writer).** F-PDC35-01 — EC-001 corrected: no GuardrailHook registered ⇒ `guardrail_journal?` = None (null/omitted) on run-read — NOT `Some([])`. Distinct: hook registered + zero ingress = `Some([])` (EC-002); hook registered + N ingress = `Some([entries])`. "No hook" = None per BC-2.11.007 INV-004/EC-004/TV-002. AC-003 updated to condition the non-None result on hook-registered. F-PDC35-03 — VP-2.11.007-A added (S-1.29 is the anchor story; test vehicle at canonical path). Test file renamed `guardrail_journal.rs` → `guardrail_journal_completeness.rs` to match VP harness path. F-PDC35-05 — BC table title corrected to canonical H1 "Guardrail Evaluation Results Are Durably Journaled".
 
 > **D-356/DC-36 (2026-09-08, story-writer).** F-PDC36-01 architect ruling — terminal GuardrailJournal persistence relocated from `pregolya-graph` to `pregolya-server`. Rationale: `pregolya-graph` MUST NOT import `RunStore` from `pregolya-server` — that is a forbidden reverse edge (`pregolya-server → pregolya-graph` is the correct direction; a `pregolya-graph → pregolya-server` import would create a cycle). Model: identical to how `evidence_journal` is split — graph accumulates in-flight, server persists atomically at terminal transition. In-flight append stays `pregolya-graph/src/provenance.rs` (unchanged). Terminal write moves to `pregolya-server/src/handlers/` (run-state-machine terminal-state write site, same function as evidence_journal persistence). Affected locations: Architecture Mapping §Terminal row, Purity Classification, Forbidden Dependencies, File Structure, Task 5, Token Budget.
+
+> **D-356/DC-37 (2026-09-08, story-writer).** F-PDC37-01 — §Previous Story Intelligence S-1.19 panic-gotcha corrected: prior text claimed "journal append fires on panic" — WRONG per BC-2.11.007 {EC-003} and S-1.19 AC-025. Correct: a caught `evaluate()` panic causes `Err(E-CORE-007)` to propagate fail-closed; NO `GuardrailEntry` is appended because no `GuardrailResult` exists. Affected: §Previous Story Intelligence S-1.19 gotcha column, tdd_mode preamble note, AC-001 success-path clarification, EC-006 added (panic path). F-PDC37-03 — §File Structure split into two test files: `crates/pregolya-graph/tests/guardrail_journal_completeness.rs` (graph-side; AC-001 / VP-2.11.007-A; asserts on accumulated `Vec<GuardrailEntry>` from graph execution result; NO pregolya-server dependency) and `crates/pregolya-server/tests/guardrail_journal_server_integration.rs` (server-side; AC-002 RunStore terminal persistence + AC-003 run-read None/Some projection). Affected: §File Structure, §Tasks Task 1 + Task 9, §Token Budget, AC-002/AC-003 test-file annotations. Rationale: `pregolya-graph` MUST NOT import `RunStore` from `pregolya-server` — that is a forbidden reverse edge (`pregolya-server → pregolya-graph` is the correct direction; a `pregolya-graph → pregolya-server` import would create a cycle). Model: identical to how `evidence_journal` is split — graph accumulates in-flight, server persists atomically at terminal transition. In-flight append stays `pregolya-graph/src/provenance.rs` (unchanged). Terminal write moves to `pregolya-server/src/handlers/` (run-state-machine terminal-state write site, same function as evidence_journal persistence). Affected locations: Architecture Mapping §Terminal row, Purity Classification, Forbidden Dependencies, File Structure, Task 5, Token Budget.
 
 ## Narrative
 
@@ -59,13 +62,13 @@ tdd_mode: strict
 ## Acceptance Criteria
 
 ### AC-001 (traces to BC-2.11.007 postcondition PC-001 — append on every evaluate())
-After each `GuardrailHook::evaluate(content, provenance_tag)` call in `pregolya-graph/src/provenance.rs`, a `GuardrailEntry` is appended to the run's in-flight journal. The entry carries: `boundary` (IngressBoundary — the boundary label from `provenance_tag`), `result` (the `GuardrailResult` returned: Pass, Fail, or Transform — for Transform, new content is in `result.Transform.new_content`), `provenance` (the full `ProvenanceTag`), and `timestamp_ms` (wall-clock milliseconds at append time). The append occurs regardless of whether the result is Pass, Fail, or Transform. Verified by `test_BC_2_11_007_append_on_every_evaluate_call()`.
+After each `GuardrailHook::evaluate(content, provenance_tag)` call in `pregolya-graph/src/provenance.rs` that RETURNS SUCCESSFULLY, a `GuardrailEntry` is appended to the run's in-flight journal. The entry carries: `boundary` (IngressBoundary — the boundary label from `provenance_tag`), `result` (the `GuardrailResult` returned: Pass, Fail, or Transform — for Transform, new content is in `result.Transform.new_content`), `provenance` (the full `ProvenanceTag`), and `timestamp_ms` (wall-clock milliseconds at append time). The append occurs for Pass, Fail, and Transform — but NOT for a caught panic: a caught panic propagates `Err(E-CORE-007)` fail-closed and no `GuardrailEntry` is appended (BC-2.11.007 {EC-003}). Verified by `test_BC_2_11_007_append_on_every_evaluate_call()` in `crates/pregolya-graph/tests/guardrail_journal_completeness.rs` (VP-2.11.007-A; graph-side).
 
 ### AC-002 (traces to BC-2.11.007 postcondition PC-002 — RunStore terminal persistence)
-When a run transitions to any terminal state (`completed`, `failed`, `cancelled`, `summary_halt`), the in-flight journal is persisted atomically to the `RunStore` as the run's `guardrail_journal` field. After the transition, the journal is retrievable by run ID from the RunStore. Verified by `test_BC_2_11_007_runstore_terminal_persistence()`.
+When a run transitions to any terminal state (`completed`, `failed`, `cancelled`, `summary_halt`), the in-flight journal is persisted atomically to the `RunStore` as the run's `guardrail_journal` field. After the transition, the journal is retrievable by run ID from the RunStore. Verified by `test_BC_2_11_007_runstore_terminal_persistence()` in `crates/pregolya-server/tests/guardrail_journal_server_integration.rs` (server-side).
 
 ### AC-003 (traces to BC-2.11.007 postcondition PC-003 — run-read guardrail_journal? projection)
-The run-read endpoint (`GET /threads/{thread_id}/runs/{run_id}`) exposes the journal as `guardrail_journal?` in the response body under these conditions: (a) For in-progress runs: the field is absent (`None`), regardless of hook registration. (b) For terminal-status runs where a hook was registered: the field contains the complete `Vec<GuardrailEntry>` written at terminal transition — `Some([])` when registered but no ingress occurred; `Some([entries])` when N ingress events were evaluated. (c) For terminal-status runs where NO hook was registered: the field is absent (`None`) — per BC-2.11.007 INV-004. No hook registered is semantically distinct from hook registered with zero evaluations. Verified by `test_BC_2_11_007_run_read_projection_terminal()`, `test_BC_2_11_007_run_read_projection_in_progress_absent()`, and `test_BC_2_11_007_run_read_projection_no_hook_none()`.
+The run-read endpoint (`GET /threads/{thread_id}/runs/{run_id}`) exposes the journal as `guardrail_journal?` in the response body under these conditions: (a) For in-progress runs: the field is absent (`None`), regardless of hook registration. (b) For terminal-status runs where a hook was registered: the field contains the complete `Vec<GuardrailEntry>` written at terminal transition — `Some([])` when registered but no ingress occurred; `Some([entries])` when N ingress events were evaluated. (c) For terminal-status runs where NO hook was registered: the field is absent (`None`) — per BC-2.11.007 INV-004. No hook registered is semantically distinct from hook registered with zero evaluations. Verified by `test_BC_2_11_007_run_read_projection_terminal()`, `test_BC_2_11_007_run_read_projection_in_progress_absent()`, and `test_BC_2_11_007_run_read_projection_no_hook_none()` in `crates/pregolya-server/tests/guardrail_journal_server_integration.rs` (server-side).
 
 ### AC-004 (traces to BC-2.11.007 invariant INV-002 — completeness DI-012)
 The count of `GuardrailEntry` records in the persisted journal equals the count of `GuardrailHook::evaluate()` calls made during the run — no calls are silently omitted. For a run with N evaluate calls, the terminal journal contains exactly N entries. Verified by `test_BC_2_11_007_journal_entry_count_equals_evaluate_calls()`.
@@ -101,6 +104,7 @@ The `guardrail_journal` field contains only `GuardrailEntry` records (boundary +
 | EC-003 | 50 evaluate() calls in one run (Domain A SOC scenario) | All 50 entries in terminal journal; run-read returns all 50 |
 | EC-004 | evidence_journal entries present | Separation invariant: guardrail_journal contains zero PolicyDecision records; evidence_journal contains zero GuardrailEntry records |
 | EC-005 | Transform result | GuardrailEntry carries result=Transform with new_content accessible via result.Transform.new_content; no separate transform_applied field |
+| EC-006 | GuardrailHook::evaluate() panics (caught by catch_unwind) | Err(E-CORE-007) propagated fail-closed per S-1.19 AC-025; NO GuardrailEntry appended (no GuardrailResult exists); journal count is NOT incremented; per BC-2.11.007 {EC-003} |
 
 ## Token Budget Estimate (MANDATORY)
 
@@ -115,7 +119,8 @@ The `guardrail_journal` field contains only `GuardrailEntry` records (boundary +
 | `pregolya-graph/src/run_executor.rs` in-flight accumulation additions (~30 lines) | ~400 |
 | `pregolya-server/src/handlers/` terminal-persistence additions (~40 lines) | ~500 |
 | `pregolya-server/src/routes/runs.rs` projection additions (~30 lines) | ~400 |
-| Test files (~120 lines) | ~1,500 |
+| Test files — graph-side guardrail_journal_completeness.rs (~60 lines) | ~800 |
+| Test files — server-side guardrail_journal_server_integration.rs (~80 lines) | ~1,000 |
 | Tool outputs | ~300 |
 | **Total** | **~12,200** |
 | Agent context window | 200K (Sonnet) |
@@ -123,7 +128,7 @@ The `guardrail_journal` field contains only `GuardrailEntry` records (boundary +
 
 ## Tasks (MANDATORY)
 
-1. [ ] Write failing tests for all ACs (test-writer; unit + integration tests)
+1. [ ] Write failing tests for all ACs (test-writer): (a) graph-side tests in `crates/pregolya-graph/tests/guardrail_journal_completeness.rs` for AC-001 (append on successful evaluate; VP-2.11.007-A vehicle; NO pregolya-server dependency); (b) server-side tests in `crates/pregolya-server/tests/guardrail_journal_server_integration.rs` for AC-002 (RunStore terminal persistence) and AC-003 (run-read None/Some projection)
 2. [ ] Add `GuardrailEntry` struct and `GuardrailJournal = Vec<GuardrailEntry>` type alias to `pregolya-core/src/guardrail.rs`. Fields: `boundary: IngressBoundary`, `result: GuardrailResult`, `provenance: ProvenanceTag`, `timestamp_ms: u64`. No `transform_applied` field — Transform content is in `result.Transform.new_content`
 3. [ ] Modify `pregolya-graph/src/provenance.rs` dispatch site: after each `GuardrailHook::evaluate()` call, append a `GuardrailEntry` to the run's in-flight `GuardrailJournal` (AC-001 / BC-2.11.007 PC-001)
 4. [ ] Add `guardrail_journal: GuardrailJournal` in-flight field to the run execution context; initialize empty at run start
@@ -131,13 +136,13 @@ The `guardrail_journal` field contains only `GuardrailEntry` records (boundary +
 6. [ ] Add `guardrail_journal: Option<GuardrailJournal>` to the `Run` response model; populate from RunStore for terminal-status runs; absent for in-progress runs (AC-003 / BC-2.11.007 PC-003). This modifies `pregolya-server/src/routes/runs.rs` run-read handler — dependent on S-1.26 RunStore infrastructure
 7. [ ] Implement separation assertion: add test that a run using BOTH budget policy and guardrail hook produces entries exclusively in their respective journals with no cross-contamination (AC-005 / BC-2.11.007 INV-003)
 8. [ ] Export `GuardrailEntry` and `GuardrailJournal` from `pregolya-core/src/lib.rs`
-9. [ ] Run `cargo nextest run -p pregolya-core -p pregolya-graph -p pregolya-server --no-fail-fast` — all tests green
+9. [ ] Run `cargo nextest run -p pregolya-core -p pregolya-graph --no-fail-fast` — graph-side tests (AC-001) green; then `cargo nextest run -p pregolya-server --no-fail-fast` — server-side tests (AC-002/AC-003) green
 
 ## Previous Story Intelligence (MANDATORY)
 
 | Story | Key Decisions | Patterns Established | Gotchas Discovered |
 |-------|--------------|---------------------|-------------------|
-| S-1.19 | `GuardrailHook::evaluate()` dispatch in `provenance.rs` with `FutureExt::catch_unwind(AssertUnwindSafe(...))` fail-closed pattern | `GuardrailResult` variants (Pass, Fail, Transform), `ProvenanceTag` structure, `IngressBoundary` enum | Async panic during evaluate() is caught and treated as Fail — the journal append still fires (fail-closed means an entry IS recorded, with result from the catch, not silently dropped) |
+| S-1.19 | `GuardrailHook::evaluate()` dispatch in `provenance.rs` with `FutureExt::catch_unwind(AssertUnwindSafe(...))` fail-closed pattern | `GuardrailResult` variants (Pass, Fail, Transform), `ProvenanceTag` structure, `IngressBoundary` enum | A caught `evaluate()` panic causes `catch_unwind` to catch it; `Err(E-CORE-007)` is propagated fail-closed. NO `GuardrailEntry` is appended — there is no `GuardrailResult` to journal (BC-2.11.007 {EC-003} / S-1.19 AC-025). The journal entry count equals the count of SUCCESSFUL evaluate() calls only. |
 | S-1.26 | `RunStore` trait in `pregolya-server::store::run`; run lifecycle state machine; run-read route in `pregolya-server/src/routes/runs.rs` | Route handlers use `Arc<dyn RunStore>`; run response model shape | RunStore write must be atomic with state-machine transition — do NOT persist journal in a separate write after the terminal-state write, as a crash between would leave an inconsistent state |
 
 ## Architecture Compliance Rules (MANDATORY)
@@ -171,4 +176,5 @@ The `guardrail_journal` field contains only `GuardrailEntry` records (boundary +
 | `crates/pregolya-graph/src/run_executor.rs` | MODIFY | Add in-flight journal accumulation field; pass completed journal to caller at run completion (no RunStore write here — pregolya-graph MUST NOT import RunStore) |
 | `crates/pregolya-server/src/handlers/` | MODIFY | Add atomic GuardrailJournal write to RunStore at terminal-state transition (AC-002 / BC-2.11.007 PC-002) — same site as evidence_journal persistence |
 | `crates/pregolya-server/src/routes/runs.rs` | MODIFY | Add `guardrail_journal?` to run-read response for terminal-status runs (AC-003) |
-| `crates/pregolya-graph/tests/guardrail_journal_completeness.rs` | CREATE | AC-001..AC-005 tests — VP-2.11.007-A test vehicle (canonical harness path) |
+| `crates/pregolya-graph/tests/guardrail_journal_completeness.rs` | CREATE | AC-001 completeness/append tests — VP-2.11.007-A test vehicle (graph-side; asserts on accumulated `Vec<GuardrailEntry>` from graph execution result; NO pregolya-server dependency) |
+| `crates/pregolya-server/tests/guardrail_journal_server_integration.rs` | CREATE | AC-002 RunStore terminal persistence + AC-003 run-read None/Some([])/Some([N]) projection tests (server-side; reaches RunStore via HTTP) |
