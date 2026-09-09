@@ -1,11 +1,12 @@
 ---
 document_type: story-index
 level: L3
-version: "1.89"
+version: "1.90"
 status: active
 producer: state-manager
 timestamp: 2026-09-09T00:00:00Z
 changelog:
+  - "1.90 (D-356/DC-40/2026-09-09, state-manager): DC-40 fix-burst CLOSED. F-PDC40-04[OBS] STORY-INDEX §Conventions enriched-title note added — Story Inventory titles MAY be enriched descriptive labels for navigation; POL-7/POL-8 verbatim-H1 governs BC-table title cells in story bodies only, not Story Inventory index titles (recurring OBS permanently resolved; POL-7 is BC-scoped). Census UNCHANGED: stories 53 / pts 377 / BC 149 / VP 42 / EC 145 / TV 795 / ADR 31 / SS 24 / crates 22. strict streak reset 0/3 (fix push; DC-41 gates new HEAD)."
   - "1.89 (D-356/DC-39/2026-09-09, state-manager): DC-39 fix-burst CLOSED. F-PDC39-02[HIGH] S-1.29 persistence model CORRECTED to CHECKPOINT-BACKED — Tasks 4/5/6, Arch-Mapping, Purity, PSI, Forbidden-Deps, §File-Structure, AC-002/AC-003 all corrected per F-PDC39-02 ruling: graph::provenance appends GuardrailEntry to checkpoint store (pregolya-checkpoint) sync-durable per successfully-returning evaluate(); server::run_read_handler queries checkpoint store at read time for guardrail_journal? projection; DC-36 F-PDC36-01 terminal-write model SUPERSEDED. F-PDC39-02[HIGH] epics §E-11 updated to reflect checkpoint-backed accumulation model (BC-2.11.007 {PC-001}/{INV-002}). Census UNCHANGED: stories 53 / pts 377 / BC 149 / VP 42 / EC 145 / TV 795. strict streak reset 0/3 (fix push; DC-40 gates new HEAD)."
   - "1.88 (D-356/DC-37/2026-09-08, state-manager): DC-37 fix-burst CLOSED. F-PDC37-01[HIGH]: STORY-S-1.29 panic→no-entry correction — caught evaluate() panic propagates as Err(E-CORE-007) fail-closed, appends NO GuardrailEntry (BC-2.11.007 {EC-003}); tdd preamble, AC-001, §Prev-Story-Intel, and EC-006 corrected. F-PDC37-03[HIGH]: STORY-S-1.29 §File Structure split — pregolya-graph integration test (AC-001 GuardrailJournal completeness; Vec<GuardrailEntry>; no RunStore dep) + pregolya-server integration test (AC-002 persist / AC-003 run-read projection). F-PDC37-04[MED]: STORY-S-console-10 BC-2.12.003 row title corrected to canonical H1 (BC-2.24.008 row title VERIFIED already canonical). F-PDC37-06[LOW]: STORY-S-console-10 DC-29 delta-note blockquote annotated with DC-33 supersession marker. Census UNCHANGED: stories 53 / pts 377 / BC 149 / VP 42 / EC 145 / TV 795. strict streak reset 0/3 (fix push; DC-38 gates new HEAD)."
   - "1.87 (D-356/DC-36/2026-09-08, state-manager): DC-36 fix-burst CLOSED. F-PDC36-07: §Maintenance census updated 41→52 (stale since pre-DC-29; taxonomy clarified: total story files 53, product-stories 52 excludes S-MAINT-001, buildable/wave-scheduled 42 excludes Wave-3 roadmap S-console-01..S-console-10). EC/TV census audit: EC 145 and TV 795 CONFIRMED UNCHANGED — BC-2.11.007 {EC-001..EC-006} and TV-001..TV-005 are BC-local identifiers; they are not counted in the global error-taxonomy EC total or the prd-supplements TV total (O-PDC36-A[OBS]; same pattern as SS-24 BCs whose local TVs were not counted). BC-2.11.007 current ECs: 6 ({EC-001..EC-006}); TVs: 5 (TV-001..TV-005); zero corpus-level correction needed. Census UNCHANGED: stories 53 / pts 377 / BC 149 / VP 42 / EC 145 / TV 795. strict streak reset 0/3 (fix push; DC-37 gates new HEAD)."
@@ -317,6 +318,8 @@ input-hash: "34034c0"
 > because its frontmatter correctly holds `[]`.
 
 > **Status axes:** `STORY-INDEX` `Status: draft` = story-document lifecycle_status (pre-merge); `sprint-state.yaml` `status: spec-ready` = Phase-3 delivery-readiness. Distinct vocabularies; both intentionally uniform pre-Phase-3.
+
+> **Story Inventory titles** MAY be enriched descriptive labels for navigation; POL-7/POL-8 verbatim-H1 governs BC-table title cells in story bodies only, not the Story Inventory index titles. (D-356/DC-40/F-PDC40-04)
 
 ---
 

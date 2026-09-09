@@ -1,8 +1,9 @@
 ---
 document_type: session-checkpoints
 level: ops
-version: "2.5"
+version: "2.6"
 changelog:
+  - "2.6 (D-356/DC-40 fix-burst/2026-09-09): D-356/DC-39 checkpoint archived"
   - "2.5 (D-356/DC-34 fix-burst/2026-09-08): D-356/DC-33 checkpoint archived"
   - "2.4 (D-356/DC-33 fix-burst/2026-09-08): D-356/DC-32 checkpoint archived"
   - "2.3 (D-356/DC-02 fix-burst/2026-09-07): D-356/DC-01 checkpoint archived"
@@ -4747,3 +4748,16 @@ pregolya Phase-2 CONVERGED+gate-APPROVED (anchor 81d16ca); Phase-3 IN PROGRESS a
 
 ### PENDING USER-APPROVED WORK (at DC-38 close)
 DC-39 adversary pass PENDING (orchestrator, strict streak 0/3). PR #1 merge (human action required). DEV-TOOLING-D255: v1 dev-tooling expansion — ready to start post-merge. DTU clones (openai/anthropic/ollama): Phase-4 prerequisite.
+
+---
+
+## Archived Checkpoint: D-356/DC-39 (2026-09-09) — superseded by DC-40
+
+### RESUME IN ONE BREATH (at DC-39 close)
+pregolya Phase-2 CONVERGED+gate-APPROVED (anchor 81d16ca); Phase-3 IN PROGRESS at workspace-init. D-356 Phase-1 spec amendment COMPLETE (developer-console ROADMAP-ONLY; census: BC 149 / VP 42 / EC 145 / stories 53 / pts 377). D-356/DC-01 through DC-39 fix-bursts + post-DC-38 exhaustive consistency audit ALL COMPLETE: DC-01..DC-35+DC-36 details in burst-log.md + STATE §DC-37..DC-39+audit steps. DC-22=CLEAN(strict) streak1/3 [banked, then broken]; DC-36=10[2H+6MED+2LOW/OBS]; DC-37=3H+2MED+1LOW; DC-38=2H+3MED+2LOW; DC-39=2H+1MED+2OBS — ALL CLOSED. Post-DC-38 audit (frozen HEAD 5c47bb0): 3 residual findings [2MED+1LOW] CLOSED. D-357: human-authorized Option a durable GuardrailJournal (BC-2.11.007 SS-11 P0; VP-2.11.007-A). OBS-DC05-01 RESOLVED-BY-DC-23; PG-7 RESOLVED-BY-DEVOPS-6beaa88; PG-DC32/DC33/DC34 OPEN. strict streak 0/3 (fix push; DC-40 gates new HEAD). PR #1 BLOCKED from agent-merge (self-authored) — needs GENUINE HUMAN MERGE.
+
+### RESUME NEXT-ACTION (at DC-39 close)
+(1) Dispatch DC-40 adversary pass (fresh-context) against new factory-artifacts HEAD (DC-39 fix push); strict streak 0/3. (2) Get PR #1 human-merged. (3) Post-merge: return main worktree to develop; push develop 2 local-only commits; launch S-1.01 (PregolyaError) in pregolya-core.
+
+### PENDING USER-APPROVED WORK (at DC-39 close)
+DC-40 adversary pass PENDING (orchestrator, strict streak 0/3). PR #1 merge (human action required). DEV-TOOLING-D255: v1 dev-tooling expansion — ready to start post-merge.
