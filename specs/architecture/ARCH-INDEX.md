@@ -1,10 +1,10 @@
 ---
 document_type: architecture-index
 level: L3
-version: "1.90"
+version: "1.91"
 status: active
 producer: state-manager
-timestamp: 2026-09-08T23:59:00Z
+timestamp: 2026-09-09T00:00:00Z
 phase: 1b
 inputs:
   - .factory/specs/prd.md
@@ -17,6 +17,7 @@ traces_to: prd.md
 deployment_topology: single-service
 decisions: [D4, D6, D9, D11, D13, D17, D20, D21, D23, D356]
 changelog:
+  - "1.91 (D-356/DC-47/2026-09-09, state-manager): F-PDC47-02[HIGH]+OBS DC-47 fix-burst — module-decomposition §server::debug_span SpanData corrected to 8-field shape (session_id: String field 5, = run_id per BC-2.24.002 {INV-007}); purity-boundary-map §server::debug_span SpanData corrected to 8-field shape; OBS SEC-BOUND-001 strip→redact-in-place wording at 6 arch sites (module-decomposition ×1, purity-boundary-map ×2, ADR-031 ×2, api-surface ×1) per BC-2.24.002 {PC-008}. DC-32 sibling sweep was incomplete (self-certified but missed 3 sites). ADR-031 §Decision 2/§Decision 5/§Decision 7 + api-surface §SpanData already 8-field correct (class-sweep confirmed no change needed). Census UNCHANGED: ADR 31 / VP 42."
   - "1.90 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog fix — 12 spa/components/ module path forms in §Verification Properties table converted to spa_components:: namespace::module form (verify-module-canonicality.sh canonical pattern). Census UNCHANGED: ADR 31 / VP 42."
   - "1.89 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog fix — version pin removed from VP-INDEX reference in Document Map (verify-no-version-pins.sh L9b). Census UNCHANGED: ADR 31 / VP 42."
   - "1.88 (D-356/DC-39/F-PDC39-02/2026-09-09, architect): DC-39 finding D recorded — GuardrailJournal persistence model RULING (F-PDC39-02): DC-36 F-PDC36-01 SUPERSEDED; checkpoint-backed model; no RunStore terminal write; run-read projection via server::run_read_handler; VP-2.11.007-A §Property Statement, §Proof Harness, §Source Contract updated (same burst); verification-architecture.md §P0 prose block rewritten; module-decomposition.md graph::provenance row corrected; ADR-031 DC-39 delta note added. VP-2.11.007-A catalog attributes UNCHANGED. Census UNCHANGED: ADR 31 / VP 42."

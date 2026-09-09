@@ -8,7 +8,7 @@ status: accepted
 date: "2026-09-06"
 producer: architect
 timestamp: 2026-09-08T00:00:00Z
-version: "1.15"
+version: "1.16"
 phase: 1b
 traces_to: ARCH-INDEX.md
 decisions: [D356]
@@ -25,6 +25,7 @@ inputs:
   - .factory/specs/architecture/ARCH-INDEX.md
 input-hash: "78e89d3"
 changelog:
+  - "1.16 (D-356/DC-47/F-PDC47-02/OBS/2026-09-09, architect): F-PDC47-02 (HIGH) — CLASS-SWEEP: ADR-031 already has 8-field SpanData at Decision 2/5/7 (session_id present; confirmed ✓). OBS (LOW) — D6-2 live text: strip → redact-in-place (fields retained, values → <redacted>; BC-2.24.002 {PC-008}). OBS (LOW) — DC-02 historical delta note: strip LLM payload fields → redact credential values within LLM payload fields in place (same correction). input-hash updated 78e89d3 (content change)."
   - "1.15 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog: (A) promoted 8 Decision headings from ### to ## Decision N (validator requires ^## Decision N); renamed ## Decision umbrella to ## Decisions; (B) purged 4 HS-C-001 holdout references from normative body (lines ~70/111/430/499); (D) removed 5 version pins from error-taxonomy.md (×3) and purity-boundary-map.md (×2); (E) fixed chained §Decision 2 citation in DC-07 delta note → bare Decision 2. input-hash unchanged (inputs did not change)."
   - "1.14 (D-356/DC-44/F-PDC44-01/2026-09-09, architect): F-PDC44-01 (MED) — Decision 8 GuardrailJournal substrate row: added init mechanism — graph::provenance calls checkpoint_store.init_guardrail_journal(run_id) at run start if invocation_context.guardrail_hook().is_some(); this creates the empty journal record enabling None-vs-Some([]) discrimination per {INV-004} (no hook = no record = None; hook registered + zero ingress = empty record = Some([]); hook + N entries = Some([N])). Added DC-44 delta note with exact downstream wording for PO/BA/story-writer. input-hash unchanged (inputs did not change)."
   - "1.13 (D-356/DC-41/F-PDC41-01/2026-09-09, architect): F-PDC41-01 (MED) — Decision 8 substrate table corrected per POL-21 (v1.11 changelog claimed checkpoint-backed wording was applied but body was not updated). Guardrail row rewritten: checkpoint-backed GuardrailJournal (pregolya-checkpoint, same store as BC-2.10.002 EvidenceJournal); appended sync-durable per successfully-returning evaluate() by graph::provenance; assembled at run-read time by server::run_read_handler via get_guardrail_journal(run_id). evidence_journal row updated in parallel: checkpoint-backed EvidenceJournal (pregolya-checkpoint, BC-2.10.002 {INV-003}); appended per BudgetPolicy evaluation by graph::scheduler; assembled at run-read time by server::run_read_handler. Whole-table sweep: no residual 'RunStore record' journal-storage language found. input-hash unchanged (inputs did not change)."
@@ -241,8 +242,7 @@ These are **additive exceptions** to the workspace-wide NFR catalog for the cons
   with `E-SERVER-004 DebugRouteUnauthorized` at runtime. Rationale: debug/trace endpoints
   expose `llm_request`/`llm_response` payloads in `SpanData`; loopback bind alone is
   insufficient against the DNS-rebinding/CSRF-to-127.0.0.1 attack vector.
-  `SpanData` sanitization (SEC-BOUND-001 parity — strip `llm_request`/`llm_response`
-  from exported spans) is specified in BC-2.24.002.
+  `SpanData` sanitization (SEC-BOUND-001 parity — redact credential values within `llm_request`/`llm_response`/`attributes` in place per BC-2.24.002 {PC-008}) is specified in BC-2.24.002.
 - **D6-3 debug-endpoints default OFF:** `debug-endpoints` feature MUST default to `false`
   in `pregolya-server/Cargo.toml`. CI gate `check-debug-endpoints-default` verifies this
   (authored at Wave 3 workspace setup).
@@ -288,7 +288,7 @@ merely moved crates.
 - VP-2.24.002-C (server integration) → `server::debug_routes` (unaffected)
 - VP-2.24.002-D (sanitization) → `console::span_exporter` (sanitization is still exporter's job; unaffected)
 
-> **D-356 adversary fix DC-02 (2026-09-07, architect).** F-PDC02-05: D6-2 security posture strengthened per adversary finding. `debug_route_key` is now MANDATORY (not opt-in) when the `debug-endpoints` Cargo feature is enabled; unauthenticated requests to `/debug/*` return `403` with `E-SERVER-004 DebugRouteUnauthorized`. Rationale: `SpanData` exposes `llm_request`/`llm_response` payloads; loopback bind alone is insufficient against the DNS-rebinding/CSRF-to-127.0.0.1 vector. `SpanData` sanitization (SEC-BOUND-001 parity — strip LLM payload fields before export) is cross-referenced to BC-2.24.002. Companion: api-surface.md §Security note updated to reflect mandatory auth.
+> **D-356 adversary fix DC-02 (2026-09-07, architect).** F-PDC02-05: D6-2 security posture strengthened per adversary finding. `debug_route_key` is now MANDATORY (not opt-in) when the `debug-endpoints` Cargo feature is enabled; unauthenticated requests to `/debug/*` return `403` with `E-SERVER-004 DebugRouteUnauthorized`. Rationale: `SpanData` exposes `llm_request`/`llm_response` payloads; loopback bind alone is insufficient against the DNS-rebinding/CSRF-to-127.0.0.1 vector. `SpanData` sanitization (SEC-BOUND-001 parity — redact credential values within LLM payload fields in place per BC-2.24.002 {PC-008}) is cross-referenced to BC-2.24.002. Companion: api-surface.md §Security note updated to reflect mandatory auth.
 
 > **D-356 adversary fix DC-07 (2026-09-07, architect).** F-PDC07-01: swept `debug_api_key` → `debug_route_key` at all 5 ADR-031 sites (changelog 1.1, §Decision 2 Security interaction, D6-2, DC-02 blockquote, §Source). Canonical field is `debug_route_key: Option<String>` per BC-2.12.005 PRE-004/PC-006/PC-007/INV-001 and ADR-021 §Decision 1 — the non-canonical `debug_api_key` was introduced in DC-02. F-PDC07-02: D6-2 and Decision 2 Security interaction now state both auth behaviors explicitly: (a) empty/absent `debug_route_key` → `E-SERVER-013 InvalidDebugRouteKey` startup-refusal before HTTP listener binds; (b) valid key + unauthenticated request → `E-SERVER-004 DebugRouteUnauthorized` 403 at runtime. Companion: api-surface.md updated in same burst (F-PDC07-01 rename + F-PDC07-02 both-behaviors). F-PDC07-03: 10 panel-VP Module cells repointed to `spa/components/<panel>` convention in all 4 VP mirrors (VP-INDEX, verification-architecture, verification-coverage-matrix, ARCH-INDEX); VP-INDEX preamble SPA convention note added; v1.44 false changelog claim corrected via new v1.48 entry.
 

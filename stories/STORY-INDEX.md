@@ -1,11 +1,12 @@
 ---
 document_type: story-index
 level: L3
-version: "1.92"
+version: "1.93"
 status: active
 producer: state-manager
 timestamp: 2026-09-09T00:00:00Z
 changelog:
+  - "1.93 (D-356/DC-47/2026-09-09, state-manager): F-PDC47-01[CRIT] DC-47 fix-burst — S-console-03 Task 3a SpanData field list corrected to 8-field shape (session_id: String field 5, = run_id per BC-2.24.002 {INV-007}); §File Structure debug_span.rs row updated to enumerate all 8 fields; class-sweep confirmed only S-console-03 had the 7-field defect (DC-32 sibling sweep was incomplete). Census UNCHANGED: stories 53 / pts 377 / BC 149 / VP 42 / EC 145 / TV 841 / ADR 31 / SS 24 / crates 22. strict streak reset 0/3 (fix push; DC-48 gates new HEAD)."
   - "1.92 (D-356/DC-45/2026-09-09, state-manager): DC-45 fix-burst CLOSED. F-PDC45-01[MED] S-1.29 §File Structure graph-side test row corrected per VP-2.11.007-A: 2-function harness (guardrail_journal_completeness_zero_ingress_boundaries asserts Some([]) + guardrail_journal_completeness_all_variants asserts Some([N])); None/no-hook case scoped server-side per AC-003 (source-of-truth precedence rule 4; VP unchanged). Census UNCHANGED: stories 53 / pts 377 / BC 149 / VP 42 / EC 145 / TV 795 / ADR 31 / SS 24 / crates 22. strict streak reset 0/3 (fix push; DC-46 gates new HEAD)."
   - "1.91 (D-356/DC-44/2026-09-09, state-manager): DC-44 fix-burst CLOSED. F-PDC44-01[MED] STORY-S-1.29 journal-init mechanism applied — new Task 4: graph::provenance implements init_guardrail_journal(run_id) at run start iff invocation_context.guardrail_hook().is_some(); existing Tasks 4-9 renumbered to Tasks 5-10; AC-003 updated with 3-state discriminator (None=no hook/Some([])/Some([N])); §Architecture Mapping provenance.rs row, §File Structure test descriptions, and Token Budget updated. F-PDC44-02[LOW] verification-architecture.md body changelog date corrected. Census UNCHANGED: stories 53 / pts 377 / BC 149 / VP 42 / EC 145 / TV 795 / ADR 31 / SS 24 / crates 22. strict streak reset 0/3 (fix push; DC-45 gates new HEAD)."
   - "1.90 (D-356/DC-40/2026-09-09, state-manager): DC-40 fix-burst CLOSED. F-PDC40-04[OBS] STORY-INDEX §Conventions enriched-title note added — Story Inventory titles MAY be enriched descriptive labels for navigation; POL-7/POL-8 verbatim-H1 governs BC-table title cells in story bodies only, not Story Inventory index titles (recurring OBS permanently resolved; POL-7 is BC-scoped). Census UNCHANGED: stories 53 / pts 377 / BC 149 / VP 42 / EC 145 / TV 795 / ADR 31 / SS 24 / crates 22. strict streak reset 0/3 (fix push; DC-41 gates new HEAD)."

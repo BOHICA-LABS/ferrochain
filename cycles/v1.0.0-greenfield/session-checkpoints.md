@@ -4800,3 +4800,16 @@ pregolya Phase-2 CONVERGED+gate-APPROVED (anchor 81d16ca); Phase-3 IN PROGRESS a
 
 ### PENDING USER-APPROVED WORK (at DC-43 close)
 DC-44 adversary pass PENDING (orchestrator, strict-streak pass 1; strict streak 0/3 NOT RESET by DC-43 RECORDS-ONLY). PR #1 merge (human action required). DEV-TOOLING-D255: v1 dev-tooling expansion — ready to start post-merge. DTU clones (openai/anthropic/ollama): Phase-4 prerequisite.
+
+---
+
+## Archived Checkpoint: D-356/DC-45 (2026-09-09) — superseded by DC-47
+
+### RESUME IN ONE BREATH (at DC-45 close)
+pregolya Phase-2 CONVERGED+gate-APPROVED (anchor 81d16ca); Phase-3 IN PROGRESS at workspace-init. D-356 Phase-1 spec amendment COMPLETE (developer-console ROADMAP-ONLY; census: BC 149 / VP 42 / EC 145 / stories 53 / pts 377). D-356/DC-01 through DC-45 ALL CLOSED: DC-01..DC-35+DC-36+DC-39+DC-40 details in burst-log.md + STATE §DC-41..DC-45+audit steps. DC-22=CLEAN(strict) streak1/3 [banked, then broken]; DC-36=10[2H+6MED+2LOW/OBS]; DC-37=3H+2MED+1LOW; DC-38=2H+3MED+2LOW; DC-39=2H+1MED+2OBS; DC-40=2MED+2OBS; DC-41=1MED+2OBS; DC-42=1MED+1LOW; DC-43=2LOW [RECORDS-ONLY]; DC-44=1MED+1LOW; DC-45=1MED — ALL CLOSED. SEMANTIC CONTENT FULLY CONVERGED + REALIZABLE: DC-33→DC-44 checkpoint-backed adjudication + init_guardrail_journal realizability fix confirmed clean across all artifacts. Post-DC-38 audit (frozen HEAD 5c47bb0): 3 residual findings [2MED+1LOW] CLOSED. D-357: human-authorized Option a durable GuardrailJournal (BC-2.11.007 SS-11 P0; VP-2.11.007-A). OBS-DC05-01 RESOLVED-BY-DC-23; PG-7 RESOLVED-BY-DEVOPS-6beaa88 (POL-14→BLOCKING); PG-DC32 OPEN; PG-DC33 OPEN; PG-DC34 OPEN; PG-DC43 OPEN. strict streak reset 0/3 (DC-45=MED fix push; DC-46 gates new HEAD as strict-streak pass 1). PR #1 (workspace scaffold) REVIEWED-CLEAN + MERGEABLE (PR-1 HEAD c9712c2) but BLOCKED from agent-merge (self-authored PR) — needs GENUINE HUMAN MERGE.
+
+### RESUME NEXT-ACTION (at DC-45 close)
+(1) Dispatch DC-46 adversary pass (fresh-context) against new factory-artifacts HEAD (post-DC-45 fix-burst push); strict streak reset 0/3 (DC-45=MED; DC-46 = strict-streak pass 1). (2) Get PR #1 human-merged (squash-merge targeting develop). (3) Post-merge: return main worktree to develop; push develop 2 local-only commits; launch S-1.01 (PregolyaError) in pregolya-core. Standing directives DIRECTIVE 1/2/3/4 in force. 8 open convergence-close deferrals (C-1/PG-1/PG-2/PG-3/PG-4/PG-5/PG-6; PG-7 RESOLVED); PG-DC32 OPEN; PG-DC33 OPEN; PG-DC34 OPEN; PG-DC43 OPEN. OBS-DC05-01 CLOSED.
+
+### PENDING USER-APPROVED WORK (at DC-45 close)
+DC-46 adversary pass PENDING (orchestrator, strict-streak pass 1; strict streak reset 0/3 after DC-45 MED fix). PR #1 merge (human action required). DEV-TOOLING-D255: v1 dev-tooling expansion — ready to start post-merge. DTU clones (openai/anthropic/ollama): Phase-4 prerequisite.

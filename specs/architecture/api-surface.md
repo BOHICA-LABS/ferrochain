@@ -2,11 +2,12 @@
 document_type: architecture-section
 level: L3
 section: api-surface
-version: "1.35"
+version: "1.36"
 status: active
 producer: architect
 timestamp: 2026-09-08T00:00:00Z
 changelog:
+  - "1.36 (D-356/DC-47/OBS/2026-09-09, architect): OBS (LOW) CLASS-SWEEP — DC-02 historical delta note: strip LLM payload fields → redact credential values within LLM payload fields in place per BC-2.24.002 {PC-008}. SpanData shape §SpanData already 8-field with session_id (confirmed ✓; v1.33 added it). input-hash unchanged (inputs did not change)."
   - "1.35 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog fix — chained anchor citation `ADR-031 §Decision 2 and §Decision 6 D6-3` in debug-endpoints Cargo Feature row simplified to `ADR-031 §Decision 2` (verify-adr-anchor-citations.sh chained-§ prohibition). input-hash unchanged (inputs did not change)."
   - "1.34 (D-356/DC-33/F-PDC33-02-Option-a/2026-09-08, architect): Option (a) human-authorized — durable GuardrailJournal. Attempted to add `guardrail_journal?: Vec<GuardrailEntry>` alongside `evidence_journal?` in the run-read response shape per coordinator directive. FINDING: `GET /threads/{thread_id}/runs/{run_id}` response field enumeration (including `evidence_journal?`) is NOT present in this file — api-surface.md is an architecture-level summary; full response shapes live in `interface-definitions.md` and entity definitions in entities-server.md. The `guardrail_journal?` field must be added by: BA — entities-server.md §RunStore (add `guardrail_journal: Vec<GuardrailEntry>` field to the Run entity response projection, terminal-status only, same projection rule as `evidence_journal?`; add `GuardrailEntry { boundary: String, result: GuardrailResult (Pass|Fail|Transform), provenance: ProvenanceTag, timestamp_ms: u64, transform_applied: Option<String> }` type; add separation note: guardrail_journal? = GuardrailResult outcomes, evidence_journal? = budget PolicyDecision outcomes — do not conflate). PO — BC-2.12.003 {PC-013} (add `guardrail_journal?` to the terminal-status run response postcondition alongside `evidence_journal?`). No live-body changes to this file in this version bump. input-hash unchanged (inputs did not change)."
   - "1.33 (D-356/DC-33/F-PDC33-01/2026-09-08, architect): F-PDC33-01 (HIGH) — §SpanData shape under Debug Endpoints updated from 7-field to canonical 8-field: `session_id: String` added as field 5 (between `end_time_ms` and `attributes`), with reference note citing DC-32 extension; matches canonical shape in ADR-031 Decision 2 and Decision 7. Companion: ADR-031 Decision 5 `server::debug_span` row updated in same burst. input-hash unchanged (inputs did not change)."
@@ -291,7 +292,7 @@ cross-thread aggregate query for schedule-fired runs only.
 > is MANDATORY (not opt-in) when `debug-endpoints` is enabled — unauthenticated `/debug/*` returns
 > `403` with `E-SERVER-004 DebugRouteUnauthorized`. Rationale: `SpanData` exposes `llm_request`/
 > `llm_response` payloads; loopback bind alone is insufficient (DNS-rebinding/CSRF-to-127.0.0.1).
-> SEC-BOUND-001 parity: `SpanData` sanitization (strip LLM payload fields before export) specified
+> SEC-BOUND-001 parity: `SpanData` sanitization (redact credential values within LLM payload fields in place per BC-2.24.002 {PC-008}) specified
 > in BC-2.24.002. ADR-031 D6-2 and §Security interaction updated in the same burst.
 
 | Method | Path | Description | CAP Anchor |

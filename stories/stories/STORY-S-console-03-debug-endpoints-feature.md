@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-console-03
 epic_id: E-console
-version: "1.5"
+version: "1.6"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -14,6 +14,7 @@ changelog:
   - "1.3 (D-356/2026-09-07, story-writer): F-PDC11-02 — S-console-03 is now the build-owner of server::debug_span; dep-edge flipped (depends_on now [S-console-01]; blocks now [S-console-02, S-console-04, S-console-06]); debug_span.rs CREATE task added; compile-fail gate tests/external/span-data-non-exhaustive/ relocated here; PSI corrected to note S-console-03 creates server::debug_span."
   - "1.4 (D-356/DC-23/2026-09-08, story-writer): F-PDC23-02 — error envelope corrected to canonical {code, message} form per BC-2.24.002 v1.9: AC-003 and AC-007 updated from {\"error\":} to {\"code\":}; message text updated to single-quoted 'pregolya console --dev' form per O-PDC23-A. EC-004 updated to show canonical envelope. Zero {\"error\":} residue in live body."
   - "1.5 (D-356/DC-46/2026-09-09, story-writer): F-PDC46-01 — AC header citation form corrected to M4-strict bare-tag: BC-S.SS.NNN TAG (section-words removed per verify-ac-pc-trace.sh CHECK-1)."
+  - "1.6 (D-356/DC-47/2026-09-09, story-writer): F-PDC47-01 — Task 3a SpanData field list corrected to 8-field shape: added session_id: String as field 5 (between end_time_ms and attributes), = run_id set by DebugSpanExporter at insertion per BC-2.24.002 {INV-007}. File Structure debug_span.rs row updated to enumerate all 8 fields. Class-sweep confirmed only this story had the 7-field defect."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.002.md
@@ -21,7 +22,7 @@ inputs:
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
   - .factory/specs/prd-supplements/error-taxonomy.md
-input-hash: "ea087ed"
+input-hash: "788623b"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-01]
@@ -134,7 +135,7 @@ Concurrent `GET /debug/trace/session/{id}` requests against the shared `Arc<dyn 
 1. [ ] Write failing tests for all ACs — `test_BC_2_24_002_*` family covering endpoints (test-writer)
 2. [ ] Verify Red Gate — `cargo nextest run -p pregolya-server --features debug-endpoints` shows failures
 3. [ ] Add `debug-endpoints = []` feature (default false) to `pregolya-server/Cargo.toml`
-3a. [ ] Create `pregolya-server/src/server/debug_span.rs` — `pub struct SpanData { span_id, trace_id, start_time_ms, end_time_ms, attributes, llm_request, llm_response }` with `#[non_exhaustive]`, `Clone`, `Serialize`; `pub trait DebugSpanSource` (read method; no dep on pregolya-console; ADR-031 Decision 7); this must exist before debug_routes.rs and before S-console-02's DebugSpanExporter can implement it
+3a. [ ] Create `pregolya-server/src/server/debug_span.rs` — `pub struct SpanData { span_id: String, trace_id: String, start_time_ms: u64, end_time_ms: u64, session_id: String, attributes: serde_json::Map<String, Value>, llm_request: Option<Value>, llm_response: Option<Value> }` (8 fields; `session_id` = `run_id` set by `DebugSpanExporter` at insertion per BC-2.24.002 {INV-007}) with `#[non_exhaustive]`, `Clone`, `Serialize`; `pub trait DebugSpanSource` (read method; no dep on pregolya-console; ADR-031 Decision 7); this must exist before debug_routes.rs and before S-console-02's DebugSpanExporter can implement it
 4. [ ] Create `pregolya-server/src/server/debug_routes.rs` behind `#[cfg(feature = "debug-endpoints")]`; implement `GET /debug/trace/session/{session_id}` and `GET /debug/trace/{event_id}` handlers
 5. [ ] `server::debug_routes` reads via `Arc<dyn DebugSpanSource>` injected at launch by the console layer (`DebugSpanExporter` implements `DebugSpanSource`); pregolya-server has ZERO compile dependency on pregolya-console (ADR-031 Decision 7)
 6. [ ] Implement `E-SERVER-023 DebugExporterNotConfigured` response when exporter is `None`
@@ -174,7 +175,7 @@ Predecessor: S-console-01 (pregolya-console scaffold). **This story (S-console-0
 | File | Action | Purpose |
 |------|--------|---------|
 | `crates/pregolya-server/Cargo.toml` | MODIFY | Add `debug-endpoints = []` feature (default false) |
-| `crates/pregolya-server/src/server/debug_span.rs` | CREATE | `SpanData` (`#[non_exhaustive]`, `Clone`, `Serialize`) + `DebugSpanSource` trait — server-owned (ADR-031 Decision 7) |
+| `crates/pregolya-server/src/server/debug_span.rs` | CREATE | `SpanData` 8-field struct (`#[non_exhaustive]`, `Clone`, `Serialize`): `span_id`, `trace_id`, `start_time_ms`, `end_time_ms`, `session_id` (= `run_id` set at insertion per BC-2.24.002 {INV-007}), `attributes`, `llm_request`, `llm_response` + `DebugSpanSource` trait — server-owned (ADR-031 Decision 7) |
 | `crates/pregolya-server/src/server/debug_routes.rs` | CREATE | Trace-read HTTP handlers behind `#[cfg(feature = "debug-endpoints")]` |
 | `crates/pregolya-server/src/server/mod.rs` | MODIFY | Conditionally register debug routes in router; expose `pub mod debug_span` |
 | `tests/external/span-data-non-exhaustive/` | CREATE | Compile-fail test: external code cannot construct `SpanData { .. }` as struct literal (`SpanData` is pregolya-server type, `#[non_exhaustive]`) — relocated from S-console-02 |
