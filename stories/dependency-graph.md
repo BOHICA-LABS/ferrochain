@@ -1,6 +1,6 @@
 ---
 document_type: dependency-graph
-version: "2.4"
+version: "2.5"
 status: active
 producer: story-writer
 timestamp: 2026-09-07T00:00:00Z
@@ -393,7 +393,7 @@ S-6.01 (Kani + cargo-fuzz)
 
 ### BC to Stories Matrix (abbreviated — full map in STORY-INDEX.md)
 
-> Full coverage: 141 BCs, 42 stories, 0 gaps. (BC-2.11.007 added via S-1.29; census update to 141 BCs / 53 stories with Wave-3 roadmap pending state-manager STATE.md sync.)
+> Full coverage: 141 BCs, 42 stories, 0 gaps. (BC-2.11.007 added via S-1.29; buildable-census is 141 BCs / 42 stories — pending state-manager STATE.md sync.)
 
 | Subsystem | BC Range | Stories | Coverage |
 |-----------|----------|---------|---------|
@@ -570,6 +570,7 @@ S-6.01 (Kani + cargo-fuzz)
 
 ## Changelog
 
+- **2.5 (D-356/DC-36/2026-09-08, story-writer):** F-PDC36-09 — BC-to-Stories preamble parenthetical corrected: removed mixed "53 stories" figure (which conflated buildable-census with roadmap total); restated as the buildable pair "141 BCs / 42 stories" which is the authoritative count this document tracks.
 - **2.4 (D-356/DC-35/2026-09-08, story-writer):** F-PDC35-02 — S-1.29 (GuardrailJournal Persistence, 5 pts, Wave-1, SS-11) propagated. DAG edges added: S-1.19 blocks +S-1.29; S-1.26 blocks +S-1.29; S-console-10 depends_on +S-1.29 (cross-wave Wave-1→Wave-3 edge; valid). Topological batch 1j extended: +S-1.29 (deps S-1.19 from 1e + S-1.26 from 1i — both satisfied). Wave-3 sub-batch 3E rationale updated: S-console-10 cross-wave dep noted. VP-2.11.007-A row added to VP-to-Stories Matrix (integration, Phase 3, P0, anchor S-1.29). BC-to-Stories Matrix SS-11 updated: BC range 001–006 → 001–007; stories S-1.19 → S-1.19, S-1.29. Census updated: 141 BCs, 42 Wave-1/2/6 stories. Acyclicity re-confirmed: S-1.29 depends on Wave-1 upstream nodes only; S-console-10 Wave-3 → Wave-1 direction is topologically valid; no cycle introduced.
 - **2.3 (D-356/DC-12/2026-09-07):** F-PDC12-01 — S-console-01 `blocks` updated: `[S-console-02, S-console-05]` → `[S-console-02, S-console-03, S-console-05]`. Invariant: `blocks` is exact inverse of `depends_on`; S-console-03 declares `depends_on [S-console-01]`. Adding the reverse-edge of an existing forward-edge introduces no cycle; S-console-01 remains the root node with `depends_on []`. Acyclicity re-confirmed: topological sort 3A→3B→3C→3D→3E is a DAG.
 - **2.2 (D-356/DC-11/2026-09-07):** F-PDC11-01+F-PDC11-02 — dependency-edge flip (ADR-031 Decision 7): S-console-03 (creates server::debug_span) now `depends_on [S-console-01]`, `blocks [S-console-02, S-console-04, S-console-06]`; S-console-02 (DebugSpanExporter) now `depends_on [S-console-01, S-console-03]`, `blocks []`. Wave-3 sub-waves updated: 3A-3F → 3A-3E (S-console-04 and S-console-07 move to 3C; S-console-06 to 3D; S-console-08/09/10 to 3E). Acyclicity re-confirmed: 3A→3B→3C→3D→3E is a DAG; no back-edge.

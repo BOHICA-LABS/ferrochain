@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.11.007
-version: "1.1"
+version: "1.2"
 status: draft
 producer: product-owner
 timestamp: 2026-09-08T00:00:00Z
@@ -24,7 +24,8 @@ lifecycle_status: active
 introduced: v1.0.0-greenfield
 changelog:
   - "1.0 (D-356/DC-33/2026-09-08, product-owner): Initial BC — durable GuardrailJournal persistence. Every GuardrailHook::evaluate() call at an ingress boundary appends exactly one GuardrailEntry to the run's append-only GuardrailJournal (Pass, Fail, and Transform all recorded); journal is persisted in the RunStore record for terminal-status runs (entities-server.md §RunStore); guardrail_journal? is projected on GET /threads/{thread_id}/runs/{run_id} for terminal-status runs (BC-2.12.003 {PC-013}). GuardrailJournal is SEPARATE from EvidenceJournal (BC-2.10.002): distinct governance dimensions. DI-012 completeness invariant. VP-2.11.007-A minting requested (parallel to VP-BUDGET-03). D-356 DC-33 human-authorized scope."
-  - "1.1 (D-356/DC-34/2026-09-08, product-owner): F-PDC34-03: {PC-001} GuardrailEntry shape — boundary corrected from String to IngressBoundary (existing canonical enum per BC-2.06.001 {PC-002}; values ToolResult|RagChunk|MemoryItem). O-PDC34-A: transform_applied: Option<String> dropped from GuardrailEntry shape — result.Transform{new_content: IngressContent} is authoritative; full-BC sweep applied. TV-001 updated: boundary: IngressBoundary::ToolResult; transform_applied refs removed. F-PDC34-05: three MINT-REQUIRED claims removed — VP-2.11.007-A is minted and registered in VP-INDEX; anchors {INV-002} (completeness) and module graph::provenance. F-PDC34-06: S-1.29 → S-1.29 in §Story Anchor and §Traceability Stories (STORY-S-1.29-guardrail-journal-persistence, Wave-1 P0)."
+  - "1.1 (D-356/DC-34/2026-09-08, product-owner): F-PDC34-03: {PC-001} GuardrailEntry shape — boundary corrected from String to IngressBoundary (existing canonical enum per BC-2.06.001 {PC-002}; values ToolResult|RagChunk|MemoryItem). O-PDC34-A: transform_applied: Option<String> dropped from GuardrailEntry shape — result.Transform{new_content: IngressContent} is authoritative; full-BC sweep applied. TV-001 updated: boundary: IngressBoundary::ToolResult; transform_applied refs removed. F-PDC34-05: three MINT-REQUIRED claims removed — VP-2.11.007-A is minted and registered in VP-INDEX; anchors {INV-002} (completeness) and module graph::provenance. F-PDC34-06: S-TBD → S-1.29 in §Story Anchor and §Traceability Stories (STORY-S-1.29-guardrail-journal-persistence, Wave-1 P0)."
+  - "1.2 (D-356/DC-36/2026-09-08, product-owner): F-PDC36-03: {EC-004} rationale corrected — discriminator is hook REGISTRATION not evaluate()-call count; {EC-004} now reads 'no GuardrailHook registered → journal never initialized → None'; {EC-006} added for hook-registered + zero-ingress → Some([]) (empty journal persisted); {INV-004} updated with all three states (no-hook→None; hook+0-ingress→Some([]); hook+N-ingress→Some([N])); TV-002 rationale updated. F-PDC36-04: VP-anchor reconciled to {PC-001}/{INV-002} at all three sites (§Verification Properties, §VP Anchors, §Traceability). F-PDC36-01: §Architecture Anchors replaced with architect-exact wording (graph::provenance accumulation; server::handlers RunStore persistence; reverse-edge note); 'checkpoint put_writes' reference removed."
 modified: []
 extracted_from: null
 deprecated: null
@@ -110,11 +111,21 @@ content evaluation results.
   These MUST NOT be conflated in the RunStore schema, the run-read response projection,
   or any consumer (see BC-2.12.003 {PC-013}, BC-2.24.008 {PC-004}).
 
-- {INV-004} **No journal entries when no hook registered:** When no `GuardrailHook` is registered
-  (BC-2.11.006 default-permit path), `GuardrailHook::evaluate()` is never called; therefore
-  no `GuardrailEntry` records are written. `guardrail_journal?` is null or omitted on the
-  run-read response for such runs. This is distinct from a run that has a hook registered but
-  all evaluations return Pass (which produces a non-empty journal with Pass entries).
+- {INV-004} **Journal presence governed by hook registration, not evaluate() call count:** The
+  three distinct states are:
+  - **No hook registered** (BC-2.11.006 default-permit path): journal is never initialized;
+    `guardrail_journal?` is `None` (null/omitted) on the run-read response. This is because
+    the journal lifecycle is tied to hook registration at run start, not to whether any
+    evaluate() calls occurred.
+  - **Hook registered, zero ingress boundaries crossed** (run completes without triggering
+    any guarded boundary): journal is initialized but no entries are appended;
+    `guardrail_journal?` is `Some([])` — an empty list, not `None`. The journal IS persisted
+    in the RunStore record.
+  - **Hook registered, N ingress boundaries crossed** (N > 0 evaluate() calls succeeded):
+    `guardrail_journal?` is `Some([N entries])`.
+  The discriminator between `None` and `Some([])` is hook registration, not evaluate()-call
+  count. Both the no-hook and zero-ingress cases have zero evaluate() calls, but only the
+  no-hook case yields `None`.
 
 ## Edge Cases
 
@@ -123,23 +134,25 @@ content evaluation results.
 | {EC-001} | Run with all Pass decisions; guardrail_journal? inspected on terminal-status run-read response | `guardrail_journal?` present with all Pass entries; journal is non-empty even though SSE had no `guardrail_decision` events (Pass not streamed per F-P99-01) |
 | {EC-002} | Run fails (transitions to `failed`) before all ingress boundaries are evaluated | Journal entries written up to the point of failure are persisted in the RunStore `failed` record; partial journal is the authoritative record for that run |
 | {EC-003} | `GuardrailHook::evaluate()` throws an error or panics | The evaluate() error is propagated per BC-2.11.002/003/004 error handling; no `GuardrailEntry` is appended for a failed evaluate() call (entry written only on successful return of `GuardrailResult`) |
-| {EC-004} | No `GuardrailHook` registered (BC-2.11.006 path) | `guardrail_journal?` is null or omitted on terminal-status run-read response; the journal was never initialized because no evaluate() calls occurred |
+| {EC-004} | No `GuardrailHook` registered (BC-2.11.006 path) | `guardrail_journal?` is `None` (null/omitted) on terminal-status run-read response; the journal was never initialized because no hook was registered — NOT because no evaluate() calls occurred (zero-ingress hook-registered runs also have zero evaluate() calls but yield `Some([])`, not `None`; see {EC-006}) |
 | {EC-005} | Two `GuardrailHook` instances composed in parallel (both evaluate the same content unit) | Each hook's evaluate() call appends one entry independently; the journal records both calls with their respective results. For a single content unit processed by 2 composed hooks, 2 entries appear |
+| {EC-006} | `GuardrailHook` registered; run executes and completes but zero ingress boundaries are crossed (e.g., a pure computation graph with no tool calls, RAG, or memory reads) | `guardrail_journal?` is `Some([])` — an empty list (not `None`); the journal was initialized at hook registration, persisted at terminal state, but no entries were appended. Distinguishable from the no-hook case ({EC-004}) which yields `None` |
 
 ## Canonical Test Vectors
 
 | # | Input | Expected Output | Category |
 |---|-------|-----------------|----------|
 | TV-001 | Run with 3 tool-result ingress events; registered hook returns Pass/Fail/Transform respectively; run completes | `guardrail_journal?` on terminal-status run-read response contains exactly 3 entries in evaluation order: `{result: Pass, boundary: IngressBoundary::ToolResult, ...}`, `{result: Fail{reason, severity}, boundary: IngressBoundary::ToolResult, ...}`, `{result: Transform{new_content}, boundary: IngressBoundary::ToolResult, ...}` | happy-path completeness |
-| TV-002 | No `GuardrailHook` registered (BC-2.11.006 default-permit path); run completes | Terminal-status run-read response: `guardrail_journal?` is null or omitted (no evaluate() calls) | no-hook path |
+| TV-002 | No `GuardrailHook` registered (BC-2.11.006 default-permit path); run completes | Terminal-status run-read response: `guardrail_journal?` is `None` (null/omitted); journal was never initialized (no hook registered — discriminator is registration, not evaluate()-call count; {INV-004}, {EC-004}) | no-hook path ({EC-004}) |
 | TV-003 | Run with 1 Pass decision only; run completes | `guardrail_journal?` contains 1 entry with `result: Pass`; journal non-empty even though SSE emitted no `guardrail_decision` events | Pass-only run |
 | TV-004 | Run with registered hook; run transitions to `failed` after 2 evaluate() calls | `guardrail_journal?` on `failed` run-read response contains the 2 entries written before failure; partial journal persisted | failed-run partial journal |
+| TV-005 | `GuardrailHook` registered; run completes with zero ingress boundaries crossed | Terminal-status run-read response: `guardrail_journal?` is `Some([])` (empty list, NOT `None`); journal initialized at hook registration, persisted at completion, zero entries appended ({EC-006}, {INV-004}) | hook-registered zero-ingress ({EC-006}) |
 
 ## Verification Properties
 
 | VP-ID | Property | Proof Method |
 |-------|----------|-------------|
-| VP-2.11.007-A | `GuardrailJournal` contains exactly one entry per `GuardrailHook::evaluate()` call; entries are in evaluation order; no missing evaluations | Integration test — instrument evaluate() calls; assert journal entry count == evaluate() call count; verify ordering. Minted and registered in VP-INDEX; anchors {INV-002} (DI-012 journal completeness) and module `graph::provenance`. Parallel to VP-BUDGET-03 (EvidenceJournal completeness). |
+| VP-2.11.007-A | `GuardrailJournal` contains exactly one entry per `GuardrailHook::evaluate()` call; entries are in evaluation order; no missing evaluations | Integration test — instrument evaluate() calls; assert journal entry count == evaluate() call count; verify ordering. Minted and registered in VP-INDEX; anchors {PC-001}/{INV-002} (write-obligation and DI-012 completeness) and module `graph::provenance`. Parallel to VP-BUDGET-03 (EvidenceJournal completeness). |
 
 ## Related BCs
 
@@ -154,9 +167,9 @@ content evaluation results.
 
 ## Architecture Anchors
 
-- `entities-server.md §RunStore` — RunStore schema must include `guardrail_journal` field alongside `evidence_journal`; both are persisted at terminal state transition
-- `architecture/module-decomposition.md §pregolya-graph` — `graph::provenance` row: GuardrailJournal append on every evaluate() call (HIGH, SS-11); journal write uses same durability path as checkpoint put_writes
-- `architecture/module-decomposition.md §pregolya-server` — run-read response shape; `guardrail_journal?` projected for terminal-status runs alongside `evidence_journal?`
+- `graph::provenance` (pregolya-graph): ProvenanceTag attachment at ingress boundaries, GuardrailHook dispatch, GuardrailJournal ACCUMULATION — appends one `GuardrailEntry` to a run-scoped `Vec<GuardrailEntry>` after each `evaluate()` returns; returns accumulated `Vec<GuardrailEntry>` as part of graph execution result.
+- `server::handlers` (pregolya-server): DURABLE RunStore persistence — writes accumulated `Vec<GuardrailEntry>` to RunStore atomically with terminal state-machine transition, same site and pattern as `evidence_journal` (BC-2.10.002).
+- pregolya-graph DOES NOT import RunStore (reverse-edge violation: direction = pregolya-server→pregolya-graph→pregolya-core).
 
 ## Story Anchor
 
@@ -164,7 +177,7 @@ S-1.29 (STORY-S-1.29-guardrail-journal-persistence, Wave-1 P0 — implements BC-
 
 ## VP Anchors
 
-- VP-2.11.007-A — GuardrailJournal completeness: 1 entry per evaluate() call, evaluation order (integration test). Minted and registered in VP-INDEX; anchors {INV-002} (DI-012 journal completeness) and module `graph::provenance`. Parallel to VP-BUDGET-03.
+- VP-2.11.007-A — GuardrailJournal completeness: 1 entry per evaluate() call, evaluation order (integration test). Minted and registered in VP-INDEX; anchors {PC-001}/{INV-002} (write-obligation and DI-012 completeness) and module `graph::provenance`. Parallel to VP-BUDGET-03.
 
 ## Traceability
 
@@ -178,4 +191,4 @@ S-1.29 (STORY-S-1.29-guardrail-journal-persistence, Wave-1 P0 — implements BC-
 | Binding Decisions | D17-Q8 (guardrail subsystem, Phase-1 BC); D-356 DC-33 (durable GuardrailJournal authoring, human-authorized scope) |
 | Architecture Module | pregolya-graph (journal append on evaluate()); pregolya-server (RunStore persistence; run-read response projection) |
 | Stories | S-1.29 |
-| VP Registration | VP-2.11.007-A (minted and registered in VP-INDEX; anchors {INV-002} and module `graph::provenance`) |
+| VP Registration | VP-2.11.007-A (minted and registered in VP-INDEX; anchors {PC-001}/{INV-002} and module `graph::provenance`) |

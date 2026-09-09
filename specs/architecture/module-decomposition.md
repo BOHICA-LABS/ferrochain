@@ -2,7 +2,7 @@
 document_type: architecture-section
 level: L3
 section: module-decomposition
-version: "1.62"
+version: "1.63"
 status: active
 producer: architect
 timestamp: 2026-08-31T00:00:00Z
@@ -11,10 +11,11 @@ inputs:
   - .factory/specs/prd.md
   - .factory/specs/prd-supplements/module-criticality.md
   - .factory/specs/module-criticality.md
-input-hash: "625bce2"
+input-hash: "c79f46c"
 traces_to: ARCH-INDEX.md
 decisions: [D4, D6, D7, D12, D13, D17, D20, D21, D23]
 changelog:
+  - "1.63 (D-356/DC-36/F-PDC36-06/2026-09-08, architect): F-PDC36-06 — graph::provenance row updated: added GuardrailJournal accumulation responsibility (appends one GuardrailEntry after each evaluate() returns; accumulated Vec<GuardrailEntry> returned as part of graph execution result; durable RunStore persistence = pregolya-server terminal-state write, NOT graph::provenance; BC-2.11.007; DI-012). Consistent with F-PDC36-01 accumulate/persist split ruling (mirrors EvidenceJournal pattern in graph::budget). input-hash updated c79f46c (input drift from this burst)."
   - "1.62 (round-51/F-P2A212-07-confirm/2026-08-31): `graph::channels` row: confirmed directory module layout — `pregolya-graph/src/channels/` (not a single `channels.rs` file); ledger types reside in `channels/ledger.rs` (LedgerEntry trait, LedgerChannel<T>); promote/retire types reside in `channels/promote_retire.rs` (PromoteRetireOp<T>, PromoteRetireChannel<T>); re-export-only `channels/mod.rs` per CLAUDE.md §mod.rs rule. Established by S-1.14 (directory module: last_value.rs, append.rs, barrier.rs, named_barrier.rs, ephemeral.rs, mod.rs); S-1.28 adds ledger.rs and promote_retire.rs. Product-owner: BC-2.02.007 §Architecture Anchors cites channels.rs (flat file) — needs updating to channels/ledger.rs (directory module)."
   - "1.61 (ADR-030 Stage 1/2026-08-31): Add `core::trajectory` definitions-only module (SS-04; ADR-030 Decision 2; TrajectoryRecord/TrajectoryWriter/TrajectoryReader). Add `checkpoint::trajectory` MEDIUM tiered module row (SS-04; ADR-030 Decision 2; execution of TrajectoryWriter+TrajectoryReader in pregolya-checkpoint). Extend `graph::channels` row description with LedgerChannel/PromoteRetireChannel types (ADR-030 Decision 3; VP-017 proptest P1 target). Iron Law count updated 82→84 total, 75→76 tiered, 7→8 definitions-only/exempt. module-criticality.md registry count updated 89→91 total, 82→83 tiered, 7→8 definitions-only/exempt. input-hash unchanged — no new BC inputs (BC-2.02.007 draft; not yet authored)."
   - "1.60 (round-49/F-P2A207-02+F-P2A207-03/2026-08-30): F-P2A207-02+F-P2A207-03 [HIGH/MED] — add `core::invocation_context` definitions-only row to D21 additions table and blockquote note; canonical module path `pregolya-core/src/invocation_context.rs` (SS-11; trait-in-core precedent; follows core::guardrail pattern; BC-2.11.001–006 {PRE-001}; BC-2.09.003 {PRE-002}/{PRE-003}); Iron Law count updated 81→82 total, 6→7 definitions-only/exempt; module-criticality.md registry count updated 88→89 total, 6→7 definitions-only/exempt."
@@ -174,7 +175,7 @@ content provenance.
 | `graph::hitl` | Interrupt queue (FIFO), suspend/resume protocol, risk-tiered classification; per-task interrupt bookkeeping: `InterruptScratchpad`, `interrupt_counter` (per-task resume-slot index); `PreToolCallHook` trait + `ToolCallPreview` + `PreToolDecision` (Approve/Deny/Edit/PendingHumanApproval) + `ToolApprovalRequest` + `AlwaysApprovePolicy` (ADR-018); `pre_tool_dispatch` routing function — fail-closed Deny invariant (VP-011, Kani P0, seeded burst-232); `GraphConfig.pre_tool_hook: Option<Arc<dyn PreToolCallHook>>` hook registration (`pregolya-graph/src/hitl.rs`) | CRITICAL | SS-05 |
 | `graph::scheduler` | Outer orchestrator loop + actor-scheduler synthesis (ADR-001 Alternative B; D9 gate passed 2026-07-14); orchestrator state machine (`Idle→Dispatching→Collecting→Reducing→Checkpointing→Idle`); actor scheduler (Tokio MPSC, `Dispatch(task_id, future)` / `Completed(task_id, output)` messages); `ExecutionContext { run_id: Uuid, parent_ids: Vec<Uuid> }` propagated into nested invocations; `CompiledStateGraph::invoke(input, config)` top-level entry point; tick() Collecting phase: LLM-call / tool-invocation evaluation callsites for budget and UntrackedValue sanitization (`pregolya-graph/src/scheduler.rs`) | CRITICAL | SS-03 |
 | `graph::budget` | `BudgetEngine` dispatch (allow/escalate/deny via `BudgetPolicy` trait from pregolya-core), `EvidenceJournal`, ceiling halt/escalate — trait definitions live in `core::budget` per ADR-009 Option 3; compaction engine: evaluates `CompactionTrigger` after each super-step, builds `ConversationSnapshot` via `CheckpointSaver::fts_search` (BC-2.04.008), calls `CompactionPolicy::compact()`, applies mid-run message-window mutation, appends `CompactionEvent` to `EvidenceJournal`, emits `compaction_event` streaming event (ADR-019) | HIGH | SS-10 |
-| `graph::provenance` | `ProvenanceTag` attachment at ingress boundaries, `GuardrailHook` dispatch | HIGH | SS-11 |
+| `graph::provenance` | `ProvenanceTag` attachment at ingress boundaries, `GuardrailHook` dispatch, `GuardrailJournal` accumulation: appends one `GuardrailEntry` to a run-scoped `Vec<GuardrailEntry>` after each `evaluate()` returns; accumulated journal returned as part of graph execution result for server-side persistence — durable `RunStore` write is `pregolya-server` terminal-state transition (same pattern as `EvidenceJournal` in `graph::budget`/`server::handlers`), NOT this module; BC-2.11.007; DI-012 | HIGH | SS-11 |
 | `graph::event_emitter` | Streaming event emission: emits `StreamEvent` values (type defined in `core::events`, pregolya-core, per ADR-006 §Consequences — "StreamEvent is a public type in pregolya-core"); emission callsites for `NodeStart`/`NodeEnd`/`ToolStart`/`ToolEnd` inside `tick()` and `StepEnd` inside `after_tick()` are in `graph::scheduler`; run_id + parent_ids correlation per BC-2.06.002; manages the emitter channel through which `StreamEvent` values flow to SSE consumers (`pregolya-graph/src/event_emitter.rs`) | MEDIUM | SS-06 |
 
 **VP anchor:** `graph::bsp_engine` is VP-001 target (BSP determinism Kani harness).

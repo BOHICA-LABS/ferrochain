@@ -1,6 +1,6 @@
 ---
 document_type: epics
-version: "2.0"
+version: "2.1"
 status: active
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -244,9 +244,9 @@ is feature-gated (`debug-endpoints` Cargo feature defaults `false`) and scoped t
 
 **Behavioral Contracts:** BC-2.24.001 (ConsoleConfig), BC-2.24.002 (DebugSpanExporter ring buffer + trace-read endpoints), BC-2.24.003 (GraphDescriptor), BC-2.24.004 (run inspection panel), BC-2.24.005 (checkpoint history panel), BC-2.24.006 (HITL resume panel), BC-2.24.007 (token budget panel), BC-2.24.008 (guardrail review panel)
 
-**CAP coverage:** CAP-041 (console scaffold), CAP-042 (span exporter), CAP-043 (graph descriptor), CAP-044 (run inspection), CAP-045 (checkpoint history), CAP-046 (HITL resume), CAP-047 (budget + guardrail panels)
+**CAP coverage:** CAP-041 (console scaffold), CAP-042 (debug endpoints incl. graph descriptor), CAP-043 (run inspection), CAP-044 (checkpoint history), CAP-045 (HITL console resume), CAP-046 (token/context budget panel), CAP-047 (guardrail review panel)
 
-**ADR traceability:** ADR-031 (Developer Console Architecture) — 6 decisions; purity boundary table; story ordering S-console-01..10
+**ADR traceability:** ADR-031 (Developer Console Architecture) — 8 decisions; purity boundary table; story ordering S-console-01..10
 
 **Key error codes:** `E-SERVER-023` (DebugExporterNotConfigured), `E-SERVER-009` (AssistantNotFound)
 
@@ -280,6 +280,7 @@ is feature-gated (`debug-endpoints` Cargo feature defaults `false`) and scoped t
 
 ## Changelog
 
+- **2.1 (D-356/DC-36/2026-09-08, story-writer):** F-PDC36-02 — §E-console CAP coverage corrected to canonical capabilities-p1-p2 / ADR-031 mapping: CAP-041 (console scaffold), CAP-042 (debug endpoints incl. graph descriptor), CAP-043 (run inspection), CAP-044 (checkpoint history), CAP-045 (HITL console resume), CAP-046 (token/context budget panel), CAP-047 (guardrail review panel) — CAP-046 and CAP-047 are separate (budget panel vs guardrail review panel; not collapsed). F-PDC36-08 — ADR-031 decision count corrected: "6 decisions" → "8 decisions" (adds Decision 7 DebugSpanSource inversion + Decision 8 completed-run substrate).
 - **2.0 (D-356/DC-35/2026-09-08, story-writer):** F-PDC35-02 — S-1.29 (GuardrailJournal Persistence, 5 pts, Wave 1, SS-11) integrated into E-11. Epic Catalog: E-11 stories S-1.19 → S-1.19, S-1.29; points 13 → 18. Epic Summary E-11 updated: 13 pts → 18 pts; "all 6 BCs are P0" → "all 7 BCs are P0"; S-1.19/S-1.29 narrative breakdown added (BC coverage, GuardrailJournal shape, VP-2.11.007-A anchor, cross-wave block on S-console-10). Intro header: 52 → 53 stories; Wave 1 (28) → Wave 1 (29).
 - **1.9 (D-356/DC-10+DC-11/2026-09-07):** Wave-3 dep-inversion — server::debug_span (SpanData + DebugSpanSource read-trait, pregolya-server, server-owned per ADR-031 Decision 7; created by S-console-03); DebugSpanExporter implements the trait; sub-wave table restructured 3A-3F→3A-3E; S-console-02 now depends on S-console-03.
 - **1.8 (D-356/2026-09-06):** E-console epic added (Wave 3 roadmap, SS-24, 10 stories, 56 pts, ADR-031). Epic Catalog row added. Epic summary section added with architecture narrative, BC/CAP/VP traceability, topological sub-wave table, and story-point breakdown. State-manager to sync census header: 22→23 product epics, 42→52 stories, 316→372 product points.

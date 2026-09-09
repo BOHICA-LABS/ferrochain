@@ -3,7 +3,7 @@ document_type: verification-property
 level: L4
 id: VP-2.11.007-A
 title: "GuardrailJournal Completeness — Every evaluate() Call Produces an Entry"
-version: "1.2"
+version: "1.3"
 status: draft
 producer: architect
 timestamp: 2026-09-08T00:00:00Z
@@ -40,6 +40,7 @@ priority: P0
 harness_fn: "n/a (integration test)"
 file: vp-2.11.007-a-guardrail-journal-completeness.md
 changelog:
+  - "1.3 (D-356/DC-36/F-PDC36-05/2026-09-08, architect): F-PDC36-05 — write-ordering prose corrected in §Source Contract {PC-001} and §Formal Invariant {PC-001}: 'before the hook call returns' → 'after evaluate() returns' (the entry carries the returned GuardrailResult; BC-2.11.007 {EC-003} governs this ordering). Accumulate/persist split ruling (F-PDC36-01) documented in DC-36 delta note; routing to story-writer (S-1.29) and PO (BC-2.11.007 §Architecture Anchors) also in delta note."
   - "1.2 (D-356/DC-35/F-PDC35-01/F-PDC35-03/F-PDC35-04/2026-09-08, architect): F-PDC35-01 — no-hooks harness case rewritten: guardrail_journal is None (not Some([])) when no GuardrailHook is registered (BC-2.11.007 {INV-004}/{EC-004}/TV-002); separate case added for hooks-registered-zero-ingress → Some([]). F-PDC35-03 — test vehicle repointed from crates/pregolya-server/tests to crates/pregolya-graph/tests (VP module = graph::provenance / pregolya-graph); ServerTestFixture → GraphTestFixture. F-PDC35-04 — transform_applied residue removed from §Source Contract field list (canonical 4-field shape: boundary/result/provenance/timestamp_ms) and from §Proof Method Coverage cell."
   - "1.1 (D-356/DC-34/F-PDC34-01/F-PDC34-02/F-PDC34-03/O-PDC34-A/2026-09-08, architect): F-PDC34-01 — bc_anchor corrected {INV-003}→{INV-002} ({INV-002} is Completeness/DI-012; {INV-003} is Separation from EvidenceJournal — not what this VP tests). F-PDC34-02 — module repointed server::guardrail_journal→graph::provenance (crate: pregolya-graph); graph::provenance is the canonical GuardrailHook dispatch and journal-append site per BC-2.11.007 §Architecture Anchors. server::guardrail_journal was a phantom module not in module-decomposition.md. F-PDC34-03 — boundary semantic corrected throughout: IngressBoundary (existing canonical type; BC-2.06.001 §Postconditions PC-002; values ToolResult | RagChunk | MemoryItem) replaces String hook-identity label. O-PDC34-A — transform_applied field dropped from GuardrailEntry shape; result.Transform.new_content is authoritative."
   - "1.0 (D-356/DC-33/2026-09-08, architect): Minted. GuardrailJournal completeness integration P0. BC-2.11.007 {PC-001}/{INV-003}; DI-012; server::guardrail_journal; pregolya-server. Every GuardrailHook::evaluate() call for a run produces exactly one GuardrailEntry in the run's guardrail_journal, preserving call order. Human-authorized DC-33 core-domain extension; BC-2.11.007 authored by PO; entities-server.md §GuardrailJournal entity defined by BA."
@@ -60,8 +61,9 @@ is absent — `result.Transform.new_content` is the authoritative content payloa
 
 ## Source Contract
 
-- BC-2.11.007 §PC-001: Every `GuardrailHook::evaluate()` call writes a `GuardrailEntry`
-  to the run's `guardrail_journal` before the hook call returns.
+- BC-2.11.007 §PC-001: Every `GuardrailHook::evaluate()` call appends a `GuardrailEntry`
+  to the run's accumulated journal **after** `evaluate()` returns (the entry carries the
+  returned `GuardrailResult`; append-before-return would be wrong — BC-2.11.007 {EC-003}).
 - BC-2.11.007 §INV-002: For any terminal-status run, entries are appended in evaluate()
   call order with no gaps and no double-writes; every evaluate() call produces exactly one
   entry — this is the DI-012 completeness invariant applied to the persistence layer.
@@ -96,7 +98,7 @@ is absent — `result.Transform.new_content` is the authoritative content payloa
     // result.Transform.new_content: IngressContent
 
   PC-001 (write obligation):
-    every evaluate() call writes a GuardrailEntry before the hook returns
+    every evaluate() call appends a GuardrailEntry AFTER evaluate() returns
 ```
 
 (BC-2.11.007 {PC-001}/{INV-002}; DI-012 Guardrail Coverage at Ingress Boundaries)
@@ -232,5 +234,7 @@ budget PolicyDecision outcomes only and does not conflict.
 | Phase 6 | VP status reviewed; Kani supplement considered if pure-core extract is feasible |
 
 > **D-356 adversary fix DC-34 (2026-09-08, architect).** F-PDC34-01: bc_anchor corrected `{INV-003}` → `{INV-002}` throughout (frontmatter, §Source Contract, §Formal Invariant footer, §BC Traceability) — {INV-002} is BC-2.11.007 Completeness/DI-012; {INV-003} is Separation from EvidenceJournal. F-PDC34-02: module repointed `server::guardrail_journal` → `graph::provenance`, crate `pregolya-server` → `pregolya-graph` — graph::provenance is the canonical GuardrailHook dispatch and journal-append site per BC-2.11.007 §Architecture Anchors; server::guardrail_journal was a phantom module not in module-decomposition.md. F-PDC34-03: §Property Statement and §Proof Harness updated — `boundary` corrected to `IngressBoundary` (existing canonical enum per BC-2.06.001 §Postconditions PC-002). O-PDC34-A: `transform_applied` removed from §Property Statement, §Formal Invariant, and §Proof Harness — `result.Transform.new_content: IngressContent` is authoritative; routing for PO/BA/story-writer in ADR-031 §Decision 8 DC-34 delta note.
+
+> **D-356 adversary fix DC-36 (2026-09-08, architect).** F-PDC36-05 (MED): write-ordering prose corrected — §Source Contract {PC-001} and §Formal Invariant {PC-001} changed from "before the hook call returns" to "after evaluate() returns" (the GuardrailEntry carries the returned GuardrailResult; append-before-return would require time travel; BC-2.11.007 {EC-003} governs). **F-PDC36-01 (HIGH) ARCHITECTURAL RULING — graph→server GuardrailJournal persistence split** (mirroring EvidenceJournal pattern): `graph::provenance` (pregolya-graph) ACCUMULATES the journal — appends one `GuardrailEntry` to a run-scoped `Vec<GuardrailEntry>` after each `evaluate()` returns; the accumulated `Vec<GuardrailEntry>` is returned as part of the graph execution result (same channel the server already reads for `evidence_journal`); `server::handlers` (pregolya-server) PERSISTS the accumulated journal to RunStore atomically with the terminal state-machine write — same site and pattern as `evidence_journal` persistence (BC-2.10.002 / SS-12). pregolya-graph MUST NOT import RunStore (that would create a forbidden reverse edge: direction = pregolya-server→pregolya-graph→pregolya-core). **Story-writer routing (S-1.29):** §Architecture Mapping "Terminal journal persistence" row — change crate/module from pregolya-graph/graph::provenance to pregolya-server (server::handlers / run-state-machine terminal-state write site); Task 5 — move "write completed GuardrailJournal to RunStore" to pregolya-server run-state-machine terminal transition (same function as evidence_journal persistence, atomic with terminal state write); §File Structure — any new file for RunStore GuardrailJournal write belongs in pregolya-server, not pregolya-graph. In-flight append site stays pregolya-graph/graph::provenance. **PO routing (BC-2.11.007 §Architecture Anchors):** Replace the current §Architecture Anchors text for persistence with: "`graph::provenance` (pregolya-graph): ProvenanceTag attachment at ingress boundaries, GuardrailHook dispatch, GuardrailJournal ACCUMULATION — appends one `GuardrailEntry` to a run-scoped `Vec<GuardrailEntry>` after each `evaluate()` returns; returns accumulated `Vec<GuardrailEntry>` as part of graph execution result. `server::handlers` (pregolya-server): DURABLE RunStore persistence — writes accumulated `Vec<GuardrailEntry>` to RunStore atomically with terminal state-machine transition, same site and pattern as `evidence_journal` (BC-2.10.002). pregolya-graph DOES NOT import RunStore (reverse-edge violation). The 'same durability path as checkpoint put_writes' text is incorrect and must be removed."
 
 > **D-356 adversary fix DC-35 (2026-09-08, architect).** F-PDC35-01 (HIGH): no-hooks harness case rewritten — `guardrail_journal_no_hooks_yields_empty_journal` (DC-33/DC-34) replaced with two distinct cases: (1) `guardrail_journal_none_when_no_hooks_registered` asserts `guardrail_journal.is_none()` (BC-2.11.007 {INV-004}/{EC-004}/TV-002 — no hook registered means journal never initialized; `None` is not `Some([])`); (2) `guardrail_journal_some_empty_when_hooks_registered_zero_ingress` asserts `Some([])` (hooks registered but zero ingress boundaries reached). F-PDC35-03 (MED): test vehicle repointed — file path `crates/pregolya-server/tests/...` → `crates/pregolya-graph/tests/guardrail_journal_completeness.rs`; `ServerTestFixture` → `GraphTestFixture`; §Proof Method Coverage and §Feasibility Assessment updated to pregolya-graph harness. F-PDC35-04 (MED): `transform_applied` residue removed — §Source Contract field list corrected to canonical 4-field shape (boundary/result/provenance/timestamp_ms; NOTE no transform_applied per O-PDC34-A); §Proof Method Coverage cell `transform_applied semantics` removed.

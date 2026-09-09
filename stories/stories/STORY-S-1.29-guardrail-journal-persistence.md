@@ -3,19 +3,20 @@ document_type: story
 level: ops
 story_id: S-1.29
 epic_id: E-11
-version: "1.1"
+version: "1.2"
 status: draft
 producer: story-writer
 timestamp: 2026-09-08T00:00:00Z
 changelog:
   - "1.0 (D-356/DC-34/2026-09-08, story-writer): Initial story — GuardrailJournal persistence (BC-2.11.007); Wave-1 companion to S-1.19 per DC-34 architect ruling. PO must set BC-2.11.007 §Story Anchor to S-1.29."
   - "1.1 (D-356/DC-35/2026-09-08, story-writer): F-PDC35-01 — EC-001 corrected: no-hook ⇒ guardrail_journal? None (not Some([])) per BC-2.11.007 INV-004/EC-004/TV-002; AC-003 conditioned on hook-registered; test for no-hook case added. F-PDC35-03 — VP-2.11.007-A added to verification_properties (S-1.29 is anchor story); test file renamed guardrail_journal.rs → guardrail_journal_completeness.rs (canonical VP harness path). F-PDC35-05 — BC-2.11.007 title corrected to canonical H1 in body BC table."
+  - "1.2 (D-356/DC-36/2026-09-08, story-writer): F-PDC36-01 — terminal GuardrailJournal persistence relocated from pregolya-graph to pregolya-server (architect ruling: pregolya-graph MUST NOT import RunStore — forbidden reverse edge). Architecture Mapping, Purity Classification, Forbidden Dependencies, File Structure, Task 5, and Token Budget updated. In-flight append stays pregolya-graph/src/provenance.rs; terminal write moves to server::handlers (same site as evidence_journal persistence)."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-11/BC-2.11.007.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "9291c23"
+input-hash: "78a15a6"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-1.19, S-1.26]
@@ -40,6 +41,8 @@ tdd_mode: strict
 > **D-356/DC-34 (2026-09-08, story-writer).** Wave-1 companion story to S-1.19, created per architect ruling DC-34. BC-2.11.007 (GuardrailJournal persistence) previously had an `S-TBD` story anchor. This story closes that gap. S-console-10 (Wave-3 guardrail panel) depends on this story for the `guardrail_journal?` field on run-read.
 
 > **D-356/DC-35 (2026-09-08, story-writer).** F-PDC35-01 — EC-001 corrected: no GuardrailHook registered ⇒ `guardrail_journal?` = None (null/omitted) on run-read — NOT `Some([])`. Distinct: hook registered + zero ingress = `Some([])` (EC-002); hook registered + N ingress = `Some([entries])`. "No hook" = None per BC-2.11.007 INV-004/EC-004/TV-002. AC-003 updated to condition the non-None result on hook-registered. F-PDC35-03 — VP-2.11.007-A added (S-1.29 is the anchor story; test vehicle at canonical path). Test file renamed `guardrail_journal.rs` → `guardrail_journal_completeness.rs` to match VP harness path. F-PDC35-05 — BC table title corrected to canonical H1 "Guardrail Evaluation Results Are Durably Journaled".
+
+> **D-356/DC-36 (2026-09-08, story-writer).** F-PDC36-01 architect ruling — terminal GuardrailJournal persistence relocated from `pregolya-graph` to `pregolya-server`. Rationale: `pregolya-graph` MUST NOT import `RunStore` from `pregolya-server` — that is a forbidden reverse edge (`pregolya-server → pregolya-graph` is the correct direction; a `pregolya-graph → pregolya-server` import would create a cycle). Model: identical to how `evidence_journal` is split — graph accumulates in-flight, server persists atomically at terminal transition. In-flight append stays `pregolya-graph/src/provenance.rs` (unchanged). Terminal write moves to `pregolya-server/src/handlers/` (run-state-machine terminal-state write site, same function as evidence_journal persistence). Affected locations: Architecture Mapping §Terminal row, Purity Classification, Forbidden Dependencies, File Structure, Task 5, Token Budget.
 
 ## Narrative
 
@@ -76,7 +79,7 @@ The `guardrail_journal` field contains only `GuardrailEntry` records (boundary +
 |-----------|--------|----------------|
 | GuardrailEntry type + GuardrailJournal alias | `pregolya-core/src/guardrail.rs` | Pure (data types) |
 | Journal append at evaluate() dispatch | `pregolya-graph/src/provenance.rs` | Effectful (appends to in-flight journal) |
-| Terminal journal persistence | `pregolya-graph/src/run_executor.rs` (or equivalent terminal-transition site) | Effectful (RunStore write) |
+| Terminal journal persistence | `pregolya-server/src/handlers/` (run-state-machine terminal-state write site) | Effectful (RunStore write; atomic with terminal state write, same function site as evidence_journal persistence) |
 | run-read response projection | `pregolya-server/src/routes/runs.rs` | Effectful (reads from RunStore, serializes) |
 
 ## Purity Classification
@@ -85,6 +88,8 @@ The `guardrail_journal` field contains only `GuardrailEntry` records (boundary +
 |--------|---------------|---------------|
 | `pregolya-core/src/guardrail.rs` additions | pure-core | Data type definitions only per ADR-014 Decision 6 |
 | `pregolya-graph/src/provenance.rs` journal append | effectful-shell | Writes to mutable in-flight journal state |
+| `pregolya-graph/src/run_executor.rs` accumulation | effectful-shell | Holds and passes in-flight journal; NO RunStore write |
+| `pregolya-server/src/handlers/` terminal write | effectful-shell | Atomic RunStore write at terminal-state transition; same site as evidence_journal |
 | `pregolya-server/src/routes/runs.rs` projection | effectful-shell | Reads RunStore and serializes response |
 
 ## Edge Cases
@@ -107,7 +112,8 @@ The `guardrail_journal` field contains only `GuardrailEntry` records (boundary +
 | S-1.26 context (RunStore trait, run-read route, Run model) | ~2,000 |
 | `pregolya-core/src/guardrail.rs` additions (~30 lines) | ~400 |
 | `pregolya-graph/src/provenance.rs` journal-append additions (~50 lines) | ~600 |
-| `pregolya-graph/src/run_executor.rs` terminal-persistence additions (~40 lines) | ~500 |
+| `pregolya-graph/src/run_executor.rs` in-flight accumulation additions (~30 lines) | ~400 |
+| `pregolya-server/src/handlers/` terminal-persistence additions (~40 lines) | ~500 |
 | `pregolya-server/src/routes/runs.rs` projection additions (~30 lines) | ~400 |
 | Test files (~120 lines) | ~1,500 |
 | Tool outputs | ~300 |
@@ -121,7 +127,7 @@ The `guardrail_journal` field contains only `GuardrailEntry` records (boundary +
 2. [ ] Add `GuardrailEntry` struct and `GuardrailJournal = Vec<GuardrailEntry>` type alias to `pregolya-core/src/guardrail.rs`. Fields: `boundary: IngressBoundary`, `result: GuardrailResult`, `provenance: ProvenanceTag`, `timestamp_ms: u64`. No `transform_applied` field — Transform content is in `result.Transform.new_content`
 3. [ ] Modify `pregolya-graph/src/provenance.rs` dispatch site: after each `GuardrailHook::evaluate()` call, append a `GuardrailEntry` to the run's in-flight `GuardrailJournal` (AC-001 / BC-2.11.007 PC-001)
 4. [ ] Add `guardrail_journal: GuardrailJournal` in-flight field to the run execution context; initialize empty at run start
-5. [ ] At terminal-state transition in the run executor: persist `guardrail_journal` atomically to `RunStore` (AC-002 / BC-2.11.007 PC-002)
+5. [ ] At terminal-state transition in `pregolya-server/src/handlers/` (the same function that persists `evidence_journal`): receive the completed `guardrail_journal` from the graph execution context and write it atomically to `RunStore` (AC-002 / BC-2.11.007 PC-002). This is in pregolya-server — NOT in pregolya-graph. pregolya-graph MUST NOT import RunStore.
 6. [ ] Add `guardrail_journal: Option<GuardrailJournal>` to the `Run` response model; populate from RunStore for terminal-status runs; absent for in-progress runs (AC-003 / BC-2.11.007 PC-003). This modifies `pregolya-server/src/routes/runs.rs` run-read handler — dependent on S-1.26 RunStore infrastructure
 7. [ ] Implement separation assertion: add test that a run using BOTH budget policy and guardrail hook produces entries exclusively in their respective journals with no cross-contamination (AC-005 / BC-2.11.007 INV-003)
 8. [ ] Export `GuardrailEntry` and `GuardrailJournal` from `pregolya-core/src/lib.rs`
@@ -145,7 +151,7 @@ The `guardrail_journal` field contains only `GuardrailEntry` records (boundary +
 | No PolicyDecision record in guardrail_journal | BC-2.11.007 INV-003 | Test: mixed run; grep journal for PolicyDecision type; assert zero |
 | No transform_applied field on GuardrailEntry | BC-2.11.007 INV-003 (type safety) | Compile-gate: struct definition has no transform_applied field; Transform content via result.Transform.new_content |
 
-**Forbidden Dependencies:** `pregolya-core/src/guardrail.rs` additions must NOT import from `pregolya-graph` or `pregolya-server`. Dependency direction: `pregolya-server` → `pregolya-graph` → `pregolya-core`.
+**Forbidden Dependencies:** `pregolya-core/src/guardrail.rs` additions must NOT import from `pregolya-graph` or `pregolya-server`. `pregolya-graph` must NOT import `RunStore` or any type from `pregolya-server` — this is a forbidden reverse edge. Terminal journal persistence is in `pregolya-server` precisely to preserve the correct dependency direction. Dependency direction: `pregolya-server` → `pregolya-graph` → `pregolya-core`; any `pregolya-graph → pregolya-server` import is a build-time cycle and must cause CI failure.
 
 ## Library & Framework Requirements (MANDATORY)
 
@@ -162,6 +168,7 @@ The `guardrail_journal` field contains only `GuardrailEntry` records (boundary +
 | `crates/pregolya-core/src/guardrail.rs` | MODIFY | Add `GuardrailEntry` struct and `GuardrailJournal` type alias |
 | `crates/pregolya-core/src/lib.rs` | MODIFY | Re-export `GuardrailEntry` and `GuardrailJournal` |
 | `crates/pregolya-graph/src/provenance.rs` | MODIFY | Add journal append at each evaluate() dispatch site (AC-001) |
-| `crates/pregolya-graph/src/run_executor.rs` | MODIFY | Add in-flight journal accumulation + atomic terminal persistence (AC-002) |
+| `crates/pregolya-graph/src/run_executor.rs` | MODIFY | Add in-flight journal accumulation field; pass completed journal to caller at run completion (no RunStore write here — pregolya-graph MUST NOT import RunStore) |
+| `crates/pregolya-server/src/handlers/` | MODIFY | Add atomic GuardrailJournal write to RunStore at terminal-state transition (AC-002 / BC-2.11.007 PC-002) — same site as evidence_journal persistence |
 | `crates/pregolya-server/src/routes/runs.rs` | MODIFY | Add `guardrail_journal?` to run-read response for terminal-status runs (AC-003) |
 | `crates/pregolya-graph/tests/guardrail_journal_completeness.rs` | CREATE | AC-001..AC-005 tests — VP-2.11.007-A test vehicle (canonical harness path) |
