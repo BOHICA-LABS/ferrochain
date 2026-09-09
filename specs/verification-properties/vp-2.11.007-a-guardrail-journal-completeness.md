@@ -3,7 +3,7 @@ document_type: verification-property
 level: L4
 id: VP-2.11.007-A
 title: "GuardrailJournal Completeness — One Entry Per Successfully-Returning evaluate() Call"
-version: "1.11"
+version: "1.12"
 status: draft
 producer: architect
 timestamp: 2026-09-08T00:00:00Z
@@ -40,6 +40,7 @@ priority: P0
 harness_fn: "n/a (integration test)"
 file: vp-2.11.007-a-guardrail-journal-completeness.md
 changelog:
+  - "1.12 (DC-52/F-PDC52-01/2026-09-09, architect): F-PDC52-01 (LOW) — §PC-002→{PC-002} at two live-body sites: (1) §Property Statement boundary field description; (2) §Proof Harness SCOPE-NOTE boundary comment. Canonical clause anchor form is {PC-002} (ADR-027 stable clause anchors); DC-46 swept §INV-002→{INV-002} but missed these two §PC-002 siblings. input-hash unchanged (BC-2.11.007 input did not change)."
   - "1.11 (D-356/DC-48/F-PDC48-02/2026-09-09, architect): F-PDC48-02 (MED) — phantom `server::run_read_handler` replaced with canonical `server::handlers` at two live-body sites: (1) §Property Statement NOTE block ('assembled from the checkpoint store by server::run_read_handler' → 'assembled from the checkpoint store by the run-read handler in server::handlers'); (2) §Proof Harness SCOPE NOTE comment ('assembled by server::run_read_handler from checkpoint store' → 'assembled by the run-read handler in server::handlers from checkpoint store'). server::run_read_handler is not a separate module (F-PDC48-02/DC-48). input-hash updated 122e08a→9293d4e (input drift from prior burst)."
   - "1.10 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog fix — phantom anchor `ADR-031 §DC-44 delta note` → `ADR-031 §Decision 8` (frontmatter changelog + body DC-44 note; verify-adr-anchor-citations.sh); item anchor `BC-2.11.007 §INV-002` → `BC-2.11.007 {INV-002}` in §Source Contract (BC item anchor form, not heading form). input-hash refreshed 122e08a (computed by hook during this burst)."
   - "1.9 (D-356/DC-44/F-PDC44-01/2026-09-09, architect): F-PDC44-01 (MED) — DC-44 delta note added: journal-existence/initialization mechanism ruling (init_guardrail_journal at run start). modified: array updated to add DC-44. No body content changes: harness .expect() calls are already compatible with Some([]) guarantee from init op; harness unchanged. Downstream wording for PO/BA/story-writer in ADR-031 §Decision 8. input-hash unchanged (BC-2.11.007 unchanged)."
@@ -65,7 +66,7 @@ model as `EvidenceJournal` — BC-2.10.002 {INV-003}) sync-durable **after** `ev
 returns and before execution continues at that ingress boundary. No entry is produced for a
 panicking or erroring `evaluate()` call ({EC-003}). Pass, Fail, and Transform results are all
 recorded in call order. Entry fields: `boundary` (`IngressBoundary` per
-BC-2.06.001 §PC-002; values `ToolResult | RagChunk | MemoryItem`), `result` (`GuardrailResult`),
+BC-2.06.001 {PC-002}; values `ToolResult | RagChunk | MemoryItem`), `result` (`GuardrailResult`),
 `provenance` (`ProvenanceTag`), `timestamp_ms` (`u64`, monotone across entries). NOTE:
 `transform_applied` is absent — `result.Transform.new_content` is authoritative (O-PDC34-A).
 NOTE: the run-read `guardrail_journal?` None/Some projection is assembled from the
@@ -165,7 +166,7 @@ async fn guardrail_journal_completeness_all_variants() {
     assert_eq!(journal.len(), 3, "one entry per successful evaluate() call");
 
     // Assert ordering and field correctness (BC-2.11.007 {PC-001})
-    // boundary is IngressBoundary (ToolResult | RagChunk | MemoryItem per BC-2.06.001 §PC-002)
+    // boundary is IngressBoundary (ToolResult | RagChunk | MemoryItem per BC-2.06.001 {PC-002})
     assert_eq!(journal[0].result, GuardrailResult::Pass);
     assert_eq!(journal[1].result, GuardrailResult::Fail);
     assert!(matches!(journal[2].result, GuardrailResult::Transform { .. }));

@@ -1,7 +1,7 @@
 ---
 document_type: architecture-index
 level: L3
-version: "1.92"
+version: "1.93"
 status: active
 producer: state-manager
 timestamp: 2026-09-09T00:00:00Z
@@ -17,6 +17,7 @@ traces_to: prd.md
 deployment_topology: single-service
 decisions: [D4, D6, D9, D11, D13, D17, D20, D21, D23, D356]
 changelog:
+  - "1.93 (D-356/DC-52/2026-09-09, state-manager): DC-52 RECORDS-ONLY CLOSED (TD-RECORDS-MICRO-BURST-001). OBS (pre-existing) dependency-graph pregolya-community DAG node + community→core edge + Wave-2 build-order block added (DAG now 22 crates = ARCH-INDEX Canonical Crate Roster; acyclic; pregolya-community was already crate #8 in roster). F-PDC52-01[LOW] VP-2.11.007-A {PC-002} citation fix (bare §PC-002→{PC-002}; 2 sites). F-PDC52-02[LOW] entities-server §GuardrailJournal append-invariant corrected (only successfully-returning evaluate() calls produce an entry; {EC-003} carve-out). Census UNCHANGED: ADR 31 / VP 42."
   - "1.92 (D-356/DC-48/2026-09-09, state-manager): DC-48 (strict-streak pass 1) = 3MED+1LOW+1OBS ALL CLOSED. F-PDC48-01[MED] module-decomposition checkpoint::saver row: CheckpointSaver raw journal ops (append_evidence_entry_raw/get_evidence_journal_raw); graph::budget typed wrapper get_evidence_journal; server::handlers evidence_journal retrieval via graph::budget wrapper. F-PDC48-02[MED] module-decomposition + verification-architecture + ADR-031: server::run_read_handler phantom replaced with run-read handler in server::handlers at normative sites; canonical file path pregolya-server/src/routes/runs.rs added to module-decomposition server::handlers row. F-PDC48-03[MED] module-decomposition checkpoint::saver: CheckpointSaver canonical trait (CheckpointStore phantom explicitly disavowed). F-PDC48-04[LOW] dependency-graph checkpoint→core +GuardrailEntry; graph→checkpoint +GuardrailJournal write-path rationales. F-PDC48-05[OBS] verification-architecture + ADR-031 BC-2.24.008 {PRE-001} annotation. Census UNCHANGED: ADR 31 / VP 42."
   - "1.91 (D-356/DC-47/2026-09-09, state-manager): F-PDC47-02[HIGH]+OBS DC-47 fix-burst — module-decomposition §server::debug_span SpanData corrected to 8-field shape (session_id: String field 5, = run_id per BC-2.24.002 {INV-007}); purity-boundary-map §server::debug_span SpanData corrected to 8-field shape; OBS SEC-BOUND-001 strip→redact-in-place wording at 6 arch sites (module-decomposition ×1, purity-boundary-map ×2, ADR-031 ×2, api-surface ×1) per BC-2.24.002 {PC-008}. DC-32 sibling sweep was incomplete (self-certified but missed 3 sites). ADR-031 §Decision 2/§Decision 5/§Decision 7 + api-surface §SpanData already 8-field correct (class-sweep confirmed no change needed). Census UNCHANGED: ADR 31 / VP 42."
   - "1.90 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog fix — 12 spa/components/ module path forms in §Verification Properties table converted to spa_components:: namespace::module form (verify-module-canonicality.sh canonical pattern). Census UNCHANGED: ADR 31 / VP 42."

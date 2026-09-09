@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.004
-version: "1.5"
+version: "1.6"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -25,6 +25,7 @@ changelog:
   - "1.3 (D-356-fix/DC-27/L-288/2026-09-08, product-owner): Reverse-anchor completeness: story-writer added BC-2.24.004 to S-console-05 behavioral_contracts frontmatter (POLICY-8: AC-005 cites {INV-002} SSE-only/no-WebSocket rule). §Story Anchor updated to list S-console-05 as secondary consumer alongside primary S-console-06."
   - "1.4 (D-356-fix/DC-29/2026-09-08, product-owner): F-PDC29-01 (HIGH): {PRE-004} dropped non-existent StreamEvent persistence claim (BC-2.12.006) — replaced with D8 realizable substrate: terminal-status run-read (BC-2.12.003 {PC-013}) + optional debug-trace spans (BC-2.24.002). {PC-006} dropped 'stored event list via run-event endpoint' — replaced with D8 run-read + trace-span fetch (static; no SSE). {TV-002} replaced '5 stored events' with D8 trace-span/run-read test vector. {INV-001} 'no new server endpoints' CONFIRMED — both endpoints pre-exist. ADR-031 Decision 8."
   - "1.5 (D-356-fix/DC-30/F-PDC30-02/2026-09-08, product-owner): F-PDC30-02 (MED): `ADR-030 §Decision` → `ADR-030 §Decision 2` in {PRE-004} body and {PC-006} body — §Decision 2 is the canonical authority for StreamEvent transience in ADR-030. DC-29 changelog entry corrected to §Decision 2 as well."
+  - "1.6 (D-356/DC-52/2026-09-09, product-owner): F-PDC52-03 (LOW): §Description over-generalized — opening sentence 'renders a sorted event timeline for any run_id: a list of all StreamEvents' implied a stored StreamEvent list for all runs, contradicting {PC-006}/{PRE-004} (StreamEvent transient, ADR-030 §Decision 2; no stored event list). Rewrote §Description to split live-run path (SSE stream, real-time) from completed-run path (run-read + trace spans, static view per {PC-006}; no stored StreamEvent list). Mirrors CAP-043 DC-29 completed-vs-live split. No behavioral change — postconditions correct throughout; description now consistent with them."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-043
   - architecture/decisions/ADR-031-developer-console-architecture.md
@@ -32,7 +33,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "324a392"
+input-hash: "be39586"
 extracted_from: null
 modified: []
 deprecated: null
@@ -51,11 +52,15 @@ removal_reason: null
 ## Description
 
 The developer console's run inspection panel renders a sorted event timeline for any
-`run_id`: a list of all `StreamEvent`s for the run, ordered by emission sequence, each
-expandable to show phase-specific payload detail. For live runs, the panel subscribes to
-`GET /threads/{id}/runs/{run_id}/stream` (BC-2.12.007, SSE transport) and renders events
-in real time, highlighting active nodes on the StateGraph DAG visualization. The console
-is a pure SSE+REST client — no new server additions are required for this capability.
+`run_id`. For **live runs**, the panel subscribes to
+`GET /threads/{id}/runs/{run_id}/stream` (BC-2.12.007, SSE transport) and renders
+`StreamEvent`s in real time — each event expandable to show phase-specific payload detail —
+highlighting active nodes on the StateGraph DAG visualization. For **completed
+(terminal-status) runs**, there is no stored `StreamEvent` list (`StreamEvent` is transient
+per ADR-030 §Decision 2); the panel instead reconstructs the timeline from the run-read
+response (BC-2.12.003 {PC-013}) and optional debug-trace spans (BC-2.24.002), rendered as
+a static view ({PC-006}). The console is a pure SSE+REST client — no new server additions
+are required for this capability ({INV-001}).
 
 ## Preconditions
 
