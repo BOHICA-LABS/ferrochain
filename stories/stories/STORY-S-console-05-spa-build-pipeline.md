@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-console-05
 epic_id: E-console
-version: "1.3"
+version: "1.4"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -12,6 +12,7 @@ changelog:
   - "1.1 (D-356/2026-09-07, story-writer): Adversary fix DC-06 sweep — remove VP-2.24.001-A from verification_properties; VP-2.24.001-A anchors to S-console-01 (console server lifecycle unit test) per VP-INDEX; S-console-05 SPA build coverage is AC-level only (AC-002 test_BC_2_24_001_spa_index_present_in_bundle traces to BC-2.24.001 PC-002); no registered VP warranted for a bundle-presence AC check."
   - "1.2 (D-356/DC-27/L-288/2026-09-08, story-writer): F-L288-007 — AC-005 trace corrected from BC-2.24.001 INV-002 (TLS-loopback exception) to ADR-031 Decision 3 / BC-2.24.004 INV-002 (SSE-only transport; no WebSocket)."
   - "1.3 (D-356/DC-28/2026-09-08, story-writer): F-PDC28-01 — Token Budget table backfilled with BC-2.24.004.md row (~300 tokens); total updated to ~8,400 (POL-8 step 4: Token Budget BC count matches len(bcs))."
+  - "1.4 (D-356/DC-46/2026-09-09, story-writer): F-PDC46-01 — AC header citation form corrected to M4-strict bare-tag: BC-S.SS.NNN TAG (section-words removed per verify-ac-pc-trace.sh CHECK-1)."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.001.md
@@ -19,7 +20,7 @@ inputs:
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "a675a8d"
+input-hash: "4686fec"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 8
 depends_on: [S-console-01]
@@ -63,22 +64,22 @@ tdd_mode: strict
 
 ## Acceptance Criteria
 
-### AC-001 (traces to BC-2.24.001 precondition PRE-002)
+### AC-001 (traces to BC-2.24.001 PRE-002)
 The compiled web SPA artifact is embedded in the `pregolya-console` binary via `rust_embed` `#[folder = "assets/webui"]` at build time. The `assets/webui/` directory contains `index.html`, at minimum one JavaScript bundle file, and the `runtime-config.json` handler path is reserved. Running `cargo build -p pregolya-console` with an empty `assets/webui/` fails at compile time (rust_embed enforces folder non-empty). Verified by build integration test.
 
-### AC-002 (traces to BC-2.24.001 postcondition PC-002)
+### AC-002 (traces to BC-2.24.001 PC-002)
 The SPA build output satisfies the client-side routing contract: a single `index.html` is the entry point, and all routes are handled client-side (the HTML file is returned for any `/ui/*` path, consistent with the SPA fallback in S-console-01 AC-003). The build tool generates `index.html` as a root asset. Verified by `test_BC_2_24_001_spa_index_present_in_bundle()`.
 
-### AC-003 (traces to BC-2.24.001 postcondition PC-003)
+### AC-003 (traces to BC-2.24.001 PC-003)
 After SPA build, `assets/webui/assets/config/runtime-config.json` does NOT override the server-injected config. The SPA reads `runtime-config.json` from the URL path `/ui/assets/config/runtime-config.json` at runtime. The build pipeline must NOT embed a static `runtime-config.json` at a path that would shadow the server-injected version. Verified by asserting the build output does not contain a conflicting `runtime-config.json` at the expected static path.
 
-### AC-004 (traces to BC-2.24.001 invariant INV-001)
+### AC-004 (traces to BC-2.24.001 INV-001)
 The SPA imports NO symbols from `pregolya-graph`, `pregolya-server`, or any Rust crate internal. The SPA is a pure REST+SSE client of the public wire contract. This is enforced by the framework's module system: no Wasm bindings, no shared WASM modules, no crate imports. Verified by code review of SPA's `package.json`/import graph.
 
 ### AC-005 (per ADR-031 Decision 3 / traces to BC-2.24.004 INV-002 — SSE-only transport; no WebSocket)
 The SPA build uses native browser `EventSource` for SSE — no WebSocket polyfill or client library is included. The SPA bundle does NOT contain WebSocket client code. Verified by `grep -r "WebSocket" src/` on SPA source returns zero matches; bundle analysis confirms no WebSocket dependency.
 
-### AC-006 (traces to BC-2.24.001 postcondition PC-002)
+### AC-006 (traces to BC-2.24.001 PC-002)
 The gzip-compressed total bundle size is < 500 KB. `gzip -c dist/assets/*.js | wc -c` reports < 512000 bytes. This gate is enforced in CI as part of `just check-ci`. Verified by `check-spa-bundle-size` CI task.
 
 ## Architecture Mapping

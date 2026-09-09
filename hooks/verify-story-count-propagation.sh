@@ -110,6 +110,7 @@ emit() {
 #   INV_TOTAL <n>     total story rows in ## Story Inventory
 #   INV_WAVE1 <n>     rows with ID prefix S-1.
 #   INV_WAVE2 <n>     rows with ID prefix S-2.
+#   INV_WAVE3 <n>     rows with ID prefix S-console-
 #   INV_WAVE6 <n>     rows with ID prefix S-6.
 #   INV_MAINT <n>     rows with ID prefix S-MAINT
 #   INV_PRODUCT <n>   total - maint
@@ -158,6 +159,7 @@ current_section = IN_NONE
 # ── Counters ──────────────────────────────────────────────────────────────────
 inv_wave1 = 0
 inv_wave2 = 0
+inv_wave3 = 0
 inv_wave6 = 0
 inv_maint = 0
 
@@ -178,6 +180,7 @@ intro_bc = None
 STORY_ROW_RE   = re.compile(r'^\|\s*(S-(\d+)\.|S-MAINT)')
 WAVE1_ROW_RE   = re.compile(r'^\|\s*S-1\.')
 WAVE2_ROW_RE   = re.compile(r'^\|\s*S-2\.')
+WAVE3_ROW_RE   = re.compile(r'^\|\s*S-console-')
 WAVE6_ROW_RE   = re.compile(r'^\|\s*S-6\.')
 MAINT_ROW_RE   = re.compile(r'^\|\s*S-MAINT')
 
@@ -194,10 +197,10 @@ SEP_ROW_RE     = re.compile(r'^[|\-:\s]+$')
 BQ_LINE_RE     = re.compile(r'^>')
 
 # "N stories total — W1 Wave 1 / W2 Wave 2 / W6 Wave 6 / M Maint"
-BQ_TOTAL_RE    = re.compile(r'\*\*(\d+)\s+stories\s+total\s+[—–-]\s+(\d+)\s+Wave\s+1\s*/\s*(\d+)\s+Wave\s+2\s*/\s*(\d+)\s+Wave\s+6\s*/\s*(\d+)\s+Maint')
+BQ_TOTAL_RE    = re.compile(r'\*\*(\d+)\s+stories\s+total\s+[—–-]\s+(\d+)\s+Wave\s+1\s*/\s*(\d+)\s+Wave\s+2\s*/\s*(?:\d+\s+Wave\s+3\s*/\s*)?(\d+)\s+Wave\s+6\s*/\s*(\d+)\s+Maint')
 
 # "Product-story census: P (W1 Wave 1 / W2 Wave 2 / W6 Wave 6)"
-BQ_PRODUCT_RE  = re.compile(r'Product-story census:\s*(\d+)\s*\(\s*(\d+)\s+Wave\s+1\s*/\s*(\d+)\s+Wave\s+2\s*/\s*(\d+)\s+Wave\s+6\s*\)')
+BQ_PRODUCT_RE  = re.compile(r'Product-story census:\s*(\d+)\s*\(\s*(\d+)\s+Wave\s+1\s*/\s*(\d+)\s+Wave\s+2\s*/\s*(?:\d+\s+Wave\s+3\s*/\s*)?(\d+)\s+Wave\s+6\s*\)')
 
 # "BC coverage: N BCs"
 BQ_BC_RE       = re.compile(r'BC\s+coverage:\s*(\d+)\s+BCs')
@@ -240,6 +243,8 @@ for raw_line in lines:
             inv_wave1 += 1
         elif WAVE2_ROW_RE.match(stripped):
             inv_wave2 += 1
+        elif WAVE3_ROW_RE.match(stripped):
+            inv_wave3 += 1
         elif WAVE6_ROW_RE.match(stripped):
             inv_wave6 += 1
         elif MAINT_ROW_RE.match(stripped):
@@ -291,12 +296,13 @@ for raw_line in lines:
             bq['bc_total']   = int(m_bc.group(1))
 
 # ── Emit results ──────────────────────────────────────────────────────────────
-inv_total   = inv_wave1 + inv_wave2 + inv_wave6 + inv_maint
+inv_total   = inv_wave1 + inv_wave2 + inv_wave3 + inv_wave6 + inv_maint
 inv_product = inv_total - inv_maint
 
 print(f'INV_TOTAL {inv_total}')
 print(f'INV_WAVE1 {inv_wave1}')
 print(f'INV_WAVE2 {inv_wave2}')
+print(f'INV_WAVE3 {inv_wave3}')
 print(f'INV_WAVE6 {inv_wave6}')
 print(f'INV_MAINT {inv_maint}')
 print(f'INV_PRODUCT {inv_product}')
@@ -753,6 +759,7 @@ get_val() { echo "$PARSE_OUT" | grep "^$1 " | awk '{print $2}'; }
 INV_TOTAL="$(get_val INV_TOTAL)"
 INV_WAVE1="$(get_val INV_WAVE1)"
 INV_WAVE2="$(get_val INV_WAVE2)"
+INV_WAVE3="$(get_val INV_WAVE3)"
 INV_WAVE6="$(get_val INV_WAVE6)"
 INV_MAINT="$(get_val INV_MAINT)"
 INV_PRODUCT="$(get_val INV_PRODUCT)"
@@ -784,7 +791,7 @@ if [ -f "$STATE_MD_FILE" ]; then
 fi
 
 echo "  Ground truth (from Story Inventory rows):"
-echo "    Total=${INV_TOTAL}  Wave1=${INV_WAVE1}  Wave2=${INV_WAVE2}  Wave6=${INV_WAVE6}  Maint=${INV_MAINT}  Product=${INV_PRODUCT}"
+echo "    Total=${INV_TOTAL}  Wave1=${INV_WAVE1}  Wave2=${INV_WAVE2}  Wave3=${INV_WAVE3}  Wave6=${INV_WAVE6}  Maint=${INV_MAINT}  Product=${INV_PRODUCT}"
 echo "  Ground truth (BC counts):"
 echo "    SS-header-sum=${SS_BC_SUM}  STATE.md-total_bcs=${STATE_BCS}"
 echo ""

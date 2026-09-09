@@ -2,7 +2,7 @@
 document_type: architecture-section
 level: L3
 section: verification-architecture
-version: "2.52"
+version: "2.53"
 status: active
 producer: architect
 timestamp: 2026-09-07T00:00:00Z
@@ -29,10 +29,11 @@ inputs:
   - .factory/specs/behavioral-contracts/ss-09/BC-2.09.008.md
   - .factory/specs/behavioral-contracts/ss-04/BC-2.04.011.md
   - .factory/specs/behavioral-contracts/ss-11/BC-2.11.007.md
-input-hash: "03b5d4d"
+input-hash: "8f1fed5"
 traces_to: ARCH-INDEX.md
 decisions: [D17, D21, D23, D356]
 changelog:
+  - "2.53 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog fix — 13 spa/components/ module path forms converted to spa_components:: namespace::module form (verify-module-canonicality.sh canonical pattern). Census UNCHANGED: 42 total."
   - "2.52 (D-356/DC-44/F-PDC44-02/2026-09-09, architect): F-PDC44-02 — body changelog row v2.51 date corrected from 2026-09-08 to 2026-09-09. Census UNCHANGED: 42 total."
   - "2.51 (D-356/DC-39/F-PDC39-01/2026-09-09, architect): F-PDC39-01 — VP-2.11.007-A §P0 catalog prose block fully rewritten: removed pre-DC-34 transform_applied residue, hook_identity mislabel, unqualified evaluate_calls, ServerTestFixture/SQLite RunStore/terminal-status framing; replaced with graph-side checkpoint-backed model per F-PDC39-02 ruling (EvidenceJournal analogy corrected). Census UNCHANGED: 42 total."
   - "2.50 (D-356/DC-38/F-PDC38-07/2026-09-08, architect): F-PDC38-07 — VP-2.11.007-A §P0 catalog header updated with new subtitle: 'One Entry Per Successfully-Returning evaluate() Call'. Census UNCHANGED: 42 total."
@@ -41,7 +42,7 @@ changelog:
   - "2.47 (D-356/DC-20/2026-09-08, architect): F-PDC20-01+O-PDC20-A — 5 DI-column re-anchors in VP-to-Module table: VP-2.24.005-A DI-002→DI-004; VP-2.24.005-B DI-002→DI-004; VP-2.24.006-A DI-014→DI-003; VP-2.24.006-B DI-014→DI-003; VP-2.24.008-A DI-014→DI-012. BCs are source of truth (BC-2.24.005/006/008 di_anchors + INV-001/INV-002). Census UNCHANGED: 41 total. input-hash unchanged (inputs did not change)."
   - "2.46 (D-356/DC-19/2026-09-08, architect): F-PDC19-02 — VP-2.24.003-C module repointed server::debug_routes → graph::descriptor (BC-2.24.003 §VP table is source of truth; BC declares VP-2.24.003-C as start-node-always-present targeting graph::descriptor/pregolya-graph). VP-2.24.003-B module already correct (graph::descriptor); no change needed in this mirror (harness_fn not tracked here). Census UNCHANGED: 41 total. input-hash unchanged (inputs did not change)."
   - "2.45 (D-356/DC-08/2026-09-07, state-manager): F-PDC08-03 — DC-02 blockquote annotation corrected: `debug_api_key` → `debug_route_key` (DC-07-rename consistency sweep; records-tier annotation; canonical field per BC-2.12.005 PRE-004/INV-001; ADR-021 §Decision 1). input-hash unchanged (inputs did not change)."
-  - "2.44 (D-356/DC-07/2026-09-07, architect): F-PDC07-03 — 10 panel-VP Module cells repointed to canonical SPA component path form: spa/components/run_inspector (VP-2.24.004-A/B), spa/components/checkpoint_panel (VP-2.24.005-A/B), spa/components/hitl_panel (VP-2.24.006-A/B), spa/components/budget_panel (VP-2.24.007-A/B), spa/components/guardrail_panel (VP-2.24.008-A/B). CORRECTION: v2.41 (DC-02) claimed these were SPA panel modules but used console::* Rust module notation — non-canonical for SPA components. Canonical convention: spa/components/<component_name> path form. Census UNCHANGED: 41 total. input-hash unchanged (inputs did not change)."
+  - "2.44 (D-356/DC-07/2026-09-07, architect): F-PDC07-03 — 10 panel-VP Module cells repointed to canonical SPA component path form: spa_components::run_inspector (VP-2.24.004-A/B), spa_components::checkpoint_panel (VP-2.24.005-A/B), spa_components::hitl_panel (VP-2.24.006-A/B), spa_components::budget_panel (VP-2.24.007-A/B), spa_components::guardrail_panel (VP-2.24.008-A/B). CORRECTION: v2.41 (DC-02) claimed these were SPA panel modules but used console::* Rust module notation — non-canonical for SPA components. Canonical convention: spa_components::<component_name> path form. Census UNCHANGED: 41 total. input-hash unchanged (inputs did not change)."
   - "2.43 (D-356/DC-04/2026-09-07, architect): F-PDC04-04 — VP-2.24.002-A/B module repointed console::span_exporter → console::ring_buffer (console::ring_buffer is now canonical Pure Core for RingBuffer<T> per ADR-031 Decision 5 DC-04 split). VP-2.24.002-C (server::debug_routes) and VP-2.24.002-D (console::span_exporter sanitization) unchanged. Census UNCHANGED: 41 total. input-hash unchanged (inputs did not change)."
   - "2.42 (D-356/DC-02-addendum/2026-09-07, architect): VP-2.24.002-D registered — SpanData SEC-BOUND-001 sanitization before ring-buffer insertion (unit P1; console::span_exporter; BC-2.24.002; DI-014). Sanitization location: AT INSERTION (stricter than BC PC-008 'before serving'; ensures ring buffer never holds unsanitized llm_request/llm_response/attributes; satisfies PC-008 as a postcondition). Census 40→41; unit ×7→×8; P1 34→35. Preamble Forty→Forty-one. input-hash unchanged (inputs did not change)."
   - "2.41 (D-356/DC-02/2026-09-07, architect): F-PDC02-02+F-PDC02-03 — VP-2.24.002-A/B module repointed console::ring_buffer → console::span_exporter (ADR-031 Decision 5 canonical; DC-01 had used non-canonical name; console::span_exporter is the Boundary module hosting RingBuffer<SpanData>, per ADR-031 Decision 5 purity table). VP-2.24.004-008 A/B module columns corrected from console::server to SPA panel modules: console::run_inspector (004-A/B), console::checkpoint_panel (005-A/B), console::hitl_panel (006-A/B), console::budget_panel (007-A/B), console::guardrail_panel (008-A/B), per respective BCs. Tool census UNCHANGED: Kani ×10, proptest ×10, integration ×12, unit ×7, compile-fail ×1 (40 total VPs). input-hash unchanged (inputs did not change)."
@@ -130,16 +131,16 @@ Forty-two VPs committed before v1.0 release — VP-001..005 (original five) plus
 | VP-2.24.003-A | BC-2.24.003 | DI-014 | `graph::descriptor` | unit | 3 | P1 |
 | VP-2.24.003-B | BC-2.24.003 | DI-014 | `graph::descriptor` | Kani | 6 | P1 |
 | VP-2.24.003-C | BC-2.24.003 | DI-014 | `graph::descriptor` | unit | 3 | P1 |
-| VP-2.24.004-A | BC-2.24.004 | DI-014 | `spa/components/run_inspector` | integration | 3 | P1 |
-| VP-2.24.004-B | BC-2.24.004 | DI-014 | `spa/components/run_inspector` | integration | 3 | P1 |
-| VP-2.24.005-A | BC-2.24.005 | DI-004 | `spa/components/checkpoint_panel` | integration | 3 | P1 |
-| VP-2.24.005-B | BC-2.24.005 | DI-004 | `spa/components/checkpoint_panel` | integration | 3 | P1 |
-| VP-2.24.006-A | BC-2.24.006 | DI-003 | `spa/components/hitl_panel` | integration | 3 | P1 |
-| VP-2.24.006-B | BC-2.24.006 | DI-003 | `spa/components/hitl_panel` | integration | 3 | P1 |
-| VP-2.24.007-A | BC-2.24.007 | DI-014 | `spa/components/budget_panel` | unit | 3 | P1 |
-| VP-2.24.007-B | BC-2.24.007 | DI-014 | `spa/components/budget_panel` | integration | 3 | P1 |
-| VP-2.24.008-A | BC-2.24.008 | DI-012 | `spa/components/guardrail_panel` | integration | 3 | P1 |
-| VP-2.24.008-B | BC-2.24.008 | DI-014 | `spa/components/guardrail_panel` | unit | 3 | P1 |
+| VP-2.24.004-A | BC-2.24.004 | DI-014 | `spa_components::run_inspector` | integration | 3 | P1 |
+| VP-2.24.004-B | BC-2.24.004 | DI-014 | `spa_components::run_inspector` | integration | 3 | P1 |
+| VP-2.24.005-A | BC-2.24.005 | DI-004 | `spa_components::checkpoint_panel` | integration | 3 | P1 |
+| VP-2.24.005-B | BC-2.24.005 | DI-004 | `spa_components::checkpoint_panel` | integration | 3 | P1 |
+| VP-2.24.006-A | BC-2.24.006 | DI-003 | `spa_components::hitl_panel` | integration | 3 | P1 |
+| VP-2.24.006-B | BC-2.24.006 | DI-003 | `spa_components::hitl_panel` | integration | 3 | P1 |
+| VP-2.24.007-A | BC-2.24.007 | DI-014 | `spa_components::budget_panel` | unit | 3 | P1 |
+| VP-2.24.007-B | BC-2.24.007 | DI-014 | `spa_components::budget_panel` | integration | 3 | P1 |
+| VP-2.24.008-A | BC-2.24.008 | DI-012 | `spa_components::guardrail_panel` | integration | 3 | P1 |
+| VP-2.24.008-B | BC-2.24.008 | DI-014 | `spa_components::guardrail_panel` | unit | 3 | P1 |
 
 **Total: 42 VPs — 7 P0 / 35 P1 | Tool breakdown: Kani ×10, proptest ×10, integration ×13, unit ×8, compile-fail ×1**
 
@@ -157,7 +158,7 @@ Forty-two VPs committed before v1.0 release — VP-001..005 (original five) plus
 
 > **D-356 adversary fix DC-04 (2026-09-07, architect).** F-PDC04-04: VP-2.24.002-A/B module repointed `console::span_exporter` → `console::ring_buffer`. `console::ring_buffer` is now the canonical Pure Core module for `RingBuffer<T>` per ADR-031 Decision 5 (DC-04 split). VP-2.24.002-C (`server::debug_routes`) and VP-2.24.002-D (`console::span_exporter` sanitization) unchanged. Census UNCHANGED: 41 total.
 
-> **D-356 adversary fix DC-07 (2026-09-07, architect).** F-PDC07-03: 10 panel-VP Module cells repointed to canonical SPA component path form — `spa/components/run_inspector` (VP-2.24.004-A/B), `spa/components/checkpoint_panel` (VP-2.24.005-A/B), `spa/components/hitl_panel` (VP-2.24.006-A/B), `spa/components/budget_panel` (VP-2.24.007-A/B), `spa/components/guardrail_panel` (VP-2.24.008-A/B). CORRECTION: v2.41 (DC-02) described these as "SPA panel modules" but used `console::*` Rust module notation — non-canonical for SPA components. Canonical form: `spa/components/<component_name>` path form (matches VP-INDEX.md preamble SPA convention note). Census UNCHANGED: 41 total.
+> **D-356 adversary fix DC-07 (2026-09-07, architect).** F-PDC07-03: 10 panel-VP Module cells repointed to canonical SPA component path form — `spa_components::run_inspector` (VP-2.24.004-A/B), `spa_components::checkpoint_panel` (VP-2.24.005-A/B), `spa_components::hitl_panel` (VP-2.24.006-A/B), `spa_components::budget_panel` (VP-2.24.007-A/B), `spa_components::guardrail_panel` (VP-2.24.008-A/B). CORRECTION: v2.41 (DC-02) described these as "SPA panel modules" but used `console::*` Rust module notation — non-canonical for SPA components. Canonical form: `spa_components::<component_name>` path form (matches VP-INDEX.md preamble SPA convention note). Census UNCHANGED: 41 total.
 
 > **D-356 adversary fix DC-20 (2026-09-08, architect).** F-PDC20-01+O-PDC20-A: 5 DI-column re-anchors in VP-to-Module table: VP-2.24.005-A DI-002→DI-004 (BC-2.24.005 INV-001 step_idx monotone ordering → DI-004); VP-2.24.005-B DI-002→DI-004 (fork-from-checkpoint creates new run_id via DI-004 fork lineage; O-PDC20-A CHANGE); VP-2.24.006-A DI-014→DI-003 (approve/deny dispatch is HITL resume-value delivery; O-PDC20-A CHANGE); VP-2.24.006-B DI-014→DI-003 (BC-2.24.006 INV-001 FIFO ordering → DI-003); VP-2.24.008-A DI-014→DI-012 (BC-2.24.008 INV-002 complete feed → DI-012). BCs are source of truth (BC-2.24.005/006/008 di_anchors). All other VP-2.24.* DI-014 kept. Census UNCHANGED: 41 total. POL-2 orphan closure: DI-003/DI-004/DI-012 each ≥1 VP. Propagated from VP-INDEX.md v1.51 in same burst.
 
@@ -1146,6 +1147,7 @@ Modules where behavioral testing is the primary verification method:
 
 | Version | Date | Author | Decision | Change |
 |---------|------|--------|----------|--------|
+| 2.53 | 2026-09-09 | architect | D-356/DC-46/2026-09-09 | DC-46 gate-backlog fix — 13 `spa/components/` module path forms converted to `spa_components::` namespace::module form across VP catalog table and P0/P1 lists (verify-module-canonicality.sh canonical pattern). Census UNCHANGED: 42 total. |
 | 2.52 | 2026-09-09 | architect | D-356/DC-44/F-PDC44-02/2026-09-09 | F-PDC44-02 — body changelog row v2.51 date corrected from 2026-09-08 to 2026-09-09. Census UNCHANGED: 42 total. |
 | 2.51 | 2026-09-09 | architect | D-356/DC-39/2026-09-09 | F-PDC39-01 — VP-2.11.007-A §P0 catalog prose block fully rewritten: removed pre-DC-34 transform_applied residue, hook_identity mislabel, unqualified evaluate_calls, ServerTestFixture/SQLite RunStore/terminal-status framing; replaced with graph-side checkpoint-backed model per F-PDC39-02 ruling (EvidenceJournal analogy corrected). Census UNCHANGED: 42 total. |
 | 2.50 | 2026-09-08 | architect | D-356/DC-38/2026-09-08 | F-PDC38-07 — VP-2.11.007-A §P0 catalog header updated with new subtitle: 'One Entry Per Successfully-Returning evaluate() Call'. Census UNCHANGED: 42 total. |
@@ -1153,7 +1155,7 @@ Modules where behavioral testing is the primary verification method:
 | 2.48 | 2026-09-08 | architect | D-356/DC-33/2026-09-08 | VP-2.11.007-A minted — GuardrailJournal completeness integration P0 (BC-2.11.007 {PC-001}/{INV-003}; DI-012; server::guardrail_journal; pregolya-server; Phase 3). Census 41→42; integration ×12→×13; P0 6→7. Human-authorized DC-33 core-domain amendment; BC-2.11.007 authored by PO; entities-server.md §GuardrailJournal defined by BA. |
 | 2.47 | 2026-09-08 | architect | D-356/DC-20/2026-09-08 | F-PDC20-01+O-PDC20-A — 5 DI-column re-anchors: VP-2.24.005-A/B DI-002→DI-004 (step_idx ordering + fork lineage → DI-004); VP-2.24.006-A/B DI-014→DI-003 (approve/deny dispatch + FIFO ordering → DI-003); VP-2.24.008-A DI-014→DI-012 (complete Fail/Transform feed → DI-012). BCs source of truth. Census UNCHANGED: 41 total. POL-2 orphan closure: DI-003/DI-004/DI-012 each ≥1 VP. |
 | 2.46 | 2026-09-08 | architect | D-356/DC-19/2026-09-08 | F-PDC19-02 — VP-2.24.003-C module repointed server::debug_routes → graph::descriptor (BC-2.24.003 §VP table source of truth; start-node-always-present property targets graph::descriptor/pregolya-graph). VP-2.24.003-B module already correct. Census UNCHANGED: 41 total. |
-| 2.44 | 2026-09-07 | architect | D-356/DC-07/2026-09-07 | F-PDC07-03 — 10 panel-VP Module cells repointed to canonical SPA component path form: spa/components/run_inspector (VP-2.24.004-A/B), spa/components/checkpoint_panel (VP-2.24.005-A/B), spa/components/hitl_panel (VP-2.24.006-A/B), spa/components/budget_panel (VP-2.24.007-A/B), spa/components/guardrail_panel (VP-2.24.008-A/B). CORRECTION: v2.41 (DC-02) used console::* Rust module notation — non-canonical for SPA components. Canonical convention: spa/components/<component_name> path form. Census UNCHANGED: 41 total. |
+| 2.44 | 2026-09-07 | architect | D-356/DC-07/2026-09-07 | F-PDC07-03 — 10 panel-VP Module cells repointed to canonical SPA component path form: spa_components::run_inspector (VP-2.24.004-A/B), spa_components::checkpoint_panel (VP-2.24.005-A/B), spa_components::hitl_panel (VP-2.24.006-A/B), spa_components::budget_panel (VP-2.24.007-A/B), spa_components::guardrail_panel (VP-2.24.008-A/B). CORRECTION: v2.41 (DC-02) used console::* Rust module notation — non-canonical for SPA components. Canonical convention: spa_components::<component_name> path form. Census UNCHANGED: 41 total. |
 | 2.43 | 2026-09-07 | architect | D-356/DC-04/2026-09-07 | F-PDC04-04 — VP-2.24.002-A/B module repointed console::span_exporter → console::ring_buffer (canonical Pure Core for RingBuffer<T> per ADR-031 Decision 5 DC-04 split). VP-2.24.002-C (server::debug_routes) and VP-2.24.002-D (console::span_exporter sanitization) unchanged. Census UNCHANGED: 41 total. |
 | 2.42 | 2026-09-07 | architect | D-356/DC-02-addendum/2026-09-07 | VP-2.24.002-D registered — SpanData SEC-BOUND-001 sanitization before ring-buffer insertion (unit P1; console::span_exporter; BC-2.24.002; DI-014). Sanitization location: AT INSERTION (stricter than BC PC-008 'before serving'; ensures ring buffer never holds unsanitized llm_request/llm_response/attributes). Census 40→41; unit ×7→×8; P1 34→35. Preamble Forty→Forty-one. |
 | 2.41 | 2026-09-07 | architect | D-356/DC-02/2026-09-07 | F-PDC02-02+F-PDC02-03 — VP-2.24.002-A/B module repointed console::ring_buffer → console::span_exporter (ADR-031 Decision 5 canonical). VP-2.24.004-008 A/B module columns corrected from console::server to SPA panel modules: console::run_inspector (004-A/B), console::checkpoint_panel (005-A/B), console::hitl_panel (006-A/B), console::budget_panel (007-A/B), console::guardrail_panel (008-A/B). Tool census UNCHANGED: Kani ×10, proptest ×10, integration ×12, unit ×7, compile-fail ×1 (40 total VPs). |

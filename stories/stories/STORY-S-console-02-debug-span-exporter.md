@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-console-02
 epic_id: E-console
-version: "1.4"
+version: "1.5"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -13,6 +13,7 @@ changelog:
   - "1.2 (D-356/2026-09-07, story-writer): Adversary fix DC-06 sweep — remove VP-2.24.002-C from verification_properties; VP-2.24.002-C anchors to S-console-03 (server::debug_routes integration test) per VP-INDEX; this story builds DebugSpanExporter and SpanData covered by VP-2.24.002-A/B/D; no body references to VP-2.24.002-C were present."
   - "1.3 (D-356/2026-09-07, story-writer): F-PDC11-01 — dependency inversion sweep per ADR-031 Decision 7: dep-edge flipped (depends_on now [S-console-01, S-console-03]; blocks now []); AC-002 injection Arc<dyn DebugSpanSource>; AC-006 compile-fail test relocated to S-console-03; AC-007 rewritten to INV-005 updated model; SpanData row removed from Architecture Mapping (server-owned); Task 4/6/7 updated; compile-fail File Structure row relocated."
   - "1.4 (D-356/DC-32/2026-09-08, story-writer): F-PDC32-02 — AC-004 SpanData field list corrected to 8-field shape: added session_id: String after end_time_ms (set by DebugSpanExporter at insertion per BC-2.24.002 {INV-007}). Whole-file sweep: no other 7-field or 7-item SpanData enumerations found."
+  - "1.5 (D-356/DC-46/2026-09-09, story-writer): F-PDC46-01 — AC header citation form corrected to M4-strict bare-tag: BC-S.SS.NNN TAG (section-words removed per verify-ac-pc-trace.sh CHECK-1)."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.001.md
@@ -20,7 +21,7 @@ inputs:
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "e102dc1"
+input-hash: "ffdcbab"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-01, S-console-03]
@@ -66,34 +67,34 @@ tdd_mode: strict
 
 ## Acceptance Criteria
 
-### AC-001 (traces to BC-2.24.001 postcondition PC-004)
+### AC-001 (traces to BC-2.24.001 PC-004)
 When `run_console` is called with `dev_mode: true`, the pregolya-server `/api/*` routes are merged into the same Axum router as `/ui/*`. Both SPA assets and server API are served from the single `<host>:<port>` listener. `POST /api/shutdown` is available. Verified by `test_BC_2_24_001_dev_mode_routes_merged()`.
 
-### AC-002 (traces to BC-2.24.001 postcondition PC-005)
+### AC-002 (traces to BC-2.24.001 PC-005)
 When `dev_mode: true`, a `DebugSpanExporter` (ring buffer with `span_retention_cap` entries) is instantiated, wrapped as `Arc<dyn DebugSpanSource>` (type-erased coercion; `DebugSpanSource` is defined in `pregolya-server/server::debug_span` per ADR-031 Decision 7), and injected into the co-launched pregolya-server at dev-mode co-launch. In standalone mode (`dev_mode: false`), `DebugSpanExporter` is not instantiated by the console crate. Verified by `test_BC_2_24_001_dev_mode_exporter_injected()`.
 
-### AC-003 (traces to BC-2.24.002 postcondition PC-001)
+### AC-003 (traces to BC-2.24.002 PC-001)
 The `DebugSpanExporter` stores up to `span_retention_cap` `SpanData` entries. When the buffer is at capacity and a new span arrives, the oldest span is evicted (FIFO). After eviction, buffer length remains exactly `span_retention_cap`. No unbounded growth. Verified by `test_BC_2_24_002_ring_buffer_fifo_eviction()` (VP-2.24.002-A, VP-2.24.002-B).
 
-### AC-004 (traces to BC-2.24.002 postcondition PC-002)
+### AC-004 (traces to BC-2.24.002 PC-002)
 Each stored span has `SpanData` with fields: `span_id: String`, `trace_id: String`, `start_time_ms: u64`, `end_time_ms: u64`, `session_id: String` (the `run_id` of the run that produced this span; set by `DebugSpanExporter` at insertion per BC-2.24.002 {INV-007}), `attributes: serde_json::Map<String, Value>`, `llm_request: Option<Value>`, `llm_response: Option<Value>`. All 8 fields are present; no field is missing. Verified by `test_BC_2_24_002_span_data_shape()`.
 
-### AC-005 (traces to BC-2.24.002 invariant INV-002)
+### AC-005 (traces to BC-2.24.002 INV-002)
 The `RingBuffer<SpanData>` data structure is extractable as Pure Core — it has no I/O, no async, no global state. A unit test exercises `RingBuffer` insert, eviction, and read operations without an async runtime. Verified by `test_BC_2_24_002_ring_buffer_pure_core_sync()`.
 
-### AC-006 (traces to BC-2.24.002 invariant INV-003)
+### AC-006 (traces to BC-2.24.002 INV-003)
 `SpanData` carries `#[non_exhaustive]`. `SpanData` is defined in `pregolya-server/server::debug_span` (server-owned; created by S-console-03). The compile-fail test gate (`tests/external/span-data-non-exhaustive/`) asserting external code cannot construct `SpanData { .. }` as a struct literal is a **S-console-03 deliverable** (SpanData lives in pregolya-server). This story's deliverable is the `DebugSpanExporter` implementation that imports `SpanData` from server::debug_span and uses it as ring-buffer element type.
 
-### AC-007 (traces to BC-2.24.002 invariant INV-005)
+### AC-007 (traces to BC-2.24.002 INV-005)
 `server::debug_routes` in pregolya-server holds `Arc<dyn DebugSpanSource>` (ADR-031 Decision 7). The concrete `DebugSpanExporter` (console crate) implements `DebugSpanSource` and is injected as `Arc<dyn DebugSpanSource>` at dev-mode co-launch. pregolya-server has ZERO compile dependency on pregolya-console; the `DebugSpanSource` trait and `SpanData` type are owned by `pregolya-server/server::debug_span` (built by S-console-03). At runtime, both the console-side OTel pipeline and the server-side debug routes share the same underlying exporter instance via the Arc. Verified by `test_BC_2_24_002_arc_shared_debug_span_source()`.
 
-### AC-008 (traces to BC-2.24.002 invariant INV-001)
+### AC-008 (traces to BC-2.24.002 INV-001)
 The ring buffer never exceeds `span_retention_cap` entries under any number of concurrent insertions. Concurrent insert + read does not produce data races — internal synchronization (RwLock or similar) ensures thread-safety. Verified by `test_BC_2_24_002_concurrent_insert_read_no_race()` (VP-2.24.002-A).
 
-### AC-009 (traces to BC-2.24.002 edge case EC-001)
+### AC-009 (traces to BC-2.24.002 EC-001)
 When the ring buffer is at capacity and a batch of 5 new spans arrives, exactly `span_retention_cap` spans remain, the 5 oldest have been evicted in FIFO order, and the 5 newest have been inserted. Verified by `test_BC_2_24_002_batch_eviction_fifo_order()` (VP-2.24.002-B).
 
-### AC-010 (traces to BC-2.24.002 invariant INV-004)
+### AC-010 (traces to BC-2.24.002 INV-004)
 Span export errors (OTel export callback failure) are logged via `tracing::warn!` and do not propagate to the engine — engine execution continues uninterrupted. The `SpanExporter::export()` implementation on `DebugSpanExporter` never returns an error that would abort the exporter pipeline. Verified by `test_BC_2_24_002_export_error_logged_not_propagated()`.
 
 ### AC-011 (traces to BC-2.24.002 security boundary SEC-BOUND-001)

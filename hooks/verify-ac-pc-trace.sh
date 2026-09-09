@@ -249,10 +249,13 @@ def count_bullet_items(section_text):
 
 
 def get_ec_ids(section_text):
-    """Return set of EC-NNN IDs found in ### EC-NNN: headers or table rows."""
-    header_ids = set(re.findall(r'###\s+(EC-\d+)\b', section_text))
-    table_ids  = set(re.findall(r'^\|\s*(EC-\d+)\s*\|', section_text, re.MULTILINE))
-    return header_ids | table_ids
+    """Return set of EC-NNN IDs found in ### EC-NNN: headers or table rows.
+    Handles both bare  | EC-NNN |  and stable-tag  | {EC-NNN} |  formats."""
+    header_ids   = set(re.findall(r'###\s+(EC-\d+)\b', section_text))
+    table_ids    = set(re.findall(r'^\|\s*(EC-\d+)\s*\|', section_text, re.MULTILINE))
+    # SS-24 and other BCs that completed ADR-027 M1 labeling use {EC-NNN} in table rows
+    stable_ids   = set(re.findall(r'^\|\s*\{(EC-\d+)\}\s*\|', section_text, re.MULTILINE))
+    return header_ids | table_ids | stable_ids
 
 
 def get_stable_tags(section_text, tag_prefix):
@@ -398,11 +401,14 @@ def get_item_text(section_text, section_type, number_or_ec):
 
     elif section_type == 'edge_case':
         ec_id = number_or_ec  # e.g. 'EC-001'
-        # Detect table format: section has rows matching | EC-NNN |
-        if re.search(r'^\|\s*EC-\d+\s*\|', section_text, re.MULTILINE):
+        # Detect table format: rows matching | EC-NNN | or | {EC-NNN} | (ADR-027 M1 stable-tag)
+        if re.search(r'^\|\s*(?:\{)?EC-\d+(?:\})?\s*\|', section_text, re.MULTILINE):
             # Table format: return the full matching row so error codes are visible
+            ec_id_esc = re.escape(ec_id)
             for row in section_text.split('\n'):
-                if re.match(r'^\|\s*' + re.escape(ec_id) + r'\s*\|', row):
+                if re.match(r'^\|\s*' + ec_id_esc + r'\s*\|', row):
+                    return row
+                if re.match(r'^\|\s*\{' + ec_id_esc + r'\}\s*\|', row):
                     return row
             return ''
         # Header-block format: ### EC-NNN: to next ### or ##

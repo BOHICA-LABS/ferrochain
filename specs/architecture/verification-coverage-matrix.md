@@ -2,7 +2,7 @@
 document_type: architecture-section
 level: L3
 section: verification-coverage-matrix
-version: "3.46"
+version: "3.48"
 status: active
 producer: architect
 timestamp: 2026-09-09T00:00:00Z
@@ -11,15 +11,17 @@ inputs:
   - .factory/specs/verification-properties/VP-INDEX.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/module-criticality.md
-input-hash: "4a4559f"
+input-hash: "ba41a4f"
 traces_to: ARCH-INDEX.md
 changelog:
+  - "3.48 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog fix — server::debug_span definitions-only row added to Per-Module Coverage Status (verify-module-canonicality.sh set-diff closure: server::debug_span in-decomp-not-here). Preamble updated: 92→93 physical rows; distinct 90→91; definitions-only 8→9. input-hash updated 18ae2ac→ba41a4f. Census VPs UNCHANGED: 42 total."
+  - "3.47 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog fix — 12 spa/components/ module path forms converted to spa_components:: namespace::module form (verify-module-canonicality.sh canonical pattern). input-hash updated 4a4559f→18ae2ac (content change). Census UNCHANGED: 42 total."
   - "3.46 (D-356/DC-39/F-PDC39-02/2026-09-09, architect): VP-2.11.007-A catalog row UNCHANGED (module graph::provenance, crate pregolya-graph, tool integration, BC-2.11.007 {PC-001}/{INV-002}, phase 3, draft — all correct from DC-34). input-hash updated f65fe21→4a4559f (VP-INDEX §Changelog and module-decomposition §Module-Decomposition input drift from this burst). Census UNCHANGED: 42 total."
   - "3.45 (D-356/DC-38/F-PDC38-07/2026-09-08, architect): F-PDC38-07 — VP-2.11.007-A VP-to-Module title cell updated: 'Every evaluate() Call Produces an Entry' → 'One Entry Per Successfully-Returning evaluate() Call'. Per-Module Notes cell updated: 'every evaluate() call produces exactly one GuardrailEntry' → 'one entry per successfully-returning evaluate() call'. Census UNCHANGED: 42 total. input-hash updated 517c921→f65fe21 (VP-INDEX.md v1.55 input drift)."
   - "3.44 (D-356/DC-34/F-PDC34-01/F-PDC34-02/2026-09-08, architect): F-PDC34-01 — VP-2.11.007-A bc_anchor corrected {INV-003}→{INV-002} (BC-2.11.007 {INV-002} = completeness/DI-012; {INV-003} = separation from EvidenceJournal; VP tests completeness). F-PDC34-02 — VP-2.11.007-A module repointed server::guardrail_journal (phantom)→graph::provenance (pregolya-graph); phantom Per-Module row server::guardrail_journal removed; graph::provenance Integration column and Notes updated to cite VP-2.11.007-A. Preamble: 93→92 physical rows; MEDIUM 42→41 (phantom removed; graph::provenance is HIGH); tiered 84→83. input-hash updated to 517c921 (VP-INDEX.md v1.53 input drift)."
   - "3.43 (D-356/DC-33/2026-09-08, architect): VP-2.11.007-A registered — GuardrailJournal completeness integration P0 (BC-2.11.007 {PC-001}/{INV-003}; DI-012; server::guardrail_journal; pregolya-server; Phase 3). VP-to-Module table: add VP-2.11.007-A row after VP-020. Totals: 41→42 VPs, integration 12→13, P0 6→7. Per-Module Coverage Status: add server::guardrail_journal MEDIUM row. Preamble arithmetic updated. input-hash updated (VP-INDEX.md v1.52 input drift). Human-authorized DC-33 core-domain amendment."
   - "3.42 (D-356/DC-19/2026-09-08, architect): F-PDC19-01+F-PDC19-02 — VP-2.24.003-B Title corrected: Graph Descriptor Pure Termination (Kani) → No self-loops in graph descriptor (Kani) (BC-2.24.003 §VP table source of truth). VP-2.24.003-C Title corrected: Graph Endpoint Unit (unit) → Start node always present in graph descriptor (unit); Module/Crate repointed: server::debug_routes/pregolya-server → graph::descriptor/pregolya-graph. Totals UNCHANGED: 41 VPs | Kani: 10 | proptest: 10 | integration: 12 | unit: 8 | compile-fail: 1. input-hash unchanged (inputs did not change)."
-  - "3.41 (D-356/DC-07/2026-09-07, architect): F-PDC07-03 — 10 panel-VP Module column cells repointed to canonical SPA component path form: spa/components/run_inspector (VP-2.24.004-A/B), spa/components/checkpoint_panel (VP-2.24.005-A/B), spa/components/hitl_panel (VP-2.24.006-A/B), spa/components/budget_panel (VP-2.24.007-A/B), spa/components/guardrail_panel (VP-2.24.008-A/B). CORRECTION: v3.37 (DC-02) set these to console::* Rust module notation — non-canonical for SPA components. Totals UNCHANGED: 41 VPs | Kani: 10 | proptest: 10 | integration: 12 | unit: 8 | compile-fail: 1. input-hash unchanged (inputs did not change)."
+  - "3.41 (D-356/DC-07/2026-09-07, architect): F-PDC07-03 — 10 panel-VP Module column cells repointed to canonical SPA component path form: spa_components::run_inspector (VP-2.24.004-A/B), spa_components::checkpoint_panel (VP-2.24.005-A/B), spa_components::hitl_panel (VP-2.24.006-A/B), spa_components::budget_panel (VP-2.24.007-A/B), spa_components::guardrail_panel (VP-2.24.008-A/B). CORRECTION: v3.37 (DC-02) set these to console::* Rust module notation — non-canonical for SPA components. Totals UNCHANGED: 41 VPs | Kani: 10 | proptest: 10 | integration: 12 | unit: 8 | compile-fail: 1. input-hash unchanged (inputs did not change)."
   - "3.40 (D-356/DC-04/2026-09-07, architect): F-PDC04-04 — VP-2.24.002-A/B Module column repointed console::span_exporter → console::ring_buffer (canonical Pure Core for RingBuffer<T> per ADR-031 Decision 5 DC-04 split). VP-2.24.002-C (server::debug_routes) and VP-2.24.002-D (console::span_exporter) unchanged. Totals UNCHANGED: 41 VPs | Kani: 10 | proptest: 10 | integration: 12 | unit: 8 | compile-fail: 1. input-hash unchanged (inputs did not change)."
   - "3.39 (D-356/DC-02 fix-burst/2026-09-07, state-manager): Arithmetic invariant preamble corrected 40→41 (P0 6 unchanged, P1 34→35, unit 7→8). Architect v3.38 changelog noted 'Totals updated' for the VP-to-Module table; preamble text was not updated in that pass. Preamble now reads: VP total (41) = P0 (6) + P1 (35) = Kani (10) + proptest (10) + integration (12) + unit (8) + compile-fail (1)."
   - "3.38 (D-356/DC-02-addendum/2026-09-07, architect): VP-2.24.002-D registered — SpanData SEC-BOUND-001 Sanitization Before Ring-Buffer Insertion (unit; console::span_exporter; pregolya-console; BC-2.24.002; Phase 3). Census 40→41; unit 7→8; P1 34→35. Totals updated."
@@ -126,16 +128,16 @@ changelog:
 | VP-2.24.003-A | Graph Descriptor Serialization (unit) | graph::descriptor | pregolya-graph | unit | BC-2.24.003 | 3 | draft |
 | VP-2.24.003-B | No self-loops in graph descriptor (Kani) | graph::descriptor | pregolya-graph | Kani | BC-2.24.003 | 6 | draft |
 | VP-2.24.003-C | Start node always present in graph descriptor (unit) | graph::descriptor | pregolya-graph | unit | BC-2.24.003 | 3 | draft |
-| VP-2.24.004-A | All 16 StreamEvent variants render without error (integration) | spa/components/run_inspector | pregolya-console | integration | BC-2.24.004 | 3 | draft |
-| VP-2.24.004-B | Live node highlight fires on node_start, clears on node_end (integration) | spa/components/run_inspector | pregolya-console | integration | BC-2.24.004 | 3 | draft |
-| VP-2.24.005-A | Checkpoint history rendered in step_idx monotone order (integration) | spa/components/checkpoint_panel | pregolya-console | integration | BC-2.24.005 | 3 | draft |
-| VP-2.24.005-B | Fork-from-checkpoint produces a new run_id (integration) | spa/components/checkpoint_panel | pregolya-console | integration | BC-2.24.005 | 3 | draft |
-| VP-2.24.006-A | Approve sends PreToolDecision::Allow; Deny sends Deny(reason) (integration) | spa/components/hitl_panel | pregolya-console | integration | BC-2.24.006 | 3 | draft |
-| VP-2.24.006-B | Multiple interrupts surfaced in FIFO order (integration) | spa/components/hitl_panel | pregolya-console | integration | BC-2.24.006 | 3 | draft |
-| VP-2.24.007-A | Gauge renders without crash when tokens_remaining_after is null (unit) | spa/components/budget_panel | pregolya-console | unit | BC-2.24.007 | 3 | draft |
-| VP-2.24.007-B | Timeline boundary marker emitted on each compaction_event (integration) | spa/components/budget_panel | pregolya-console | integration | BC-2.24.007 | 3 | draft |
-| VP-2.24.008-A | Feed contains exactly the Fail and Transform events (integration) | spa/components/guardrail_panel | pregolya-console | integration | BC-2.24.008 | 3 | draft |
-| VP-2.24.008-B | Malformed guardrail_decision payload does not crash the feed (unit) | spa/components/guardrail_panel | pregolya-console | unit | BC-2.24.008 | 3 | draft |
+| VP-2.24.004-A | All 16 StreamEvent variants render without error (integration) | spa_components::run_inspector | pregolya-console | integration | BC-2.24.004 | 3 | draft |
+| VP-2.24.004-B | Live node highlight fires on node_start, clears on node_end (integration) | spa_components::run_inspector | pregolya-console | integration | BC-2.24.004 | 3 | draft |
+| VP-2.24.005-A | Checkpoint history rendered in step_idx monotone order (integration) | spa_components::checkpoint_panel | pregolya-console | integration | BC-2.24.005 | 3 | draft |
+| VP-2.24.005-B | Fork-from-checkpoint produces a new run_id (integration) | spa_components::checkpoint_panel | pregolya-console | integration | BC-2.24.005 | 3 | draft |
+| VP-2.24.006-A | Approve sends PreToolDecision::Allow; Deny sends Deny(reason) (integration) | spa_components::hitl_panel | pregolya-console | integration | BC-2.24.006 | 3 | draft |
+| VP-2.24.006-B | Multiple interrupts surfaced in FIFO order (integration) | spa_components::hitl_panel | pregolya-console | integration | BC-2.24.006 | 3 | draft |
+| VP-2.24.007-A | Gauge renders without crash when tokens_remaining_after is null (unit) | spa_components::budget_panel | pregolya-console | unit | BC-2.24.007 | 3 | draft |
+| VP-2.24.007-B | Timeline boundary marker emitted on each compaction_event (integration) | spa_components::budget_panel | pregolya-console | integration | BC-2.24.007 | 3 | draft |
+| VP-2.24.008-A | Feed contains exactly the Fail and Transform events (integration) | spa_components::guardrail_panel | pregolya-console | integration | BC-2.24.008 | 3 | draft |
+| VP-2.24.008-B | Malformed guardrail_decision payload does not crash the feed (unit) | spa_components::guardrail_panel | pregolya-console | unit | BC-2.24.008 | 3 | draft |
 
 > **D-356 consistency fix (2026-09-06, architect).** 19 VP-2.24.* SEED rows added for SS-24 Developer Console. All P1 draft. SEED status — body .md files authored at Phase 3 Wave 3.
 > **D-356 adversary fix DC-01 (2026-09-06, architect).** F-PDC01-03: VP-2.24.002-A/B repointed to `console::ring_buffer` / `pregolya-console` (`RingBuffer<SpanData>` Pure Core; ADR-031 Decision 5 + S-console-02). F-PDC01-04: 8 rows reconciled against BC Proof Methods; compile-fail added as tool category. Totals corrected: proptest 10, integration 12, unit 7, compile-fail 1.
@@ -144,7 +146,7 @@ changelog:
 
 > **D-356 adversary fix DC-04 (2026-09-07, architect).** F-PDC04-04: VP-2.24.002-A/B Module column repointed `console::span_exporter` → `console::ring_buffer`. `console::ring_buffer` is now canonical Pure Core for `RingBuffer<T>` per ADR-031 Decision 5 (DC-04 split). VP-2.24.002-C (`server::debug_routes`) and VP-2.24.002-D (`console::span_exporter`) unchanged. Totals UNCHANGED: 41 VPs.
 
-> **D-356 adversary fix DC-07 (2026-09-07, architect).** F-PDC07-03: 10 panel-VP Module column cells repointed to canonical SPA component path form — `spa/components/run_inspector` (VP-2.24.004-A/B), `spa/components/checkpoint_panel` (VP-2.24.005-A/B), `spa/components/hitl_panel` (VP-2.24.006-A/B), `spa/components/budget_panel` (VP-2.24.007-A/B), `spa/components/guardrail_panel` (VP-2.24.008-A/B). CORRECTION: v3.37 (DC-02) set these to `console::*` Rust module notation — non-canonical for SPA components. Canonical form: `spa/components/<component_name>` (see VP-INDEX preamble). Totals UNCHANGED: 41 VPs.
+> **D-356 adversary fix DC-07 (2026-09-07, architect).** F-PDC07-03: 10 panel-VP Module column cells repointed to canonical SPA component path form — `spa_components::run_inspector` (VP-2.24.004-A/B), `spa_components::checkpoint_panel` (VP-2.24.005-A/B), `spa_components::hitl_panel` (VP-2.24.006-A/B), `spa_components::budget_panel` (VP-2.24.007-A/B), `spa_components::guardrail_panel` (VP-2.24.008-A/B). CORRECTION: v3.37 (DC-02) set these to `console::*` Rust module notation — non-canonical for SPA components. Canonical form: `spa_components::<component_name>` (see VP-INDEX preamble). Totals UNCHANGED: 41 VPs.
 
 > **D-356 adversary fix DC-19 (2026-09-08, architect).** F-PDC19-01+F-PDC19-02 — VP-2.24.003-B Title corrected: "Graph Descriptor Pure Termination (Kani)" → "No self-loops in graph descriptor (Kani)" (BC-2.24.003 §VP table is source of truth; BC declares no-self-loops property). VP-2.24.003-C Title/Module/Crate corrected: "Graph Endpoint Unit (unit)" / `server::debug_routes` / `pregolya-server` → "Start node always present in graph descriptor (unit)" / `graph::descriptor` / `pregolya-graph` (BC-2.24.003 §VP table declares start-node-always-present property targeting graph::descriptor/pregolya-graph). Totals UNCHANGED: 41 VPs.
 
@@ -158,9 +160,9 @@ changelog:
 
 ## Per-Module Coverage Status
 
-> This table covers 92 physical rows (additions: ADR-030/VP-018 checkpoint::trajectory MEDIUM + core::trajectory definitions-only rows).
-> Two collapse-pairs reduce 92 physical rows to 90 distinct modules: (1) `core::runnable`: 2 rows for 1 HIGH module (pipe-associativity + VP-014 key-completeness); (2) `core::serializable`: 2 rows for 1 module spanning CRITICAL (VP-010 Reviver) and HIGH (VP-007 LcSerializable round-trip), counted once in CRITICAL as its highest tier per F-P210-01.
-> Tiered groupings: CRITICAL 12 / HIGH 28 / MEDIUM 41 / LOW 2 = 83 tiered (83 distinct tiered modules). Definitions-only/exempt: 8 (Tier=—; no kill rate obligation; count corrected from stale 6: core::invocation_context was added at v3.28 but not reflected in prior count, now fixed; core::trajectory added here).
+> This table covers 93 physical rows (v3.47: 12 spa/components/ → spa_components:: renames; v3.48: server::debug_span definitions-only row added).
+> Two collapse-pairs reduce 93 physical rows to 91 distinct modules: (1) `core::runnable`: 2 rows for 1 HIGH module (pipe-associativity + VP-014 key-completeness); (2) `core::serializable`: 2 rows for 1 module spanning CRITICAL (VP-010 Reviver) and HIGH (VP-007 LcSerializable round-trip), counted once in CRITICAL as its highest tier per F-P210-01.
+> Tiered groupings: CRITICAL 12 / HIGH 28 / MEDIUM 41 / LOW 2 = 83 tiered (83 distinct tiered modules). Definitions-only/exempt: 9 (Tier=—; no kill rate obligation; server::debug_span added v3.48).
 
 | Module | Crate | Kani | proptest | fuzz | Integration | Notes |
 |--------|-------|------|---------|------|-------------|-------|
@@ -225,6 +227,7 @@ changelog:
 | graph::definition | pregolya-graph | — | yes | — | yes | StateGraph builder; node/edge registration; property tests for topology invariants |
 | server::streaming | pregolya-server | — | — | — | yes | SSE streaming endpoint; same engine as unary (NE-13); integration + soak |
 | server::stores | pregolya-server | — | — | — | yes | IdempotencyStore/RateLimitStore/RunStore trait seams (NE-08); integration via server handler tests |
+| server::debug_span | pregolya-server | — | — | — | — | [PLANNED Wave 3] SS-24; definitions-only: SpanData type + DebugSpanSource trait; DIP interface seam (ADR-031 Decision 7); no execution logic; Tier=— |
 | core::config | pregolya-core | — | — | — | yes | RunnableConfig/ChatConfig construction; env var reads; unit tests |
 | checkpoint::memory | pregolya-checkpoint | — | — | — | yes | In-memory checkpoint backend; deterministic HashMap; unit tests |
 | checkpoint::postgres | pregolya-checkpoint | — | — | — | yes | PostgreSQL checkpoint backend; integration tests (stretch feature) |

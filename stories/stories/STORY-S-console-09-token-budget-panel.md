@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-console-09
 epic_id: E-console
-version: "1.3"
+version: "1.4"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -12,13 +12,14 @@ changelog:
   - "1.1 (D-356/DC-27/L-288/2026-09-08, story-writer): F-L288-006 — EvidenceJournal scope broadened to all 4 terminal states (completed, failed, cancelled, summary_halt); test renamed evidence_journal_terminal_run."
   - "1.2 (D-356/DC-29/2026-09-08, story-writer): F-PDC29-01 — AC-007 corrected: completed-run budget panel shows no gauge/timeline (compaction_event StreamEvents are transient; ADR-031 Decision 8); panel renders only EvidenceJournal area with error message on fetch failure."
   - "1.3 (D-356/DC-32/2026-09-08, story-writer): F-PDC32-01 — EC-005 corrected to align with AC-007 and BC-2.24.007 {EC-005}: for terminal-status runs there is no gauge or compaction timeline (transient StreamEvent substrate per ADR-031 Decision 8); on EvidenceJournal fetch failure only the EvidenceJournal display area is rendered showing the error message."
+  - "1.4 (D-356/DC-46/2026-09-09, story-writer): F-PDC46-01 — AC header citation form corrected to M4-strict bare-tag: BC-S.SS.NNN TAG (section-words removed per verify-ac-pc-trace.sh CHECK-1)."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.007.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "7a3f2fe"
+input-hash: "977a1ec"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-06]
@@ -61,25 +62,25 @@ tdd_mode: strict
 
 ## Acceptance Criteria
 
-### AC-001 (traces to BC-2.24.007 postcondition PC-001)
+### AC-001 (traces to BC-2.24.007 PC-001)
 The panel displays a proportional context-window gauge (e.g., a progress bar) showing remaining context budget. The gauge updates on each `compaction_event` received via the shared SSE subscription. The gauge reflects `tokens_remaining_after` as a fraction of the configured token ceiling. When `tokens_remaining_after` is `null`, the gauge shows "N/A" or "budget unknown" — no crash, no invalid numeric display. Verified by `test_BC_2_24_007_gauge_renders()` and `test_BC_2_24_007_gauge_null_tokens_remaining()` (VP-2.24.007-A).
 
-### AC-002 (traces to BC-2.24.007 postcondition PC-002)
+### AC-002 (traces to BC-2.24.007 PC-002)
 Each `compaction_event` adds a boundary marker to the event timeline (S-console-06 EventTimeline). The marker shows: compacted turn range (`compacted_start..=compacted_end`), `summary_token_count`, `tokens_remaining_after`, and the `trigger` label (`OnWatermark`, `OnMessageCount`, or `OnTokenCount`). Verified by `test_BC_2_24_007_timeline_boundary_marker()` (VP-2.24.007-B).
 
-### AC-003 (traces to BC-2.24.007 postcondition PC-003)
+### AC-003 (traces to BC-2.24.007 PC-003)
 For terminal-status (finished) runs (`completed`, `failed`, `cancelled`, `summary_halt`), the panel surfaces the run's `EvidenceJournal` decision history. Each entry shows the `PolicyDecision` (`Allow`, `Escalate`, `Deny`) and the evaluation point that produced it. Verified by `test_BC_2_24_007_evidence_journal_terminal_run()`.
 
-### AC-004 (traces to BC-2.24.007 postcondition PC-004)
+### AC-004 (traces to BC-2.24.007 PC-004)
 For in-progress runs, the gauge updates incrementally as `compaction_event` variants arrive via the shared `EventSource`. The shared SSE subscription from S-console-06 is reused — there is ONE `EventSource` per run, not one per panel. Verified by `test_BC_2_24_007_realtime_update_shared_sse()`.
 
-### AC-005 (traces to BC-2.24.007 invariant INV-001)
+### AC-005 (traces to BC-2.24.007 INV-001)
 When `tokens_remaining_after` is `null` (no token ceiling configured), the gauge renders "N/A" or "budget unknown" without crashing or rendering a NaN value. When `tokens_remaining_after` is negative (Deny path: `accumulated > ceiling`), the gauge renders at 0% or shows a visual "overrun" indicator — not a negative percentage. Verified by `test_BC_2_24_007_null_tokens_handled()` and `test_BC_2_24_007_negative_tokens_overrun()`.
 
-### AC-006 (traces to BC-2.24.007 edge case EC-001)
+### AC-006 (traces to BC-2.24.007 EC-001)
 When `compaction_trigger = Disabled` (default) and no `compaction_event` arrives, the budget panel shows a "compaction not configured" placeholder message. No gauge is rendered. Verified by `test_BC_2_24_007_compaction_disabled_placeholder()`.
 
-### AC-007 (traces to BC-2.24.007 edge case EC-005)
+### AC-007 (traces to BC-2.24.007 EC-005)
 When the `EvidenceJournal` fetch fails for a terminal-status (finished) run (server error), the panel shows an inline error message "Evidence journal unavailable" within the panel area. No gauge or compaction timeline annotations are shown for terminal-status runs — per-compaction-event detail (`compaction_event` StreamEvent payloads) is not available post-run because StreamEvent is transient (ADR-031 Decision 8); only the EvidenceJournal display area is rendered, and it shows the error message. Verified by `test_BC_2_24_007_evidence_journal_fetch_error()`.
 
 ## Architecture Mapping

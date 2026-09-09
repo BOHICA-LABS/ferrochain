@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.005
-version: "1.6"
+version: "1.7"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -26,6 +26,7 @@ changelog:
   - "1.4 (D-356-fix/DC-08/2026-09-07, product-owner): F-PDC08-01: INV-002 corrected — 'a standard 404 error path' → 'the standard 422 E-CHKPT-011 CheckpointNotFound error path' (DC-04→DC-05 sweep hit EC-002 but missed INV-002; HTTP 422 per error-taxonomy E-CHKPT-011 and BC-2.12.001 {EC-010}/TV-011)."
   - "1.5 (D-356-fix/DC-29/2026-09-08, product-owner): F-PDC29-02 (MED): §Architecture Anchors dangling ADR fixed — non-existent ADR-002-checkpointing-strategy.md replaced with ADR-003-durability-tiers.md (title: 'Checkpoint Durability Tiers: Sync Default, Async and Exit-Only Opt-In'; confirmed present). Real ADR-002 is ADR-002-checkpoint-format.md (msgpack wire format, SS-04), not the three-tier durability doc."
   - "1.6 (D-356/DC-33/2026-09-08, product-owner): F-PDC33-04 (records-tier, L9b/POL-12): version-pin annotations removed from normative PC bodies. {PC-002} and {PC-005}: burst-provenance phrases citing DC-04 version identity dropped — bare BC-2.12.001 {PC-015} clause cite only. Provenance already in changelog row for DC-04 fix-burst. No behavioral change."
+  - "1.7 (D-356/DC-46/2026-09-09, product-owner): C-PDC46: L9b version-pin removed from DC-04 delta-note blockquote — version-pinned form → BC-2.12.001 {PC-015} anchor form. Bare artifact+§anchor form per TD-VSDD-091 L9b. verify-no-version-pins.sh blocker cleared for this BC."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-044
   - architecture/decisions/ADR-031-developer-console-architecture.md
@@ -33,7 +34,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "9b1aa26"
+input-hash: "b057aab"
 extracted_from: null
 modified: []
 deprecated: null
@@ -53,7 +54,7 @@ removal_reason: null
 
 > **D-356 adversary fix DC-05 (2026-09-07, product-owner).** F-PDC05-01: EC-002 HTTP status corrected `404` → `422` for E-CHKPT-011 CheckpointNotFound. E-CHKPT-011 is defined as HTTP 422 in the taxonomy (POLICY); the `404` in EC-002 was a DC-04 residue missed by the 404→422 sweep.
 
-> **D-356 adversary fix DC-04 (2026-09-07, product-owner).** F-PDC04-01: all `checkpoint_id` values corrected from JSON string form (`"ckpt-1"`, `"ckpt-2"`) to canonical u64 numeric form (`1`, `2`) — `CheckpointId` is a newtype over `u64` (BC-2.04.003 §Architecture Anchors; BC-2.12.003 TV-014 uses `checkpoint_id: 5`). F-PDC04-02: PC-002 state-inspection citation updated to reference BC-2.12.001 {PC-015} `?checkpoint_id` variant (added in BC-2.12.001 v1.11 this burst). S-console-07 sibling-sweep: implementer must use numeric `CheckpointId` in all `GET /threads/{id}/state?checkpoint_id=<N>` calls and all `POST /threads/{id}/runs` fork payloads.
+> **D-356 adversary fix DC-04 (2026-09-07, product-owner).** F-PDC04-01: all `checkpoint_id` values corrected from JSON string form (`"ckpt-1"`, `"ckpt-2"`) to canonical u64 numeric form (`1`, `2`) — `CheckpointId` is a newtype over `u64` (BC-2.04.003 §Architecture Anchors; BC-2.12.003 TV-014 uses `checkpoint_id: 5`). F-PDC04-02: PC-002 state-inspection citation updated to reference BC-2.12.001 {PC-015} `?checkpoint_id` variant (added in BC-2.12.001 {PC-015} this burst). S-console-07 sibling-sweep: implementer must use numeric `CheckpointId` in all `GET /threads/{id}/state?checkpoint_id=<N>` calls and all `POST /threads/{id}/runs` fork payloads.
 
 > **D-356 adversary fix DC-03 (2026-09-07, product-owner).** F-PDC03-02: PC-003 fork mechanism made concrete. Original text cited "the existing run-creation request shape, BC-2.12.003" but BC-2.12.003 PC-001 has no checkpoint-selection field. Resolution: `config.configurable.checkpoint_id` is the fork-start key — idiomatic LangGraph pattern; the executor semantic is now defined in BC-2.12.003 {INV-009} (added in this same D-356-fix/DC-03 burst). PC-005 wording corrected from "no new server machinery" to "no new server endpoints" — the `checkpoint_id` configurable key is new DOCUMENTED server BEHAVIOR on the existing Create-Run endpoint, not a new endpoint. This is within the D-356 human-authorized reopening scope.
 

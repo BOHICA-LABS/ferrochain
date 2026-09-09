@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-console-04
 epic_id: E-console
-version: "1.3"
+version: "1.4"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -12,13 +12,14 @@ changelog:
   - "1.1 (D-356/DC-15/2026-09-08, story-writer): F-PDC15-01 — target_module corrected from scalar `pregolya-server` to list `[pregolya-graph, pregolya-server]`; story CREATEs descriptor.rs in pregolya-graph (primary Pure Core deliverable) and MODIFYs debug_routes.rs in pregolya-server; VP-2.24.003-A/B are pregolya-graph, VP-2.24.003-C is pregolya-server; aligns with STORY-INDEX and sprint-state."
   - "1.2 (D-356/DC-19/2026-09-08, story-writer): F-PDC19-02 — VP-2.24.003-C is pregolya-graph (graph::descriptor, start-node-present property, unit/phase-3), NOT pregolya-server; stale claim in v1.1 entry corrected. AC-007 already correctly anchors VP-2.24.003-A and VP-2.24.003-C to test_BC_2_24_003_compile_graph_descriptor_pure() in pregolya-graph."
   - "1.3 (D-356/DC-23/2026-09-08, story-writer): F-PDC23-02 — AC-006 error envelope corrected: {\"error\":} → {\"code\":}; message placeholder genericized to <id> per BC-2.24.003 v1.3. Zero {\"error\":} residue in live body."
+  - "1.4 (D-356/DC-46/2026-09-09, story-writer): F-PDC46-01 — AC header citation form corrected to M4-strict bare-tag: BC-S.SS.NNN TAG (section-words removed per verify-ac-pc-trace.sh CHECK-1)."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.003.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "c7b2c44"
+input-hash: "e59f85a"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-03]
@@ -55,31 +56,31 @@ tdd_mode: strict
 
 ## Acceptance Criteria
 
-### AC-001 (traces to BC-2.24.003 postcondition PC-001)
+### AC-001 (traces to BC-2.24.003 PC-001)
 `GET /assistants/{id}/graph` returns `200 OK` with `Content-Type: application/json` and a body conforming to `GraphDescriptor` with fields `nodes` (array of `{ "name": string, "kind": "node|start|end|branch" }`), `edges` (array of `{ "source": string, "target": string, "condition": string|null }`), and `dot_src` (string or null). Verified by `test_BC_2_24_003_graph_descriptor_shape()`.
 
-### AC-002 (traces to BC-2.24.003 postcondition PC-002)
+### AC-002 (traces to BC-2.24.003 PC-002)
 Every node registered in the `CompiledStateGraph` appears exactly once in the `nodes` array. No node is omitted; no phantom nodes are included. Verified by `test_BC_2_24_003_nodes_completeness()` (VP-2.24.003-A).
 
-### AC-003 (traces to BC-2.24.003 postcondition PC-003)
+### AC-003 (traces to BC-2.24.003 PC-003)
 Every directed edge in the compiled graph appears in the `edges` array. Conditional edges carry their condition label in `"condition"`; unconditional edges carry `"condition": null`. Verified by `test_BC_2_24_003_edges_completeness()`.
 
-### AC-004 (traces to BC-2.24.003 postcondition PC-004)
+### AC-004 (traces to BC-2.24.003 PC-004)
 When the `dot` binary is not in `PATH`, `dot_src` is `null` in the response but `nodes` and `edges` are fully populated. The absence of `dot_src` does not cause a 500 or partial response. Verified by `test_BC_2_24_003_dot_src_null_when_absent()`.
 
-### AC-005 (traces to BC-2.24.003 postcondition PC-005)
+### AC-005 (traces to BC-2.24.003 PC-005)
 The descriptor is a structural snapshot — it carries no runtime state. The same assistant returns the identical descriptor on two consecutive calls (deterministic). Verified by `test_BC_2_24_003_static_snapshot_deterministic()`.
 
-### AC-006 (traces to BC-2.24.003 postcondition PC-006)
+### AC-006 (traces to BC-2.24.003 PC-006)
 `GET /assistants/nonexistent-id/graph` returns `404 Not Found` with `{"code": "E-SERVER-009", "message": "AssistantNotFound: assistant '<id>' does not exist"}`. Error code is `E-SERVER-009` exactly (existing code — no new code minted). Verified by `test_BC_2_24_003_assistant_not_found_404()`.
 
-### AC-007 (traces to BC-2.24.003 invariant INV-001)
+### AC-007 (traces to BC-2.24.003 INV-001)
 The transformation function `fn compile_graph_descriptor(graph: &CompiledStateGraph) -> GraphDescriptor` is extracted as a free function in module `graph::descriptor` in `pregolya-graph` (Pure Core). It has no I/O, no async, no global state. A unit test calls it without an async runtime. Verified by `test_BC_2_24_003_compile_graph_descriptor_pure()` (VP-2.24.003-A, VP-2.24.003-C).
 
-### AC-008 (traces to BC-2.24.003 invariant INV-002)
+### AC-008 (traces to BC-2.24.003 INV-002)
 `GraphDescriptor`, `GraphNode`, and `GraphEdge` each carry `#[non_exhaustive]`. Compile-fail tests confirm external code cannot construct these as struct literals. Verified by compile-fail tests in `tests/external/graph-descriptor-non-exhaustive/`.
 
-### AC-009 (traces to BC-2.24.003 edge case EC-004)
+### AC-009 (traces to BC-2.24.003 EC-004)
 A graph with branch nodes produces a descriptor where branch nodes have `kind: "branch"` and their outgoing conditional edges carry non-null `condition` labels. A graph with no conditional edges produces all edges with `"condition": null`. Verified by `test_BC_2_24_003_branch_node_kind()` and `test_BC_2_24_003_linear_graph_null_condition()`.
 
 ## Architecture Mapping

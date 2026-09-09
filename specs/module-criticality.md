@@ -1,7 +1,7 @@
 ---
 document_type: module-criticality
 level: L3
-version: "2.20"
+version: "2.22"
 status: active
 producer: architect
 timestamp: 2026-08-31T00:00:00Z
@@ -10,11 +10,13 @@ inputs:
   - .factory/specs/prd-supplements/module-criticality.md
   - .factory/specs/architecture/ARCH-INDEX.md
   - .factory/specs/architecture/module-decomposition.md
-input-hash: "885ead3"
+input-hash: "46bde59"
 traces_to: ARCH-INDEX.md
 lifecycle: "Mutable through Phase 5; frozen after Phase 5 gate passes."
 note: "This is the architecture-view criticality. The prd-supplements/module-criticality.md is the PO draft; this file is authoritative post-Phase 1b."
 changelog:
+  - "2.22 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog follow-up — 5 TypeScript SPA panel modules added (verify-module-canonicality.sh in-decomp-not-here closure): spa_components::run_inspector/checkpoint_panel/hitl_panel/budget_panel/guardrail_panel — all MEDIUM [PLANNED Wave 3] with integration P1 VPs (VP-2.24.004-008). Classification Summary: MEDIUM 44→49; Total 111→116. input-hash updated 46bde59."
+  - "2.21 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog — 6 SS-24 Wave 3 [PLANNED] modules added (verify-module-canonicality.sh set-diff closure): graph::descriptor HIGH (Kani P1 VP-2.24.003-B), console::ring_buffer MEDIUM (proptest VP-2.24.002-A/B), console::span_exporter MEDIUM (unit VP-2.24.002-D), console::server LOW, server::debug_routes MEDIUM (integration VP-2.24.002-C), server::debug_span definitions-only. Classification Summary: CRITICAL 12 / HIGH 29 / MEDIUM 44 / LOW 3 / definitions-only 9 = 97 tiered + 9 definitions-only = 106 total. input-hash updated f6903d5 (module-decomposition.md DC-46 additions)."
   - "2.20 (ADR-030 Stage 1/2026-08-31): Add `checkpoint::trajectory` MEDIUM row (pregolya-checkpoint; SS-04; TrajectoryWriter+TrajectoryReader execution; no Kani VP — Effectful Shell; MEDIUM consistent with checkpoint::sqlite/memory/postgres sibling pattern; ADR-030 Decision 2). Add `core::trajectory` definitions-only row (pregolya-core; SS-04; TrajectoryRecord/TrajectoryWriter/TrajectoryReader type definitions only; no kill rate obligation; ADR-009 Option 3 precedent; ADR-030 Decision 2). Classification Summary: MEDIUM 40→41; definitions-only 7→8; Total 89→91; tiered 82→83. Breakdown note updated. input-hash updated (module-decomposition.md §Changelog (v1.61) input drift)."
   - "2.19 (round-49/F-P2A207-02+F-P2A207-03/2026-08-30): Add `core::invocation_context` definitions-only row (pregolya-core; SS-11; trait-in-core precedent; BC-2.11.001–006; no kill rate obligation). Classification Summary: definitions-only 6→7; Total 88→89. Breakdown note updated. input-hash refreshed (9a1c0fa — module-decomposition.md input changed: invocation_context row added there in same burst)."
   - "2.18 (round-26/F-P2A115-04+O-P2A115-07/2026-08-28): F-P2A115-04 MED — Iron Law: add `mcp::registry` MEDIUM row (pregolya-mcp; SS-09; `ToolRegistry` Arc<RwLock<HashMap<String, Arc<dyn DynTool>>>>; `register`/`get`/`list` operations; shared by mcp::server dispatch and mcp::discovery population; BC-2.09.006/007/008 §Architecture Anchors; no Kani VP; MEDIUM consistent with mcp::interceptor/mcp::session sibling pattern; canonical file `pregolya-mcp/src/registry.rs`). Classification Summary: MEDIUM 39→40; Total 87→88; tiered 81→82. Breakdown note: 38→39 MEDIUM module-level. O-P2A115-07 OBS — `mcp::ingress` HIGH VP obligation note added: concrete Phase-6 Kani P1 commitment for DI-012 guardrail-dispatch correctness invariant (BC-2.09.003); replaces prior open 'will be authored by the architect' deferral. VP census UNCHANGED at 17 (no new VP seeded; Phase-2 seed scheduled). input-hash refreshed (7ec5915)."
@@ -156,6 +158,19 @@ changelog:
 | `core::write_guard` | definitions-only | pregolya-core | SS-15 | — | — | — (no kill rate obligation) | — |
 | `core::invocation_context` | definitions-only | pregolya-core | SS-11 | — | — | — (no kill rate obligation) | — |
 | `core::trajectory` | definitions-only | pregolya-core | SS-04 | — | — | — (no kill rate obligation) | — |
+| `graph::descriptor` | [PLANNED Wave 3] | pregolya-graph | SS-24 | HIGH | VP-2.24.003-B | ≥ 90% | Wave 3 P5 |
+| `console::ring_buffer` | [PLANNED Wave 3] | pregolya-console | SS-24 | MEDIUM | VP-2.24.002-A/B | ≥ 80% | Wave 3 P5 |
+| `console::span_exporter` | [PLANNED Wave 3] | pregolya-console | SS-24 | MEDIUM | VP-2.24.002-D | ≥ 80% | Wave 3 P5 |
+| `console::server` | [PLANNED Wave 3] | pregolya-console | SS-24 | LOW | — | ≥ 70% | Wave 3 P5 |
+| `server::debug_routes` | [PLANNED Wave 3] | pregolya-server | SS-24 | MEDIUM | VP-2.24.002-C | ≥ 80% | Wave 3 P5 |
+| `server::debug_span` | [PLANNED Wave 3] definitions-only | pregolya-server | SS-24 | — | — | — (no kill rate obligation) | — |
+| `spa_components::run_inspector` | [PLANNED Wave 3] | pregolya-console | SS-24 | MEDIUM | VP-2.24.004-A/B | ≥ 80% | Wave 3 P5 |
+| `spa_components::checkpoint_panel` | [PLANNED Wave 3] | pregolya-console | SS-24 | MEDIUM | VP-2.24.005-A/B | ≥ 80% | Wave 3 P5 |
+| `spa_components::hitl_panel` | [PLANNED Wave 3] | pregolya-console | SS-24 | MEDIUM | VP-2.24.006-A/B | ≥ 80% | Wave 3 P5 |
+| `spa_components::budget_panel` | [PLANNED Wave 3] | pregolya-console | SS-24 | MEDIUM | VP-2.24.007-A/B | ≥ 80% | Wave 3 P5 |
+| `spa_components::guardrail_panel` | [PLANNED Wave 3] | pregolya-console | SS-24 | MEDIUM | VP-2.24.008-A/B | ≥ 80% | Wave 3 P5 |
+
+> **DC-46 Wave 3 SS-24 additions (v2.21):** 6 developer-console modules added as `[PLANNED Wave 3]` per DC-46 gate-backlog remediation (verify-module-canonicality.sh set-diff closure). `graph::descriptor` HIGH: Kani P1 VP-2.24.003-B (no-self-loops invariant) — Kani P1 VP host inherits HIGH per established precedent (core::budget, tools::shell). `console::ring_buffer` MEDIUM: proptest P1 VP-2.24.002-A/B (bounded FIFO invariant) — pure core deterministic buffer. `console::span_exporter` MEDIUM: unit P1 VP-2.24.002-D (SEC-BOUND-001 sanitization) — Boundary module, SEC seam. `console::server` LOW: Axum SPA server; localhost-only; no security-boundary role; dev-only artifact. `server::debug_routes` MEDIUM: integration P1 VP-2.24.002-C; feature-gated; debug_route_key auth gate. `server::debug_span` definitions-only: SpanData + DebugSpanSource trait only; DIP interface seam (ADR-031 Decision 7); no execution logic. Classification Summary: HIGH +1 (graph::descriptor); MEDIUM +3 (console::ring_buffer, console::span_exporter, server::debug_routes); LOW +1 (console::server); definitions-only +1 (server::debug_span). New totals: CRITICAL 12 / HIGH 29 / MEDIUM 44 / LOW 3 / definitions-only 9 = 97 tiered + 9 definitions-only = 106 total rows.
 
 > **D21+burst-224 additions (v1.4):** `core::serializable` (Reviver) and `vectorstores::similarity` added as CRITICAL (Kani P0 proof obligations VP-010 and VP-009 respectively). `prompts::injection_guard`, `core::serializable` (LcSerializable), `core::embeddings` added as HIGH (Kani P1 and proptest P1 proof obligations VP-006/007/008). `vectorstores::mmr` added as MEDIUM (MMR-only selection algorithm; VP-009 relocated to vectorstores::similarity in burst-224). Definitions-only D21 artifacts (core::guardrail per ADR-014 Decision 6) excluded per no-row precedent.
 

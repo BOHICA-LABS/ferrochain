@@ -2,11 +2,12 @@
 document_type: architecture-section
 level: L3
 section: api-surface
-version: "1.34"
+version: "1.35"
 status: active
 producer: architect
 timestamp: 2026-09-08T00:00:00Z
 changelog:
+  - "1.35 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog fix — chained anchor citation `ADR-031 §Decision 2 and §Decision 6 D6-3` in debug-endpoints Cargo Feature row simplified to `ADR-031 §Decision 2` (verify-adr-anchor-citations.sh chained-§ prohibition). input-hash unchanged (inputs did not change)."
   - "1.34 (D-356/DC-33/F-PDC33-02-Option-a/2026-09-08, architect): Option (a) human-authorized — durable GuardrailJournal. Attempted to add `guardrail_journal?: Vec<GuardrailEntry>` alongside `evidence_journal?` in the run-read response shape per coordinator directive. FINDING: `GET /threads/{thread_id}/runs/{run_id}` response field enumeration (including `evidence_journal?`) is NOT present in this file — api-surface.md is an architecture-level summary; full response shapes live in `interface-definitions.md` and entity definitions in entities-server.md. The `guardrail_journal?` field must be added by: BA — entities-server.md §RunStore (add `guardrail_journal: Vec<GuardrailEntry>` field to the Run entity response projection, terminal-status only, same projection rule as `evidence_journal?`; add `GuardrailEntry { boundary: String, result: GuardrailResult (Pass|Fail|Transform), provenance: ProvenanceTag, timestamp_ms: u64, transform_applied: Option<String> }` type; add separation note: guardrail_journal? = GuardrailResult outcomes, evidence_journal? = budget PolicyDecision outcomes — do not conflate). PO — BC-2.12.003 {PC-013} (add `guardrail_journal?` to the terminal-status run response postcondition alongside `evidence_journal?`). No live-body changes to this file in this version bump. input-hash unchanged (inputs did not change)."
   - "1.33 (D-356/DC-33/F-PDC33-01/2026-09-08, architect): F-PDC33-01 (HIGH) — §SpanData shape under Debug Endpoints updated from 7-field to canonical 8-field: `session_id: String` added as field 5 (between `end_time_ms` and `attributes`), with reference note citing DC-32 extension; matches canonical shape in ADR-031 Decision 2 and Decision 7. Companion: ADR-031 Decision 5 `server::debug_span` row updated in same burst. input-hash unchanged (inputs did not change)."
   - "1.32 (D-356/DC-07/2026-09-07, architect): F-PDC07-01 — sweep debug_api_key → debug_route_key (5 sites: changelog 1.31, §Security, Debug Endpoints preamble blockquote, DC-02 blockquote, Cargo Feature Flags table). F-PDC07-02 — §Security updated to state both auth behaviors: (a) empty/absent debug_route_key → E-SERVER-013 InvalidDebugRouteKey startup-refusal before HTTP listener binds; (b) valid key + unauthenticated request → E-SERVER-004 DebugRouteUnauthorized 403 at runtime. input-hash unchanged (inputs did not change)."
@@ -328,7 +329,7 @@ is added by D-356. The debug endpoints are unary REST (JSON request/response), n
 | `mcp` | NO | pregolya-mcp adapter | BC-2.09.001 |
 | `budget` | YES | Budget governance policy primitive | BC-2.10.001 |
 | `guardrail` | YES | Content provenance + guardrail hook | BC-2.11.001 |
-| `debug-endpoints` | **NO** | **Security-annotated.** Feature-gates `/debug/trace/*` + `/assistants/{id}/graph` endpoints. Off by default — production builds MUST NOT enable unless behind `SecurityConfig.debug_route_key` (BC-2.12.005) and explicitly scoped to developer/staging. Compiled out entirely when off. CI gate `check-debug-endpoints-default` (authored at Wave 3) verifies this feature is absent from `[features].default`. See ADR-031 §Decision 2 and §Decision 6 D6-3. | CAP-042 (D-356/ADR-031) |
+| `debug-endpoints` | **NO** | **Security-annotated.** Feature-gates `/debug/trace/*` + `/assistants/{id}/graph` endpoints. Off by default — production builds MUST NOT enable unless behind `SecurityConfig.debug_route_key` (BC-2.12.005) and explicitly scoped to developer/staging. Compiled out entirely when off. CI gate `check-debug-endpoints-default` (authored at Wave 3) verifies this feature is absent from `[features].default`. See ADR-031 §Decision 2. | CAP-042 (D-356/ADR-031) |
 
 ## Error Type
 

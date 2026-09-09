@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.12.003
-version: "1.25"
+version: "1.26"
 status: active
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -48,6 +48,7 @@ changelog:
   - "1.23 (D-356-fix/DC-29/2026-09-08, product-owner): F-PDC29-03 (LOW/records): DC-24 blockquote contained a volatile prose file:line citation for api-surface.md (TD-VSDD-091/POL-12). Replaced with stable section anchor 'api-surface.md §pregolya-server HTTP Endpoints'."
   - "1.24 (D-356/DC-33/2026-09-08, product-owner): F-PDC33-01: {PC-013} extended — `guardrail_journal?` added to run-read response shape alongside `evidence_journal?`. Both fields present only when status is a terminal state; null/omitted for active/queued runs. `guardrail_journal?` exposes the run's GuardrailJournal evaluation history (consumed by BC-2.24.008 {PC-004} guardrail review panel; governed by BC-2.11.007). Separation invariant: evidence_journal = budget PolicyDecision outcomes (Allow/Escalate/Deny); guardrail_journal = content GuardrailResult evaluations (Pass/Fail/Transform). DC-33 human-authorized scope."
   - "1.25 (D-356/DC-42/2026-09-09, product-owner): F-PDC42-02: Reverse-anchor completeness — {PC-013} normatively exposes evidence_journal? (consumed by BC-2.24.007 budget panel via S-console-09) and guardrail_journal? (consumed by BC-2.24.008 guardrail panel via S-console-10), but §Related BCs and §Story Anchor had no reverse edges to those consumers. §Related BCs: BC-2.24.007 (consumer — evidence_journal? for budget panel) and BC-2.24.008 (consumer — guardrail_journal? for guardrail panel) added. §Story Anchor: S-console-09 (roadmap, Wave 3 — evidence_journal? via BC-2.24.007 {PC-003}) and S-console-10 (roadmap, Wave 3 — guardrail_journal? via BC-2.24.008 {PC-004}; declares BC-2.12.003 in behavioral_contracts, traces AC-004 to {PC-013}) added. Mirrors DC-16 F-PDC16-01 pattern."
+  - "1.26 (D-356/DC-46/2026-09-09, product-owner): C-PDC46: L9b version-pin removed at 3 sites — error-taxonomy.md bare artifact name substituted (DC-03 delta-note blockquote, TV-014 expected-behavior text, Traceability Error Codes row). Bare artifact name per TD-VSDD-091 L9b. verify-no-version-pins.sh blockers cleared for this BC."
 extracted_from: null
 modified: []
 deprecated: null
@@ -66,7 +67,7 @@ removal_reason: null
 
 > **D-356 adversary fix DC-16 (2026-09-08, product-owner).** F-PDC16-01: Reverse-anchor completeness — BC-2.24.005 {PC-003} consumes {INV-009} (fork-from-checkpoint) via S-console-07, but this BC had no reverse edge. §Related BCs updated to include BC-2.24.005; §Story Anchor updated to append S-console-07 (roadmap, Wave 3 — consumes {INV-009} fork-start via BC-2.24.005 {PC-003}). Mirrors the F-PDC12/DC-04 pattern applied to BC-2.12.001.
 
-> **D-356-fix DC-03 (2026-09-07, product-owner/state-manager).** {INV-009} added: `config.configurable.checkpoint_id` fork-start semantic on `POST /threads/{id}/runs` — used by BC-2.24.005 {PC-003} for developer-console fork-from-checkpoint. EC-008 and TV-014 added for the new path. E-CHKPT-011 CheckpointNotFound registered in error-taxonomy.md v1.73 (code collision fix: E-CHKPT-002 occupied by MonotonicClockRegression; E-CHKPT-011 is next available). No existing postconditions, invariants, or state-machine arcs changed. D-356 human-authorized reopening scope.
+> **D-356-fix DC-03 (2026-09-07, product-owner/state-manager).** {INV-009} added: `config.configurable.checkpoint_id` fork-start semantic on `POST /threads/{id}/runs` — used by BC-2.24.005 {PC-003} for developer-console fork-from-checkpoint. EC-008 and TV-014 added for the new path. E-CHKPT-011 CheckpointNotFound registered in error-taxonomy.md (code collision fix: E-CHKPT-002 occupied by MonotonicClockRegression; E-CHKPT-011 is next available). No existing postconditions, invariants, or state-machine arcs changed. D-356 human-authorized reopening scope.
 
 ## Description
 
@@ -301,7 +302,7 @@ scoped to a different thread — cross-thread run access is not permitted.
 
 ### EC-008: Fork-from-checkpoint with non-existent checkpoint_id ({INV-009}) {EC-008}
 **Scenario:** `POST /threads/t1/runs { assistant_id: "a1", config: { configurable: { checkpoint_id: 9999 } } }` where checkpoint `9999` does not exist on thread `t1`.
-**Expected behavior:** HTTP 422 `{ code: "E-CHKPT-011", message: "CheckpointNotFound: checkpoint '9999' does not exist on thread 't1'" }`. No Run is created; the thread's current state is unchanged. The `CheckpointSaver` lookup fails to resolve `checkpoint_id=9999` for `thread_id=t1`. Error code: E-CHKPT-011 CheckpointNotFound (POLICY; HTTP 422; registered in error-taxonomy.md v1.73). Caller must use a valid `checkpoint_id` from the thread's checkpoint history (`GET /threads/t1/history` per BC-2.12.001).
+**Expected behavior:** HTTP 422 `{ code: "E-CHKPT-011", message: "CheckpointNotFound: checkpoint '9999' does not exist on thread 't1'" }`. No Run is created; the thread's current state is unchanged. The `CheckpointSaver` lookup fails to resolve `checkpoint_id=9999` for `thread_id=t1`. Error code: E-CHKPT-011 CheckpointNotFound (POLICY; HTTP 422; registered in error-taxonomy.md). Caller must use a valid `checkpoint_id` from the thread's checkpoint history (`GET /threads/t1/history` per BC-2.12.001).
 
 ## Canonical Test Vectors
 
@@ -369,4 +370,4 @@ None
 | Wave | Wave 1 |
 | Test Types | I (integration), E2E (end-to-end) |
 | Module | pregolya-server |
-| Error Codes | E-GRAPH-019 NodePanic (INTERNAL, broken, Never) — minted at this BC's EC-003 node-body-panic path ({INV-007} panic-text-isolation enforcer); STATIC message: "NodePanic: graph node panicked during execution — see server error log for details"; raised by pregolya-server run-executor when `FutureExt::catch_unwind` catches a node-body panic during `.await` polling; raw panic text suppressed at HTTP boundary (CWE-209). E-GRAPH-011 ConditionalEdgePanic (INTERNAL) — defined at BC-2.02.005 {PC-005} (Pregel executor catches conditional-edge `path_fn` panic); referenced here because pregolya-server run-executor applies {INV-007} STATIC message replacement for E-GRAPH-011 (`"ConditionalEdgePanic: conditional edge function panicked during execution — see server error log for details"`) before populating `Run.error.message`; captured panic text and `source_node` topology suppressed at HTTP boundary (CWE-209; F-P2A197-01). E-CHKPT-011 CheckpointNotFound (POLICY; HTTP 422; minted at this BC's EC-008 fork-start path; {INV-009} enforcer; registered in error-taxonomy.md v1.73) — raised when `config.configurable.checkpoint_id` is set on Create-Run but the specified checkpoint does not exist in the `CheckpointSaver` for the given thread. |
+| Error Codes | E-GRAPH-019 NodePanic (INTERNAL, broken, Never) — minted at this BC's EC-003 node-body-panic path ({INV-007} panic-text-isolation enforcer); STATIC message: "NodePanic: graph node panicked during execution — see server error log for details"; raised by pregolya-server run-executor when `FutureExt::catch_unwind` catches a node-body panic during `.await` polling; raw panic text suppressed at HTTP boundary (CWE-209). E-GRAPH-011 ConditionalEdgePanic (INTERNAL) — defined at BC-2.02.005 {PC-005} (Pregel executor catches conditional-edge `path_fn` panic); referenced here because pregolya-server run-executor applies {INV-007} STATIC message replacement for E-GRAPH-011 (`"ConditionalEdgePanic: conditional edge function panicked during execution — see server error log for details"`) before populating `Run.error.message`; captured panic text and `source_node` topology suppressed at HTTP boundary (CWE-209; F-P2A197-01). E-CHKPT-011 CheckpointNotFound (POLICY; HTTP 422; minted at this BC's EC-008 fork-start path; {INV-009} enforcer; registered in error-taxonomy.md) — raised when `config.configurable.checkpoint_id` is set on Create-Run but the specified checkpoint does not exist in the `CheckpointSaver` for the given thread. |

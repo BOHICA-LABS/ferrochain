@@ -2,11 +2,12 @@
 document_type: domain-spec-section
 level: L2
 section: entities-server
-version: "1.23"
+version: "1.24"
 status: active
 producer: business-analyst
 timestamp: 2026-09-09T00:00:00Z
 changelog:
+  - "1.24 (DC-46/holdout-reverse-leak/2026-09-09, business-analyst): HS-* holdout-ID reverse-leak purge — four normative-body references removed. (1) §BudgetConfig Source bullet: HS-4/HS-9 comparative-assessment codes removed; decision grounding retained via D17-Q4 and domain-b dark-factory. (2) §ProviderClient Architecture bullet: HS-6 prefix removed; D17-Q5 decision ID retained. (3) §Actors Embedding Host: 'Validated by HS-C-001 (holdout scenario: FlowLoom embedding-host end-to-end)' removed — non-load-bearing provenance; behavioral description retained. (4) §Actors Developer-Operator Grounding: 'HS-C-001 embedding-host holdout (validates the actor boundary —...)' replaced with generic embedding-host integration constraint description. Changelog entries in YAML frontmatter are exempt per verify-holdout-reverse-leak.sh (historical provenance). verify-holdout-reverse-leak.sh confirmed PASS post-edit."
   - "1.23 (DC-44/2026-09-09, business-analyst): §GuardrailJournal record-init mechanism added per architect DC-44 ruling. Journal lifecycle now explicit: (1) empty record created in checkpoint store at run start by graph::provenance::init_guardrail_journal(run_id) when invocation_context.guardrail_hook().is_some(); (2) entries appended via append_guardrail_entry per successfully-returning evaluate(). Projection/run-read-assembly bullet updated with 3-state semantics: get_guardrail_journal(run_id) returns None (no hook registered, record never created) → guardrail_journal omitted from response; Some([]) (hook registered, zero ingress evaluated) → guardrail_journal: []; Some([N]) (hook registered, N evaluated) → guardrail_journal: [N entries]. DC-44 dated delta note added to §GuardrailJournal. Persistence-path bullet extended to include init call. EvidenceJournal unchanged (None-vs-Some([]) distinction is guardrail-specific)."
   - "1.22 (DC-39/2026-09-09, business-analyst): Persistence model corrected for both journals per architect DC-39 re-adjudication. (1) §GuardrailJournal: DC-39 dated delta note added; persistence-path bullet added — checkpoint-backed (pregolya-checkpoint, SQLite, same backend as EvidenceJournal per BC-2.10.002 INV-003); appended sync-durable per successfully-returning GuardrailHook::evaluate() in graph::provenance before execution continues; Projection bullet corrected to clarify run-read assembly by server::run_read_handler querying checkpoint store at read time, NOT a RunStore terminal write; OBS-2 IngressBoundary↔BoundaryType vocabulary mapping note added. (2) §EvidenceJournal: persistence-path bullet added (checkpoint-backed, same model); run-read bridge note added (assembled by server::run_read_handler at read time). (3) §Run Journal projections bullet: run-read bridge note added for both journals (assembled by server::run_read_handler, not accumulated in Run record). No existing content deleted; all additions are additive with dated notes."
   - "1.21 (consistency-audit/F-A-MED/2026-09-08, business-analyst): §Run §Fields: evidence_journal and guardrail_journal added — terminal-status-only optional run-read projections omitted in v1.20 despite being the same class as completed_at/output/error. evidence_journal: Option<Vec<JournalEntry>> — budget PolicyDecision (Allow|Escalate|Deny) history per BC-2.10.002; projected per BC-2.12.003 {PC-013}. guardrail_journal: Option<Vec<GuardrailEntry>> — GuardrailHook evaluation outcomes (Pass|Fail|Transform) per BC-2.11.007; projected per BC-2.12.003 {PC-013}. Inline separation note added: MUST NOT be conflated. JournalEntry name confirmed against §EvidenceJournal (canonical Rust struct name); GuardrailEntry name confirmed against §GuardrailJournal (4 fields: boundary/result/provenance/timestamp_ms — no transform_applied). Dated delta note added to §Run."
@@ -118,7 +119,7 @@ Configuration data for token-ceiling thresholds and ceiling-response behavior fo
   - `Escalate` — suspend via HITL interrupt; awaits `BudgetResume::Extend` or `BudgetResume::Halt`
   - `Summarize { summarize_prompt: String }` — one final LLM call using the prompt; transition to `summary_halt`
 - **Relationships:** Optionally set in RunnableConfig::budget_config (per-run override, 0——1); graph-level default lives in GraphConfig::budget_config. The engine constructs the effective BudgetPolicy from the resolved BudgetConfig at run time.
-- **Source:** D17-Q4, HS-4/HS-9, domain-b dark-factory; interface-definitions.md §BudgetPolicy (F-P91-02 v2.29).
+- **Source:** D17-Q4, domain-b dark-factory forcing function; interface-definitions.md §BudgetPolicy (F-P91-02 v2.29).
 
 ### BudgetPolicy (trait)
 A composable allow/escalate/deny policy evaluated against token tallies for a Run.
@@ -198,7 +199,7 @@ A registered callable that validates content at an ingress boundary before model
 ### ProviderClient
 A connection to a model provider implementing the ChatModel Runnable interface.
 - **Fields:** provider: ProviderId (openai | anthropic | ollama | …), model_id: String, credentials: ApiKey (newtype), config: ProviderConfig
-- **Architecture:** Standalone SDK crate split (HS-6/D17-Q5): `pregolya-<provider>-sdk` owns the wire client; `pregolya-<provider>` is the Runnable adapter.
+- **Architecture:** Standalone SDK crate split (D17-Q5): `pregolya-<provider>-sdk` owns the wire client; `pregolya-<provider>` is the Runnable adapter.
 - **Invariant (DI-010):** ApiKey implements `Debug` → `"<redacted>"`. No `#[derive(Serialize)]`. No `Deref<Target = str>`.
 
 ### PregolyaError
@@ -233,8 +234,7 @@ CAP-040: authoring correct graphs, composing Runnables, configuring providers, a
 agent applications. All existing capabilities are grounded in this actor's needs.
 
 **Embedding Host** — An external system or application that consumes the pregolya-server
-REST+SSE API in production. Validated by HS-C-001 (holdout scenario: FlowLoom embedding-host
-end-to-end). The embedding host is programmatic and production-facing; it consumes the
+REST+SSE API in production. The embedding host is programmatic and production-facing; it consumes the
 StreamEvent grammar over the existing SSE endpoint to build downstream products.
 
 ### Developer-Operator (Net-New, D-356)
@@ -279,8 +279,8 @@ live monitoring), CAP-044 (trajectory replay), CAP-045 (HITL console resume), CA
 (budget panel), CAP-047 (guardrail panel).
 
 **Grounding:** research memo §5 personas P1–P6 (devconsole-adk-research.md); product-brief.md
-§In Scope pregolya-server; HS-C-001 embedding-host holdout (validates the actor boundary —
-the console is a client of the same wire contract as the embedding host).
+§In Scope pregolya-server; the embedding-host integration scenario (validates the actor boundary —
+the console is a client of the same wire contract as the embedding host, but is a distinct actor, not a replacement).
 
 ---
 

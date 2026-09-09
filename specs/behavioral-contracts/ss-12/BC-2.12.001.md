@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.12.001
-version: "1.14"
+version: "1.15"
 status: active
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -21,7 +21,7 @@ inputs:
   - .factory/specs/prd.md
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/semport/platform/behavioral-intent.md
-input-hash: "faac9bb"
+input-hash: "138ba0d"
 extracted_from: null
 modified: []
 deprecated: null
@@ -45,6 +45,7 @@ changelog:
   - "1.12 (D-356-fix/DC-04/2026-09-07, product-owner): §Story Anchor: S-console-07 appended as roadmap consumer of the PC-015 ?checkpoint_id variant (Wave 3); S-1.26 remains primary implementation anchor. Reverse-anchor completeness fix."
   - "1.13 (D-356-fix/DC-05/2026-09-07, product-owner): F-PDC05-02: changelog v1.11 entry self-contradiction corrected — 'HTTP 404' → 'HTTP 422' in the v1.11 changelog line (records fix; normative body already correct at HTTP 422 throughout)."
   - "1.14 (D-356-fix/DC-17/2026-09-08, product-owner): F-PDC17-02: Reverse-anchor completeness — §Related BCs lacked the reverse edge for BC-2.24.005 (which consumes {PC-015} ?checkpoint_id variant via BC-2.24.005 {PC-002}). DC-04 added only the §Story Anchor edge (S-console-07); §Related BCs edge was missing. BC-2.24.005 added as consumer entry. §Story Anchor unchanged (S-console-07 already present from DC-04)."
+  - "1.15 (D-356/DC-46/2026-09-09, product-owner): F-PDC46-D: phantom §-citation corrected — {PC-015} body cited 'error-taxonomy.md §CHKPT component' which does not match any heading; corrected to 'error-taxonomy.md §Component: CHKPT (pregolya-checkpoint)' (exact heading text per verify-adr-anchor-citations.sh)."
 ---
 
 # BC-2.12.001: Thread Resource CRUD (Create, Read, List, Delete Durable Conversation History)
@@ -104,7 +105,7 @@ pregolya-checkpoint subsystem. Thread-not-found returns `E-SERVER-003`.
 
 15. {PC-015} `GET /threads/{thread_id}/state` — returns the latest checkpoint state for the thread:
     `{ values: GraphState, checkpoint: CheckpointId, next: [NodeId] }`.
-    Accepts optional query parameter `?checkpoint_id=<CheckpointId>` (u64 newtype; BC-2.04.003 §Architecture Anchors); when supplied, returns the state at the specified historical checkpoint (same response shape). If the checkpoint does not exist → HTTP 422 `E-CHKPT-011 CheckpointNotFound` (EC-010; error-taxonomy.md §CHKPT component, HTTP 422 per taxonomy definition). E-CHKPT-011 covers both the fork-start path (BC-2.12.003 {INV-009} / EC-008) and this state-read path — the semantic is identical: a requested CheckpointId does not exist. RetryHint: Never (POLICY default).
+    Accepts optional query parameter `?checkpoint_id=<CheckpointId>` (u64 newtype; BC-2.04.003 §Architecture Anchors); when supplied, returns the state at the specified historical checkpoint (same response shape). If the checkpoint does not exist → HTTP 422 `E-CHKPT-011 CheckpointNotFound` (EC-010; error-taxonomy.md §Component: CHKPT (pregolya-checkpoint), HTTP 422 per taxonomy definition). E-CHKPT-011 covers both the fork-start path (BC-2.12.003 {INV-009} / EC-008) and this state-read path — the semantic is identical: a requested CheckpointId does not exist. RetryHint: Never (POLICY default).
 16. {PC-016} `POST /threads/{thread_id}/state` — updates checkpoint state by applying a delta:
     `{ values: Map<String, Value>, as_node?: NodeId }`. Returns `{ checkpoint: CheckpointId }` on success.
     Failure paths: (a) if the thread does not exist → HTTP 404 `E-SERVER-003 ThreadNotFound` (EC-007);

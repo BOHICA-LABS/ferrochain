@@ -3,20 +3,21 @@ document_type: story
 level: ops
 story_id: S-console-01
 epic_id: E-console
-version: "1.1"
+version: "1.2"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
 changelog:
   - "1.0 (D-356/2026-09-06, story-writer): Initial story — pregolya-console crate scaffolding, ConsoleConfig, CLI subcommand, rust_embed SPA serving, runtime-config.json, localhost :7437."
   - "1.1 (D-356/DC-12/2026-09-07, story-writer): F-PDC12-01 — blocks list updated to include S-console-03 (invariant: blocks is exact inverse of depends_on; S-console-03 declares depends_on [S-console-01])."
+  - "1.2 (D-356/DC-46/2026-09-09, story-writer): F-PDC46-01 — AC header citation form corrected to M4-strict bare-tag: BC-S.SS.NNN TAG (section-words removed per verify-ac-pc-trace.sh CHECK-1)."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.001.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "8fe60e4"
+input-hash: "df9e8d7"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: []
@@ -55,31 +56,31 @@ Note: BC-2.24.001 postconditions PC-004 and PC-005 (dev-mode co-launch + DebugSp
 
 ## Acceptance Criteria
 
-### AC-001 (traces to BC-2.24.001 postcondition PC-007)
+### AC-001 (traces to BC-2.24.001 PC-007)
 The `pregolya` CLI facade crate exposes `pregolya console [--host <H>] [--port <P>] [--dev]` as a subcommand. Invoking `pregolya console` with no flags constructs `ConsoleConfig { host: "127.0.0.1", port: 7437, dev_mode: false, span_retention_cap: 10_000 }` and calls `run_console(config)`. Each flag overrides the corresponding default. Verified by `test_BC_2_24_001_cli_defaults()` and `test_BC_2_24_001_cli_flags()`.
 
-### AC-002 (traces to BC-2.24.001 postcondition PC-001)
+### AC-002 (traces to BC-2.24.001 PC-001)
 `run_console(config)` binds an Axum HTTP server to `<config.host>:<config.port>` and begins accepting connections. The default bind address is `127.0.0.1:7437`. `run_console` is an `async fn` accepting a `ConsoleConfig`. Verified by `test_BC_2_24_001_bind_default_address()`.
 
-### AC-003 (traces to BC-2.24.001 postcondition PC-002)
+### AC-003 (traces to BC-2.24.001 PC-002)
 `GET /ui/` returns `200 OK` with `Content-Type: text/html` serving the embedded SPA `index.html`. `GET /ui/some/deep/nested/route` falls back to `index.html` with `200 OK` (client-side SPA routing). `GET /ui/app.js` returns the embedded script asset with the correct `Content-Type`. Verified by `test_BC_2_24_001_spa_served()` and `test_BC_2_24_001_spa_fallback_index()`.
 
-### AC-004 (traces to BC-2.24.001 postcondition PC-003)
+### AC-004 (traces to BC-2.24.001 PC-003)
 `GET /ui/assets/config/runtime-config.json` returns `200 OK` with body `{"apiBaseUrl": "/api"}` and `Content-Type: application/json`. The body is static and does not vary with runtime state. Verified by `test_BC_2_24_001_runtime_config_json()` (VP-2.24.001-A).
 
-### AC-005 (traces to BC-2.24.001 postcondition PC-006)
+### AC-005 (traces to BC-2.24.001 PC-006)
 On receipt of `SIGTERM` or `SIGINT`, `run_console` gracefully completes in-flight requests and returns `Ok(())`. When the bind address is already in use, `run_console` returns `Err(PregolyaError)` with a descriptive message before starting the server — no panic, no `unwrap()`. Verified by `test_BC_2_24_001_port_conflict_err()`.
 
-### AC-006 (traces to BC-2.24.001 edge case EC-002)
+### AC-006 (traces to BC-2.24.001 EC-002)
 `run_console(ConsoleConfig { span_retention_cap: 0, .. })` returns `Err(PregolyaError)` immediately, before attempting to bind the socket. No server is started. Verified by `test_BC_2_24_001_zero_cap_err()` (VP-2.24.001-B).
 
-### AC-007 (traces to BC-2.24.001 invariant INV-004)
+### AC-007 (traces to BC-2.24.001 INV-004)
 `ConsoleConfig` carries `#[non_exhaustive]`. A compile-fail test in `tests/external/console-config-non-exhaustive/` confirms that external code attempting to construct `ConsoleConfig { .. }` as a struct literal fails to compile. Verified by compile-fail test (VP-2.24.001-C).
 
-### AC-008 (traces to BC-2.24.001 invariant INV-001)
+### AC-008 (traces to BC-2.24.001 INV-001)
 The `pregolya-console/Cargo.toml` dependency list does NOT include `pregolya-graph` as a direct dependency. `cargo tree -p pregolya-console --depth 1` does not show `pregolya-graph` as a first-level dependency. The console depends on `pregolya-server` (public API only). Verified by CI `check-console-dep-boundary` task.
 
-### AC-009 (traces to BC-2.24.001 invariant INV-005)
+### AC-009 (traces to BC-2.24.001 INV-005)
 `console::server` and all `pregolya-console` library modules use `tracing::*!` macros exclusively for logging — no `println!` or `eprintln!` in library code. `cargo clippy -p pregolya-console -D clippy::print_stdout -D clippy::print_stderr` passes with zero warnings. Verified by CI clippy gate.
 
 ## Architecture Mapping

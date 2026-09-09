@@ -2,7 +2,7 @@
 document_type: architecture-section
 level: L3
 section: module-decomposition
-version: "1.67"
+version: "1.70"
 status: active
 producer: architect
 timestamp: 2026-09-09T00:00:00Z
@@ -11,10 +11,13 @@ inputs:
   - .factory/specs/prd.md
   - .factory/specs/prd-supplements/module-criticality.md
   - .factory/specs/module-criticality.md
-input-hash: "c79f46c"
+input-hash: "dbc0ead"
 traces_to: ARCH-INDEX.md
 decisions: [D4, D6, D7, D12, D13, D17, D20, D21, D23]
 changelog:
+  - "1.70 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog E — resolve verify-adr-anchor-citations ambiguous §Exempt Inventory: 4 body citations updated from ADR-023 §Exempt Inventory to ADR-023 §Decision 3 — Exempt Inventory (full heading per ADR-023 H2); also collapsed double-ADR-023 wrap artifact on GuardrailDecisionKind blockquote line. input-hash updated dbc0ead (content change)."
+  - "1.69 (D-356/DC-46/2026-09-09, architect): DC-46 C follow-up — 5 SPA panel modules added to pregolya-console section (verify-module-canonicality.sh in-here-not-decomp closure): spa_components::run_inspector, spa_components::checkpoint_panel, spa_components::hitl_panel, spa_components::budget_panel, spa_components::guardrail_panel — TypeScript SPA component rows per BC-2.24.004-008 VP targets. input-hash updated 48af442 (content change)."
+  - "1.68 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog: (C) added 6 SS-24 [PLANNED Wave 3] modules to manifest — graph::descriptor (pregolya-graph), server::debug_routes + server::debug_span (pregolya-server), console::ring_buffer + console::server + console::span_exporter (new pregolya-console section); (E) fixed chained ADR-023 §Exempt Inventory; BC-2.06.001 §PC-002 forms → BC-2.06.001 {PC-002} (item anchor); fixed bare §Exempt Inventory → ADR-023 §Exempt Inventory. input-hash unchanged (no new BC inputs)."
   - "1.67 (D-356/DC-44/F-PDC44-01/2026-09-09, architect): F-PDC44-01 — graph::provenance row: added init_guardrail_journal(run_id) call site at run start (if invocation_context.guardrail_hook().is_some()); documents the guardrail-specific init op that creates the empty journal record enabling None-vs-Some([]) discrimination per {INV-004}; updated row description from 'durable accumulation' to 'initialization and durable accumulation'. Journal-storage blockquote: added init_guardrail_journal to op list and documented its guardrail-specific role. input-hash unchanged (no new BC inputs)."
   - "1.66 (D-356/DC-43/F-PDC43-01/2026-09-09, architect): F-PDC43-01 (LOW) — §pregolya-server: server::handlers row extended with run-read journal-projection responsibility: run-read handler assembles evidence_journal?/guardrail_journal? projections at read time by querying the checkpoint store (get_evidence_journal/get_guardrail_journal(run_id)); Wave-1 buildable per S-1.29 AC-003/Task 6. Symmetric server-side sibling of the checkpoint-side journal-storage note added at DC-41/O-PDC41-01. input-hash unchanged (no new BC inputs)."
   - "1.65 (D-356/DC-41/O-PDC41-01/2026-09-09, architect): O-PDC41-01 — §pregolya-checkpoint: added journal-storage note after VP anchors line documenting that the checkpoint store (checkpoint::sqlite/checkpoint::saver) backs durable per-run journal storage for both EvidenceJournal (BC-2.10.002) and GuardrailJournal (BC-2.11.007) via append_*/get_*_journal. Closes anchor-softness gap flagged by DC-39 architecture ruling (graph::provenance + BC-2.11.007 both reference pregolya-checkpoint journal storage but the §pregolya-checkpoint section had no corresponding mention). input-hash unchanged (no new BC inputs)."
@@ -181,6 +184,7 @@ content provenance.
 | `graph::budget` | `BudgetEngine` dispatch (allow/escalate/deny via `BudgetPolicy` trait from pregolya-core), `EvidenceJournal`, ceiling halt/escalate — trait definitions live in `core::budget` per ADR-009 Option 3; compaction engine: evaluates `CompactionTrigger` after each super-step, builds `ConversationSnapshot` via `CheckpointSaver::fts_search` (BC-2.04.008), calls `CompactionPolicy::compact()`, applies mid-run message-window mutation, appends `CompactionEvent` to `EvidenceJournal`, emits `compaction_event` streaming event (ADR-019) | HIGH | SS-10 |
 | `graph::provenance` | `ProvenanceTag` attachment at ingress boundaries, `GuardrailHook` dispatch, `GuardrailJournal` initialization and durable accumulation: at run start calls `checkpoint_store.init_guardrail_journal(run_id)` if `invocation_context.guardrail_hook().is_some()` (creates the empty journal record sync-durable; distinguishes `None` (no hook registered → no record) from `Some([])` (hook registered, zero ingress boundaries) from `Some([N])` (N entries) per {INV-004}); then appends one `GuardrailEntry` to the checkpoint-backed `GuardrailJournal` (pregolya-checkpoint, same SQLite backend as `EvidenceJournal` in `graph::budget`; BC-2.10.002 {INV-003} durability model) **sync-durable BEFORE execution continues** at each ingress boundary, after each successfully-returning `evaluate()`; a panicking/erroring `evaluate()` appends no entry ({EC-003}); pregolya-graph imports the checkpoint abstraction (NOT RunStore; RunStore = pregolya-server; reverse-edge violation); run-read `guardrail_journal?` projection is assembled from checkpoint store by `server::run_read_handler` at read time (S-1.29 AC-002/AC-003); BC-2.11.007; DI-012 | HIGH | SS-11 |
 | `graph::event_emitter` | Streaming event emission: emits `StreamEvent` values (type defined in `core::events`, pregolya-core, per ADR-006 §Consequences — "StreamEvent is a public type in pregolya-core"); emission callsites for `NodeStart`/`NodeEnd`/`ToolStart`/`ToolEnd` inside `tick()` and `StepEnd` inside `after_tick()` are in `graph::scheduler`; run_id + parent_ids correlation per BC-2.06.002; manages the emitter channel through which `StreamEvent` values flow to SSE consumers (`pregolya-graph/src/event_emitter.rs`) | MEDIUM | SS-06 |
+| `graph::descriptor` [PLANNED] | Pure serialization of compiled graph topology to `GraphDescriptor` shape (`{nodes:[{name,kind}], edges:[{source,target,condition}], dot_src}`); `fn compile_graph_descriptor(graph: &CompiledStateGraph) -> GraphDescriptor` — deterministic given fixed graph; no I/O, no async, no global state; required extraction before Phase 6 per ADR-031 Decision 2 and Purity Enforcement Rule 3; Wave 3 [PLANNED] (CAP-042; SS-24; ADR-031 Decision 2) | — | SS-24 |
 
 **VP anchor:** `graph::bsp_engine` is VP-001 target (BSP determinism Kani harness).
 
@@ -215,6 +219,8 @@ Responsibilities: Axum HTTP server, resource CRUD, cron scheduler, security defa
 | `server::streaming` | SSE streaming endpoint; same engine as unary (DI-011) | HIGH | SS-12 |
 | `server::stores` | `IdempotencyStore` / `RateLimitStore` / `RunStore` trait seams (NE-08) | HIGH | SS-12 |
 | `server::cron` | CronSchedule parsing and proactive run triggering (`pregolya-server/src/cron/`) | MEDIUM | SS-12 |
+| `server::debug_routes` [PLANNED] | Feature-gated (`debug-endpoints`, default OFF) Axum route handlers: `GET /debug/trace/session/{session_id}`, `GET /debug/trace/{event_id}`, `GET /assistants/{id}/graph`; reads spans via `Arc<dyn DebugSpanSource>` (from `server::debug_span` — injected at launch by the console layer; ADR-031 Decision 7); delegates graph serialization to `graph::descriptor`; errors: `E-SERVER-023 DebugExporterNotConfigured`, `E-SERVER-009 AssistantNotFound` per ADR-031 Decision 2; excluded from production builds when feature disabled; Wave 3 [PLANNED] (CAP-042; SS-24; ADR-031 Decision 2) | — | SS-24 |
+| `server::debug_span` [PLANNED] | `SpanData` data type definition (`span_id`, `trace_id`, `start_time_ms`, `end_time_ms`, `attributes`, `llm_request`, `llm_response` — plain data, `Clone + Serialize`); `DebugSpanSource` trait definition (`fn get_session_spans`, `fn get_span` — pure interface, no I/O); consumer-owns-interface DIP (ADR-031 Decision 7); pregolya-server has zero compile dep on pregolya-console; `Arc<dyn DebugSpanSource>` injected at launch — concrete impl (`DebugSpanExporter` in `console::span_exporter`) provided at runtime; Wave 3 [PLANNED] (CAP-042; SS-24; ADR-031 Decision 7) | — | SS-24 |
 
 ## pregolya-sandbox (SS-13) — CRITICAL (path-guard) / MEDIUM (backends)
 
@@ -358,7 +364,7 @@ Re-exported from pregolya-core.
 | Module | Responsibility | Criticality | SS |
 |--------|---------------|-------------|-----|
 | `core::documents` | `Document { page_content, metadata, id }` type — carrier for all retrieval output; derives Serialize/Deserialize/JsonSchema; `#[non_exhaustive]`; **definitions-only — no criticality-counted module row per ADR-009 definitions-only precedent** (ADR-014 Decision 2: pure data carrier; no execution methods; no VP target) | — | SS-20 |
-| `core::guardrail` | Definitions-only: `GuardrailHook` trait (`async fn evaluate`), `GuardrailResult` enum, `IngressContent` enum, `GuardrailSeverity` enum, `BoundaryType` enum (3 variants: ToolResult/RAGRetrieval/MemoryIngress), `IngressBoundary` enum (3-way ingress boundary: ToolResult \| RagChunk \| MemoryItem; per ADR-023 §Exempt Inventory; BC-2.06.001 §PC-002), `GuardrailDecisionKind` enum (binary outcome: Fail \| Transform; per ADR-023 §Exempt Inventory); promoted to pregolya-core per trait-in-core precedent (ADR-014 Decision 6 / DI-012); no execution logic; dispatch in `graph::provenance` and `mcp::ingress` | — | SS-11 |
+| `core::guardrail` | Definitions-only: `GuardrailHook` trait (`async fn evaluate`), `GuardrailResult` enum, `IngressContent` enum, `GuardrailSeverity` enum, `BoundaryType` enum (3 variants: ToolResult/RAGRetrieval/MemoryIngress), `IngressBoundary` enum (3-way ingress boundary: ToolResult \| RagChunk \| MemoryItem; per ADR-023 §Decision 3 — Exempt Inventory; BC-2.06.001 {PC-002}), `GuardrailDecisionKind` enum (binary outcome: Fail \| Transform; per ADR-023 §Decision 3 — Exempt Inventory); promoted to pregolya-core per trait-in-core precedent (ADR-014 Decision 6 / DI-012); no execution logic; dispatch in `graph::provenance` and `mcp::ingress` | — | SS-11 |
 | `core::action_risk` | Definitions-only: `ActionRisk` enum (4 variants: ReadOnly/Low/Medium/High); `#[non_exhaustive]`; relocated from `graph::hitl` per dependency-inversion precedent enabling pregolya-tools compile-time access without pregolya-graph dep (F-P170-06 / ADR-020 Decision 3) | — | SS-05 |
 | `core::context_mutation` | Definitions-only: `ContextSourceSpec` (namespace + key), `ContextMutationConfig` (`Vec<ContextSourceSpec>`); enables `RunnableConfig.context_mutations`; loaded by `graph::scheduler` at run start; no execution logic (ADR-012 D20) | — | SS-01 |
 | `core::write_guard` | Definitions-only: `MemoryWriteRequest` enum (Add/Replace/Remove), `MemoryWriteGuard` trait (sync validation: `fn validate -> WriteGuardDecision`), `WriteGuardDecision` (Allow/Deny/Transform); write-path safety seam definitions; enforcement execution in `memory::write_guard` (ADR-012 D20) | — | SS-15 |
@@ -396,11 +402,10 @@ Re-exported from pregolya-core.
 >   MemoryItem(Value)); `GuardrailSeverity` enum (Critical/High/Medium/Low); `BoundaryType` enum
 >   (ToolResult | RAGRetrieval | MemoryIngress — 3 variants, PASS-58 canon; not extended);
 >   `IngressBoundary` enum (3-way ingress boundary tag carried by `GuardrailEntry.boundary`:
->   ToolResult | RagChunk | MemoryItem — per ADR-023 §Exempt Inventory, BC-2.06.001 §PC-002;
+>   ToolResult | RagChunk | MemoryItem — per ADR-023 §Decision 3 — Exempt Inventory; BC-2.06.001 {PC-002};
 >   distinct from `BoundaryType` which uses RAGRetrieval/MemoryIngress naming for the hook-seam
 >   context — OBS-2 correspondence: RagChunk↔RAGRetrieval, MemoryItem↔MemoryIngress);
->   `GuardrailDecisionKind` enum (binary outcome classification: Fail | Transform — per ADR-023
->   §Exempt Inventory; summarizes the non-Pass branch of `GuardrailResult` for reporting/metrics).
+>   `GuardrailDecisionKind` enum (binary outcome classification: Fail | Transform — per ADR-023 §Decision 3 — Exempt Inventory; summarizes the non-Pass branch of `GuardrailResult` for reporting/metrics).
 >   Promoted from graph::provenance/mcp::ingress to pregolya-core consistent with trait-in-core
 >   precedent (BudgetPolicy → core::budget, MemoryWriteGuard → core::write_guard). Existing
 >   dispatch modules (graph::provenance, mcp::ingress) import from pregolya-core.
@@ -534,6 +539,24 @@ risk tier defaults, retry classification, and `E-TOOLS-*` error namespace.
 (EditFileTool), BC-2.23.004 (ListDirTool), BC-2.23.005 (BashTool, VP-013 seed),
 BC-2.23.006 (GrepTool). `E-TOOLS-*` error namespace: 9 codes post-burst-234
 (E-TOOLS-008 FileIoError added burst-233; E-TOOLS-009 InvalidRegexPattern added burst-234).
+
+## pregolya-console (SS-24) — MEDIUM [PLANNED Wave 3]
+
+Responsibilities: SPA embedding, localhost dev-server, span exporter, dev-console UI host.
+All modules are Wave 3 planned (`[PLANNED]`); none are built in the current Phase 3 implementation cycle.
+
+| Module | Responsibility | Criticality | SS |
+|--------|---------------|-------------|-----|
+| `console::ring_buffer` [PLANNED] | `RingBuffer<T>` deterministic bounded FIFO: capacity-enforcement arithmetic, index-wrap computation, `push` / `drain_all` / `len` operations; no I/O, no async, no external deps; Kani/proptest-provable data structure; canonical pure vehicle for `RingBuffer<SpanData>` storage consumed by `console::span_exporter` via `Arc<RwLock<RingBuffer<SpanData>>>` (CAP-042; SS-24; ADR-031 Decision 5) | — | SS-24 |
+| `console::server` [PLANNED] | Axum HTTP server serving SPA assets via `rust_embed`; `runtime-config.json` injection endpoint; localhost-bind (`127.0.0.1:7437` default); optionally co-launches pregolya-server in-process (`--dev` mode); `ConsoleConfig` lifecycle management; `run_console(config: ConsoleConfig) -> Result<(), PregolyaError>` entry point; no TLS for loopback per ADR-031 Decision 6 (CAP-041; SS-24; ADR-031 Decision 1) | — | SS-24 |
+| `console::span_exporter` [PLANNED] | Pure part: SEC-BOUND-001 sanitization gate — strips `llm_request`/`llm_response`/`attributes` from each `SpanData` at insertion time (VP-2.24.002-D; BC-2.24.002); Effectful part: OTel `SpanExporter` async trait impl + implements `DebugSpanSource` (server-owned trait from `server::debug_span` — consumer-owns-interface DIP, ADR-031 Decision 7); async mutation of `Arc<RwLock<RingBuffer<SpanData>>>` delegating FIFO logic to `console::ring_buffer`; console→server dep direction (no cycle) (CAP-042; SS-24; ADR-031 Decision 5) | — | SS-24 |
+| `spa_components::run_inspector` [PLANNED] | TypeScript SPA panel — renders the 16 `StreamEvent` variants in real-time; highlights active node on `node_start`, clears on `node_end`; VP-2.24.004-A/B (integration P1; BC-2.24.004; SS-24) | — | SS-24 |
+| `spa_components::checkpoint_panel` [PLANNED] | TypeScript SPA panel — checkpoint history rendered in `step_idx` monotone order; fork-from-checkpoint action launches new run; VP-2.24.005-A/B (integration P1; BC-2.24.005; SS-24) | — | SS-24 |
+| `spa_components::hitl_panel` [PLANNED] | TypeScript SPA panel — HITL review UI; Approve sends `PreToolDecision::Allow`, Deny sends `Deny(reason)`; multiple interrupts surfaced in FIFO order; VP-2.24.006-A/B (integration P1; BC-2.24.006; SS-24) | — | SS-24 |
+| `spa_components::budget_panel` [PLANNED] | TypeScript SPA panel — budget gauge renders without crash when `tokens_remaining_after` is null; timeline boundary marker emitted on each `compaction_event`; VP-2.24.007-A/B (unit + integration P1; BC-2.24.007; SS-24) | — | SS-24 |
+| `spa_components::guardrail_panel` [PLANNED] | TypeScript SPA panel — guardrail result feed contains exactly Fail and Transform events; malformed `guardrail_decision` payload does not crash the feed; VP-2.24.008-A/B (integration + unit P1; BC-2.24.008; SS-24) | — | SS-24 |
+
+**ADR anchor:** ADR-031 Decision 5 (purity boundary), Decision 1 (pregolya-console crate), Decision 7 (DebugSpanSource DIP). All SS-24 modules are [PLANNED] Wave 3. `server::debug_routes` and `server::debug_span` live in pregolya-server above; `graph::descriptor` lives in pregolya-graph above.
 
 ## Crate-Level Roll-Up (Cross-Subsystem Annotation)
 

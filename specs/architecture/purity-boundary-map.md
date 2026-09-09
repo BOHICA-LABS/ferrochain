@@ -2,7 +2,7 @@
 document_type: architecture-section
 level: L3
 section: purity-boundary-map
-version: "1.48"
+version: "1.50"
 status: active
 producer: architect
 timestamp: 2026-09-06T00:00:00Z
@@ -14,6 +14,8 @@ input-hash: "c0cfd11"
 traces_to: ARCH-INDEX.md
 decisions: [D17, D21, D23, D356]
 changelog:
+  - "1.50 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog fix — 5 SPA panel modules added to Effectful Shell section (verify-module-canonicality.sh in-decomp-not-here closure): spa_components::run_inspector, spa_components::checkpoint_panel, spa_components::hitl_panel, spa_components::budget_panel, spa_components::guardrail_panel — TypeScript Wave 3 SPA panels; Effectful Shell (DOM + network). Intro counts 98→103 total (Effectful Shell 43→48; [PLANNED] 6→11). input-hash unchanged (inputs did not change)."
+  - "1.49 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog fix — version pin removed from server::debug_routes body blockquote note (error-taxonomy.md reference; verify-no-version-pins.sh L9b). input-hash unchanged (inputs did not change)."
   - "1.48 (D-356/DC-23/2026-09-08, architect): F-PDC23-03 — Mutex→RwLock for span ring buffer (concurrent-reader adjudication). `console::ring_buffer` row updated: `Arc<Mutex<RingBuffer<SpanData>>>` → `Arc<RwLock<RingBuffer<SpanData>>>`. `console::span_exporter` row updated: same correction. Rationale: S-console-03 AC-008 load-bearingly requires RwLock for multiple concurrent debug-route readers; BC-2.24.002 EC-006 also specifies 'RwLock or similar'; Mutex incorrectly serializes all reads. PO routing: BC-2.24.002 INV-002 Mutex→RwLock (exact wording in DC-23 delta note). Stories S-console-02 AC-008/EC-005 and S-console-03 AC-008/EC-005 already say RwLock — no story edits needed. input-hash unchanged (inputs did not change)."
   - "1.47 (D-356/DC-10/2026-09-07, architect): F-PDC10-02 — dependency-cycle break. Added server::debug_span [PLANNED] Boundary row (pregolya-server; SpanData data type + DebugSpanSource trait; consumer-owns-interface; ADR-031 Decision 7). Updated server::debug_routes row: reads via Arc<dyn DebugSpanSource> (not Arc<DebugSpanExporter>). Updated console::span_exporter row: implements DebugSpanSource; depends on server::debug_span for SpanData+trait; console→server dep direction. Intro counts 97→98 rows, Boundary 14→15, [PLANNED] 5→6. input-hash c0cfd11 (recomputed DC-10)."
   - "1.46 (D-356/DC-04/2026-09-07, architect): F-PDC04-04 — `console::ring_buffer` added as canonical Pure Core row (RingBuffer<T> deterministic bounded FIFO; no I/O; Kani/proptest-provable; VP-2.24.002-A/B targets). `console::span_exporter` Boundary row updated: pure part narrowed to SEC-BOUND-001 sanitization gate only (no longer describes ring buffer capacity logic — that is now console::ring_buffer's scope); effectful part updated to show Arc<Mutex<RingBuffer<SpanData>>> dependency on console::ring_buffer. Intro counts 96→97 rows, 39→40 Pure Core, 4→5 [PLANNED] Wave 3 rows. input-hash unchanged (inputs did not change)."
@@ -79,7 +81,7 @@ no I/O, Kani-provable), **Effectful Shell** (I/O, network, or async runtime, not
 or **Boundary Modules** (pure validation/routing layer that delegates I/O to an injected
 effectful dependency). All 84 module-decomposition modules (76 tiered + 8 definitions-only/exempt) plus
 structural and definitions-only modules are enumerated in `## Purity Classification` below
-(98 total rows: 40 Pure Core + 43 Effectful Shell + 15 Boundary; includes 6 [PLANNED] Wave 3 rows from D-356/ADR-031).
+(103 total rows: 40 Pure Core + 48 Effectful Shell + 15 Boundary; includes 11 [PLANNED] Wave 3 rows from D-356/ADR-031 + DC-46).
 Enforcement invariants follow in `## Purity Enforcement Rules`.
 
 ## Purity Classification
@@ -193,10 +195,15 @@ Kani is not applicable here.
 | `eval::judge` | pregolya-standard-tests | async LLM judge invocation over HTTP for conformance scoring; emits `eval.judge_infra_error` structured event on failure; `JudgeError` → `PregolyaError` propagation; async I/O bound to judge LLM provider (BC-2.08.008 / SS-08) | Integration (DTU) |
 | `console::server` [PLANNED] | pregolya-console | Axum HTTP server serving SPA assets via `rust_embed`; `runtime-config.json` injection endpoint; localhost-bind (`127.0.0.1:7437` default); optionally co-launches pregolya-server in-process (`--dev` mode); `ConsoleConfig` lifecycle management; no TLS required for loopback per ADR-031 D6-1; no auth on `/ui/` assets per ADR-031 D6-2; binary crate surface exposed via `run_console(config: ConsoleConfig) -> Result<(), PregolyaError>` (CAP-041 / SS-24 / ADR-031 Decision 1) | Integration |
 | `server::debug_routes` [PLANNED] | pregolya-server | Feature-gated (`debug-endpoints`, default OFF) Axum route handlers: `GET /debug/trace/session/{session_id}`, `GET /debug/trace/{event_id}`, `GET /assistants/{id}/graph`; reads spans via `Arc<dyn DebugSpanSource>` (from `server::debug_span` — injected at launch by the console layer; ADR-031 Decision 7); NO compile dep on pregolya-console; delegates graph serialization to `graph::descriptor` (Pure Core); errors: `E-SERVER-023 DebugExporterNotConfigured`, `E-SERVER-009 AssistantNotFound` per ADR-031 Decision 2; compile-time gate — excluded from production builds when feature disabled (CAP-042 / SS-24 / ADR-031 Decisions 2+7) | Integration |
+| `spa_components::run_inspector` [PLANNED] | pregolya-console | TypeScript SPA panel (Wave 3); renders all 16 StreamEvent variants in real-time via SSE stream from pregolya-server; highlights active graph node on node_start event, clears on node_end; DOM-effectful (mutable UI state, browser DOM); VP-2.24.004-A/B (integration P1; BC-2.24.004; SS-24) | Integration |
+| `spa_components::checkpoint_panel` [PLANNED] | pregolya-console | TypeScript SPA panel (Wave 3); displays checkpoint history in step_idx monotone order; fork-from-checkpoint dispatches POST to pregolya-server run endpoint launching new run_id; DOM-effectful + network-effectful; VP-2.24.005-A/B (integration P1; BC-2.24.005; SS-24) | Integration |
+| `spa_components::hitl_panel` [PLANNED] | pregolya-console | TypeScript SPA panel (Wave 3); HITL review UI — Approve sends PreToolDecision::Allow, Deny sends Deny(reason) via SSE/WS; multiple interrupts surfaced in FIFO order; DOM-effectful + network-effectful; VP-2.24.006-A/B (integration P1; BC-2.24.006; SS-24) | Integration |
+| `spa_components::budget_panel` [PLANNED] | pregolya-console | TypeScript SPA panel (Wave 3); renders token budget gauge; handles null tokens_remaining_after without crash; emits timeline boundary marker on each compaction_event; DOM-effectful; VP-2.24.007-A/B (unit + integration P1; BC-2.24.007; SS-24) | Integration |
+| `spa_components::guardrail_panel` [PLANNED] | pregolya-console | TypeScript SPA panel (Wave 3); guardrail result feed containing Fail and Transform events; malformed guardrail_decision payload handled without crash; DOM-effectful; VP-2.24.008-A/B (integration + unit P1; BC-2.24.008; SS-24) | Integration |
 
 > **D-356 dev-console scope expansion (2026-09-06, architect).** `console::server` and `server::debug_routes` added as Effectful Shell [PLANNED] Wave 3 per ADR-031 Decisions 1 and 2.
 
-> **D-356 consistency fix (2026-09-06, architect).** Error codes in the `server::debug_routes` row corrected: `E-SERVER-023 DebugExporterNotConfigured` (minted error-taxonomy.md v1.72) and `E-SERVER-009 AssistantNotFound` (existing code). Stale codes E-SERVER-020 and E-SERVER-021 were removed; source-of-truth precedence rule 3 applies (error-taxonomy.md supersedes prose).
+> **D-356 consistency fix (2026-09-06, architect).** Error codes in the `server::debug_routes` row corrected: `E-SERVER-023 DebugExporterNotConfigured` (minted in error-taxonomy.md) and `E-SERVER-009 AssistantNotFound` (existing code). Stale codes E-SERVER-020 and E-SERVER-021 were removed; source-of-truth precedence rule 3 applies (error-taxonomy.md supersedes prose).
 
 ### Boundary Modules (Pure Logic + Effectful Dispatch)
 

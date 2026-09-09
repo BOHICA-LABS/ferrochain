@@ -327,7 +327,7 @@ input-hash: "34034c0"
 
 ## BC to Story Coverage Map
 
-> **All 140 BCs covered. Zero silent gaps.**
+> **All 149 BCs covered. Zero silent gaps.**
 > P2 BCs (BC-2.17.001, BC-2.17.002, BC-2.19.004) are explicitly assigned to stories — they are
 > in v1 scope at lower priority, not post-v1 deferrals.
 

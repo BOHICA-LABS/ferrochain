@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.006
-version: "1.6"
+version: "1.7"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -26,6 +26,7 @@ changelog:
   - "1.4 (D-356-fix/DC-25/2026-09-08, product-owner): F-PDC25-01 (HIGH): PRE-002 and PC-001(a) over-corrected 'NO SSE event' — replaced with correct terminal-frame wording per BC-2.12.007 §EC-003. Node-boundary interrupts emit no StreamEvent variant but DO terminate the SSE stream with {\"__interrupt__\": [InterruptPayload]} envelope frame; detection is via this terminal frame (primary) and/or interrupted STATUS, not STATUS-only. PC-001(a) re-labeled from 'run-status polling' to 'terminal SSE frame'. PC-002 node-boundary dialog source fixed: sources value field (arbitrary JSON scratchpad, per BC-2.05.001 TV-001) + interrupt_id hash from terminal frame — not from run-status/run-read path; field name corrected from 'scratchpad' to canonical 'value'."
   - "1.5 (D-356-fix/DC-26/2026-09-08, product-owner): F-PDC26-01 (HIGH) + F-PDC26-02 (MED): Comprehensive whole-file sweep. node_name/node-name residue removed from PRE-002 ('and node name' dropped — frame carries value+interrupt_id only), EC-004 (rewritten: shows interrupt_id+null value, explicitly NO node name), TV-005 (rewritten: canonical {\"__interrupt__\":[{value,interrupt_id}]} wire format, node-name/scratchpad field removed). §Related BCs BC-2.12.007: 'run-status polling, not SSE' replaced with terminal-frame wording (BC-2.12.007 §EC-003 + interrupted status corroboration); no-graph_interrupt clause retained. DC-02 blockquote: two SUPERSEDED-BY-DC-25 inline annotations at STATUS-only and STATUS-polling claims; historical record preserved intact."
   - "1.6 (D-356-fix/DC-27/L-288/2026-09-08, product-owner): F-L288-001 (HIGH): §Description final sentence 'subscribes to the new run stream' → 'continues monitoring the same run's SSE stream (run_id unchanged; BC-2.24.004 live monitoring)'. DC-23 corrected PC-005/EC-006/TV-002/§Related-BCs to same-run semantics but had missed the Description."
+  - "1.7 (D-356/DC-46/2026-09-09, product-owner): A-PDC46: §Architecture Anchors phantom ADR path corrected — 'ADR-018-pre-tool-call-hook.md' does not exist; corrected to 'ADR-018-per-tool-call-approval-hook.md' (the actual file). verify-arch-anchor-resolution.sh blocker cleared."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-045
   - architecture/decisions/ADR-031-developer-console-architecture.md
@@ -33,7 +34,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "e17c718"
+input-hash: "2d65ac5"
 extracted_from: null
 modified: []
 deprecated: null
@@ -132,7 +133,7 @@ continues monitoring the **same** run's SSE stream (run_id unchanged; BC-2.24.00
 ## Architecture Anchors
 
 - `architecture/decisions/ADR-031-developer-console-architecture.md` — §Traceability row "HITL console resume dialog (CAP-045 — SS-24, SS-05)"
-- `architecture/decisions/ADR-018-pre-tool-call-hook.md` — `PreToolDecision`, `ToolCallPreview`, `ActionRisk` types
+- `architecture/decisions/ADR-018-per-tool-call-approval-hook.md` — `PreToolDecision`, `ToolCallPreview`, `ActionRisk` types
 
 ## Story Anchor
 

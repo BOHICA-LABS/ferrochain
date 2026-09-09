@@ -8,7 +8,7 @@ status: accepted
 date: "2026-09-06"
 producer: architect
 timestamp: 2026-09-08T00:00:00Z
-version: "1.14"
+version: "1.15"
 phase: 1b
 traces_to: ARCH-INDEX.md
 decisions: [D356]
@@ -23,8 +23,9 @@ inputs:
   - .factory/specs/architecture/decisions/ADR-021-server-config-surface-runnable-config-configurable.md
   - .factory/specs/architecture/decisions/ADR-028-server-run-lifecycle-semantics.md
   - .factory/specs/architecture/ARCH-INDEX.md
-input-hash: "4eae509"
+input-hash: "78e89d3"
 changelog:
+  - "1.15 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog: (A) promoted 8 Decision headings from ### to ## Decision N (validator requires ^## Decision N); renamed ## Decision umbrella to ## Decisions; (B) purged 4 HS-C-001 holdout references from normative body (lines ~70/111/430/499); (D) removed 5 version pins from error-taxonomy.md (×3) and purity-boundary-map.md (×2); (E) fixed chained §Decision 2 citation in DC-07 delta note → bare Decision 2. input-hash unchanged (inputs did not change)."
   - "1.14 (D-356/DC-44/F-PDC44-01/2026-09-09, architect): F-PDC44-01 (MED) — Decision 8 GuardrailJournal substrate row: added init mechanism — graph::provenance calls checkpoint_store.init_guardrail_journal(run_id) at run start if invocation_context.guardrail_hook().is_some(); this creates the empty journal record enabling None-vs-Some([]) discrimination per {INV-004} (no hook = no record = None; hook registered + zero ingress = empty record = Some([]); hook + N entries = Some([N])). Added DC-44 delta note with exact downstream wording for PO/BA/story-writer. input-hash unchanged (inputs did not change)."
   - "1.13 (D-356/DC-41/F-PDC41-01/2026-09-09, architect): F-PDC41-01 (MED) — Decision 8 substrate table corrected per POL-21 (v1.11 changelog claimed checkpoint-backed wording was applied but body was not updated). Guardrail row rewritten: checkpoint-backed GuardrailJournal (pregolya-checkpoint, same store as BC-2.10.002 EvidenceJournal); appended sync-durable per successfully-returning evaluate() by graph::provenance; assembled at run-read time by server::run_read_handler via get_guardrail_journal(run_id). evidence_journal row updated in parallel: checkpoint-backed EvidenceJournal (pregolya-checkpoint, BC-2.10.002 {INV-003}); appended per BudgetPolicy evaluation by graph::scheduler; assembled at run-read time by server::run_read_handler. Whole-table sweep: no residual 'RunStore record' journal-storage language found. input-hash unchanged (inputs did not change)."
   - "1.12 (D-356/DC-40/F-PDC40-02/2026-09-09, architect): F-PDC40-02 (MED) — DC-33 delta note annotated with inline supersession marker: GuardrailJournal is checkpoint-backed (pregolya-checkpoint), NOT stored on the RunStore record; run-read projection assembled by server::run_read_handler at read time. DC-33 note stated 'Stored as guardrail_journal: Vec<GuardrailEntry> on the per-run RunStore record' which is the false model corrected by DC-39. Annotation follows F-PDC34-04/DC-29 sibling pattern. input-hash updated 74304de→4eae509 (input drift from DC-39 burst)."
@@ -67,8 +68,8 @@ five load-bearing findings:
 3. The pregolya server surface (SS-12) is already a superset of the adk-rust console
    backend for runs, threads, state, history, and HITL. The existing 16-variant
    `StreamEvent` grammar is richer than the reference (includes `GuardrailDecision` and
-   `CompactionEvent` variants). HS-C-001 holdout already proves an external host can
-   consume the stream.
+   `CompactionEvent` variants). External host integration testing confirms an external
+   host can consume the stream.
 4. Net-new backend additions are modest: `/debug/trace/*` span-read endpoints (plus an
    in-memory OTel span exporter) and a graph-descriptor endpoint. Everything else the
    console needs already exists in the public wire contract.
@@ -80,11 +81,11 @@ This ADR makes eight binding decisions and formally closes the WebSocket-vs-SSE 
 
 ---
 
-## Decision
+## Decisions
 
-Eight binding decisions are made in this ADR, grouped as numbered subsections.
+Eight binding decisions are made in this ADR, each as a numbered section.
 
-### Decision 1 — `pregolya-console` Crate
+## Decision 1 — `pregolya-console` Crate
 
 Add `pregolya-console` as a **new binary crate** (crate #22 in the Canonical Crate Roster,
 Wave 3, roadmap — not built in the current Phase 3 implementation cycle).
@@ -108,7 +109,7 @@ Wave 3, roadmap — not built in the current Phase 3 implementation cycle).
 **Dependency boundary:** `pregolya-console` MUST NOT import from `pregolya-graph`
 internals, executor internals, or any crate-private module. It drives the engine
 exclusively through the public pregolya-server REST+SSE contract — the same contract
-used by the HS-C-001 embedding-host holdout. This is a structural crate-level invariant,
+used by external host integrations that consume the public wire contract. This is a structural crate-level invariant,
 enforced by the `Cargo.toml` dependency graph.
 
 **Public surface (limited):**
@@ -117,7 +118,7 @@ enforced by the `Cargo.toml` dependency graph.
 
 CAP anchor: CAP-041.
 
-### Decision 2 — Debug Endpoints on `pregolya-server` (Feature-Gated)
+## Decision 2 — Debug Endpoints on `pregolya-server` (Feature-Gated)
 
 Add three endpoints to `pregolya-server` compiled in ONLY when the `debug-endpoints`
 Cargo feature is enabled. Default: **OFF**. Production deployments that do not enable
@@ -171,14 +172,14 @@ required by Purity Enforcement Rule 3; a VP may be authored for graph descriptor
 structural invariants (e.g., no self-loops, connected start node).
 
 **Error codes:**
-- `E-SERVER-023 DebugExporterNotConfigured` (SERVER, VAL — minted in error-taxonomy.md v1.72 per product-owner; no further action)
+- `E-SERVER-023 DebugExporterNotConfigured` (SERVER, VAL — minted in error-taxonomy.md per product-owner; no further action)
 - `E-SERVER-009 AssistantNotFound` (existing code — already covers this case; no new mint needed per product-owner reconciliation 2026-09-06)
 
-> **D-356 error-code reconciliation (2026-09-06, architect).** Original Decision 2 specified E-SERVER-020 for DebugExporterNotConfigured and E-SERVER-021 for AssistantNotFound. Product-owner reconciled against error-taxonomy.md: E-SERVER-020 was already assigned; correct code is E-SERVER-023 (minted in error-taxonomy.md v1.72). E-SERVER-021 is unnecessary — existing E-SERVER-009 AssistantNotFound covers this case. BCs BC-2.24.002 (cites E-SERVER-023) and BC-2.24.003 (cites E-SERVER-009) are already consistent. Source-of-truth precedence: error-taxonomy.md (PRD supplement) supersedes ADR prose per CLAUDE.md §Source-of-Truth Precedence rule 3.
+> **D-356 error-code reconciliation (2026-09-06, architect).** Original Decision 2 specified E-SERVER-020 for DebugExporterNotConfigured and E-SERVER-021 for AssistantNotFound. Product-owner reconciled against error-taxonomy.md: E-SERVER-020 was already assigned; correct code is E-SERVER-023 (minted in error-taxonomy.md). E-SERVER-021 is unnecessary — existing E-SERVER-009 AssistantNotFound covers this case. BCs BC-2.24.002 (cites E-SERVER-023) and BC-2.24.003 (cites E-SERVER-009) are already consistent. Source-of-truth precedence: error-taxonomy.md (PRD supplement) supersedes ADR prose per CLAUDE.md §Source-of-Truth Precedence rule 3.
 
 CAP anchor: CAP-042.
 
-### Decision 3 — Transport: SSE Confirmed, WebSocket Closed
+## Decision 3 — Transport: SSE Confirmed, WebSocket Closed
 
 **SSE is the sole streaming transport for the developer console.** No WebSocket endpoint
 will be added to `pregolya-server` or `pregolya-console` in this scope or as a follow-on
@@ -195,7 +196,7 @@ protocol-native transport in adk-rust changes the SSE event *envelope*, not the 
 occurrence describing the run-streaming transport must be corrected to "SSE." This is a
 product-owner action; the architect does NOT edit BCs.
 
-### Decision 4 — Web SPA Framework: Explicitly Deferred to Wave 3
+## Decision 4 — Web SPA Framework: Explicitly Deferred to Wave 3
 
 The SPA framework choice (SolidJS, Svelte, React, or other) is **deferred** to the Wave
 3 story decomposition phase. The framework choice has zero impact on `pregolya-server` or
@@ -210,7 +211,7 @@ with `rust_embed`.
 4. No SSR — pure client-side SPA.
 5. Pure REST+SSE client of the existing wire contract; no new server-side component.
 
-### Decision 5 — Purity Boundary
+## Decision 5 — Purity Boundary
 
 New modules introduced by this ADR. All are **[PLANNED]** (Wave 3). Module-decomposition.md
 and verification-coverage-matrix.md will be updated at Wave 3 planning.
@@ -224,7 +225,7 @@ and verification-coverage-matrix.md will be updated at Wave 3 planning.
 | `server::debug_span` [feature `debug-endpoints`] | pregolya-server | **Boundary** | `SpanData` data type (span_id, trace_id, start_time_ms, end_time_ms, session_id, attributes, llm_request, llm_response) + `DebugSpanSource` read-trait (`fn get_session_spans(&self, session_id: &str) -> Vec<SpanData>`, `fn get_span(&self, event_id: &str) -> Option<SpanData>`); server-owned interface — consumer-owns-interface (DIP); pregolya-server depends on NOTHING in pregolya-console; `DebugSpanExporter` (console) implements this trait and is injected at launch |
 | `graph::descriptor` [Pure Core, extracted] | pregolya-graph | **Pure Core** | `fn compile_graph_descriptor(graph: &CompiledStateGraph) -> GraphDescriptor` — deterministic, no I/O, no global state; required extraction before Phase 6 (Purity Enforcement Rule 3) |
 
-### Decision 6 — NFR and Security Deltas
+## Decision 6 — NFR and Security Deltas
 
 These are **additive exceptions** to the workspace-wide NFR catalog for the console surface:
 
@@ -255,7 +256,7 @@ These are **additive exceptions** to the workspace-wide NFR catalog for the cons
   `console::span_exporter` use `tracing::*!` per workspace convention. The `main.rs`
   CLI entrypoint may use `println!` for UX output (port announcement).
 
-### Decision 7 — DebugSpanSource Dependency Inversion (DC-10)
+## Decision 7 — DebugSpanSource Dependency Inversion (DC-10)
 
 **`SpanData` and `DebugSpanSource` are owned by `pregolya-server`** (module `server::debug_span`),
 not by `pregolya-console`. This breaks the `console→server→console` compile-dependency cycle
@@ -289,17 +290,17 @@ merely moved crates.
 
 > **D-356 adversary fix DC-02 (2026-09-07, architect).** F-PDC02-05: D6-2 security posture strengthened per adversary finding. `debug_route_key` is now MANDATORY (not opt-in) when the `debug-endpoints` Cargo feature is enabled; unauthenticated requests to `/debug/*` return `403` with `E-SERVER-004 DebugRouteUnauthorized`. Rationale: `SpanData` exposes `llm_request`/`llm_response` payloads; loopback bind alone is insufficient against the DNS-rebinding/CSRF-to-127.0.0.1 vector. `SpanData` sanitization (SEC-BOUND-001 parity — strip LLM payload fields before export) is cross-referenced to BC-2.24.002. Companion: api-surface.md §Security note updated to reflect mandatory auth.
 
-> **D-356 adversary fix DC-07 (2026-09-07, architect).** F-PDC07-01: swept `debug_api_key` → `debug_route_key` at all 5 ADR-031 sites (changelog 1.1, §Decision 2 Security interaction, D6-2, DC-02 blockquote, §Source). Canonical field is `debug_route_key: Option<String>` per BC-2.12.005 PRE-004/PC-006/PC-007/INV-001 and ADR-021 §Decision 1 — the non-canonical `debug_api_key` was introduced in DC-02. F-PDC07-02: D6-2 and §Decision 2 Security interaction now state both auth behaviors explicitly: (a) empty/absent `debug_route_key` → `E-SERVER-013 InvalidDebugRouteKey` startup-refusal before HTTP listener binds; (b) valid key + unauthenticated request → `E-SERVER-004 DebugRouteUnauthorized` 403 at runtime. Companion: api-surface.md updated in same burst (F-PDC07-01 rename + F-PDC07-02 both-behaviors). F-PDC07-03: 10 panel-VP Module cells repointed to `spa/components/<panel>` convention in all 4 VP mirrors (VP-INDEX, verification-architecture, verification-coverage-matrix, ARCH-INDEX); VP-INDEX preamble SPA convention note added; v1.44 false changelog claim corrected via new v1.48 entry.
+> **D-356 adversary fix DC-07 (2026-09-07, architect).** F-PDC07-01: swept `debug_api_key` → `debug_route_key` at all 5 ADR-031 sites (changelog 1.1, §Decision 2 Security interaction, D6-2, DC-02 blockquote, §Source). Canonical field is `debug_route_key: Option<String>` per BC-2.12.005 PRE-004/PC-006/PC-007/INV-001 and ADR-021 §Decision 1 — the non-canonical `debug_api_key` was introduced in DC-02. F-PDC07-02: D6-2 and Decision 2 Security interaction now state both auth behaviors explicitly: (a) empty/absent `debug_route_key` → `E-SERVER-013 InvalidDebugRouteKey` startup-refusal before HTTP listener binds; (b) valid key + unauthenticated request → `E-SERVER-004 DebugRouteUnauthorized` 403 at runtime. Companion: api-surface.md updated in same burst (F-PDC07-01 rename + F-PDC07-02 both-behaviors). F-PDC07-03: 10 panel-VP Module cells repointed to `spa/components/<panel>` convention in all 4 VP mirrors (VP-INDEX, verification-architecture, verification-coverage-matrix, ARCH-INDEX); VP-INDEX preamble SPA convention note added; v1.44 false changelog claim corrected via new v1.48 entry.
 
-> **D-356 adversary fix DC-10 (2026-09-07, architect).** F-PDC10-02: Cargo crate-dependency cycle broken via dependency inversion (DIP). Root cause: the prior specification placed `SpanData` and `DebugSpanExporter` in pregolya-console, but `server::debug_routes` (pregolya-server) needed to hold `Arc<DebugSpanExporter>` and serialize `SpanData` — requiring server to compile-depend on console, creating the `console→server→console` cycle. Resolution: (1) New module `server::debug_span` added to pregolya-server (Decision 7) — owns `SpanData` data type + `DebugSpanSource` read-trait (consumer-owns-interface). (2) `server::debug_routes` now reads via `Arc<dyn DebugSpanSource>` injected at launch — zero compile dep on pregolya-console. (3) `console::span_exporter` implements `DebugSpanSource` and depends on pregolya-server for the type + trait — `console→server` dep direction (already the asserted direction in dependency-graph.md). No cycle. VP-2.24.002-A/B/C/D module anchors UNCHANGED (console::ring_buffer / console::ring_buffer / server::debug_routes / console::span_exporter). Companion: purity-boundary-map.md v1.47 updated same burst; dependency-graph.md + BC-2.24.002 §Module + S-console-03 corrections routed to story-writer/PO.
+> **D-356 adversary fix DC-10 (2026-09-07, architect).** F-PDC10-02: Cargo crate-dependency cycle broken via dependency inversion (DIP). Root cause: the prior specification placed `SpanData` and `DebugSpanExporter` in pregolya-console, but `server::debug_routes` (pregolya-server) needed to hold `Arc<DebugSpanExporter>` and serialize `SpanData` — requiring server to compile-depend on console, creating the `console→server→console` cycle. Resolution: (1) New module `server::debug_span` added to pregolya-server (Decision 7) — owns `SpanData` data type + `DebugSpanSource` read-trait (consumer-owns-interface). (2) `server::debug_routes` now reads via `Arc<dyn DebugSpanSource>` injected at launch — zero compile dep on pregolya-console. (3) `console::span_exporter` implements `DebugSpanSource` and depends on pregolya-server for the type + trait — `console→server` dep direction (already the asserted direction in dependency-graph.md). No cycle. VP-2.24.002-A/B/C/D module anchors UNCHANGED (console::ring_buffer / console::ring_buffer / server::debug_routes / console::span_exporter). Companion: purity-boundary-map.md updated same burst; dependency-graph.md + BC-2.24.002 §Module + S-console-03 corrections routed to story-writer/PO.
 
 > **D-356 adversary fix DC-04 (2026-09-07, architect).** F-PDC04-04: Decision 5 purity table split into two canonical modules. `console::ring_buffer` is now the **canonical Pure Core** module hosting `RingBuffer<T>` (deterministic bounded FIFO, no I/O deps, Kani/proptest-provable; VP-2.24.002-A/B targets). `console::span_exporter` remains **Boundary** but is now explicitly defined as the OTel exporter that **DEPENDS ON** `console::ring_buffer` — it owns `Arc<Mutex<RingBuffer<SpanData>>>` and performs SEC-BOUND-001 sanitization AT insertion before delegating to the ring buffer. This ADR text is the canonical arbiter for the module split; it prevents future reversion (DC-01 introduced `console::ring_buffer` non-canonically; DC-02 collapsed both into `console::span_exporter`; DC-04 resolves by canonicalizing the split with explicit dependency direction). VP-2.24.002-A/B repointed to `console::ring_buffer` in all four VP mirrors. VP-2.24.002-D (sanitization) stays at `console::span_exporter`. BC-2.24.002 §Module wording for PO: "`pregolya-console` — two modules: `console::ring_buffer` (Pure Core, `RingBuffer<T>` data structure) and `console::span_exporter` (Boundary, `DebugSpanExporter` OTel exporter owning `Arc<Mutex<RingBuffer<SpanData>>>`).". INV-002 wording for PO: "`RingBuffer<SpanData>` storage lives in `console::ring_buffer` (Pure Core); `DebugSpanExporter` in `console::span_exporter` (Boundary) is the sole writer via `Arc<Mutex<RingBuffer<SpanData>>>`; reads served by `server::debug_routes` via the same Arc handle."
 
-> **D-356 adversary fix DC-23 (2026-09-08, architect).** F-PDC23-03: `Arc<Mutex<RingBuffer<SpanData>>>` corrected to `Arc<RwLock<RingBuffer<SpanData>>>` in Decision 5 table `console::span_exporter` row (live content only; DC-04 historical delta note above is not revised — it records what DC-04 decided at the time). Ruling: S-console-03 AC-008 explicitly states "The `RwLock` inside the concrete `DebugSpanExporter`... allows multiple concurrent readers." `Mutex` serializes ALL access and cannot satisfy this load-bearing requirement. `RwLock` permits concurrent read-guard holders (multiple simultaneous HTTP debug-route requests) plus exclusive write access during OTel span insertion. BC-2.24.002 EC-006 independently corroborates ("RwLock or similar"). The DC-04 `Mutex` pin was incorrect and is superseded by this ruling. **PO routing — BC-2.24.002 INV-002 replacement wording:** "`RingBuffer<SpanData>` storage lives in `console::ring_buffer` (Pure Core); `DebugSpanExporter` in `console::span_exporter` (Boundary) is the sole writer via `Arc<RwLock<RingBuffer<SpanData>>>` (acquires write lock at insertion; multiple concurrent readers acquire read locks at query time); reads served by `server::debug_routes` via the same Arc handle (ADR-031 Decision 5)." Companion: purity-boundary-map.md v1.48 updated same burst. Stories S-console-02 and S-console-03 already cite RwLock in AC-008/EC-005 — no story edits required for F-PDC23-03.
+> **D-356 adversary fix DC-23 (2026-09-08, architect).** F-PDC23-03: `Arc<Mutex<RingBuffer<SpanData>>>` corrected to `Arc<RwLock<RingBuffer<SpanData>>>` in Decision 5 table `console::span_exporter` row (live content only; DC-04 historical delta note above is not revised — it records what DC-04 decided at the time). Ruling: S-console-03 AC-008 explicitly states "The `RwLock` inside the concrete `DebugSpanExporter`... allows multiple concurrent readers." `Mutex` serializes ALL access and cannot satisfy this load-bearing requirement. `RwLock` permits concurrent read-guard holders (multiple simultaneous HTTP debug-route requests) plus exclusive write access during OTel span insertion. BC-2.24.002 EC-006 independently corroborates ("RwLock or similar"). The DC-04 `Mutex` pin was incorrect and is superseded by this ruling. **PO routing — BC-2.24.002 INV-002 replacement wording:** "`RingBuffer<SpanData>` storage lives in `console::ring_buffer` (Pure Core); `DebugSpanExporter` in `console::span_exporter` (Boundary) is the sole writer via `Arc<RwLock<RingBuffer<SpanData>>>` (acquires write lock at insertion; multiple concurrent readers acquire read locks at query time); reads served by `server::debug_routes` via the same Arc handle (ADR-031 Decision 5)." Companion: purity-boundary-map.md updated same burst. Stories S-console-02 and S-console-03 already cite RwLock in AC-008/EC-005 — no story edits required for F-PDC23-03.
 
 > **D-356 adversary fix DC-32 (2026-09-08, architect).** F-PDC32-02 (MED): `session_id` realizability gap. `{INV-007}` required `DebugSpanExporter` to tag every exported span with `session_id = run_id` at insertion time, and `DebugSpanSource::get_session_spans` (Decision 7) required filtering by `session_id`; however `SpanData` carried only 7 fields (`span_id`, `trace_id`, `start_time_ms`, `end_time_ms`, `attributes`, `llm_request`, `llm_response`) with no `session_id` field, and the ring buffer is a flat `RingBuffer<SpanData>` with no session-keyed index. Both the insertion invariant and the filter method were unrealizable as written. **Ruling: Option A — add typed `session_id: String` as field 5** (between `end_time_ms` and `attributes`). Option B (store as `attributes["session_id"]`) was considered and rejected: any code path that merges or overwrites the `attributes` JSON object can silently corrupt the session key, making the "no default or override path" obligation in `{INV-007}` structurally unenforceable on a mutable JSON map; a dedicated typed field eliminates the ambiguity and the fragility. The `session_id` field is set by `DebugSpanExporter` at insertion (same code site as SEC-BOUND-001 sanitization); it is a routing key (`run_id`), not user-originated sensitive data, and is NOT passed through the SEC-BOUND-001 pipeline. With field 5 present, `get_session_spans` becomes a direct typed-field equality filter (`span.session_id == session_id`) over the flat ring buffer — O(n) linear scan, no attributes map lookup, no key-collision risk. `#[non_exhaustive]` on `SpanData` (`{INV-003}`) makes this a non-breaking API extension. Decision 2 SpanData shape prose and Decision 7 Rust struct definition updated in this burst to be byte-consistent (both now list 8 fields: `span_id`, `trace_id`, `start_time_ms`, `end_time_ms`, `session_id`, `attributes`, `llm_request`, `llm_response`). **PO routing — BC-2.24.002 {PC-002} exact replacement wording:** Replace the 7-field JSON shape block and its surrounding prose with: `Each stored span has the following shape (source: adk-rust \`convert_to_span_data()\` / \`Trace.ts\`, extended with \`session_id\` for session-keyed ring-buffer filtering — DC-32):` followed by the 8-field JSON block with `"session_id": "<run_id>"` inserted as field 5 between `"end_time_ms"` and `"attributes"`. {INV-007} and {PC-003} require no wording change — they already correctly state `session_id = run_id`; only the shape definition {PC-002} was missing the field. **Story-writer routing — S-console-02 AC-004 exact replacement wording:** Replace the field list with: `span_id: String`, `trace_id: String`, `start_time_ms: u64`, `end_time_ms: u64`, `session_id: String` (the `run_id` of the run that produced this span; set by `DebugSpanExporter` at insertion per BC-2.24.002 {INV-007}), `attributes: serde_json::Map<String, Value>`, `llm_request: Option<Value>`, `llm_response: Option<Value>`. All 8 fields are present; no field is missing.
 
-### Decision 8 — Completed-Run Inspection Substrate (DC-29)
+## Decision 8 — Completed-Run Inspection Substrate (DC-29)
 
 **`StreamEvent` is transient. There is no stored-event-list endpoint and no `RunEvent` persistence substrate in v1.** The incorrect assumption in BC-2.24.004 {PRE-004}/{PC-006}, BC-2.24.007 {PRE-002}, and BC-2.24.008 {PC-004} that the server persists `StreamEvent`s per BC-2.12.006 is architecturally false. This decision defines the v1-realizable completed-run inspection substrate.
 
@@ -427,7 +428,7 @@ target the right functions and have viable proof strategies.
   formal verification of graph structural invariants (no self-loops, connected start
   node) before Phase 6.
 - The console is architecturally a client — it consumes the same public wire contract
-  as the HS-C-001 holdout, validating the contract's external-host usability.
+  as any external host integration, validating the contract's external-host usability.
 
 ### Negative / Trade-offs
 
@@ -496,9 +497,9 @@ and purity-boundary-map.md updated in the same D-356 burst.
 - **ADR-006** `decisions/ADR-006-streaming-event-taxonomy.md` — SSE transport authority
   (Decision 3 grounds).
 - **BC-2.12.005** — `SecurityConfig.debug_route_key` gate (Decision 2 security interaction).
-- **HS-C-001** (`holdout-scenarios/HS-C-001-flowloom-embedding-host-end-to-end.md`) —
-  proves an external host consuming the public wire contract works; validates the
-  console-as-client architecture posture.
+- **External host integration posture** — the console-as-client architecture (Decision 1)
+  is validated by any external host that consumes the public REST+SSE wire contract; validates
+  the console-as-client architecture posture.
 - **adk-rust corpus** (`.reference/adk-rust/adk-server/`, pinned v1.0.0 SHA a6c79b6) —
   `web_ui.rs`, `debug.rs`, `rest/mod.rs` examined directly for reference architecture
   alignment.
@@ -536,7 +537,7 @@ and purity-boundary-map.md updated in the same D-356 burst.
    - BC-2.24.007 — Budget panel compaction event rendering (CAP-046)
    - BC-2.24.008 — Guardrail security feed (CAP-047)
 2. **RESOLVED (2026-09-06):** Error codes reconciled — `E-SERVER-023 DebugExporterNotConfigured`
-   already minted in error-taxonomy.md v1.72; `E-SERVER-009 AssistantNotFound` is an existing
+   already minted in error-taxonomy.md; `E-SERVER-009 AssistantNotFound` is an existing
    code that covers this case. No new mints needed. BCs already consistent.
 3. **Audit all BC files for "WebSocket"** (Decision 3). Command:
    `grep -ri "websocket" .factory/specs/behavioral-contracts/`. Correct any occurrence

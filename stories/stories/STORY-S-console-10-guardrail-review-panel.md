@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-console-10
 epic_id: E-console
-version: "1.8"
+version: "1.9"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -17,13 +17,14 @@ changelog:
   - "1.6 (D-356/DC-35/2026-09-08, story-writer): F-PDC35-05 — BC-2.11.007 title corrected to canonical H1 in body BC table."
   - "1.7 (D-356/DC-37/2026-09-08, story-writer): F-PDC37-04 — BC-2.12.003 title in body BC table corrected to canonical H1 (was 'Run-Read Endpoint — guardrail_journal? projection (PC-013)'; BC-2.24.008 row verified correct per available context). F-PDC37-06 — DC-29 delta-note supersession marker appended per records discipline."
   - "1.8 (D-356/DC-38/2026-09-08, story-writer): F-PDC38-05 — domain→wire severity-mapping requirement added to AC-002 (live-SSE uses GuardrailSeverityWire directly) and AC-004 (completed-run path: result.Fail.severity is GuardrailSeverity domain type; panel maps to GuardrailSeverityWire 1:1 for display, per BC-2.24.008 {PC-002}). F-PDC38-06 — DC-33 delta-note GuardrailEntry shape annotated with transform_applied drop marker."
+  - "1.9 (D-356/DC-46/2026-09-09, story-writer): F-PDC46-01 — AC header citation form corrected to M4-strict bare-tag: BC-S.SS.NNN TAG (section-words removed per verify-ac-pc-trace.sh CHECK-1)."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.008.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "ad69c6d"
+input-hash: "426065e"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-06, S-1.29]
@@ -46,13 +47,13 @@ tdd_mode: strict
 > **D-356 dev-console scope expansion (2026-09-06, story-writer).** Roadmap-only.
 > Wave 3 — not built in the current Phase 3 implementation cycle.
 
-> **D-356 adversary fix DC-03 (2026-09-07, story-writer).** BC-2.24.008 v1.3 boundary field/enum correction propagated to story body per bc_array_changes_propagate_to_body_and_acs. Corrected: `boundary_type`→`boundary`, `BoundaryType`/`ProvenanceTag`→`IngressBoundary`, `RAGRetrieval`→`RagChunk`, `MemoryIngress`→`MemoryItem`, `GuardrailSeverity`→`GuardrailSeverityWire`; clarified that `Transform` carries both severity=`None` and reason=`None` (not just no reason). Affected locations: AC-002, EC-003, Forbidden Patterns. Traceability: guardrail-output subsystem postcondition PC-002 GuardrailDecision bullet (source of truth for wire field names) + ADR-006 §Decision (IngressBoundary enum definition).
+> **D-356 adversary fix DC-03 (2026-09-07, story-writer).** BC-2.24.008 boundary field/enum correction propagated to story body per bc_array_changes_propagate_to_body_and_acs. Corrected: `boundary_type`→`boundary`, `BoundaryType`/`ProvenanceTag`→`IngressBoundary`, `RAGRetrieval`→`RagChunk`, `MemoryIngress`→`MemoryItem`, `GuardrailSeverity`→`GuardrailSeverityWire`; clarified that `Transform` carries both severity=`None` and reason=`None` (not just no reason). Affected locations: AC-002, EC-003, Forbidden Patterns. Traceability: guardrail-output subsystem PC-002 GuardrailDecision bullet (source of truth for wire field names) + ADR-006 §Decision (IngressBoundary enum definition).
 
 > **D-356 adversary fix DC-29 (2026-09-08, story-writer).** F-PDC29-01 — AC-004, AC-005, Task 4, File Structure corrected for ADR-031 Decision 8. StreamEvent is transient; there is no stored StreamEvent list for completed-run reconstruction. The guardrail security feed for terminal-status runs reconstructs from the `evidence_journal?` field on the run-read endpoint. AC-005 completeness invariant updated: "SSE stream or stored event list" → "live SSE stream (in_progress) or evidence_journal reconstruction (terminal-status)". Live (in_progress) SSE path (AC-003) is unchanged. *(SUPERSEDED by DC-33: guardrail history reconstructs from `guardrail_journal?` (BC-2.11.007), not `evidence_journal?`)*
 
 > **D-356 adversary fix DC-32 (2026-09-08, story-writer).** F-PDC32-03 — Bare `ADR-030 §Decision` ordinal-gap corrected to `ADR-030 §Decision 2` in AC-004 body. ADR-030 has no bare `## Decision` heading; Decision 2 is the transience authority for StreamEvent. Fixes POL-19 ambiguous-heading citation.
 
-> **D-356 adversary fix DC-33 (2026-09-08, story-writer).** DC-33 human-authorized re-point — completed-run guardrail history substrate corrected from `evidence_journal?` to `guardrail_journal?`. `evidence_journal?` is a separate budget dimension (PolicyDecision Allow/Escalate/Deny — budget panel substrate; do not conflate). `guardrail_journal?` persists durable `GuardrailEntry` records (BC-2.11.007 GuardrailJournal persistence) and is projected on run-read by BC-2.12.003 postcondition PC-013. GuardrailEntry shape: `{ boundary: IngressBoundary, result: GuardrailResult (Pass|Fail|Transform), provenance, timestamp_ms, transform_applied? }` *(transform_applied dropped per DC-34/O-PDC34-A; canonical shape is 4 fields)*. Affected locations: AC-004, AC-005, Task 4, File Structure api.ts row.
+> **D-356 adversary fix DC-33 (2026-09-08, story-writer).** DC-33 human-authorized re-point — completed-run guardrail history substrate corrected from `evidence_journal?` to `guardrail_journal?`. `evidence_journal?` is a separate budget dimension (PolicyDecision Allow/Escalate/Deny — budget panel substrate; do not conflate). `guardrail_journal?` persists durable `GuardrailEntry` records (BC-2.11.007 GuardrailJournal persistence) and is projected on run-read by BC-2.12.003 PC-013. GuardrailEntry shape: `{ boundary: IngressBoundary, result: GuardrailResult (Pass|Fail|Transform), provenance, timestamp_ms, transform_applied? }` *(transform_applied dropped per DC-34/O-PDC34-A; canonical shape is 4 fields)*. Affected locations: AC-004, AC-005, Task 4, File Structure api.ts row.
 
 > **D-356 architect ruling DC-34 (2026-09-08, story-writer).** Three corrections applied: (1) F-PDC34-03 boundary type confirmed — `boundary: IngressBoundary` is correct (IngressBoundary is the canonical ingress-boundary-label enum with values ToolResult|RagChunk|MemoryItem; semantic = label of the ingress boundary at which the hook fired, not hook identity; no String residual). (2) O-PDC34-A `transform_applied` dropped from GuardrailEntry shape — the field does not exist; Transform content is carried in `result.Transform.new_content`, not a separate field; corrected in AC-004 and Task 4. (3) F-PDC34-06 wave wording corrected — BC-2.11.007 GuardrailJournal persistence is Wave-1 core (S-1.29, created by this burst); it is already available when this Wave-3 panel is implemented; the panel's roadmap-only status is unchanged. S-1.29 added to depends_on. Affected locations: AC-004, Task 4.
 
@@ -78,28 +79,28 @@ tdd_mode: strict
 
 ## Acceptance Criteria
 
-### AC-001 (traces to BC-2.24.008 postcondition PC-001)
+### AC-001 (traces to BC-2.24.008 PC-001)
 The security feed panel displays ONLY `guardrail_decision` StreamEvents where the outcome is `Fail` or `Transform`. Pass decisions are NOT shown — they are not streamed by the server (F-P99-01 design per ADR-006 rev-3) and the console must not attempt to fetch or display them from any source. Verified by `test_BC_2_24_008_only_fail_transform_shown()` (VP-2.24.008-A).
 
-### AC-002 (traces to BC-2.24.008 postcondition PC-002)
+### AC-002 (traces to BC-2.24.008 PC-002)
 Each entry in the security feed shows: `boundary` (an `IngressBoundary` value — one of `ToolResult`, `RagChunk`, or `MemoryItem`), severity (`GuardrailSeverityWire`: `Critical`, `High`, `Medium`, or `Low`) when present, and outcome (`Fail { reason }` or `Transform`). For `Fail` outcomes, the `reason` string and `GuardrailSeverityWire` severity are both `Some` and shown. For `Transform` outcomes, both severity and reason are `None` — no severity and no reason field is shown. For the **live-SSE path** (in-progress runs), `guardrail_decision` events already carry `GuardrailSeverityWire` directly — no mapping step is required. For the **completed-run path** (AC-004), the stored `GuardrailEntry` carries the DOMAIN type `GuardrailSeverity`; the panel maps `GuardrailSeverity → GuardrailSeverityWire` (isomorphic 1:1: Critical/High/Medium/Low) before display, per BC-2.24.008 {PC-002}. Verified by `test_BC_2_24_008_entry_fields_fail()` and `test_BC_2_24_008_entry_fields_transform()`.
 
-### AC-003 (traces to BC-2.24.008 postcondition PC-003)
+### AC-003 (traces to BC-2.24.008 PC-003)
 For in-progress runs, new `guardrail_decision` events are appended to the security feed as they arrive via the shared `EventSource`. The shared SSE subscription from S-console-06 is reused — there is ONE `EventSource` per run. Verified by `test_BC_2_24_008_realtime_append_shared_sse()`.
 
-### AC-004 (traces to BC-2.24.008 postcondition PC-004; BC-2.11.007 GuardrailJournal persistence; BC-2.12.003 postcondition PC-013)
-For completed (terminal-status) runs, the security feed reconstructs from the `guardrail_journal?` field returned by the run-read endpoint (`GET /threads/{thread_id}/runs/{run_id}`) — persisted per BC-2.11.007 (GuardrailJournal persistence) and projected by BC-2.12.003 postcondition PC-013. Each `GuardrailEntry` in the journal carries: `boundary` (IngressBoundary), `result` (GuardrailResult: Pass|Fail|Transform — for Transform, new content is in `result.Transform.new_content`), `provenance`, and `timestamp_ms`. The console filters and displays entries where `result` is `Fail` or `Transform`. **Severity mapping (completed-run path):** `result.Fail.severity` is the DOMAIN type `GuardrailSeverity`; the panel maps `GuardrailSeverity → GuardrailSeverityWire` (isomorphic 1:1: Critical/High/Medium/Low) before display, per BC-2.24.008 {PC-002}. No `EventSource` is opened for completed runs. There is NO stored StreamEvent list — StreamEvent is transient (ADR-030 §Decision 2; ADR-031 Decision 8). **NOTE:** `evidence_journal?` is a separate budget dimension (PolicyDecision Allow/Escalate/Deny — budget panel substrate); do not conflate with `guardrail_journal?`. **Roadmap (Wave 3):** This step depends on BC-2.11.007 GuardrailJournal persistence — built in Wave 1 (S-1.29) and available by the time this Wave-3 panel is implemented. Verified by `test_BC_2_24_008_completed_run_reconstruction()`.
+### AC-004 (traces to BC-2.24.008 PC-004; BC-2.11.007 GuardrailJournal persistence; BC-2.12.003 PC-013)
+For completed (terminal-status) runs, the security feed reconstructs from the `guardrail_journal?` field returned by the run-read endpoint (`GET /threads/{thread_id}/runs/{run_id}`) — persisted per BC-2.11.007 (GuardrailJournal persistence) and projected by BC-2.12.003 PC-013. Each `GuardrailEntry` in the journal carries: `boundary` (IngressBoundary), `result` (GuardrailResult: Pass|Fail|Transform — for Transform, new content is in `result.Transform.new_content`), `provenance`, and `timestamp_ms`. The console filters and displays entries where `result` is `Fail` or `Transform`. **Severity mapping (completed-run path):** `result.Fail.severity` is the DOMAIN type `GuardrailSeverity`; the panel maps `GuardrailSeverity → GuardrailSeverityWire` (isomorphic 1:1: Critical/High/Medium/Low) before display, per BC-2.24.008 {PC-002}. No `EventSource` is opened for completed runs. There is NO stored StreamEvent list — StreamEvent is transient (ADR-030 §Decision 2; ADR-031 Decision 8). **NOTE:** `evidence_journal?` is a separate budget dimension (PolicyDecision Allow/Escalate/Deny — budget panel substrate); do not conflate with `guardrail_journal?`. **Roadmap (Wave 3):** This step depends on BC-2.11.007 GuardrailJournal persistence — built in Wave 1 (S-1.29) and available by the time this Wave-3 panel is implemented. Verified by `test_BC_2_24_008_completed_run_reconstruction()`.
 
-### AC-005 (traces to BC-2.24.008 invariant INV-002)
+### AC-005 (traces to BC-2.24.008 INV-002)
 Every `guardrail_decision` event with a Fail or Transform outcome that appears in the live SSE stream (in_progress runs) or in the `guardrail_journal` reconstruction (terminal-status runs) MUST appear in the security feed. No silent omission. The feed is a complete audit log of all qualifying events. Filtering is limited to outcome type (Fail/Transform only) — no other filtering that could drop events is permitted. Verified by `test_BC_2_24_008_complete_audit_no_omission()`.
 
-### AC-006 (traces to BC-2.24.008 edge case EC-001)
+### AC-006 (traces to BC-2.24.008 EC-001)
 When a run has only Pass guardrail decisions (none streamed per F-P99-01 design), the security feed renders empty state: "no Fail or Transform decisions in this run". No error state; no crash. Verified by `test_BC_2_24_008_empty_state_all_pass()`.
 
-### AC-007 (traces to BC-2.24.008 invariant INV-004)
+### AC-007 (traces to BC-2.24.008 INV-004)
 When a `guardrail_decision` event payload fails to parse (malformed JSON), a placeholder row is shown in the feed: "malformed guardrail event [raw JSON]". The remaining entries in the feed are unaffected. No JavaScript error is thrown. Verified by `test_BC_2_24_008_malformed_payload_placeholder()` (VP-2.24.008-B).
 
-### AC-008 (traces to BC-2.24.008 edge case EC-005)
+### AC-008 (traces to BC-2.24.008 EC-005)
 High-volume runs with many `guardrail_decision` Fail events (e.g., 50 events for the Domain A SOC analyst scenario) render all entries in the security feed. Virtual scrolling or pagination may be applied for display performance, but completeness is the correctness requirement — all 50 events appear when scrolling through the full list. Verified by `test_BC_2_24_008_high_volume_all_entries_present()`.
 
 ## Architecture Mapping

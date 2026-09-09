@@ -174,7 +174,7 @@ changelog:
 
 # BC-INDEX: pregolya Behavioral Contracts
 
-> **149 BCs total — 52 P0 / 94 P1 / 3 P2 | 11 Red Gate | 19 VP Seed | 42 VPs registered**
+> **149 BCs total — 52 P0 / 94 P1 / 3 P2 | 11 Red Gate | 18 VP Seed | 42 VPs registered**
 >
 > Subsystem IDs: SS-01 through SS-17 assigned by architect at Phase 1 Step D (2026-07-14).
 > SS-18 through SS-22 added D21 ecosystem-parity expansion (2026-07-20).
