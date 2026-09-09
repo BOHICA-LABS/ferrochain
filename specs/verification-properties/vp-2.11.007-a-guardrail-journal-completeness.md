@@ -3,7 +3,7 @@ document_type: verification-property
 level: L4
 id: VP-2.11.007-A
 title: "GuardrailJournal Completeness — Every evaluate() Call Produces an Entry"
-version: "1.1"
+version: "1.2"
 status: draft
 producer: architect
 timestamp: 2026-09-08T00:00:00Z
@@ -40,6 +40,7 @@ priority: P0
 harness_fn: "n/a (integration test)"
 file: vp-2.11.007-a-guardrail-journal-completeness.md
 changelog:
+  - "1.2 (D-356/DC-35/F-PDC35-01/F-PDC35-03/F-PDC35-04/2026-09-08, architect): F-PDC35-01 — no-hooks harness case rewritten: guardrail_journal is None (not Some([])) when no GuardrailHook is registered (BC-2.11.007 {INV-004}/{EC-004}/TV-002); separate case added for hooks-registered-zero-ingress → Some([]). F-PDC35-03 — test vehicle repointed from crates/pregolya-server/tests to crates/pregolya-graph/tests (VP module = graph::provenance / pregolya-graph); ServerTestFixture → GraphTestFixture. F-PDC35-04 — transform_applied residue removed from §Source Contract field list (canonical 4-field shape: boundary/result/provenance/timestamp_ms) and from §Proof Method Coverage cell."
   - "1.1 (D-356/DC-34/F-PDC34-01/F-PDC34-02/F-PDC34-03/O-PDC34-A/2026-09-08, architect): F-PDC34-01 — bc_anchor corrected {INV-003}→{INV-002} ({INV-002} is Completeness/DI-012; {INV-003} is Separation from EvidenceJournal — not what this VP tests). F-PDC34-02 — module repointed server::guardrail_journal→graph::provenance (crate: pregolya-graph); graph::provenance is the canonical GuardrailHook dispatch and journal-append site per BC-2.11.007 §Architecture Anchors. server::guardrail_journal was a phantom module not in module-decomposition.md. F-PDC34-03 — boundary semantic corrected throughout: IngressBoundary (existing canonical type; BC-2.06.001 §Postconditions PC-002; values ToolResult | RagChunk | MemoryItem) replaces String hook-identity label. O-PDC34-A — transform_applied field dropped from GuardrailEntry shape; result.Transform.new_content is authoritative."
   - "1.0 (D-356/DC-33/2026-09-08, architect): Minted. GuardrailJournal completeness integration P0. BC-2.11.007 {PC-001}/{INV-003}; DI-012; server::guardrail_journal; pregolya-server. Every GuardrailHook::evaluate() call for a run produces exactly one GuardrailEntry in the run's guardrail_journal, preserving call order. Human-authorized DC-33 core-domain extension; BC-2.11.007 authored by PO; entities-server.md §GuardrailJournal entity defined by BA."
 ---
@@ -66,8 +67,9 @@ is absent — `result.Transform.new_content` is the authoritative content payloa
   entry — this is the DI-012 completeness invariant applied to the persistence layer.
 - BC-2.12.003 {PC-013}: The run-read endpoint returns `guardrail_journal?` as part of
   the completed run response.
-- entities-server.md §GuardrailJournal: `GuardrailEntry` type definition — boundary,
-  result, provenance, timestamp_ms, transform_applied fields.
+- entities-server.md §GuardrailJournal: `GuardrailEntry` type definition — exactly 4 fields:
+  `boundary: IngressBoundary`, `result: GuardrailResult`, `provenance: ProvenanceTag`,
+  `timestamp_ms: u64`. NOTE: `transform_applied` is not a field (O-PDC34-A ruling).
 - DI-012: "Guardrail Coverage at Ingress Boundaries" — all evaluate() calls must produce
   observable, durable records for security audit (CAP-047).
 
@@ -75,7 +77,7 @@ is absent — `result.Transform.new_content` is the authoritative content payloa
 
 | Method | Tool | Bounded? | Coverage |
 |--------|------|----------|----------|
-| Integration test | integration (pregolya-server test harness) | Yes — N=3 hooks, deterministic fixture | Full Pass/Fail/Transform result variants; ordering; transform_applied semantics; zero-hook edge case |
+| Integration test | integration (pregolya-graph test harness) | Yes — N=3 hooks, deterministic fixture | Full Pass/Fail/Transform result variants; ordering; zero-hook None case; hooks-registered zero-ingress Some([]) case |
 
 ## Formal Invariant
 
@@ -102,47 +104,40 @@ is absent — `result.Transform.new_content` is the authoritative content payloa
 ## Proof Harness Skeleton
 
 ```rust
-// File: crates/pregolya-server/tests/guardrail_journal_completeness.rs
+// File: crates/pregolya-graph/tests/guardrail_journal_completeness.rs
 // Phase 3 integration test — requires live RunStore (SQLite in-process)
+// VP module: graph::provenance (pregolya-graph)
 
 #[tokio::test]
 async fn guardrail_journal_completeness_all_variants() {
-    // 1. Stand up pregolya-server test fixture with in-process SQLite RunStore
-    let fixture = ServerTestFixture::new().await;
+    // 1. Stand up pregolya-graph test fixture with in-process SQLite RunStore
+    let fixture = GraphTestFixture::new().await;
 
     // 2. Register 3 GuardrailHooks with deterministic evaluate() results
-    fixture.register_guardrail_hook("hook_a", GuardrailResult::Pass, None);
-    fixture.register_guardrail_hook("hook_b", GuardrailResult::Fail, None);
-    fixture.register_guardrail_hook(
-        "hook_c",
-        GuardrailResult::Transform,
-        Some("pii_redacted".to_string()),
-    );
+    fixture.register_guardrail_hook("hook_a", GuardrailResult::Pass);
+    fixture.register_guardrail_hook("hook_b", GuardrailResult::Fail);
+    fixture.register_guardrail_hook("hook_c", GuardrailResult::Transform);
 
     // 3. Execute a run (triggers evaluate() at each ingress boundary)
     let thread_id = fixture.create_thread().await;
     let run_id = fixture.run_to_completion(thread_id, "test input").await;
 
-    // 4. Fetch completed run via GET /threads/{id}/runs/{run_id}
+    // 4. Fetch completed run
     let run = fixture.get_run(thread_id, run_id).await;
 
     // 5. Assert completeness invariant (BC-2.11.007 {INV-002})
-    let journal = run.guardrail_journal.expect("guardrail_journal must be Some for terminal run");
+    // Hooks registered → guardrail_journal is Some(non-empty)
+    let journal = run.guardrail_journal.expect("guardrail_journal must be Some when hooks registered");
     assert_eq!(journal.len(), 3, "one entry per evaluate() call");
 
     // 6. Assert ordering and field correctness (BC-2.11.007 {PC-001})
-    // NOTE: boundary is IngressBoundary enum (F-PDC34-03); exact variant depends on
-    // which ingress boundary the fixture triggers (ToolResult | RagChunk | MemoryItem)
+    // boundary is IngressBoundary (ToolResult | RagChunk | MemoryItem per BC-2.06.001 §PC-002)
     assert_eq!(journal[0].result, GuardrailResult::Pass);
-    // NOTE: transform_applied absent (O-PDC34-A); Transform payload is result.Transform.new_content
-
     assert_eq!(journal[1].result, GuardrailResult::Fail);
-
     assert!(matches!(journal[2].result, GuardrailResult::Transform { .. }));
-    // Verify new_content payload is present in Transform variant:
+    // Transform payload is result.Transform.new_content: IngressContent (O-PDC34-A)
     if let GuardrailResult::Transform { ref new_content } = journal[2].result {
-        // new_content is IngressContent — exact assertion per Phase 3 fixture
-        let _ = new_content;
+        let _ = new_content; // exact assertion per Phase 3 fixture
     }
 
     // 7. Assert monotone timestamp_ms
@@ -151,21 +146,42 @@ async fn guardrail_journal_completeness_all_variants() {
 }
 
 #[tokio::test]
-async fn guardrail_journal_no_hooks_yields_empty_journal() {
-    // Edge case: run with zero registered hooks → guardrail_journal is Some([])
-    let fixture = ServerTestFixture::new().await;
+async fn guardrail_journal_none_when_no_hooks_registered() {
+    // BC-2.11.007 {INV-004}/{EC-004}/TV-002:
+    // NO GuardrailHook registered → journal never initialized →
+    // guardrail_journal is None (null/omitted) on the run-read response.
+    // This is DISTINCT from Some([]) — None means the journal was never opened.
+    let fixture = GraphTestFixture::new().await;
+    // Do NOT register any hooks
     let thread_id = fixture.create_thread().await;
     let run_id = fixture.run_to_completion(thread_id, "test input").await;
     let run = fixture.get_run(thread_id, run_id).await;
-    let journal = run.guardrail_journal.expect("guardrail_journal must be present");
-    assert!(journal.is_empty(), "zero hooks → zero entries");
+    assert!(
+        run.guardrail_journal.is_none(),
+        "no hooks registered → guardrail_journal must be None, not Some([])"
+    );
+}
+
+#[tokio::test]
+async fn guardrail_journal_some_empty_when_hooks_registered_zero_ingress() {
+    // BC-2.11.007 {INV-002}: hooks registered but run reaches no ingress boundary →
+    // journal initialized but empty → guardrail_journal is Some([]).
+    // DISTINCT from the no-hook case (None).
+    let fixture = GraphTestFixture::new().await;
+    fixture.register_guardrail_hook("hook_a", GuardrailResult::Pass);
+    // Use a fixture path that triggers zero ingress boundaries
+    let thread_id = fixture.create_thread().await;
+    let run_id = fixture.run_no_ingress_boundaries(thread_id).await;
+    let run = fixture.get_run(thread_id, run_id).await;
+    let journal = run.guardrail_journal.expect("hooks registered → guardrail_journal must be Some");
+    assert!(journal.is_empty(), "hooks registered + zero ingress → Some([])");
 }
 ```
 
-Note: `ServerTestFixture` is the standard pregolya-server integration-test harness
-(mirrors the pattern used for VP-004/VP-005 MCP integration tests). The harness
-wires `Arc<dyn GuardrailHook>` instances directly into the server constructor per
-the Arc-DI wiring rule (CLAUDE.md).
+Note: `GraphTestFixture` is the pregolya-graph integration-test harness. It wires
+`Arc<dyn GuardrailHook>` instances directly into the graph::provenance constructor
+per the Arc-DI wiring rule (CLAUDE.md). The fixture is the graph-layer analogue of
+the VP-004/VP-005 MCP integration harness pattern.
 
 ## BC Traceability
 
@@ -191,8 +207,8 @@ budget PolicyDecision outcomes only and does not conflict.
 |--------|-----------|-------|
 | Side effects | Yes — RunStore SQLite write/read cycle | Integration test required (proptest insufficient) |
 | Hook count | Bounded (N=3 in fixture; deterministic evaluate() results) | Deterministic — no symbolic exploration needed |
-| Runtime availability | pregolya-server + SQLite backend at Phase 3 | Ships with SS-11 wave |
-| Reference pattern | VP-004/VP-005 MCP integration tests (BC-2.09.004/005) | Same ServerTestFixture structure |
+| Runtime availability | pregolya-graph + SQLite backend at Phase 3 | Ships with SS-11 wave |
+| Reference pattern | VP-004/VP-005 MCP integration tests (BC-2.09.004/005) | Same GraphTestFixture structural pattern |
 | Estimated CI time | ~2 min per run | SQLite in-process; no external service |
 | Confidence | HIGH | Property is purely count equality over a deterministic fixture |
 
@@ -203,7 +219,7 @@ budget PolicyDecision outcomes only and does not conflict.
 | BC-2.11.007 active | SATISFIED (DC-33) | BC authored by PO |
 | entities-server.md §GuardrailJournal defined | SATISFIED (DC-33) | BA added entity |
 | BC-2.12.003 {PC-013} includes guardrail_journal? | SATISFIED (DC-33) | PO updated BC |
-| ServerTestFixture wires GuardrailHook via Arc-DI | Phase 3 obligation | Implementer |
+| GraphTestFixture wires GuardrailHook via Arc-DI | Phase 3 obligation | Implementer |
 | Test compiles against live BC-2.11.007 API | Phase 3 Red Gate | Pre-delivery |
 
 ## Lifecycle
@@ -216,3 +232,5 @@ budget PolicyDecision outcomes only and does not conflict.
 | Phase 6 | VP status reviewed; Kani supplement considered if pure-core extract is feasible |
 
 > **D-356 adversary fix DC-34 (2026-09-08, architect).** F-PDC34-01: bc_anchor corrected `{INV-003}` → `{INV-002}` throughout (frontmatter, §Source Contract, §Formal Invariant footer, §BC Traceability) — {INV-002} is BC-2.11.007 Completeness/DI-012; {INV-003} is Separation from EvidenceJournal. F-PDC34-02: module repointed `server::guardrail_journal` → `graph::provenance`, crate `pregolya-server` → `pregolya-graph` — graph::provenance is the canonical GuardrailHook dispatch and journal-append site per BC-2.11.007 §Architecture Anchors; server::guardrail_journal was a phantom module not in module-decomposition.md. F-PDC34-03: §Property Statement and §Proof Harness updated — `boundary` corrected to `IngressBoundary` (existing canonical enum per BC-2.06.001 §Postconditions PC-002). O-PDC34-A: `transform_applied` removed from §Property Statement, §Formal Invariant, and §Proof Harness — `result.Transform.new_content: IngressContent` is authoritative; routing for PO/BA/story-writer in ADR-031 §Decision 8 DC-34 delta note.
+
+> **D-356 adversary fix DC-35 (2026-09-08, architect).** F-PDC35-01 (HIGH): no-hooks harness case rewritten — `guardrail_journal_no_hooks_yields_empty_journal` (DC-33/DC-34) replaced with two distinct cases: (1) `guardrail_journal_none_when_no_hooks_registered` asserts `guardrail_journal.is_none()` (BC-2.11.007 {INV-004}/{EC-004}/TV-002 — no hook registered means journal never initialized; `None` is not `Some([])`); (2) `guardrail_journal_some_empty_when_hooks_registered_zero_ingress` asserts `Some([])` (hooks registered but zero ingress boundaries reached). F-PDC35-03 (MED): test vehicle repointed — file path `crates/pregolya-server/tests/...` → `crates/pregolya-graph/tests/guardrail_journal_completeness.rs`; `ServerTestFixture` → `GraphTestFixture`; §Proof Method Coverage and §Feasibility Assessment updated to pregolya-graph harness. F-PDC35-04 (MED): `transform_applied` residue removed — §Source Contract field list corrected to canonical 4-field shape (boundary/result/provenance/timestamp_ms; NOTE no transform_applied per O-PDC34-A); §Proof Method Coverage cell `transform_applied semantics` removed.

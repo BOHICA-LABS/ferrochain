@@ -1,6 +1,6 @@
 ---
 document_type: dependency-graph
-version: "2.3"
+version: "2.4"
 status: active
 producer: story-writer
 timestamp: 2026-09-07T00:00:00Z
@@ -14,10 +14,12 @@ traces_to: .factory/stories/STORY-INDEX.md
 > No story has a circular dependency.
 >
 > **D-356 delta (2026-09-06):** 10 Wave-3 roadmap stories (S-console-01..10) added.
-> Zero-cycle finding confirmed for the augmented graph: S-console stories have no
-> edges into Wave-1/2 nodes, and Wave-1/2 nodes have no `depends_on` edges into
-> S-console nodes. The S-console sub-graph is itself a DAG (topological sub-waves A–F
-> below). The full augmented graph remains a DAG.
+> Zero-cycle finding confirmed for the augmented graph.
+>
+> **D-356/DC-35 delta (2026-09-08, story-writer):** S-1.29 (GuardrailJournal persistence,
+> Wave 1) added. S-console-10 gains a cross-wave `depends_on` edge to S-1.29 (Wave-1 → Wave-3;
+> topologically valid: Wave 3 is dispatched after Wave 1 completes). All other S-console
+> stories retain no edges into Wave-1/2 nodes. The augmented graph remains a DAG.
 
 ## Inter-Story Dependency DAG
 
@@ -116,7 +118,11 @@ S-1.18 (Budget/EvidenceJournal)
 
 S-1.19 (GuardrailHook)
   depends_on: [S-1.14, S-1.04]
-  blocks: S-2.02, S-2.10
+  blocks: S-2.02, S-2.10, S-1.29
+
+S-1.29 (GuardrailJournal Persistence)
+  depends_on: [S-1.19, S-1.26]
+  blocks: S-console-10
 
 S-1.20 (HITL Core)
   depends_on: [S-1.16, S-1.17, S-1.10]
@@ -152,7 +158,7 @@ S-1.22 (Bash + Grep Tools)
 ```
 S-1.26 (Thread/Assistant/Run CRUD)
   depends_on: [S-1.16, S-1.10, S-1.04]
-  blocks: S-1.27
+  blocks: S-1.27, S-1.29
 
 S-1.27 (CronSchedule + SecurityConfig)
   depends_on: [S-1.26]
@@ -284,8 +290,9 @@ S-console-09 (token budget panel — compaction markers, EvidenceJournal)
   blocks: []
 
 S-console-10 (guardrail review panel — Fail/Transform, F-P99-01 DI-012)
-  depends_on: [S-console-06]
+  depends_on: [S-console-06, S-1.29]
   blocks: []
+  NOTE: S-1.29 is a cross-wave dep (Wave-1 → Wave-3); topologically valid — Wave 1 completes before Wave 3 begins.
 ```
 
 ### Crate-Level Dependency Edges
@@ -346,7 +353,7 @@ S-6.01 (Kani + cargo-fuzz)
 | 1g | S-1.13, S-1.18 | S-1.13 dep S-1.17 (1f)+S-1.12+S-1.14 (1d); S-1.18 dep S-1.17 (1f)+S-1.14+S-1.10 (1d); concurrent — disjoint scheduler.rs regions per coordination note |
 | 1h | S-1.16 | Dep S-1.13+S-1.18 (1g)+S-1.17 (1f)+S-1.15 (1e)+S-1.14+S-1.10 (1d) |
 | 1i | S-1.20, S-1.26 | S-1.20 dep S-1.16 (1h)+S-1.17 (1f)+S-1.10 (1d); S-1.26 dep S-1.16 (1h)+S-1.10 (1d) |
-| 1j | S-1.23, S-1.27 | S-1.23 dep S-1.20 (1i)+S-1.17 (1f); S-1.27 dep S-1.26 (1i) |
+| 1j | S-1.23, S-1.27, S-1.29 | S-1.23 dep S-1.20 (1i)+S-1.17 (1f); S-1.27 dep S-1.26 (1i); S-1.29 dep S-1.19 (1e)+S-1.26 (1i) — all batch-1i deps satisfied |
 | 1k | S-1.24 | Dep S-1.23 (1j)+S-1.17 (1f)+S-1.18 (1g) |
 | 1l | S-1.25 | Dep S-1.10 (1d)+S-1.18 (1g)+S-1.24 (1k) |
 
@@ -378,7 +385,7 @@ S-6.01 (Kani + cargo-fuzz)
 | 3B | S-console-03, S-console-05 | S-console-03 dep S-console-01 (3A) — creates server::debug_span + debug routes (dep-inversion, ADR-031 Decision 7); S-console-05 dep S-console-01 (3A) — SPA pipeline; no intra-batch edges |
 | 3C | S-console-02, S-console-04, S-console-07 | S-console-02 dep S-console-01 (3A) + S-console-03 (3B) — DebugSpanExporter imports SpanData + implements DebugSpanSource; S-console-04 dep S-console-03 (3B); S-console-07 dep S-console-05 (3B); no intra-batch edges |
 | 3D | S-console-06 | Dep S-console-03 (3B) + S-console-04 (3C) + S-console-05 (3B); all satisfied by 3B–3C |
-| 3E | S-console-08, S-console-09, S-console-10 | All dep S-console-06 (3D); no intra-batch edges |
+| 3E | S-console-08, S-console-09, S-console-10 | S-console-08/09 dep S-console-06 (3D); S-console-10 dep S-console-06 (3D) + S-1.29 (Wave-1 batch 1j — satisfied before Wave 3 begins); no intra-batch edges |
 
 ---
 
@@ -386,7 +393,7 @@ S-6.01 (Kani + cargo-fuzz)
 
 ### BC to Stories Matrix (abbreviated — full map in STORY-INDEX.md)
 
-> Full coverage: 140 BCs, 41 stories, 0 gaps. (Preamble census update to 140 / 42 total stories pending state-manager STATE.md sync.)
+> Full coverage: 141 BCs, 42 stories, 0 gaps. (BC-2.11.007 added via S-1.29; census update to 141 BCs / 53 stories with Wave-3 roadmap pending state-manager STATE.md sync.)
 
 | Subsystem | BC Range | Stories | Coverage |
 |-----------|----------|---------|---------|
@@ -400,7 +407,7 @@ S-6.01 (Kani + cargo-fuzz)
 | SS-08 Providers | BC-2.08.001–014 | S-1.07, S-2.06, S-2.07, S-2.08 | Full |
 | SS-09 MCP | BC-2.09.001–008 | S-2.10, S-2.11 | Full |
 | SS-10 Budget | BC-2.10.001–006 | S-1.18, S-1.25 | Full |
-| SS-11 Guardrail | BC-2.11.001–006 | S-1.19 | Full |
+| SS-11 Guardrail | BC-2.11.001–007 | S-1.19, S-1.29 | Full |
 | SS-12 Server | BC-2.12.001–007 | S-1.26, S-1.27 | Full |
 | SS-13 Sandbox | BC-2.13.001–007 | S-1.09 | Full |
 | SS-14 Error Taxonomy | BC-2.14.001–006 | S-1.01, S-1.02 | Full |
@@ -446,6 +453,7 @@ S-6.01 (Kani + cargo-fuzz)
 | VP-019 | BC-2.04.011 {INV-003} | integration | 6 | P1 | S-2.12 | — |
 | VP-020 | BC-2.02.009 {INV-001}+{INV-002} | proptest | 3 | P1 | S-1.28 | — |
 | VP-006-B | BC-2.18.004 {PC-005} | proptest | 3 | P1 | S-2.05 | — |
+| VP-2.11.007-A | BC-2.11.007 | integration | 3 | P0 | S-1.29 | — |
 | VP-2.24.001-A | BC-2.24.001 | unit | 3 | P1 | S-console-01 | — |
 | VP-2.24.001-B | BC-2.24.001 | unit | 3 | P1 | S-console-01 | — |
 | VP-2.24.001-C | BC-2.24.001 | compile-fail | 3 | P1 | S-console-01 | — |
@@ -562,6 +570,7 @@ S-6.01 (Kani + cargo-fuzz)
 
 ## Changelog
 
+- **2.4 (D-356/DC-35/2026-09-08, story-writer):** F-PDC35-02 — S-1.29 (GuardrailJournal Persistence, 5 pts, Wave-1, SS-11) propagated. DAG edges added: S-1.19 blocks +S-1.29; S-1.26 blocks +S-1.29; S-console-10 depends_on +S-1.29 (cross-wave Wave-1→Wave-3 edge; valid). Topological batch 1j extended: +S-1.29 (deps S-1.19 from 1e + S-1.26 from 1i — both satisfied). Wave-3 sub-batch 3E rationale updated: S-console-10 cross-wave dep noted. VP-2.11.007-A row added to VP-to-Stories Matrix (integration, Phase 3, P0, anchor S-1.29). BC-to-Stories Matrix SS-11 updated: BC range 001–006 → 001–007; stories S-1.19 → S-1.19, S-1.29. Census updated: 141 BCs, 42 Wave-1/2/6 stories. Acyclicity re-confirmed: S-1.29 depends on Wave-1 upstream nodes only; S-console-10 Wave-3 → Wave-1 direction is topologically valid; no cycle introduced.
 - **2.3 (D-356/DC-12/2026-09-07):** F-PDC12-01 — S-console-01 `blocks` updated: `[S-console-02, S-console-05]` → `[S-console-02, S-console-03, S-console-05]`. Invariant: `blocks` is exact inverse of `depends_on`; S-console-03 declares `depends_on [S-console-01]`. Adding the reverse-edge of an existing forward-edge introduces no cycle; S-console-01 remains the root node with `depends_on []`. Acyclicity re-confirmed: topological sort 3A→3B→3C→3D→3E is a DAG.
 - **2.2 (D-356/DC-11/2026-09-07):** F-PDC11-01+F-PDC11-02 — dependency-edge flip (ADR-031 Decision 7): S-console-03 (creates server::debug_span) now `depends_on [S-console-01]`, `blocks [S-console-02, S-console-04, S-console-06]`; S-console-02 (DebugSpanExporter) now `depends_on [S-console-01, S-console-03]`, `blocks []`. Wave-3 sub-waves updated: 3A-3F → 3A-3E (S-console-04 and S-console-07 move to 3C; S-console-06 to 3D; S-console-08/09/10 to 3E). Acyclicity re-confirmed: 3A→3B→3C→3D→3E is a DAG; no back-edge.
 - **2.1 (D-356/DC-10/2026-09-07):** F-PDC10-02 — Crate-Level Dependency Edges acyclicity confirmation updated: `console→server` no-cycle explanation replaced with dependency-inversion rationale (ADR-031 Decision 7; SpanData + DebugSpanSource trait server-owned; server::debug_routes reads Arc<dyn DebugSpanSource>, zero compile dep on console). F-PDC10-04 — VP-to-Stories delta note DC-06: version pin `(v1.47)` removed from "VP-INDEX §VP Catalog" citation per TD-VSDD-091/POL-12.

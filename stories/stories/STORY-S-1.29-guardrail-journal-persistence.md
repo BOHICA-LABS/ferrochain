@@ -3,24 +3,25 @@ document_type: story
 level: ops
 story_id: S-1.29
 epic_id: E-11
-version: "1.0"
+version: "1.1"
 status: draft
 producer: story-writer
 timestamp: 2026-09-08T00:00:00Z
 changelog:
   - "1.0 (D-356/DC-34/2026-09-08, story-writer): Initial story — GuardrailJournal persistence (BC-2.11.007); Wave-1 companion to S-1.19 per DC-34 architect ruling. PO must set BC-2.11.007 §Story Anchor to S-1.29."
+  - "1.1 (D-356/DC-35/2026-09-08, story-writer): F-PDC35-01 — EC-001 corrected: no-hook ⇒ guardrail_journal? None (not Some([])) per BC-2.11.007 INV-004/EC-004/TV-002; AC-003 conditioned on hook-registered; test for no-hook case added. F-PDC35-03 — VP-2.11.007-A added to verification_properties (S-1.29 is anchor story); test file renamed guardrail_journal.rs → guardrail_journal_completeness.rs (canonical VP harness path). F-PDC35-05 — BC-2.11.007 title corrected to canonical H1 in body BC table."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-11/BC-2.11.007.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "008f118"
+input-hash: "9291c23"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-1.19, S-1.26]
 blocks: [S-console-10]
 behavioral_contracts: [BC-2.11.007]
-verification_properties: []
+verification_properties: [VP-2.11.007-A]
 priority: P0
 cycle: v1.0.0-greenfield
 wave: 1
@@ -38,6 +39,8 @@ tdd_mode: strict
 
 > **D-356/DC-34 (2026-09-08, story-writer).** Wave-1 companion story to S-1.19, created per architect ruling DC-34. BC-2.11.007 (GuardrailJournal persistence) previously had an `S-TBD` story anchor. This story closes that gap. S-console-10 (Wave-3 guardrail panel) depends on this story for the `guardrail_journal?` field on run-read.
 
+> **D-356/DC-35 (2026-09-08, story-writer).** F-PDC35-01 — EC-001 corrected: no GuardrailHook registered ⇒ `guardrail_journal?` = None (null/omitted) on run-read — NOT `Some([])`. Distinct: hook registered + zero ingress = `Some([])` (EC-002); hook registered + N ingress = `Some([entries])`. "No hook" = None per BC-2.11.007 INV-004/EC-004/TV-002. AC-003 updated to condition the non-None result on hook-registered. F-PDC35-03 — VP-2.11.007-A added (S-1.29 is the anchor story; test vehicle at canonical path). Test file renamed `guardrail_journal.rs` → `guardrail_journal_completeness.rs` to match VP harness path. F-PDC35-05 — BC table title corrected to canonical H1 "Guardrail Evaluation Results Are Durably Journaled".
+
 ## Narrative
 
 - **As a** graph runtime developer building the pregolya-graph guardrail system
@@ -48,7 +51,7 @@ tdd_mode: strict
 
 | BC | Title | Covered ACs |
 |----|-------|------------|
-| BC-2.11.007 | GuardrailJournal Persistence | AC-001..AC-005 |
+| BC-2.11.007 | Guardrail Evaluation Results Are Durably Journaled | AC-001..AC-005 |
 
 ## Acceptance Criteria
 
@@ -59,7 +62,7 @@ After each `GuardrailHook::evaluate(content, provenance_tag)` call in `pregolya-
 When a run transitions to any terminal state (`completed`, `failed`, `cancelled`, `summary_halt`), the in-flight journal is persisted atomically to the `RunStore` as the run's `guardrail_journal` field. After the transition, the journal is retrievable by run ID from the RunStore. Verified by `test_BC_2_11_007_runstore_terminal_persistence()`.
 
 ### AC-003 (traces to BC-2.11.007 postcondition PC-003 — run-read guardrail_journal? projection)
-The run-read endpoint (`GET /threads/{thread_id}/runs/{run_id}`) exposes the persisted journal as `guardrail_journal?` in the response body. For in-progress runs the field is absent (`None`). For terminal-status runs the field contains the complete `Vec<GuardrailEntry>` written at terminal transition. Verified by `test_BC_2_11_007_run_read_projection_terminal()` and `test_BC_2_11_007_run_read_projection_in_progress_absent()`.
+The run-read endpoint (`GET /threads/{thread_id}/runs/{run_id}`) exposes the journal as `guardrail_journal?` in the response body under these conditions: (a) For in-progress runs: the field is absent (`None`), regardless of hook registration. (b) For terminal-status runs where a hook was registered: the field contains the complete `Vec<GuardrailEntry>` written at terminal transition — `Some([])` when registered but no ingress occurred; `Some([entries])` when N ingress events were evaluated. (c) For terminal-status runs where NO hook was registered: the field is absent (`None`) — per BC-2.11.007 INV-004. No hook registered is semantically distinct from hook registered with zero evaluations. Verified by `test_BC_2_11_007_run_read_projection_terminal()`, `test_BC_2_11_007_run_read_projection_in_progress_absent()`, and `test_BC_2_11_007_run_read_projection_no_hook_none()`.
 
 ### AC-004 (traces to BC-2.11.007 invariant INV-002 — completeness DI-012)
 The count of `GuardrailEntry` records in the persisted journal equals the count of `GuardrailHook::evaluate()` calls made during the run — no calls are silently omitted. For a run with N evaluate calls, the terminal journal contains exactly N entries. Verified by `test_BC_2_11_007_journal_entry_count_equals_evaluate_calls()`.
@@ -88,8 +91,8 @@ The `guardrail_journal` field contains only `GuardrailEntry` records (boundary +
 
 | ID | Scenario | Expected Behavior |
 |----|----------|-------------------|
-| EC-001 | Run with zero guardrail evaluate() calls (no hook registered) | Journal is empty `Vec<GuardrailEntry>` at terminal; `guardrail_journal?` = `Some([])` |
-| EC-002 | Run cancelled before any evaluate() call | Empty journal persisted; no omission |
+| EC-001 | No GuardrailHook registered — run completes | `guardrail_journal?` = None (absent/null) on run-read — NOT `Some([])`; no journal field in response. Distinct from EC-002 (hook registered, zero ingress). Per BC-2.11.007 INV-004/EC-004/TV-002 |
+| EC-002 | Hook registered; run cancelled before any evaluate() call (zero ingress) | `guardrail_journal?` = `Some([])` — hook WAS registered, zero ingress events occurred; empty journal persisted at cancellation; no omission |
 | EC-003 | 50 evaluate() calls in one run (Domain A SOC scenario) | All 50 entries in terminal journal; run-read returns all 50 |
 | EC-004 | evidence_journal entries present | Separation invariant: guardrail_journal contains zero PolicyDecision records; evidence_journal contains zero GuardrailEntry records |
 | EC-005 | Transform result | GuardrailEntry carries result=Transform with new_content accessible via result.Transform.new_content; no separate transform_applied field |
@@ -161,4 +164,4 @@ The `guardrail_journal` field contains only `GuardrailEntry` records (boundary +
 | `crates/pregolya-graph/src/provenance.rs` | MODIFY | Add journal append at each evaluate() dispatch site (AC-001) |
 | `crates/pregolya-graph/src/run_executor.rs` | MODIFY | Add in-flight journal accumulation + atomic terminal persistence (AC-002) |
 | `crates/pregolya-server/src/routes/runs.rs` | MODIFY | Add `guardrail_journal?` to run-read response for terminal-status runs (AC-003) |
-| `crates/pregolya-graph/tests/guardrail_journal.rs` | CREATE | AC-001..AC-005 tests |
+| `crates/pregolya-graph/tests/guardrail_journal_completeness.rs` | CREATE | AC-001..AC-005 tests — VP-2.11.007-A test vehicle (canonical harness path) |

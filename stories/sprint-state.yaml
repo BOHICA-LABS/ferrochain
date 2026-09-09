@@ -398,6 +398,22 @@ stories:
     merged_sha: ~
 
   # -----------------------------------------------------------------------
+  # Wave 1 — pregolya-graph DC-35 addition (GuardrailJournal persistence)
+  # -----------------------------------------------------------------------
+
+  - story_id: S-1.29
+    wave: 1
+    status: spec-ready
+    bcs: [BC-2.11.007]
+    vps: [VP-2.11.007-A]
+    points: 5
+    tdd_mode: strict
+    priority: P0
+    crate: pregolya-graph
+    pr_url: ~
+    merged_sha: ~
+
+  # -----------------------------------------------------------------------
   # Wave 2 — pregolya-core D21 additions (E-15, E-16)
   # -----------------------------------------------------------------------
 

@@ -4672,3 +4672,28 @@ PR #1 MERGEABLE but requires GENUINE HUMAN MERGE (self-authored PR, DIRECTIVE 4 
 
 ### PENDING USER-APPROVED WORK
 DC-34 adversary pass PENDING (orchestrator, strict streak 0/3). PR #1 merge (human action required). DEV-TOOLING-D255: v1 dev-tooling expansion — ready to start post-merge. DTU clones (openai/anthropic/ollama): Phase-4 prerequisite.
+
+---
+
+## D-356/D-357/DC-34 Checkpoint (archived from STATE.md — DC-35 fix-burst 2026-09-08)
+
+### RESUME IN ONE BREATH
+pregolya Phase-2 CONVERGED+gate-APPROVED (anchor 81d16ca); Phase-3 IN PROGRESS at workspace-init. D-356 Phase-1 spec amendment COMPLETE (developer-console ROADMAP-ONLY; census: BC 149 / VP 42 / EC 145 / stories 53 / pts 377). D-356/DC-01 through DC-34 fix-bursts COMPLETE: DC-01..DC-27+DC-28 details in burst-log.md + STATE §DC-29..DC-34 steps. DC-22=CLEAN(strict) streak1/3 [banked, then broken]; DC-29=1H+1MED+1LOW; DC-30=2H+1MED; DC-31=1H+1MED; DC-32=3MED; DC-33=4[2H+1MED+1LOW]; DC-34=9[3H+4MED+2LOW] — ALL CLOSED. Full trajectory: →5→...→4[2H+1MED+1LOW]→9[3H+4MED+2LOW]. D-357: human-authorized Option a durable GuardrailJournal (BC-2.11.007 SS-11 P0; VP-2.11.007-A; EvidenceJournal BUDGET-ONLY). S-1.29 Wave-1 P0 story authored (5pts, BC-2.11.007, depends_on [S-1.19, S-1.26], blocks [S-console-10]). OBS-DC05-01 RESOLVED-BY-DC-23; PG-7 RESOLVED-BY-DEVOPS-6beaa88 (POL-14→BLOCKING); PG-DC32 OPEN; PG-DC33 OPEN; PG-DC34 OPEN (ADR changelog direction audit needed). BC-INDEX at DC-34 census; STORY-INDEX at DC-34 census (53 stories / 149 BCs). strict streak reset 0/3 (DC-34 fix push); DC-35 gates new HEAD. PR #1 (workspace scaffold) REVIEWED-CLEAN + MERGEABLE (PR-1 HEAD c9712c2) but BLOCKED from agent-merge (self-authored PR) — needs GENUINE HUMAN MERGE.
+
+### HEADS
+- develop: `bfe0592` — LOCAL ONLY (2 commits ahead of origin/develop at `644d1ad`; push required before Phase-3); factory-artifacts: HEAD updated by DC-34 fix-burst commit (this burst). Main worktree on `chore/phase3-workspace-init` (NOT develop; return to develop post-merge). PR #1 branch `chore/phase3-workspace-init`: head c9712c2 prefix (OPEN, MERGEABLE, CI 17/17 green, cycle-13 APPROVE 0-blocking).
+
+### RESUME NEXT-ACTION
+(1) Dispatch DC-35 adversary pass (fresh-context) against current factory-artifacts HEAD; strict streak 0/3. (2) Get PR #1 human-merged (squash-merge targeting develop). (3) Post-merge: return main worktree to develop; push develop 2 local-only commits; launch S-1.01 (PregolyaError) in pregolya-core. Standing directives DIRECTIVE 1/2/3/4 in force. 8 open convergence-close deferrals (C-1/PG-1/PG-2/PG-3/PG-4/PG-5/PG-6; PG-7 RESOLVED); PG-DC32 OPEN; PG-DC33 OPEN; PG-DC34 OPEN. OBS-DC05-01 CLOSED.
+
+### DECISION-LOG DELTA (D-356/D-357/DC-34 fix-burst)
+D-356/D-357/DC-34 (2026-09-08): DC-34 fix-burst CLOSED. trajectory-tail →1H+1MED→3MED→4[2H+1MED+1LOW]→9[3H+4MED+2LOW] (DC-31=1H+1MED CLOSED; DC-32=3MED CLOSED; DC-33=4[2H+1MED+1LOW] CLOSED; DC-34=9[3H+4MED+2LOW] ALL CLOSED). F-PDC34-01/02[HIGH] VP-2.11.007-A re-anchored {INV-002}+graph::provenance across VP body + 5 arch mirrors. F-PDC34-03[HIGH] BC-2.11.007 §GuardrailEntry boundary type String→IngressBoundary per {PC-001}+TV-001 + ADR-031 §Decision 8 + entities-server §GuardrailJournal. F-PDC34-04[MED] ADR-031 §Decision 8 DC-29 block inline SUPERSEDED-BY-DC-33. F-PDC34-05[MED] BC-2.11.007 MINT-REQUIRED x3 removed. F-PDC34-06[MED] S-1.29 Wave-1 P0 story authored (5pts; BC-2.11.007 impl; depends_on [S-1.19, S-1.26]; blocks [S-console-10]). F-PDC34-07[MED] ADR-031 changelog reordered DESCENDING. O-PDC34-A[LOW] transform_applied dropped everywhere. O-PDC34-B[LOW] BC-2.24.008 severity-wire sentence added. Census: stories 52→53 (+S-1.29) / pts 372→377; BC 149 / VP 42 UNCHANGED. strict streak reset 0/3 (DC-34 fix push; DC-35 gates new HEAD).
+
+### WORKTREE INVENTORY
+Main worktree on `chore/phase3-workspace-init` (NOT develop). .worktrees/ absent. Phase-3 workspace init PENDING human merge of PR #1.
+
+### STANDING HUMAN-GATE OBS
+PR #1 MERGEABLE but requires GENUINE HUMAN MERGE (self-authored PR, DIRECTIVE 4 CAVEAT). Phase-3 TDD stories cannot start until PR #1 merges.
+
+### PENDING USER-APPROVED WORK (at DC-34 close)
+DC-35 adversary pass PENDING (orchestrator, strict streak 0/3). PR #1 merge (human action required). DEV-TOOLING-D255: v1 dev-tooling expansion — ready to start post-merge. DTU clones (openai/anthropic/ollama): Phase-4 prerequisite.

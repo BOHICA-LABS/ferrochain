@@ -1,11 +1,12 @@
 ---
 document_type: story-index
 level: L3
-version: "1.85"
+version: "1.86"
 status: active
 producer: state-manager
-timestamp: 2026-09-08T23:59:45Z
+timestamp: 2026-09-09T00:00:00Z
 changelog:
+  - "1.86 (D-356/D-357/DC-35/2026-09-09, state-manager): DC-35 fix-burst CLOSED (state-side F-PDC35-02). VP-to-Story Anchor Map: VP-2.11.007-A→S-1.29 row added (BC-2.11.007 {PC-001}/{INV-002}; pregolya-graph; P0). Census correction: stories-with-VP-anchor 26→25 (map substantiation: 15 pre-console + 9 console + S-1.29 = 25; prior 26 was premature bump before row was added — O-PDC35-A[OBS]). sprint-state S-1.29 block added (Wave-1, P0, 5pts, spec-ready, bcs=[BC-2.11.007], vps=[VP-2.11.007-A]). Census UNCHANGED: stories 53 / pts 377 / BC 149 / VP 42 / EC 145. strict streak reset 0/3 (fix push; DC-36 gates new HEAD)."
   - "1.85 (D-356/DC-34/2026-09-08, state-manager): DC-34 fix-burst CLOSED (DC-33 GuardrailJournal residue). F-PDC34-01/02[HIGH] VP-2.11.007-A re-anchored {INV-002}+graph::provenance across VP body+5 mirrors. F-PDC34-03[HIGH] GuardrailEntry.boundary→IngressBoundary (BC-2.11.007 {PC-001}+TV-001, ADR §Decision 8, entities-server §GuardrailJournal, S-console-10). O-PDC34-A[LOW] transform_applied dropped everywhere. F-PDC34-04[MED] ADR §Decision 8 DC-29 block inline SUPERSEDED-BY-DC-33. F-PDC34-05[MED] BC-2.11.007 MINT-REQUIRED ×3 removed. F-PDC34-06[MED] S-1.29 Wave-1 P0 story (5pts) authored (BC-2.11.007 impl; depends_on [S-1.19, S-1.26]; blocks [S-console-10]). F-PDC34-07[MED] ADR-031 changelog→descending. O-PDC34-B[LOW] BC-2.24.008 severity-wire sentence added. BC-2.11.007 BC-to-Story Anchor Map: S-console-10→S-1.29. S-console-10 depends_on: +S-1.29. Census: stories 52→53 / pts 372→377. BC 149 / VP 42 UNCHANGED. strict streak reset 0/3 (fix push; DC-35 gates new HEAD)."
   - "1.84 (D-356/DC-33/2026-09-08, state-manager): DC-33 fix-burst CLOSED. S-console-10 behavioral_contracts updated: +BC-2.11.007 (SS-11 P0 durable GuardrailJournal) +BC-2.12.003 (SS-12 P1 run-read {PC-013} projects guardrail_journal?) per F-PDC33-02 human-authorized Option a. SS-11 BC count 6→7. BC-2.11.007 row added to SS-11 BC-to-Story Coverage section. BC-2.11.007 row added to BC-to-Story Anchor Map. Census: BC 148→149 / VP 41→42 (+VP-2.11.007-A). stories 52 / pts 372 / EC 145 UNCHANGED. strict streak reset 0/3 (fix push; DC-34 gates new HEAD)."
   - "1.83 (D-356/DC-32/2026-09-08, state-manager): F-PDC32-02 — S-console-02 AC-004 SpanData field list corrected to 8-field shape (added session_id: String after end_time_ms per ADR-031 §Decision 2/§Decision 7 and BC-2.24.002 {INV-007}). F-PDC32-01 — S-console-09 EC-005 aligned to AC-007 + BC-2.24.007 {EC-005} (no gauge/timeline for terminal runs; EvidenceJournal area only; ADR-031 §Decision 8). F-PDC32-03 — S-console-06 + S-console-10 bare ADR-030 §Decision → §Decision 2 (POL-19 ambiguous-anchor). Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
@@ -124,7 +125,7 @@ input-hash: "34034c0"
 | Maintenance Epics | 1 |
 | Total Epics | 24 |
 | BCs covered | 149 / 149 |
-| Stories with VP anchor | 26 |
+| Stories with VP anchor | 25 |
 | Stories with Red-Gate obligations | 10 |
 
 ## Story Inventory
@@ -619,6 +620,7 @@ input-hash: "34034c0"
 | VP-018 | BC-2.04.011 {INV-001} | S-2.12 | P1 | pregolya-checkpoint |
 | VP-019 | BC-2.04.011 {INV-003} | S-2.12 | P1 | pregolya-checkpoint |
 | VP-020 | BC-2.02.009 {INV-001}+{INV-002} | S-1.28 | P1 | pregolya-graph |
+| VP-2.11.007-A | BC-2.11.007 {PC-001}/{INV-002} | S-1.29 | P0 | pregolya-graph |
 | VP-2.24.001-A | BC-2.24.001 | S-console-01 | P1 | pregolya-console |
 | VP-2.24.001-B | BC-2.24.001 | S-console-01 | P1 | pregolya-console |
 | VP-2.24.001-C | BC-2.24.001 | S-console-01 | P1 | pregolya-console |

@@ -1,13 +1,13 @@
 ---
 document_type: wave-schedule
 level: ops
-version: "1.1"
+version: "1.2"
 status: active
 producer: story-writer
 timestamp: 2026-09-01T00:00:00Z
 phase: 2
 inputs: [STORY-INDEX.md, dependency-graph.md]
-input-hash: "830a185"
+input-hash: "c526ad7"
 traces_to: STORY-INDEX.md
 ---
 
@@ -17,10 +17,10 @@ traces_to: STORY-INDEX.md
 
 | Metric | Value |
 |--------|-------|
-| Total stories | 41 |
+| Total stories | 42 |
 | Total waves | 3 (Wave 1, Wave 2, Wave 6) |
-| Max parallelism (groups per wave) | 6 groups in Wave 1 / sub-batch 1d (sub-batch 1e has 5 groups after adding S-1.28) |
-| Estimated agent spawns | 41 implementer agents total |
+| Max parallelism (groups per wave) | 6 groups in Wave 1 / sub-batch 1d (sub-batch 1e has 5 groups; sub-batch 1j has 3 groups after adding S-1.29) |
+| Estimated agent spawns | 42 implementer agents total |
 
 ## Wave Plan
 
@@ -100,12 +100,13 @@ traces_to: STORY-INDEX.md
 | A | S-1.20 | 13 | XL | 1 story/agent |
 | B | S-1.26 | 8 | M | 1 story/agent |
 
-#### Sub-batch 1j — PreToolCallHook + server security config (depends on 1i)
+#### Sub-batch 1j — PreToolCallHook + server security config + GuardrailJournal (depends on 1i)
 
 | Group | Stories | Points | Complexity | Agent Scope |
 |-------|---------|--------|-----------|-------------|
 | A | S-1.23 | 5 | S | 1 story/agent |
 | B | S-1.27 | 8 | M | 1 story/agent |
+| C | S-1.29 | 5 | S | 1 story/agent |
 
 #### Sub-batch 1k — Approval + compaction events (depends on S-1.23, S-1.17, S-1.18)
 
@@ -243,4 +244,5 @@ to avoid it becoming the actual critical path constraint.
 
 ## Changelog
 
+- **1.2 (D-356/DC-35/2026-09-08, story-writer):** F-PDC35-02 — S-1.29 (GuardrailJournal Persistence, 5 pts, S complexity) added to sub-batch 1j as Group C. Sub-batch 1j header updated to reflect 3 concurrent groups. Summary: Total stories 41 → 42; Estimated agent spawns 41 → 42. Critical path unchanged (S-1.29 is not on the critical path — it shares batch 1j with S-1.23 and S-1.27, neither of which is on the critical path). Input-hash updated to reflect dependency-graph.md changes.
 - **1.1 (round-60/F-P2A232-02/2026-09-01):** S-1.28 inserted into sub-batch 1e as Group E (5 pts, S; depends_on S-1.14 per §Wave-1-Topological-Batches in dependency-graph). S-2.12 inserted into sub-batch 2a as Group D (8 pts, M; depends_on S-1.10 per §Wave-2-Topological-Batches in dependency-graph). Summary reconciled: Total stories 39 → 41; Estimated agent spawns 39 → 41; sub-batch 1e group count 4 → 5. Input-hash refreshed to match current inputs state. Critical path unchanged — neither S-1.28 nor S-2.12 blocks any downstream story.

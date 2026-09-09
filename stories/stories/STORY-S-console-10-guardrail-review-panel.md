@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-console-10
 epic_id: E-console
-version: "1.5"
+version: "1.6"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -14,13 +14,14 @@ changelog:
   - "1.3 (D-356/DC-32/2026-09-08, story-writer): F-PDC32-03 — ADR-030 bare §Decision ordinal-gap fixed: AC-004 body occurrence of ADR-030 §Decision updated to ADR-030 §Decision 2 per POL-19."
   - "1.4 (D-356/DC-33/2026-09-08, story-writer): DC-33 human-authorized re-point — completed-run guardrail substrate corrected from evidence_journal? to guardrail_journal? (BC-2.11.007 persistence; BC-2.12.003 PC-013 projection); GuardrailEntry shape documented; evidence_journal? clarified as budget-only (PolicyDecision Allow/Escalate/Deny); Task 4 marked blocked-until-build on BC-2.11.007."
   - "1.5 (D-356/DC-34/2026-09-08, story-writer): DC-34 architect ruling — (1) boundary type IngressBoundary confirmed correct (ingress-boundary label semantic per BC-2.06.001 PC-002, no String/hook-identity residual); (2) transform_applied removed from GuardrailEntry shape in AC-004 and Task 4 (transform content = result.Transform.new_content, not a separate field); (3) wave wording corrected: BC-2.11.007 is Wave-1 core (S-1.29), consumed by this Wave-3 panel — not a Wave-3 blocked dependency; (4) S-1.29 added to depends_on."
+  - "1.6 (D-356/DC-35/2026-09-08, story-writer): F-PDC35-05 — BC-2.11.007 title corrected to canonical H1 in body BC table."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.008.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "40988f0"
+input-hash: "4303f19"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-console-06, S-1.29]
@@ -53,6 +54,8 @@ tdd_mode: strict
 
 > **D-356 architect ruling DC-34 (2026-09-08, story-writer).** Three corrections applied: (1) F-PDC34-03 boundary type confirmed — `boundary: IngressBoundary` is correct (IngressBoundary is the canonical ingress-boundary-label enum with values ToolResult|RagChunk|MemoryItem; semantic = label of the ingress boundary at which the hook fired, not hook identity; no String residual). (2) O-PDC34-A `transform_applied` dropped from GuardrailEntry shape — the field does not exist; Transform content is carried in `result.Transform.new_content`, not a separate field; corrected in AC-004 and Task 4. (3) F-PDC34-06 wave wording corrected — BC-2.11.007 GuardrailJournal persistence is Wave-1 core (S-1.29, created by this burst); it is already available when this Wave-3 panel is implemented; the panel's roadmap-only status is unchanged. S-1.29 added to depends_on. Affected locations: AC-004, Task 4.
 
+> **D-356 adversary fix DC-35 (2026-09-08, story-writer).** F-PDC35-05 — BC-2.11.007 title in the body BC table corrected to canonical H1 "Guardrail Evaluation Results Are Durably Journaled" (was "GuardrailJournal Persistence"). POL-7 verbatim-H1 compliance; BC-2.11.007 body BC table row is now title-accurate.
+
 ## Narrative
 
 - **As a** developer-operator or SOC analyst reviewing agent behavior on untrusted inputs
@@ -64,7 +67,7 @@ tdd_mode: strict
 | BC | Title | Covered ACs |
 |----|-------|------------|
 | BC-2.24.008 | Guardrail/Security Decision Review Panel (CAP-047) | AC-001..AC-008 |
-| BC-2.11.007 | GuardrailJournal Persistence | AC-004 (completed-run reconstruction dependency) |
+| BC-2.11.007 | Guardrail Evaluation Results Are Durably Journaled | AC-004 (completed-run reconstruction dependency) |
 | BC-2.12.003 | Run-Read Endpoint — guardrail_journal? projection (PC-013) | AC-004 (field projection dependency) |
 
 ## Acceptance Criteria

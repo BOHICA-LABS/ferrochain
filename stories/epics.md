@@ -1,6 +1,6 @@
 ---
 document_type: epics
-version: "1.9"
+version: "2.0"
 status: active
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -10,7 +10,7 @@ traces_to: .factory/specs/architecture/ARCH-INDEX.md
 
 # Epics — pregolya Phase 2
 
-> **23 epics spanning 52 stories across Wave 1 (28), Wave 2 (12), Wave 3 roadmap (10), Wave 6 (1). One maintenance story (S-MAINT-001) is outside the wave schedule.**
+> **23 epics spanning 53 stories across Wave 1 (29), Wave 2 (12), Wave 3 roadmap (10), Wave 6 (1). One maintenance story (S-MAINT-001) is outside the wave schedule.**
 > Epic IDs are stable references. Stories within each epic share a primary subsystem.
 
 ## Epic Catalog
@@ -27,7 +27,7 @@ traces_to: .factory/specs/architecture/ARCH-INDEX.md
 | E-08 | BSP Execution Engine | 1 | S-1.16 | 13 | SS-03 | pregolya-graph |
 | E-09 | Streaming Event Taxonomy | 1 | S-1.17, S-1.24 | 10 | SS-06 | pregolya-graph |
 | E-10 | Budget Governance and Compaction | 1 | S-1.18, S-1.25 | 13 | SS-10 | pregolya-graph |
-| E-11 | Content Provenance and Guardrail Hooks | 1 | S-1.19 | 13 | SS-11 | pregolya-graph |
+| E-11 | Content Provenance and Guardrail Hooks | 1 | S-1.19, S-1.29 | 18 | SS-11 | pregolya-graph |
 | E-12 | HITL Interrupt / Resume | 1 | S-1.20, S-1.23 | 18 | SS-05 | pregolya-graph |
 | E-13 | First-Party Tool Library | 1 | S-1.21, S-1.22 | 16 | SS-23 | pregolya-tools |
 | E-14 | Durable-Run HTTP Server | 1 | S-1.26, S-1.27 | 16 | SS-12 | pregolya-server |
@@ -141,11 +141,25 @@ tool-approval / compaction event types (S-1.24 extends the base taxonomy establi
 ceiling, budget escalation to HITL interrupt, `CompactionTrigger` watermark arithmetic (VP-012),
 and mid-run compaction window replacement.
 
-### E-11 — Content Provenance and Guardrail Hooks (Wave 1, 13 pts)
+### E-11 — Content Provenance and Guardrail Hooks (Wave 1, 18 pts)
 
 `ProvenanceTag` at every ingress boundary, `GuardrailHook` at tool-result / RAG / memory ingress
 boundaries, rejected-content never enters model context, and no-hook default pass-through with
-WARNING log. P0 security-critical — all 6 BCs are P0.
+WARNING log. P0 security-critical — all 7 BCs are P0.
+
+**S-1.19** (13 pts) covers BC-2.11.001–006: `GuardrailHook` trait, three ingress-boundary
+evaluation points (`IngressBoundary`: ToolResult | RagChunk | MemoryItem), `GuardrailResult`
+(Pass / Fail / Transform), `ProvenanceTag` attachment, and default pass-through invariant.
+
+**S-1.29** (5 pts) covers BC-2.11.007: `GuardrailJournal` durable persistence. Every
+`GuardrailHook::evaluate()` call appends a `GuardrailEntry`
+(`{ boundary: IngressBoundary, result: GuardrailResult, provenance: ProvenanceTag, timestamp_ms: u64 }`)
+to the run's durable journal. The journal is written to `RunStore` on terminal-status transition
+(BC-2.11.007 PC-002) and projected on the run-read endpoint as `guardrail_journal?`
+(BC-2.12.003 PC-013). No `GuardrailHook` registered ⇒ `guardrail_journal? = None`. VP-2.11.007-A
+(integration, Phase 3, P0) anchors the persistence contract. Depends on S-1.19 (guardrail hook
+infrastructure) and S-1.26 (RunStore / run-read endpoint). Blocks S-console-10 (Wave-3 guardrail
+review panel uses `guardrail_journal?` for completed-run reconstruction).
 
 ### E-12 — HITL Interrupt / Resume (Wave 1, 18 pts)
 
@@ -266,6 +280,7 @@ is feature-gated (`debug-endpoints` Cargo feature defaults `false`) and scoped t
 
 ## Changelog
 
+- **2.0 (D-356/DC-35/2026-09-08, story-writer):** F-PDC35-02 — S-1.29 (GuardrailJournal Persistence, 5 pts, Wave 1, SS-11) integrated into E-11. Epic Catalog: E-11 stories S-1.19 → S-1.19, S-1.29; points 13 → 18. Epic Summary E-11 updated: 13 pts → 18 pts; "all 6 BCs are P0" → "all 7 BCs are P0"; S-1.19/S-1.29 narrative breakdown added (BC coverage, GuardrailJournal shape, VP-2.11.007-A anchor, cross-wave block on S-console-10). Intro header: 52 → 53 stories; Wave 1 (28) → Wave 1 (29).
 - **1.9 (D-356/DC-10+DC-11/2026-09-07):** Wave-3 dep-inversion — server::debug_span (SpanData + DebugSpanSource read-trait, pregolya-server, server-owned per ADR-031 Decision 7; created by S-console-03); DebugSpanExporter implements the trait; sub-wave table restructured 3A-3F→3A-3E; S-console-02 now depends on S-console-03.
 - **1.8 (D-356/2026-09-06):** E-console epic added (Wave 3 roadmap, SS-24, 10 stories, 56 pts, ADR-031). Epic Catalog row added. Epic summary section added with architecture narrative, BC/CAP/VP traceability, topological sub-wave table, and story-point breakdown. State-manager to sync census header: 22→23 product epics, 42→52 stories, 316→372 product points.
 - 1.7 (Round-66/F-P2A238-01/F-P2A238-03/2026-09-02): E-05 §S-2.12 — retired staging-table model (trajectory_records_staging, four-crash-point matrix) replaced with per-run single-transaction DELETE and two-crash-point matrix (before-COMMIT, after-COMMIT) per BC-2.04.011 {INV-003}/VP-019 (round-62 redesign, F-P2A234-01). E-TRAJ-006 (DURABILITY, AES-GCM integrity check failed) added to error code set per BC-2.04.009 {INV-001}/EC-006 (round-62/63). E-07 §S-1.28 — VP-020 (proptest P1, BC-2.02.009 {INV-001}/{INV-002}, harness promote_retire_channel_idempotency) added to verification narrative (round-62 mint, F-P2A234-05).
