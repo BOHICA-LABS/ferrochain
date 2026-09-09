@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.11.007
-version: "1.9"
+version: "1.10"
 status: draft
 producer: product-owner
 timestamp: 2026-09-08T00:00:00Z
@@ -13,7 +13,7 @@ inputs:
   - .factory/specs/domain-spec/invariants.md
   - .factory/specs/domain-spec/edge-cases.md
   - .factory/planning/holdout-domains/domain-a-soc-analyst.md
-input-hash: "700cc6e"
+input-hash: "03695ad"
 traces_to:
   - domain-spec/capabilities-p0.md#CAP-013
   - domain-spec/capabilities-p1-p2.md#CAP-047
@@ -33,6 +33,7 @@ changelog:
   - "1.7 (D-356/DC-42/2026-09-09, product-owner): F-PDC42-01: §Story Anchor reverse-anchor completeness — S-console-10 (roadmap, Wave 3 guardrail review panel) declares BC-2.11.007 in behavioral_contracts frontmatter and consumes guardrail_journal? via BC-2.24.008 {PC-004}, but §Story Anchor listed only S-1.29. S-console-10 appended as roadmap consumer, mirroring DC-08/DC-16 convention. §Related BCs already carried BC-2.24.008 consumer edge — no change needed there."
   - "1.8 (D-356/DC-44/2026-09-09, product-owner): Architect-ruled journal-init mechanism applied. {PRE-001}: journal record created by init_guardrail_journal(run_id) at run start iff invocation_context.guardrail_hook().is_some(). {PC-002}: added init write at run start + explicit append_guardrail_entry call + run-read projection pattern. {INV-004}: discriminator rewritten as journal-RECORD existence (None=no record=no init; Some([])=record+0 entries; Some([N])=record+N entries) realized via init_guardrail_journal + get_guardrail_journal returning Option on record-existence. §Architecture Anchors graph::provenance bullet: added init_guardrail_journal at run start iff hook registered; pregolya-checkpoint bullet: added init_guardrail_journal(run_id) to op list with return-value semantics. {EC-004}: 'journal record never created' replaces 'journal never initialized'. {EC-006}: 'journal RECORD was created by init_guardrail_journal' replaces 'journal was initialized'. TV-002/TV-005: discriminator language updated to journal-record existence."
   - "1.9 (D-356/DC-48/2026-09-09, product-owner): F-PDC48-02: canonical module/path names applied per architect DC-48 ruling. `server::run_read_handler` → `server::handlers` at 5 normative body sites (§Description, {PC-002}, {EC-002}, §Architecture Anchors pregolya-checkpoint bullet, §Architecture Anchors server bullet header) and 1 Traceability row (Architecture Module column). Path `runs.rs` route (Traceability only; primary path fix in BC-2.12.003). No behavioral change — all projection semantics unchanged."
+  - "1.10 (D-356/records-straggler/2026-09-09, product-owner): CLASS A-01: {PC-001} Rust pseudocode comment `(BC-2.06.001 §PC-002)` → `(BC-2.06.001 {PC-002})` — canonical item-anchor form per ADR-027. CLASS B-01: §Description 'Every call' → 'Every successfully-returning call'; add '{EC-003}: panicking or erroring call appends NO entry' carve-out. CLASS B-02: {PC-001} heading + body — heading 'Journal append on every evaluate() call' → 'Journal append on every successfully-returning evaluate() call ({EC-003}: panicking/erroring append NO entry)'; body body first sentence qualified with 'successfully-returning'; '{EC-003}' carve-out added at end of first sentence. Records-lint L9 exit 0."
 modified: []
 extracted_from: null
 deprecated: null
@@ -50,10 +51,11 @@ d17_commitment: Q8
 
 ## Description
 
-Every call to `GuardrailHook::evaluate()` at an ingress boundary appends exactly one
-`GuardrailEntry` to the run's append-only `GuardrailJournal` — including Pass results, so the
-journal forms a complete audit trail for all guardrail evaluations (unlike the SSE stream, which
-emits only Fail/Transform events per ADR-006 rev-3, F-P99-01). The `GuardrailJournal` is checkpoint-backed (pregolya-checkpoint) and each entry is persisted
+Every **successfully-returning** call to `GuardrailHook::evaluate()` at an ingress boundary
+appends exactly one `GuardrailEntry` to the run's append-only `GuardrailJournal` — including
+Pass results, so the journal forms a complete audit trail for all guardrail evaluations (unlike
+the SSE stream, which emits only Fail/Transform events per ADR-006 rev-3, F-P99-01); a
+panicking or erroring call appends NO entry ({EC-003}). The `GuardrailJournal` is checkpoint-backed (pregolya-checkpoint) and each entry is persisted
 sync-durably before graph execution continues at each ingress boundary; the `guardrail_journal?`
 field on the run-read response is assembled by `server::handlers` from the checkpoint
 store at run-read time. The `GuardrailJournal` is
@@ -75,12 +77,12 @@ content evaluation results.
 
 ## Postconditions
 
-1. {PC-001} **Journal append on every evaluate() call:** Every `GuardrailHook::evaluate()` call at
+1. {PC-001} **Journal append on every successfully-returning evaluate() call ({EC-003}: panicking/erroring append NO entry):** Every **successfully-returning** `GuardrailHook::evaluate()` call at
    an ingress boundary appends exactly one `GuardrailEntry` to the run's append-only
-   `GuardrailJournal`. The canonical `GuardrailEntry` shape is:
+   `GuardrailJournal`; panicking or erroring calls append NO entry ({EC-003}). The canonical `GuardrailEntry` shape is:
    ```
    GuardrailEntry {
-     boundary:     IngressBoundary,  // ToolResult | RagChunk | MemoryItem (BC-2.06.001 §PC-002)
+     boundary:     IngressBoundary,  // ToolResult | RagChunk | MemoryItem (BC-2.06.001 {PC-002})
      result:       GuardrailResult,  // Pass | Fail{reason,severity} | Transform{new_content}
      provenance:   ProvenanceTag,
      timestamp_ms: u64,

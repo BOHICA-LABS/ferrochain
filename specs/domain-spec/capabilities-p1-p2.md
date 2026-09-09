@@ -2,7 +2,7 @@
 document_type: domain-spec-section
 level: L2
 section: capabilities-p1-p2
-version: "1.39"
+version: "1.40"
 status: active
 producer: business-analyst
 timestamp: 2026-09-08T00:00:00Z
@@ -18,6 +18,7 @@ input-hash: "371c041"
 traces_to: L2-INDEX.md
 decisions: [D1, D3, D7, D8, D13, D17, D19, D20, D21, D23, D170, D275, D356]
 changelog:
+  - "1.40 (records-straggler/A-04/2026-09-09, business-analyst): CAP-047 IngressBoundary boundary bullet — §PC-002 notation corrected to {PC-002} (CLASS A records-lint fix; curly-brace subclause notation per records-lint CLASS_A rule)."
   - "1.39 (DC-33/F-PDC33-02/2026-09-08, business-analyst): CAP-047 rewrite per architect DC-33 ruling. Completed-run guardrail substrate corrected from evidence_journal? to guardrail_journal? (BC-2.11.007). EvidenceJournal is BUDGET-ONLY (PolicyDecision); GuardrailResult (Pass/Fail/Transform) outcomes now persist in the GuardrailJournal entity (entities-server.md §GuardrailJournal). Capability description replaced with architect-canonical form: live runs consume GuardrailDecision StreamEvent variants; completed runs reconstruct from guardrail_journal? (BC-2.11.007) on run-read. DC-33 dated delta note added to CAP-047 body. Prior DC-29-sibling and DC-31 interim delta notes superseded. Trace anchors: removed evidence_journal? guardrail-substrate claims (BC-2.24.008 {PC-004} + BC-2.12.003 {PC-013}); added BC-2.11.007 (guardrail_journal? projection). Anchor justification extended to reference entities-server.md §GuardrailJournal. CAP-043 cascade: DC-33 superseding note added after DC-31 delta note — DC-31 stated guardrail completed-run history arrives via evidence_journal? (BC-2.24.008 {PC-004}); superseded per DC-33: guardrail history is in guardrail_journal? (BC-2.11.007); EvidenceJournal is BUDGET-ONLY; DC-31 note preserved for audit. CAP-043 live body confirmed clean — evidence_journal? references in live body are for budget history (correct), not guardrail history. Authority: F-PDC33-02, architect DC-33 ruling."
   - "1.38 (D-356/DC-31/F-PDC31-01+02/2026-09-08, business-analyst): CAP-043 + CAP-047 3-substrate model corrections per DC-31. F-PDC31-01 (HIGH): (1) CAP-043 trace-span content list: struck 'guardrail decisions' — guardrail completed-run history arrives via evidence_journal? on run-read (BC-2.24.008 {PC-004}), NOT trace spans. (2) CAP-047 completed-run substrate: replaced trace-span read (BC-2.24.002) with evidence_journal? on run-read (BC-2.12.003 {PC-013}, BC-2.24.008 {PC-004}). F-PDC31-02 (MED): CAP-043 trace-span content list: struck 'compaction summaries' — compaction per-event markers/timeline are LIVE-run SSE only, unavailable for completed runs (BC-2.24.007); clarifying clause added. O-PDC31-A sweep: CAP-041/042/044/045/046 already correct per 3-substrate model; only CAP-043/047 required fixes. CAP-047 trace anchors updated to add BC-2.24.008 {PC-004} + BC-2.12.003 {PC-013}."
   - "1.37 (D-356/F-PDC29-01-sibling/2026-09-08, business-analyst): CAP-047 sibling fix — TD-VSDD-060 sweep found same transient-StreamEvent class of defect as F-PDC29-01 in CAP-047 body. 'reconstructs from stored events for completed runs' → 'reconstructs from persisted trace spans (GET /debug/trace/session/{run_id}, BC-2.24.002) for completed runs (StreamEvent TRANSIENT, ADR-030; no event-replay endpoint, ADR-031 Decision 8)'. Dated delta note added to CAP-047 body."
@@ -1219,7 +1220,7 @@ For live runs, each `guardrail_decision` StreamEvent entry shows:
 > The two type systems must not be conflated: ProvenanceTag (SS-11 ingress audit struct) and
 > the guardrail_decision StreamEvent payload use different enum shapes.
 
-- `boundary: IngressBoundary` — `ToolResult | RagChunk | MemoryItem` (per BC-2.06.001 §PC-002;
+- `boundary: IngressBoundary` — `ToolResult | RagChunk | MemoryItem` (per BC-2.06.001 {PC-002};
   NOT RAGRetrieval/MemoryIngress, which are the distinct SS-11 ProvenanceTag BoundaryType values)
 - `decision: Fail | Transform` (Pass decisions are NOT shown — not streamed per CAP-007, F-P99-01)
 - `severity: Option<GuardrailSeverityWire>` — `Some(Critical | High | Medium | Low)` for `Fail`;

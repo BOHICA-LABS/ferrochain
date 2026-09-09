@@ -3,14 +3,14 @@ document_type: verification-property
 level: L4
 id: VP-2.11.007-A
 title: "GuardrailJournal Completeness — One Entry Per Successfully-Returning evaluate() Call"
-version: "1.12"
+version: "1.13"
 status: draft
 producer: architect
 timestamp: 2026-09-08T00:00:00Z
 phase: 3
 inputs:
   - .factory/specs/behavioral-contracts/ss-11/BC-2.11.007.md
-input-hash: "9293d4e"
+input-hash: "48d5a26"
 traces_to: VP-INDEX.md
 source_bc: BC-2.11.007
 module: graph::provenance
@@ -40,6 +40,7 @@ priority: P0
 harness_fn: "n/a (integration test)"
 file: vp-2.11.007-a-guardrail-journal-completeness.md
 changelog:
+  - "1.13 (records-straggler/A-02/A-03/2026-09-09, architect): A-02 (LOW) — §Source Contract first bullet: BC-2.11.007 §PC-001 → BC-2.11.007 {PC-001} (ADR-027 stable clause anchor form). A-03 sibling: BC-2.06.001 §PC-002 already fixed in DC-52 (v1.12). input-hash unchanged (BC-2.11.007 input did not change)."
   - "1.12 (DC-52/F-PDC52-01/2026-09-09, architect): F-PDC52-01 (LOW) — §PC-002→{PC-002} at two live-body sites: (1) §Property Statement boundary field description; (2) §Proof Harness SCOPE-NOTE boundary comment. Canonical clause anchor form is {PC-002} (ADR-027 stable clause anchors); DC-46 swept §INV-002→{INV-002} but missed these two §PC-002 siblings. input-hash unchanged (BC-2.11.007 input did not change)."
   - "1.11 (D-356/DC-48/F-PDC48-02/2026-09-09, architect): F-PDC48-02 (MED) — phantom `server::run_read_handler` replaced with canonical `server::handlers` at two live-body sites: (1) §Property Statement NOTE block ('assembled from the checkpoint store by server::run_read_handler' → 'assembled from the checkpoint store by the run-read handler in server::handlers'); (2) §Proof Harness SCOPE NOTE comment ('assembled by server::run_read_handler from checkpoint store' → 'assembled by the run-read handler in server::handlers from checkpoint store'). server::run_read_handler is not a separate module (F-PDC48-02/DC-48). input-hash updated 122e08a→9293d4e (input drift from prior burst)."
   - "1.10 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog fix — phantom anchor `ADR-031 §DC-44 delta note` → `ADR-031 §Decision 8` (frontmatter changelog + body DC-44 note; verify-adr-anchor-citations.sh); item anchor `BC-2.11.007 §INV-002` → `BC-2.11.007 {INV-002}` in §Source Contract (BC item anchor form, not heading form). input-hash refreshed 122e08a (computed by hook during this burst)."
@@ -77,7 +78,7 @@ F-PDC48-02/DC-48) outside this VP's scope. The journal write IS graph-side (chec
 
 ## Source Contract
 
-- BC-2.11.007 §PC-001: Every `GuardrailHook::evaluate()` call appends a `GuardrailEntry`
+- BC-2.11.007 {PC-001}: Every `GuardrailHook::evaluate()` call appends a `GuardrailEntry`
   to the run's accumulated journal **after** `evaluate()` returns (the entry carries the
   returned `GuardrailResult`; append-before-return would be wrong — BC-2.11.007 {EC-003}).
 - BC-2.11.007 {INV-002}: Exactly one `GuardrailEntry` is appended to the checkpoint-backed

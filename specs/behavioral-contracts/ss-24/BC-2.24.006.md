@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.006
-version: "1.7"
+version: "1.8"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -27,6 +27,7 @@ changelog:
   - "1.5 (D-356-fix/DC-26/2026-09-08, product-owner): F-PDC26-01 (HIGH) + F-PDC26-02 (MED): Comprehensive whole-file sweep. node_name/node-name residue removed from PRE-002 ('and node name' dropped — frame carries value+interrupt_id only), EC-004 (rewritten: shows interrupt_id+null value, explicitly NO node name), TV-005 (rewritten: canonical {\"__interrupt__\":[{value,interrupt_id}]} wire format, node-name/scratchpad field removed). §Related BCs BC-2.12.007: 'run-status polling, not SSE' replaced with terminal-frame wording (BC-2.12.007 §EC-003 + interrupted status corroboration); no-graph_interrupt clause retained. DC-02 blockquote: two SUPERSEDED-BY-DC-25 inline annotations at STATUS-only and STATUS-polling claims; historical record preserved intact."
   - "1.6 (D-356-fix/DC-27/L-288/2026-09-08, product-owner): F-L288-001 (HIGH): §Description final sentence 'subscribes to the new run stream' → 'continues monitoring the same run's SSE stream (run_id unchanged; BC-2.24.004 live monitoring)'. DC-23 corrected PC-005/EC-006/TV-002/§Related-BCs to same-run semantics but had missed the Description."
   - "1.7 (D-356/DC-46/2026-09-09, product-owner): A-PDC46: §Architecture Anchors phantom ADR path corrected — 'ADR-018-pre-tool-call-hook.md' does not exist; corrected to 'ADR-018-per-tool-call-approval-hook.md' (the actual file). verify-arch-anchor-resolution.sh blocker cleared."
+  - "1.8 (D-356/records-straggler/2026-09-09, product-owner): CLASS A-05..A-09: five `§EC-003` cross-BC citations converted to canonical item-anchor form — `(BC-2.12.007 §EC-003)` → `(BC-2.12.007 {EC-003})` at: {PRE-002} body, {PC-001}(a) body, {PC-002} node-boundary dialog paragraph (retained BC-2.05.001 TV-001 co-citation), TV-005 row (retained BC-2.05.001 TV-001 co-citation), §Related BCs BC-2.12.007 entry (dropped redundant 'primary;' qualifier). DC-25/DC-26 historical blockquote §EC-003 occurrences are grandfathered existing text per records-lint policy. BC-2.24.006 own {EC-003} (multiple-approvals case in §Edge Cases) is a distinct clause — preserved unmodified."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-045
   - architecture/decisions/ADR-031-developer-console-architecture.md
@@ -34,7 +35,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "2d65ac5"
+input-hash: "056ce12"
 extracted_from: null
 modified: []
 deprecated: null
@@ -65,16 +66,16 @@ continues monitoring the **same** run's SSE stream (run_id unchanged; BC-2.24.00
 ## Preconditions
 
 1. {PRE-001} A run in `interrupted` status exists on the selected thread (either a node-boundary interrupt via `interrupt()` machinery, CAP-006, or a per-tool-call approval request, CAP-034).
-2. {PRE-002} Either: (a) the run's SSE stream contains one or more `tool_approval_request` StreamEvents (CAP-034, for per-tool-call approval interrupts); or (b) the run's status is `interrupted` as returned by run-status polling (for node-boundary interrupts via `interrupt()` machinery, CAP-006). node-boundary interrupts emit no StreamEvent *variant*, but the SSE stream TERMINATES with a `{"__interrupt__": [InterruptPayload]}` envelope frame (BC-2.12.007 §EC-003) carrying the scratchpad (`value`) and `interrupt_id`; the run status also transitions to `interrupted`. The console detects the interrupt from this terminal frame (primary; carries the payload) and/or the `interrupted` status.
+2. {PRE-002} Either: (a) the run's SSE stream contains one or more `tool_approval_request` StreamEvents (CAP-034, for per-tool-call approval interrupts); or (b) the run's status is `interrupted` as returned by run-status polling (for node-boundary interrupts via `interrupt()` machinery, CAP-006). node-boundary interrupts emit no StreamEvent *variant*, but the SSE stream TERMINATES with a `{"__interrupt__": [InterruptPayload]}` envelope frame (BC-2.12.007 {EC-003}) carrying the scratchpad (`value`) and `interrupt_id`; the run status also transitions to `interrupted`. The console detects the interrupt from this terminal frame (primary; carries the payload) and/or the `interrupted` status.
 3. {PRE-003} `POST /threads/{id}/runs/{run_id}/resume` is available on pregolya-server (BC-2.05.004).
 
 ## Postconditions
 
-1. {PC-001} **Interrupt detection:** The console identifies runs in `interrupted` status via two mechanisms: (a) **terminal SSE frame** — node-boundary interrupts (CAP-006 `interrupt()` machinery) terminate the SSE stream with a `{"__interrupt__": [InterruptPayload]}` envelope frame (BC-2.12.007 §EC-003); the run status also transitions to `interrupted`. The console detects the interrupt from this terminal frame (primary; carries the payload) and/or the `interrupted` status; (b) **`tool_approval_request` StreamEvent** — per-tool-call approval interrupts (CAP-034) emit a `tool_approval_request` event in the SSE stream before halting. Interrupted runs are visually flagged (e.g., with a badge).
+1. {PC-001} **Interrupt detection:** The console identifies runs in `interrupted` status via two mechanisms: (a) **terminal SSE frame** — node-boundary interrupts (CAP-006 `interrupt()` machinery) terminate the SSE stream with a `{"__interrupt__": [InterruptPayload]}` envelope frame (BC-2.12.007 {EC-003}); the run status also transitions to `interrupted`. The console detects the interrupt from this terminal frame (primary; carries the payload) and/or the `interrupted` status; (b) **`tool_approval_request` StreamEvent** — per-tool-call approval interrupts (CAP-034) emit a `tool_approval_request` event in the SSE stream before halting. Interrupted runs are visually flagged (e.g., with a badge).
 
    > **D-356 adversary fix DC-02 (2026-09-07, product-owner).** F-PDC02-01 graph_interrupt references removed from PRE-002 and PC-001. `graph_interrupt` is phantom — there is no such StreamEvent in the verified 16-variant canonical enum (BC-2.06.001 §Postconditions PC-002). Node-boundary interrupts (CAP-006) halt the stream without emitting any SSE event; detection is exclusively via run STATUS transitioning to `interrupted`. *(SUPERSEDED by DC-25: detection is via the terminal `{"__interrupt__": [InterruptPayload]}` SSE frame; the "STATUS-only" claim was an over-correction.)* The sole interrupt-adjacent SSE event is `tool_approval_request` (emitted BEFORE a tool-call interrupt halts the run). PC-001 re-scoped accordingly; PRE-002 re-scoped to STATUS-polling for node-boundary *(superseded by DC-25)*, `tool_approval_request` event for tool-approval. Related BCs section updated to remove graph_interrupt reference.
 2. {PC-002} **Approval dialog contents:**
-   - For **node-boundary interrupts** (CAP-006 `interrupt()` machinery): the dialog sources the interrupt payload from the terminal `{"__interrupt__": [InterruptPayload]}` frame (BC-2.12.007 §EC-003, BC-2.05.001 TV-001). The dialog shows the `value` field (arbitrary JSON passed to `interrupt()` — the scratchpad) and the `interrupt_id` hash.
+   - For **node-boundary interrupts** (CAP-006 `interrupt()` machinery): the dialog sources the interrupt payload from the terminal `{"__interrupt__": [InterruptPayload]}` frame (BC-2.12.007 {EC-003}, BC-2.05.001 TV-001). The dialog shows the `value` field (arbitrary JSON passed to `interrupt()` — the scratchpad) and the `interrupt_id` hash.
    - For **per-tool-call interrupts** (CAP-034 `tool_approval_request` StreamEvent): the dialog shows the `ToolCallPreview` — tool name, args as JSON, and `ActionRisk` level — from the `tool_approval_request` event payload.
 
    > **D-356 adversary fix DC-25 (2026-09-08, product-owner).** F-PDC25-01 (HIGH): PRE-002 and PC-001(a) over-corrected "no SSE event" claim (DC-02 went too far). BC-2.12.007 §EC-003 confirms node-boundary interrupts DO terminate the SSE stream with a `{"__interrupt__": [InterruptPayload]}` envelope frame — they emit no StreamEvent *variant*, but the terminal frame IS the interrupt signal. PRE-002 and PC-001(a) updated accordingly: detection via terminal frame (primary) and/or `interrupted` STATUS; "run-status polling" label replaced with "terminal SSE frame". PC-002 node-boundary dialog source fixed: `value` field (arbitrary JSON scratchpad, per BC-2.05.001 TV-001) + `interrupt_id` hash sourced from terminal frame — NOT from run-status/run-read path; field name `scratchpad` replaced with canonical `value`.
@@ -115,7 +116,7 @@ continues monitoring the **same** run's SSE stream (run_id unchanged; BC-2.24.00
 | TV-002 | Operator clicks Approve | `POST .../resume` with `Command { resume: PreToolDecision::Allow }` dispatched; dialog closes; live monitoring continues for same run (run_id unchanged) | approve decision |
 | TV-003 | Operator clicks Deny with reason "too risky" | `POST .../resume` with `Command { resume: PreToolDecision::Deny("too risky") }` dispatched | deny decision |
 | TV-004 | Operator edits args to `{invalid json}` and clicks submit | Submit rejected client-side; JSON parse error shown; no POST dispatched | EC-002 |
-| TV-005 | Terminal SSE frame `{"__interrupt__": [{"value": {"question": "proceed?"}, "interrupt_id": "abc123"}]}` (BC-2.12.007 §EC-003, BC-2.05.001 TV-001) | Dialog shows `value: {"question": "proceed?"}` + `interrupt_id: abc123`; NO node name displayed (not an InterruptPayload field); Approve/Deny available | node-boundary interrupt |
+| TV-005 | Terminal SSE frame `{"__interrupt__": [{"value": {"question": "proceed?"}, "interrupt_id": "abc123"}]}` (BC-2.12.007 {EC-003}, BC-2.05.001 TV-001) | Dialog shows `value: {"question": "proceed?"}` + `interrupt_id: abc123`; NO node name displayed (not an InterruptPayload field); Approve/Deny available | node-boundary interrupt |
 
 ## Verification Properties
 
@@ -127,7 +128,7 @@ continues monitoring the **same** run's SSE stream (run_id unchanged; BC-2.24.00
 ## Related BCs
 
 - BC-2.05.004 — depends on: `POST /threads/{id}/runs/{run_id}/resume` endpoint (exact contract consumed)
-- BC-2.12.007 — depends on: SSE stream for detecting `tool_approval_request` events (tool-approval interrupts) and the terminal `{"__interrupt__": [InterruptPayload]}` frame for node-boundary interrupts (primary; BC-2.12.007 §EC-003) and/or `interrupted` status corroboration — there is no `graph_interrupt` StreamEvent variant
+- BC-2.12.007 — depends on: SSE stream for detecting `tool_approval_request` events (tool-approval interrupts) and the terminal `{"__interrupt__": [InterruptPayload]}` frame for node-boundary interrupts (BC-2.12.007 {EC-003}) and/or `interrupted` status corroboration — there is no `graph_interrupt` StreamEvent variant
 - BC-2.24.004 — composes with: after resume, console continues live monitoring (BC-2.24.004) for same run (run_id unchanged)
 
 ## Architecture Anchors

@@ -2,7 +2,7 @@
 document_type: architecture-section
 level: L3
 section: verification-architecture
-version: "2.54"
+version: "2.55"
 status: active
 producer: architect
 timestamp: 2026-09-07T00:00:00Z
@@ -33,6 +33,7 @@ input-hash: "8f1fed5"
 traces_to: ARCH-INDEX.md
 decisions: [D17, D21, D23, D356]
 changelog:
+  - "2.55 (DC-52/A-03/2026-09-09, architect): A-03 (LOW) — VP-2.11.007-A §P0 Must-Prove prose block: BC-2.06.001 §PC-002 → BC-2.06.001 {PC-002} (ADR-027 stable clause anchor form; records-straggler sweep). Census UNCHANGED: 42 total. input-hash unchanged (inputs did not change)."
   - "2.54 (D-356/DC-48/F-PDC48-02/2026-09-09, architect): F-PDC48-02 (MED) — phantom `server::run_read_handler` replaced with canonical `server::handlers` in VP-2.11.007-A NOTE block: 'assembled from the checkpoint store by server::run_read_handler' → 'assembled from the checkpoint store by the run-read handler in server::handlers'. server::run_read_handler is not a separate module (F-PDC48-02/DC-48). Census UNCHANGED: 42 total. input-hash unchanged (inputs did not change)."
   - "2.53 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog fix — 13 spa/components/ module path forms converted to spa_components:: namespace::module form (verify-module-canonicality.sh canonical pattern). Census UNCHANGED: 42 total."
   - "2.52 (D-356/DC-44/F-PDC44-02/2026-09-09, architect): F-PDC44-02 — body changelog row v2.51 date corrected from 2026-09-08 to 2026-09-09. Census UNCHANGED: 42 total."
@@ -477,7 +478,7 @@ checkpoint-backed `GuardrailJournal` per **successfully-returning**
 ingress boundary (same durability model as `EvidenceJournal` — BC-2.10.002 {INV-003}).
 A panicking or erroring `evaluate()` appends no entry ({EC-003}). Pass, Fail, and
 Transform results are all recorded in call order. Entry fields: `boundary: IngressBoundary`
-(ToolResult | RagChunk | MemoryItem per BC-2.06.001 §PC-002), `result: GuardrailResult`,
+(ToolResult | RagChunk | MemoryItem per BC-2.06.001 {PC-002}), `result: GuardrailResult`,
 `provenance: ProvenanceTag`, `timestamp_ms: u64` (monotone). NOTE: `transform_applied`
 absent (O-PDC34-A). NOTE: run-read `guardrail_journal?` projection is assembled from the
 checkpoint store by the run-read handler in `server::handlers` at read time — NOT via a

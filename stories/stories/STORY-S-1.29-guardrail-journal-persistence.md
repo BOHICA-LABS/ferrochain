@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-1.29
 epic_id: E-11
-version: "2.0"
+version: "2.1"
 status: draft
 producer: story-writer
 timestamp: 2026-09-08T00:00:00Z
@@ -19,12 +19,13 @@ changelog:
   - "1.8 (D-356/DC-46/2026-09-09, story-writer): F-PDC46-01 — AC header citation form corrected to M4-strict bare-tag: BC-S.SS.NNN TAG (section-words postcondition/invariant removed from all 5 AC trace headers per verify-ac-pc-trace.sh CHECK-1)."
   - "1.9 (D-356/DC-48/2026-09-09, story-writer): F-PDC48-03 — Task 5 Arc<dyn CheckpointStore> replaced with Arc<dyn CheckpointSaver> (CheckpointStore is phantom; CheckpointSaver is the canonical checkpoint trait in pregolya-checkpoint::checkpoint::saver). F-PDC48-02 — server::run_read_handler replaced with server::handlers in DC-39 delta note and AC-003 (2 live-body hits; changelog entry v1.5 is immutable historical record). F-PDC48-01 not applicable (no evidence_journal assembly in S-1.29). Corpus-sweep: 1 CheckpointStore hit fixed, 2 backtick-server::run_read_handler hits fixed, 0 get_evidence_journal hits."
   - "2.0 (D-356/DC-50/2026-09-09, story-writer): F-PDC50-01 — pregolya-checkpoint scope added: (1) File Structure: 3 MODIFY rows added for pregolya-checkpoint/src/saver.rs (CheckpointSaver trait extension), sqlite.rs (guardrail_journal table + 3-state discrimination), memory.rs (in-memory backend for GraphTestFixture). (2) Tasks: 3 new tasks (3-5) inserted before old Task 3; old Tasks 3-10 renumbered to 6-13; Task 7 corrected to CALLS checkpoint_store.init_guardrail_journal (not implements); Task 9 corrected to CALLS pregolya-checkpoint APIs (not implements). (3) subsystems: SS-04 + SS-12 added (SS-04 = pregolya-checkpoint modified here; SS-12 = pregolya-server routes/runs.rs MODIFY in scope). (4) Token Budget: pregolya-checkpoint row updated from read-only interface context to MODIFIED 3-file scope."
+  - "2.1 (D-356/records-straggler/2026-09-09, story-writer): B-05 — Purity Classification table pregolya-graph/src/provenance.rs Justification cell: added 'successfully-returning' qualifier before evaluate() call (matches BC-2.11.007 {INV-002}/{EC-003} + AC-001/EC-006 already-correct sites)."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-11/BC-2.11.007.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "1c87aa7"
+input-hash: "eecb89c"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-1.19, S-1.26]
@@ -105,7 +106,7 @@ The `guardrail_journal` field contains only `GuardrailEntry` records (boundary +
 | Module | Classification | Justification |
 |--------|---------------|---------------|
 | `pregolya-core/src/guardrail.rs` additions | pure-core | Data type definitions only per ADR-014 Decision 6 |
-| `pregolya-graph/src/provenance.rs` journal append | effectful-shell | Sync-durable checkpoint write per evaluate() call; BEFORE execution continues; no in-flight Vec |
+| `pregolya-graph/src/provenance.rs` journal append | effectful-shell | Sync-durable checkpoint write per **successfully-returning** `evaluate()` call; BEFORE execution continues; no in-flight Vec |
 | `pregolya-checkpoint` SQLite write | effectful-shell | Durable persistence layer; same backend as EvidenceJournal |
 | `pregolya-server/src/routes/runs.rs` projection | effectful-shell | Queries checkpoint_store.get_guardrail_journal(run_id) and serializes response |
 
