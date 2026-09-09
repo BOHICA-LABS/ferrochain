@@ -1,7 +1,7 @@
 ---
 document_type: architecture-index
 level: L3
-version: "1.87"
+version: "1.88"
 status: active
 producer: state-manager
 timestamp: 2026-09-08T23:59:00Z
@@ -17,6 +17,7 @@ traces_to: prd.md
 deployment_topology: single-service
 decisions: [D4, D6, D9, D11, D13, D17, D20, D21, D23, D356]
 changelog:
+  - "1.88 (D-356/DC-39/F-PDC39-02/2026-09-09, architect): DC-39 finding D recorded — GuardrailJournal persistence model RULING (F-PDC39-02): DC-36 F-PDC36-01 SUPERSEDED; checkpoint-backed model; no RunStore terminal write; run-read projection via server::run_read_handler; VP-2.11.007-A §Property Statement, §Proof Harness, §Source Contract updated (same burst); verification-architecture.md §P0 prose block rewritten; module-decomposition.md graph::provenance row corrected; ADR-031 DC-39 delta note added. VP-2.11.007-A catalog attributes UNCHANGED. Census UNCHANGED: ADR 31 / VP 42."
   - "1.87 (D-356/consistency-audit-Finding-D/2026-09-08, architect): SS-11 BC range corrected 001–006→001–007 (BC-2.11.007 minted DC-33; range drift caught by exhaustive D-356 consistency audit). No other ARCH-INDEX occurrence of the stale range."
   - "1.86 (D-356/DC-38/F-PDC38-07/2026-09-08, architect): VP-2.11.007-A description cell updated — 'every evaluate() call produces one entry' → 'one entry per successfully-returning evaluate() call'. Census UNCHANGED: ADR 31 / VP 42."
   - "1.85 (D-356/DC-34/F-PDC34-01/F-PDC34-02/2026-09-08, architect): VP-2.11.007-A bc_anchor corrected {INV-003}→{INV-002} (BC-2.11.007 {INV-002} = completeness/DI-012). VP-2.11.007-A module repointed server::guardrail_journal (phantom)→graph::provenance (pregolya-graph; canonical per module-decomposition.md §pregolya-graph). Census UNCHANGED: ADR 31 / VP 42."

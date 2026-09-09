@@ -2,7 +2,7 @@
 document_type: architecture-section
 level: L3
 section: verification-architecture
-version: "2.50"
+version: "2.51"
 status: active
 producer: architect
 timestamp: 2026-09-07T00:00:00Z
@@ -29,10 +29,11 @@ inputs:
   - .factory/specs/behavioral-contracts/ss-09/BC-2.09.008.md
   - .factory/specs/behavioral-contracts/ss-04/BC-2.04.011.md
   - .factory/specs/behavioral-contracts/ss-11/BC-2.11.007.md
-input-hash: "e751cd3"
+input-hash: "c090f78"
 traces_to: ARCH-INDEX.md
 decisions: [D17, D21, D23, D356]
 changelog:
+  - "2.51 (D-356/DC-39/F-PDC39-01/2026-09-09, architect): F-PDC39-01 — VP-2.11.007-A §P0 catalog prose block fully rewritten: removed pre-DC-34 transform_applied residue, hook_identity mislabel, unqualified evaluate_calls, ServerTestFixture/SQLite RunStore/terminal-status framing; replaced with graph-side checkpoint-backed model per F-PDC39-02 ruling (EvidenceJournal analogy corrected). Census UNCHANGED: 42 total."
   - "2.50 (D-356/DC-38/F-PDC38-07/2026-09-08, architect): F-PDC38-07 — VP-2.11.007-A §P0 catalog header updated with new subtitle: 'One Entry Per Successfully-Returning evaluate() Call'. Census UNCHANGED: 42 total."
   - "2.49 (D-356/DC-34/F-PDC34-01/F-PDC34-02/2026-09-08, architect): VP-2.11.007-A corrections — F-PDC34-01: bc_anchor {INV-003}→{INV-002} in Committed VP Obligations table + §P0 catalog formal statement. F-PDC34-02: module server::guardrail_journal→graph::provenance in Committed VP Obligations table + §P0 catalog header. Preamble narrative corrected. Census UNCHANGED: 42 total."
   - "2.48 (D-356/DC-33/2026-09-08, architect): VP-2.11.007-A minted — GuardrailJournal completeness integration P0 (BC-2.11.007 {PC-001}/{INV-003}; DI-012; server::guardrail_journal; pregolya-server; Phase 3). Census 41→42; integration ×12→×13; P0 6→7. BC-2.11.007.md added to inputs. Human-authorized DC-33 core-domain amendment. Propagated from VP-INDEX.md v1.52 in same burst."
@@ -467,29 +468,39 @@ See VP-011.md §Feasibility Assessment for full factor table.
 
 **VP-2.11.007-A — GuardrailJournal Completeness — One Entry Per Successfully-Returning evaluate() Call** (`graph::provenance`) `integration P0`
 
-Property: For any run that reaches terminal status, `guardrail_journal.len()` equals the
-total number of `GuardrailHook::evaluate()` calls made during that run. No entry is
-suppressed — Pass, Fail, and Transform results are all recorded in call order.
-Entry fields match the evaluate call: `boundary`, `result`, `provenance`, `timestamp_ms`
-(monotone), `transform_applied` (Some iff result=Transform, None otherwise).
+Property: `graph::provenance` appends exactly one `GuardrailEntry` to the
+checkpoint-backed `GuardrailJournal` per **successfully-returning**
+`GuardrailHook::evaluate()` call, sync-durable before execution continues at that
+ingress boundary (same durability model as `EvidenceJournal` — BC-2.10.002 {INV-003}).
+A panicking or erroring `evaluate()` appends no entry ({EC-003}). Pass, Fail, and
+Transform results are all recorded in call order. Entry fields: `boundary: IngressBoundary`
+(ToolResult | RagChunk | MemoryItem per BC-2.06.001 §PC-002), `result: GuardrailResult`,
+`provenance: ProvenanceTag`, `timestamp_ms: u64` (monotone). NOTE: `transform_applied`
+absent (O-PDC34-A). NOTE: run-read `guardrail_journal?` projection is assembled from the
+checkpoint store by `server::run_read_handler` at read time — NOT via a
+`server::handlers` terminal-state RunStore write (F-PDC39-02; DC-36 F-PDC36-01 analogy
+corrected).
 
 Formal statement (BC-2.11.007 {PC-001}/{INV-002}):
 ```
 ∀ run_id: RunId,
-  let calls = evaluate_calls_during_run(run_id),
-  let journal = guardrail_journal_for_run(run_id):
+  let calls = successfully_returning_evaluate_calls_during_run(run_id),
+              // {EC-003}: panicking/erroring evaluate() appends no entry
+  let journal = checkpoint_guardrail_journal_for_run(run_id):
     journal.len() == calls.len()
-    ∧ ∀ i < calls.len():
-        journal[i].boundary == calls[i].hook_identity
-        ∧ journal[i].result == calls[i].result
+    ∧ ∀ i: 0 ≤ i < calls.len():
+        journal[i].boundary       == calls[i].ingress_boundary  // IngressBoundary variant
+        ∧ journal[i].result       == calls[i].result
         ∧ journal[i].timestamp_ms is monotone
-        ∧ (journal[i].result == GuardrailResult::Transform →
-               journal[i].transform_applied.is_some())
+    // NOTE: transform_applied field absent (O-PDC34-A)
+    // NOTE: journal checkpoint-backed (pregolya-checkpoint); F-PDC39-02 ruling
 ```
 
-Proof method: Integration test (ServerTestFixture with in-process SQLite RunStore;
-3 deterministic hooks covering Pass/Fail/Transform; N=3 bounded; DC-33 human-authorized
-core-domain amendment). See `vp-2.11.007-a-guardrail-journal-completeness.md` §Proof Harness Skeleton.
+Proof method: Integration test (GraphTestFixture with in-process checkpoint store;
+3 deterministic hooks covering Pass/Fail/Transform; N=3 bounded; journal queried from
+checkpoint store via `get_guardrail_journal(run_id)` post-run — same pattern as
+VP-BUDGET-03/EvidenceJournal; DC-33 human-authorized core-domain amendment).
+See `vp-2.11.007-a-guardrail-journal-completeness.md` §Proof Harness Skeleton.
 
 DI anchor: DI-012 (Guardrail Coverage at Ingress Boundaries — all evaluate() calls must
 produce observable, durable records for security audit per CAP-047).
@@ -1134,6 +1145,7 @@ Modules where behavioral testing is the primary verification method:
 
 | Version | Date | Author | Decision | Change |
 |---------|------|--------|----------|--------|
+| 2.51 | 2026-09-08 | architect | D-356/DC-39/2026-09-08 | F-PDC39-01 — VP-2.11.007-A §P0 catalog prose block fully rewritten: removed pre-DC-34 transform_applied residue, hook_identity mislabel, unqualified evaluate_calls, ServerTestFixture/SQLite RunStore/terminal-status framing; replaced with graph-side checkpoint-backed model per F-PDC39-02 ruling (EvidenceJournal analogy corrected). Census UNCHANGED: 42 total. |
 | 2.50 | 2026-09-08 | architect | D-356/DC-38/2026-09-08 | F-PDC38-07 — VP-2.11.007-A §P0 catalog header updated with new subtitle: 'One Entry Per Successfully-Returning evaluate() Call'. Census UNCHANGED: 42 total. |
 | 2.49 | 2026-09-08 | architect | D-356/DC-34/2026-09-08 | VP-2.11.007-A corrections — F-PDC34-01: bc_anchor {INV-003}→{INV-002} in VP table + §P0 catalog. F-PDC34-02: module server::guardrail_journal→graph::provenance in VP table + §P0 catalog. Census UNCHANGED: 42 total. |
 | 2.48 | 2026-09-08 | architect | D-356/DC-33/2026-09-08 | VP-2.11.007-A minted — GuardrailJournal completeness integration P0 (BC-2.11.007 {PC-001}/{INV-003}; DI-012; server::guardrail_journal; pregolya-server; Phase 3). Census 41→42; integration ×12→×13; P0 6→7. Human-authorized DC-33 core-domain amendment; BC-2.11.007 authored by PO; entities-server.md §GuardrailJournal defined by BA. |

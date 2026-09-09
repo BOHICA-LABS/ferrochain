@@ -2,18 +2,19 @@
 document_type: architecture-section
 level: L3
 section: verification-coverage-matrix
-version: "3.45"
+version: "3.46"
 status: active
-producer: state-manager
-timestamp: 2026-09-08T00:00:00Z
+producer: architect
+timestamp: 2026-09-09T00:00:00Z
 phase: 1b
 inputs:
   - .factory/specs/verification-properties/VP-INDEX.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/module-criticality.md
-input-hash: "f65fe21"
+input-hash: "4a4559f"
 traces_to: ARCH-INDEX.md
 changelog:
+  - "3.46 (D-356/DC-39/F-PDC39-02/2026-09-09, architect): VP-2.11.007-A catalog row UNCHANGED (module graph::provenance, crate pregolya-graph, tool integration, BC-2.11.007 {PC-001}/{INV-002}, phase 3, draft — all correct from DC-34). input-hash updated f65fe21→4a4559f (VP-INDEX §Changelog and module-decomposition §Module-Decomposition input drift from this burst). Census UNCHANGED: 42 total."
   - "3.45 (D-356/DC-38/F-PDC38-07/2026-09-08, architect): F-PDC38-07 — VP-2.11.007-A VP-to-Module title cell updated: 'Every evaluate() Call Produces an Entry' → 'One Entry Per Successfully-Returning evaluate() Call'. Per-Module Notes cell updated: 'every evaluate() call produces exactly one GuardrailEntry' → 'one entry per successfully-returning evaluate() call'. Census UNCHANGED: 42 total. input-hash updated 517c921→f65fe21 (VP-INDEX.md v1.55 input drift)."
   - "3.44 (D-356/DC-34/F-PDC34-01/F-PDC34-02/2026-09-08, architect): F-PDC34-01 — VP-2.11.007-A bc_anchor corrected {INV-003}→{INV-002} (BC-2.11.007 {INV-002} = completeness/DI-012; {INV-003} = separation from EvidenceJournal; VP tests completeness). F-PDC34-02 — VP-2.11.007-A module repointed server::guardrail_journal (phantom)→graph::provenance (pregolya-graph); phantom Per-Module row server::guardrail_journal removed; graph::provenance Integration column and Notes updated to cite VP-2.11.007-A. Preamble: 93→92 physical rows; MEDIUM 42→41 (phantom removed; graph::provenance is HIGH); tiered 84→83. input-hash updated to 517c921 (VP-INDEX.md v1.53 input drift)."
   - "3.43 (D-356/DC-33/2026-09-08, architect): VP-2.11.007-A registered — GuardrailJournal completeness integration P0 (BC-2.11.007 {PC-001}/{INV-003}; DI-012; server::guardrail_journal; pregolya-server; Phase 3). VP-to-Module table: add VP-2.11.007-A row after VP-020. Totals: 41→42 VPs, integration 12→13, P0 6→7. Per-Module Coverage Status: add server::guardrail_journal MEDIUM row. Preamble arithmetic updated. input-hash updated (VP-INDEX.md v1.52 input drift). Human-authorized DC-33 core-domain amendment."
