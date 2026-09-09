@@ -2,7 +2,7 @@
 document_type: architecture-section
 level: L3
 section: verification-architecture
-version: "2.51"
+version: "2.52"
 status: active
 producer: architect
 timestamp: 2026-09-07T00:00:00Z
@@ -29,10 +29,11 @@ inputs:
   - .factory/specs/behavioral-contracts/ss-09/BC-2.09.008.md
   - .factory/specs/behavioral-contracts/ss-04/BC-2.04.011.md
   - .factory/specs/behavioral-contracts/ss-11/BC-2.11.007.md
-input-hash: "c090f78"
+input-hash: "03b5d4d"
 traces_to: ARCH-INDEX.md
 decisions: [D17, D21, D23, D356]
 changelog:
+  - "2.52 (D-356/DC-44/F-PDC44-02/2026-09-09, architect): F-PDC44-02 — body changelog row v2.51 date corrected from 2026-09-08 to 2026-09-09. Census UNCHANGED: 42 total."
   - "2.51 (D-356/DC-39/F-PDC39-01/2026-09-09, architect): F-PDC39-01 — VP-2.11.007-A §P0 catalog prose block fully rewritten: removed pre-DC-34 transform_applied residue, hook_identity mislabel, unqualified evaluate_calls, ServerTestFixture/SQLite RunStore/terminal-status framing; replaced with graph-side checkpoint-backed model per F-PDC39-02 ruling (EvidenceJournal analogy corrected). Census UNCHANGED: 42 total."
   - "2.50 (D-356/DC-38/F-PDC38-07/2026-09-08, architect): F-PDC38-07 — VP-2.11.007-A §P0 catalog header updated with new subtitle: 'One Entry Per Successfully-Returning evaluate() Call'. Census UNCHANGED: 42 total."
   - "2.49 (D-356/DC-34/F-PDC34-01/F-PDC34-02/2026-09-08, architect): VP-2.11.007-A corrections — F-PDC34-01: bc_anchor {INV-003}→{INV-002} in Committed VP Obligations table + §P0 catalog formal statement. F-PDC34-02: module server::guardrail_journal→graph::provenance in Committed VP Obligations table + §P0 catalog header. Preamble narrative corrected. Census UNCHANGED: 42 total."
@@ -1145,7 +1146,8 @@ Modules where behavioral testing is the primary verification method:
 
 | Version | Date | Author | Decision | Change |
 |---------|------|--------|----------|--------|
-| 2.51 | 2026-09-08 | architect | D-356/DC-39/2026-09-08 | F-PDC39-01 — VP-2.11.007-A §P0 catalog prose block fully rewritten: removed pre-DC-34 transform_applied residue, hook_identity mislabel, unqualified evaluate_calls, ServerTestFixture/SQLite RunStore/terminal-status framing; replaced with graph-side checkpoint-backed model per F-PDC39-02 ruling (EvidenceJournal analogy corrected). Census UNCHANGED: 42 total. |
+| 2.52 | 2026-09-09 | architect | D-356/DC-44/F-PDC44-02/2026-09-09 | F-PDC44-02 — body changelog row v2.51 date corrected from 2026-09-08 to 2026-09-09. Census UNCHANGED: 42 total. |
+| 2.51 | 2026-09-09 | architect | D-356/DC-39/2026-09-09 | F-PDC39-01 — VP-2.11.007-A §P0 catalog prose block fully rewritten: removed pre-DC-34 transform_applied residue, hook_identity mislabel, unqualified evaluate_calls, ServerTestFixture/SQLite RunStore/terminal-status framing; replaced with graph-side checkpoint-backed model per F-PDC39-02 ruling (EvidenceJournal analogy corrected). Census UNCHANGED: 42 total. |
 | 2.50 | 2026-09-08 | architect | D-356/DC-38/2026-09-08 | F-PDC38-07 — VP-2.11.007-A §P0 catalog header updated with new subtitle: 'One Entry Per Successfully-Returning evaluate() Call'. Census UNCHANGED: 42 total. |
 | 2.49 | 2026-09-08 | architect | D-356/DC-34/2026-09-08 | VP-2.11.007-A corrections — F-PDC34-01: bc_anchor {INV-003}→{INV-002} in VP table + §P0 catalog. F-PDC34-02: module server::guardrail_journal→graph::provenance in VP table + §P0 catalog. Census UNCHANGED: 42 total. |
 | 2.48 | 2026-09-08 | architect | D-356/DC-33/2026-09-08 | VP-2.11.007-A minted — GuardrailJournal completeness integration P0 (BC-2.11.007 {PC-001}/{INV-003}; DI-012; server::guardrail_journal; pregolya-server; Phase 3). Census 41→42; integration ×12→×13; P0 6→7. Human-authorized DC-33 core-domain amendment; BC-2.11.007 authored by PO; entities-server.md §GuardrailJournal defined by BA. |

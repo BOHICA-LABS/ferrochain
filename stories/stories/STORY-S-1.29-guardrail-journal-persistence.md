@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-1.29
 epic_id: E-11
-version: "1.5"
+version: "1.6"
 status: draft
 producer: story-writer
 timestamp: 2026-09-08T00:00:00Z
@@ -14,12 +14,13 @@ changelog:
   - "1.3 (D-356/DC-37/2026-09-08, story-writer): F-PDC37-01 — §Previous Story Intelligence S-1.19 panic-gotcha corrected: caught evaluate() panic ⇒ Err(E-CORE-007) fail-closed, NO GuardrailEntry appended (per BC-2.11.007 {EC-003} / S-1.19 AC-025); tdd_mode note, AC-001, and EC-006 updated accordingly. F-PDC37-03 — §File Structure split into two test files: graph-side guardrail_journal_completeness.rs (AC-001, VP-2.11.007-A) and server-side guardrail_journal_server_integration.rs (AC-002 + AC-003); §Tasks, §Token Budget, AC test-file references updated."
   - "1.4 (D-356/DC-38/2026-09-08, story-writer): F-PDC38-03 — AC-004 reworded: 'count of GuardrailHook::evaluate() calls' qualified to 'SUCCESSFULLY-RETURNING evaluate() calls; panicking/erroring appends no entry per BC-2.11.007 {EC-003}/{INV-002}'; test renamed test_BC_2_11_007_journal_entry_count_equals_successful_evaluate_calls(); file reference added (graph-side); sweep found no other unqualified phrasings."
   - "1.5 (D-356/DC-39/2026-09-09, story-writer): F-PDC39-01 — Persistence model corrected to checkpoint-backed per architect re-adjudication: DC-36 model ('terminal RunStore write in pregolya-server, same function as evidence_journal') was FALSE — that function does not exist. Correct model: graph::provenance appends each GuardrailEntry sync-durably to pregolya-checkpoint SQLite (same backend as EvidenceJournal) BEFORE execution continues; no in-flight Vec; no terminal flush; server::run_read_handler queries checkpoint_store.get_guardrail_journal(run_id) at read time. Affected: Narrative, AC-002, AC-003, Architecture Mapping, Purity Classification, PSI S-1.26 gotcha, Forbidden Dependencies, File Structure, Task 4, Task 5, Task 6, Token Budget. DC-36 and DC-37 delta notes annotated [SUPERSEDED by DC-39 re: persistence model]."
+  - "1.6 (D-356/DC-44/2026-09-09, story-writer): F-PDC44-01 — journal-init mechanism added per architect ruling: graph::provenance implements init_guardrail_journal(run_id) called at run start iff invocation_context.guardrail_hook().is_some(), writing an empty checkpoint record sync-durably before first ingress; enables 3-state discriminator (None=no hook/Some([])/Some([N])). AC-003 updated with init mechanism; Architecture Mapping (provenance.rs + checkpoint rows), File Structure (provenance.rs + graph-side test descriptions), Token Budget, and Task list updated (new Task 4 init; existing Tasks 4-9 renumbered to Tasks 5-10)."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-11/BC-2.11.007.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "a329fcf"
+input-hash: "25401ba"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-1.19, S-1.26]
@@ -53,6 +54,8 @@ tdd_mode: strict
 
 > **D-356/DC-39 (2026-09-09, story-writer).** F-PDC39-01 architect re-adjudication — the DC-36 model ("terminal RunStore write in pregolya-server, same function as evidence_journal persistence") was FALSE — that function does not exist. Correct persistence model: `graph::provenance` implements checkpoint-backed `GuardrailJournal` via `pregolya-checkpoint` (same SQLite backend as EvidenceJournal); each successfully-returning `evaluate()` appends one `GuardrailEntry` sync-durably BEFORE execution continues. No in-flight Vec accumulation; no terminal flush. `server::run_read_handler` queries `checkpoint_store.get_guardrail_journal(run_id)` at read time to assemble `guardrail_journal?`. DC-36 and DC-37 notes annotated with supersession markers. Affected: Narrative, AC-002, AC-003, §Architecture Mapping, §Purity Classification, §Previous Story Intelligence S-1.26 gotcha, §Forbidden Dependencies, §File Structure, Task 4, Task 5, Task 6, Token Budget.
 
+> **D-356/DC-44 (2026-09-09, story-writer).** F-PDC44-01 architect ruling — journal-init mechanism: `graph::provenance` implements `init_guardrail_journal(run_id)` — called at run start iff `invocation_context.guardrail_hook().is_some()`; writes an empty journal record to the checkpoint store (sync-durable, before the first ingress boundary). Distinct from `append_guardrail_entry` (per successfully-returning evaluate()). Enables 3-state run-read discriminator: no journal record ⇒ None (no hook registered); empty record ⇒ Some([]) (hook registered, zero ingress); N entries ⇒ Some([N]) (hook + N successful evaluations). Affected: AC-003, §Architecture Mapping, §File Structure, Token Budget, Task list (new Task 4; existing Tasks 4-9 renumbered to Tasks 5-10).
+
 ## Narrative
 
 - **As a** graph runtime developer building the pregolya-graph guardrail system
@@ -74,7 +77,7 @@ After each `GuardrailHook::evaluate(content, provenance_tag)` call in `pregolya-
 Each successfully-returning `GuardrailHook::evaluate()` call in `graph::provenance` appends one `GuardrailEntry` sync-durably to `pregolya-checkpoint` SQLite (same backend as EvidenceJournal) BEFORE execution continues. There is no terminal flush and no in-flight Vec — every entry is durable the moment evaluate() returns successfully. After any number of evaluate() calls, all entries are retrievable by run ID from the checkpoint store. Verified by `test_BC_2_11_007_checkpoint_persistence_per_evaluate()` in `crates/pregolya-server/tests/guardrail_journal_server_integration.rs` (server-side; fixture queries checkpoint store).
 
 ### AC-003 (traces to BC-2.11.007 postcondition PC-003 — run-read guardrail_journal? projection)
-The run-read endpoint (`GET /threads/{thread_id}/runs/{run_id}`) exposes the journal as `guardrail_journal?` in the response body. `server::run_read_handler` assembles the field by calling `checkpoint_store.get_guardrail_journal(run_id)` at read time. Conditions: (a) For in-progress runs: the field is absent (`None`), regardless of hook registration. (b) For terminal-status runs where a hook was registered: the field contains the complete `Vec<GuardrailEntry>` from the checkpoint store — `Some([])` when registered but no ingress occurred; `Some([entries])` when N ingress events were evaluated. (c) For terminal-status runs where NO hook was registered: the field is absent (`None`) — per BC-2.11.007 INV-004. No hook registered is semantically distinct from hook registered with zero evaluations. Verified by `test_BC_2_11_007_run_read_projection_terminal()`, `test_BC_2_11_007_run_read_projection_in_progress_absent()`, and `test_BC_2_11_007_run_read_projection_no_hook_none()` in `crates/pregolya-server/tests/guardrail_journal_server_integration.rs` (server-side).
+The run-read endpoint (`GET /threads/{thread_id}/runs/{run_id}`) exposes the journal as `guardrail_journal?` in the response body. `server::run_read_handler` assembles the field by calling `checkpoint_store.get_guardrail_journal(run_id)` at read time. The 3-state discriminator works via journal-record initialization: `init_guardrail_journal(run_id)` is called at run start iff `invocation_context.guardrail_hook().is_some()`, creating an empty checkpoint record before the first ingress; `append_guardrail_entry` adds one entry per successfully-returning evaluate(). Conditions: (a) For in-progress runs: the field is absent (`None`), regardless of hook registration. (b) For terminal-status runs where a hook was registered: the checkpoint store contains a journal record (created by init_guardrail_journal) — `Some([])` when registered but no ingress occurred (init record, zero appends); `Some([entries])` when N ingress events were evaluated (init record + N appends). (c) For terminal-status runs where NO hook was registered: no journal record exists in the checkpoint store → the field is absent (`None`) — per BC-2.11.007 INV-004. No hook registered is semantically distinct from hook registered with zero evaluations. Verified by `test_BC_2_11_007_run_read_projection_terminal()`, `test_BC_2_11_007_run_read_projection_in_progress_absent()`, and `test_BC_2_11_007_run_read_projection_no_hook_none()` in `crates/pregolya-server/tests/guardrail_journal_server_integration.rs` (server-side).
 
 ### AC-004 (traces to BC-2.11.007 invariant INV-002 — completeness DI-012)
 The count of `GuardrailEntry` records in the journal equals the count of SUCCESSFULLY-RETURNING `GuardrailHook::evaluate()` calls made during the run — no successful calls are silently omitted. A panicking/erroring evaluate() (EC-006) appends no entry and does NOT increment the count per BC-2.11.007 {EC-003}/{INV-002}. For a run with N successful evaluate calls, the journal contains exactly N entries. Verified by `test_BC_2_11_007_journal_entry_count_equals_successful_evaluate_calls()` in `crates/pregolya-graph/tests/guardrail_journal_completeness.rs` (graph-side).
@@ -87,8 +90,8 @@ The `guardrail_journal` field contains only `GuardrailEntry` records (boundary +
 | Component | Module | Pure/Effectful |
 |-----------|--------|----------------|
 | GuardrailEntry type + GuardrailJournal alias | `pregolya-core/src/guardrail.rs` | Pure (data types) |
-| Sync-durable journal append per evaluate() | `pregolya-graph/src/provenance.rs` | Effectful (checkpoint write per call; BEFORE execution continues) |
-| Durable storage backend | `pregolya-checkpoint` SQLite (same backend as EvidenceJournal) | Effectful (SQLite append; no in-flight Vec; no terminal flush) |
+| Journal init at run start + sync-durable append per evaluate() | `pregolya-graph/src/provenance.rs` | Effectful (init_guardrail_journal at run start iff hook registered; append_guardrail_entry per successfully-returning evaluate()) |
+| Durable storage backend | `pregolya-checkpoint` SQLite (same backend as EvidenceJournal) | Effectful (SQLite init + per-call append; no in-flight Vec; no terminal flush) |
 | run-read response projection | `pregolya-server/src/routes/runs.rs` | Effectful (queries checkpoint_store.get_guardrail_journal(run_id) at read time; serializes) |
 
 ## Purity Classification
@@ -120,13 +123,13 @@ The `guardrail_journal` field contains only `GuardrailEntry` records (boundary +
 | S-1.19 context (GuardrailHook trait, GuardrailResult types, provenance.rs patterns) | ~2,000 |
 | S-1.26 context (RunStore trait, run-read route, Run model) | ~2,000 |
 | `pregolya-core/src/guardrail.rs` additions (~30 lines) | ~400 |
-| `pregolya-graph/src/provenance.rs` journal-append + checkpoint-write additions (~60 lines) | ~750 |
+| `pregolya-graph/src/provenance.rs` journal-init + journal-append + checkpoint-write additions (~70 lines) | ~875 |
 | `pregolya-checkpoint` checkpoint store interface context (~40 lines) | ~500 |
 | `pregolya-server/src/routes/runs.rs` projection additions (~30 lines) | ~400 |
 | Test files — graph-side guardrail_journal_completeness.rs (~60 lines) | ~800 |
 | Test files — server-side guardrail_journal_server_integration.rs (~80 lines) | ~1,000 |
 | Tool outputs | ~300 |
-| **Total** | **~11,650** |
+| **Total** | **~11,775** |
 | Agent context window | 200K (Sonnet) |
 | **Budget usage** | **~6%** |
 
@@ -135,12 +138,13 @@ The `guardrail_journal` field contains only `GuardrailEntry` records (boundary +
 1. [ ] Write failing tests for all ACs (test-writer): (a) graph-side tests in `crates/pregolya-graph/tests/guardrail_journal_completeness.rs` for AC-001 (append on successful evaluate; VP-2.11.007-A vehicle; NO pregolya-server dependency); (b) server-side tests in `crates/pregolya-server/tests/guardrail_journal_server_integration.rs` for AC-002 (checkpoint persistence per evaluate()) and AC-003 (run-read None/Some projection)
 2. [ ] Add `GuardrailEntry` struct and `GuardrailJournal = Vec<GuardrailEntry>` type alias to `pregolya-core/src/guardrail.rs`. Fields: `boundary: IngressBoundary`, `result: GuardrailResult`, `provenance: ProvenanceTag`, `timestamp_ms: u64`. No `transform_applied` field — Transform content is in `result.Transform.new_content`
 3. [ ] Modify `pregolya-graph/src/provenance.rs` dispatch site: after each `GuardrailHook::evaluate()` call that returns successfully, construct the `GuardrailEntry` and call `checkpoint_store.append_guardrail_entry(run_id, &entry)` sync-durably BEFORE execution continues. No in-flight Vec needed — each entry is immediately durable in `pregolya-checkpoint` SQLite (AC-001 / AC-002 / BC-2.11.007 PC-001/PC-002).
-4. [ ] Wire `Arc<dyn CheckpointStore>` into `graph::provenance` at the evaluate() dispatch call site (same `pregolya-checkpoint` backend as EvidenceJournal). Verify: `pregolya-graph` imports `pregolya-checkpoint`, NOT `pregolya-server` — correct downward dependency.
-5. [ ] `graph::provenance` implements checkpoint-backed `GuardrailJournal` via `pregolya-checkpoint` (same SQLite backend as EvidenceJournal); each successfully-returning `evaluate()` appends one `GuardrailEntry` sync-durably BEFORE execution continues.
-6. [ ] Add `guardrail_journal: Option<GuardrailJournal>` to the `Run` response model; populate from `checkpoint_store.get_guardrail_journal(run_id)` for terminal-status runs; absent for in-progress runs (AC-003 / BC-2.11.007 PC-003). This modifies `pregolya-server/src/routes/runs.rs` run-read handler.
-7. [ ] Implement separation assertion: add test that a run using BOTH budget policy and guardrail hook produces entries exclusively in their respective journals with no cross-contamination (AC-005 / BC-2.11.007 INV-003)
-8. [ ] Export `GuardrailEntry` and `GuardrailJournal` from `pregolya-core/src/lib.rs`
-9. [ ] Run `cargo nextest run -p pregolya-core -p pregolya-graph --no-fail-fast` — graph-side tests (AC-001) green; then `cargo nextest run -p pregolya-server --no-fail-fast` — server-side tests (AC-002/AC-003) green
+4. [ ] `graph::provenance` implements `init_guardrail_journal(run_id)` — called at run start if `invocation_context.guardrail_hook().is_some()`; writes an empty journal record to the checkpoint store (sync-durable, before the first ingress boundary). Distinct from `append_guardrail_entry` (per successfully-returning evaluate()). Enables 3-state discriminator: no journal record ⇒ None; empty record ⇒ Some([]); N entries ⇒ Some([N]) (AC-003 / BC-2.11.007 PC-003).
+5. [ ] Wire `Arc<dyn CheckpointStore>` into `graph::provenance` at the evaluate() dispatch call site (same `pregolya-checkpoint` backend as EvidenceJournal). Verify: `pregolya-graph` imports `pregolya-checkpoint`, NOT `pregolya-server` — correct downward dependency.
+6. [ ] `graph::provenance` implements checkpoint-backed `GuardrailJournal` via `pregolya-checkpoint` (same SQLite backend as EvidenceJournal); each successfully-returning `evaluate()` appends one `GuardrailEntry` sync-durably BEFORE execution continues.
+7. [ ] Add `guardrail_journal: Option<GuardrailJournal>` to the `Run` response model; populate from `checkpoint_store.get_guardrail_journal(run_id)` for terminal-status runs; absent for in-progress runs (AC-003 / BC-2.11.007 PC-003). This modifies `pregolya-server/src/routes/runs.rs` run-read handler.
+8. [ ] Implement separation assertion: add test that a run using BOTH budget policy and guardrail hook produces entries exclusively in their respective journals with no cross-contamination (AC-005 / BC-2.11.007 INV-003)
+9. [ ] Export `GuardrailEntry` and `GuardrailJournal` from `pregolya-core/src/lib.rs`
+10. [ ] Run `cargo nextest run -p pregolya-core -p pregolya-graph --no-fail-fast` — graph-side tests (AC-001) green; then `cargo nextest run -p pregolya-server --no-fail-fast` — server-side tests (AC-002/AC-003) green
 
 ## Previous Story Intelligence (MANDATORY)
 
@@ -177,7 +181,7 @@ The `guardrail_journal` field contains only `GuardrailEntry` records (boundary +
 |------|--------|---------|
 | `crates/pregolya-core/src/guardrail.rs` | MODIFY | Add `GuardrailEntry` struct and `GuardrailJournal` type alias |
 | `crates/pregolya-core/src/lib.rs` | MODIFY | Re-export `GuardrailEntry` and `GuardrailJournal` |
-| `crates/pregolya-graph/src/provenance.rs` | MODIFY | Add sync-durable checkpoint append per evaluate() dispatch site (AC-001 / BC-2.11.007 PC-001); no in-flight Vec; no RunStore import |
+| `crates/pregolya-graph/src/provenance.rs` | MODIFY | Add init_guardrail_journal (run-start, iff hook registered) and sync-durable append_guardrail_entry per evaluate() dispatch site (AC-001/AC-002/AC-003 / BC-2.11.007 PC-001/PC-002/PC-003); no in-flight Vec; no RunStore import |
 | `crates/pregolya-server/src/routes/runs.rs` | MODIFY | Add `guardrail_journal?` to run-read response; query via `checkpoint_store.get_guardrail_journal(run_id)` for terminal-status runs (AC-003) |
-| `crates/pregolya-graph/tests/guardrail_journal_completeness.rs` | CREATE | AC-001 completeness/append tests — VP-2.11.007-A test vehicle (graph-side; exercises checkpoint fixture; asserts entries per successful evaluate(); NO pregolya-server dependency) |
+| `crates/pregolya-graph/tests/guardrail_journal_completeness.rs` | CREATE | AC-001 completeness/append tests — VP-2.11.007-A test vehicle (graph-side; exercises checkpoint fixture with init_guardrail_journal + append_guardrail_entry; asserts all 3 states None/Some([])/Some([N]); NO pregolya-server dependency) |
 | `crates/pregolya-server/tests/guardrail_journal_server_integration.rs` | CREATE | AC-002 checkpoint persistence per evaluate() + AC-003 run-read None/Some([])/Some([N]) projection tests (server-side; queries checkpoint_store.get_guardrail_journal(run_id) via HTTP) |

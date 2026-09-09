@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.11.007
-version: "1.7"
+version: "1.8"
 status: draft
 producer: product-owner
 timestamp: 2026-09-08T00:00:00Z
@@ -31,6 +31,7 @@ changelog:
   - "1.5 (D-356/DC-39/2026-09-09, product-owner): Architect re-adjudicated persistence model — GuardrailJournal is CHECKPOINT-BACKED (pregolya-checkpoint SQLite, same backend as BC-2.10.002 EvidenceJournal), sync-durable incremental append BEFORE execution continues at each ingress boundary; NOT a terminal-state RunStore write. §Architecture Anchors replaced with architect-exact 2-bullet model: graph::provenance DURABLE ACCUMULATION to checkpoint store; server::run_read_handler assembles None/Some projection at run-read time. Whole-file sweep corrected: Description (terminal-state RunStore ref); {PRE-003} (RunStore writable → checkpoint store accessible); {PC-002} (terminal-state write → checkpoint-backed incremental, run_read_handler projection); {INV-002} (removed terminal-write tail, added checkpoint-backed tail consistent with BC-2.10.002 {INV-003}); {INV-003} (RunStore schema → checkpoint store schema); {INV-004} (RunStore record → checkpoint store); {EC-002} (RunStore failed record → checkpoint store); {EC-006} (persisted at terminal state → checkpoint-backed); TV-005 (persisted at completion → checkpoint-backed); Related BCs BC-2.10.002 (same append-only → same checkpoint-backed append-only); §Traceability Architecture Module (RunStore persistence → checkpoint-backed append + run_read_handler projection)."
   - "1.6 (D-356/DC-40/2026-09-09, product-owner): F-PDC40-03: §Architecture Anchors parity fix — added dedicated pregolya-checkpoint (checkpoint store) bullet between graph::provenance (append) and server::run_read_handler (read) bullets, mirroring BC-2.10.002 EvidenceJournal checkpoint-storage anchor form. Bullet cites append_guardrail_entry(run_id, entry) (sync-durable write by graph::provenance) and get_guardrail_journal(run_id) (read by server::run_read_handler at run-read time). Method name consistency check: append_guardrail_entry confirmed in S-1.29 Task 3 narrative; get_guardrail_journal confirmed in S-1.29 AC-003 and VP-2.11.007-A §Proof Harness — no discrepancy."
   - "1.7 (D-356/DC-42/2026-09-09, product-owner): F-PDC42-01: §Story Anchor reverse-anchor completeness — S-console-10 (roadmap, Wave 3 guardrail review panel) declares BC-2.11.007 in behavioral_contracts frontmatter and consumes guardrail_journal? via BC-2.24.008 {PC-004}, but §Story Anchor listed only S-1.29. S-console-10 appended as roadmap consumer, mirroring DC-08/DC-16 convention. §Related BCs already carried BC-2.24.008 consumer edge — no change needed there."
+  - "1.8 (D-356/DC-44/2026-09-09, product-owner): Architect-ruled journal-init mechanism applied. {PRE-001}: journal record created by init_guardrail_journal(run_id) at run start iff invocation_context.guardrail_hook().is_some(). {PC-002}: added init write at run start + explicit append_guardrail_entry call + run-read projection pattern. {INV-004}: discriminator rewritten as journal-RECORD existence (None=no record=no init; Some([])=record+0 entries; Some([N])=record+N entries) realized via init_guardrail_journal + get_guardrail_journal returning Option on record-existence. §Architecture Anchors graph::provenance bullet: added init_guardrail_journal at run start iff hook registered; pregolya-checkpoint bullet: added init_guardrail_journal(run_id) to op list with return-value semantics. {EC-004}: 'journal record never created' replaces 'journal never initialized'. {EC-006}: 'journal RECORD was created by init_guardrail_journal' replaces 'journal was initialized'. TV-002/TV-005: discriminator language updated to journal-record existence."
 modified: []
 extracted_from: null
 deprecated: null
@@ -62,7 +63,10 @@ content evaluation results.
 ## Preconditions
 
 1. {PRE-001} A `GuardrailHook` is registered on the `InvocationContext` (per BC-2.11.001) and the
-   run's `GuardrailJournal` has been initialized.
+   run's `GuardrailJournal` record has been initialized — `graph::provenance` calls
+   `checkpoint_store.init_guardrail_journal(run_id)` at run start iff
+   `invocation_context.guardrail_hook().is_some()`, sync-durable BEFORE the first
+   ingress-boundary evaluation.
 2. {PRE-002} A run is executing and `GuardrailHook::evaluate()` has been called at an ingress
    boundary (ToolResult, RagChunk, or MemoryItem per BC-2.11.002/003/004).
 3. {PRE-003} The checkpoint store (pregolya-checkpoint) is accessible for sync-durable
@@ -87,10 +91,13 @@ content evaluation results.
    Fail/Transform events (ADR-006 rev-3, F-P99-01); the journal records all three so that the
    completed-run review surface (BC-2.24.008 {PC-004}) has a complete audit trail.
 
-2. {PC-002} **Journal durably persisted at each ingress boundary:** The `GuardrailJournal` is
-   checkpoint-backed (pregolya-checkpoint, same SQLite backend as BC-2.10.002 EvidenceJournal).
-   Each `GuardrailEntry` is written sync-durably to the checkpoint store BEFORE graph execution
-   continues, after each successfully-returning `evaluate()`. At run-read time,
+2. {PC-002} **Journal init at run start, append per evaluate, projection at run-read:** The
+   `GuardrailJournal` is checkpoint-backed (pregolya-checkpoint, same SQLite backend as
+   BC-2.10.002 EvidenceJournal). At run start, `graph::provenance` calls
+   `checkpoint_store.init_guardrail_journal(run_id)` sync-durably iff a `GuardrailHook` is
+   registered — creating the empty journal record. Thereafter, each `GuardrailEntry` is written
+   sync-durably via `checkpoint_store.append_guardrail_entry(run_id, entry)` BEFORE graph
+   execution continues, after each successfully-returning `evaluate()`. At run-read time,
    `server::run_read_handler` assembles the `guardrail_journal?` None/Some projection by
    querying `checkpoint_store.get_guardrail_journal(run_id)`
    (entities-server.md §GuardrailJournal; S-1.29 AC-002/AC-003).
@@ -121,21 +128,23 @@ content evaluation results.
   These MUST NOT be conflated in the checkpoint store schema, the run-read response projection,
   or any consumer (see BC-2.12.003 {PC-013}, BC-2.24.008 {PC-004}).
 
-- {INV-004} **Journal presence governed by hook registration, not evaluate() call count:** The
-  three distinct states are:
-  - **No hook registered** (BC-2.11.006 default-permit path): journal is never initialized;
-    `guardrail_journal?` is `None` (null/omitted) on the run-read response. This is because
-    the journal lifecycle is tied to hook registration at run start, not to whether any
-    evaluate() calls occurred.
-  - **Hook registered, zero ingress boundaries crossed** (run completes without triggering
-    any guarded boundary): journal is initialized but no entries are appended;
-    `guardrail_journal?` is `Some([])` — an empty list, not `None`. The journal IS persisted
-    in the checkpoint store (pregolya-checkpoint).
+- {INV-004} **Journal presence governed by journal-record existence (init_guardrail_journal):**
+  The three distinct states are:
+  - **No hook registered** (BC-2.11.006 default-permit path): `init_guardrail_journal` is NOT
+    called; no journal record exists in the checkpoint store; `get_guardrail_journal(run_id)`
+    returns `None`; `guardrail_journal?` is `None` (null/omitted) on the run-read response.
+  - **Hook registered, zero ingress boundaries crossed** (run completes without triggering any
+    guarded boundary): `init_guardrail_journal(run_id)` IS called at run start, creating the
+    journal record; `append_guardrail_entry` is never called (zero evaluate() calls at ingress);
+    `get_guardrail_journal(run_id)` returns `Some([])` — record exists, zero entries;
+    `guardrail_journal?` is `Some([])`, an empty list (NOT `None`).
   - **Hook registered, N ingress boundaries crossed** (N > 0 evaluate() calls succeeded):
-    `guardrail_journal?` is `Some([N entries])`.
-  The discriminator between `None` and `Some([])` is hook registration, not evaluate()-call
-  count. Both the no-hook and zero-ingress cases have zero evaluate() calls, but only the
-  no-hook case yields `None`.
+    journal record created at run start, N entries appended; `get_guardrail_journal(run_id)`
+    returns `Some([N entries])`; `guardrail_journal?` is `Some([N entries])`.
+  The discriminator between `None` and `Some([])` is journal-record existence: `None` means
+  no record was created (init_guardrail_journal not called); `Some([])` means a record
+  exists with zero entries. Both the no-hook and zero-ingress cases have zero evaluate()
+  calls, but only no-hook has no record.
 
 ## Edge Cases
 
@@ -144,19 +153,19 @@ content evaluation results.
 | {EC-001} | Run with all Pass decisions; guardrail_journal? inspected on terminal-status run-read response | `guardrail_journal?` present with all Pass entries; journal is non-empty even though SSE had no `guardrail_decision` events (Pass not streamed per F-P99-01) |
 | {EC-002} | Run fails (transitions to `failed`) before all ingress boundaries are evaluated | Journal entries written up to the point of failure are durably persisted in the checkpoint store (pregolya-checkpoint); the partial journal is assembled by `server::run_read_handler` at run-read time and is the authoritative record for that run |
 | {EC-003} | `GuardrailHook::evaluate()` throws an error or panics | The evaluate() error is propagated per BC-2.11.002/003/004 error handling; no `GuardrailEntry` is appended for a failed evaluate() call (entry written only on successful return of `GuardrailResult`) |
-| {EC-004} | No `GuardrailHook` registered (BC-2.11.006 path) | `guardrail_journal?` is `None` (null/omitted) on terminal-status run-read response; the journal was never initialized because no hook was registered — NOT because no evaluate() calls occurred (zero-ingress hook-registered runs also have zero evaluate() calls but yield `Some([])`, not `None`; see {EC-006}) |
+| {EC-004} | No `GuardrailHook` registered (BC-2.11.006 path) | `guardrail_journal?` is `None` (null/omitted) on terminal-status run-read response; the journal RECORD was never created (`init_guardrail_journal` not called because no hook registered) — NOT because no evaluate() calls occurred (zero-ingress hook-registered runs also have zero evaluate() calls but yield `Some([])`, not `None`, because their init_guardrail_journal WAS called; see {EC-006}) |
 | {EC-005} | Two `GuardrailHook` instances composed in parallel (both evaluate the same content unit) | Each hook's evaluate() call appends one entry independently; the journal records both calls with their respective results. For a single content unit processed by 2 composed hooks, 2 entries appear |
-| {EC-006} | `GuardrailHook` registered; run executes and completes but zero ingress boundaries are crossed (e.g., a pure computation graph with no tool calls, RAG, or memory reads) | `guardrail_journal?` is `Some([])` — an empty list (not `None`); the journal was initialized at hook registration and is checkpoint-backed (pregolya-checkpoint), but no entries were appended. Distinguishable from the no-hook case ({EC-004}) which yields `None` |
+| {EC-006} | `GuardrailHook` registered; run executes and completes but zero ingress boundaries are crossed (e.g., a pure computation graph with no tool calls, RAG, or memory reads) | `guardrail_journal?` is `Some([])` — an empty list (not `None`); the journal RECORD was created by `init_guardrail_journal` at run start (hook was registered), checkpoint-backed (pregolya-checkpoint), but no entries were appended via `append_guardrail_entry`. Distinguishable from the no-hook case ({EC-004}) which yields `None` because no record was created |
 
 ## Canonical Test Vectors
 
 | # | Input | Expected Output | Category |
 |---|-------|-----------------|----------|
 | TV-001 | Run with 3 tool-result ingress events; registered hook returns Pass/Fail/Transform respectively; run completes | `guardrail_journal?` on terminal-status run-read response contains exactly 3 entries in evaluation order: `{result: Pass, boundary: IngressBoundary::ToolResult, ...}`, `{result: Fail{reason, severity}, boundary: IngressBoundary::ToolResult, ...}`, `{result: Transform{new_content}, boundary: IngressBoundary::ToolResult, ...}` | happy-path completeness |
-| TV-002 | No `GuardrailHook` registered (BC-2.11.006 default-permit path); run completes | Terminal-status run-read response: `guardrail_journal?` is `None` (null/omitted); journal was never initialized (no hook registered — discriminator is registration, not evaluate()-call count; {INV-004}, {EC-004}) | no-hook path ({EC-004}) |
+| TV-002 | No `GuardrailHook` registered (BC-2.11.006 default-permit path); run completes | Terminal-status run-read response: `guardrail_journal?` is `None` (null/omitted); journal record was never created (`init_guardrail_journal` not called — discriminator is journal-record existence per {INV-004}; {EC-004}) | no-hook path ({EC-004}) |
 | TV-003 | Run with 1 Pass decision only; run completes | `guardrail_journal?` contains 1 entry with `result: Pass`; journal non-empty even though SSE emitted no `guardrail_decision` events | Pass-only run |
 | TV-004 | Run with registered hook; run transitions to `failed` after 2 evaluate() calls | `guardrail_journal?` on `failed` run-read response contains the 2 entries written before failure; partial journal persisted | failed-run partial journal |
-| TV-005 | `GuardrailHook` registered; run completes with zero ingress boundaries crossed | Terminal-status run-read response: `guardrail_journal?` is `Some([])` (empty list, NOT `None`); journal initialized at hook registration, checkpoint-backed (pregolya-checkpoint), zero entries appended ({EC-006}, {INV-004}) | hook-registered zero-ingress ({EC-006}) |
+| TV-005 | `GuardrailHook` registered; run completes with zero ingress boundaries crossed | Terminal-status run-read response: `guardrail_journal?` is `Some([])` (empty list, NOT `None`); journal record created by `init_guardrail_journal` at run start, checkpoint-backed (pregolya-checkpoint), zero entries appended via `append_guardrail_entry` ({EC-006}, {INV-004}) | hook-registered zero-ingress ({EC-006}) |
 
 ## Verification Properties
 
@@ -177,8 +186,8 @@ content evaluation results.
 
 ## Architecture Anchors
 
-- `graph::provenance` (pregolya-graph): ProvenanceTag attachment at ingress boundaries, GuardrailHook dispatch, GuardrailJournal DURABLE ACCUMULATION — appends one `GuardrailEntry` to the checkpoint-backed `GuardrailJournal` (pregolya-checkpoint, same SQLite backend as BC-2.10.002 EvidenceJournal) sync-durably BEFORE execution continues at each ingress boundary, after each successfully-returning `evaluate()`; a panicking/erroring `evaluate()` appends no entry ({EC-003}). pregolya-graph imports the checkpoint abstraction (NOT RunStore; RunStore = pregolya-server; reverse-edge violation).
-- `pregolya-checkpoint` (checkpoint store): durable append-only GuardrailJournal storage (SQLite backend, same store as BC-2.10.002 EvidenceJournal); `append_guardrail_entry(run_id, entry)` (called sync-durably by graph::provenance per successfully-returning evaluate()) and `get_guardrail_journal(run_id)` (called by server::run_read_handler at run-read time to assemble the guardrail_journal? projection).
+- `graph::provenance` (pregolya-graph): ProvenanceTag attachment at ingress boundaries, GuardrailHook dispatch, GuardrailJournal DURABLE ACCUMULATION. At run start, iff `invocation_context.guardrail_hook().is_some()`, calls `checkpoint_store.init_guardrail_journal(run_id)` sync-durably BEFORE the first ingress-boundary evaluation — creating the empty journal record that distinguishes `Some([])` from `None` on `get_guardrail_journal`. Thereafter, appends one `GuardrailEntry` to the checkpoint-backed `GuardrailJournal` (pregolya-checkpoint, same SQLite backend as BC-2.10.002 EvidenceJournal) sync-durably via `append_guardrail_entry(run_id, entry)` BEFORE execution continues at each ingress boundary, after each successfully-returning `evaluate()`; a panicking/erroring `evaluate()` appends no entry ({EC-003}). pregolya-graph imports the checkpoint abstraction (NOT RunStore; RunStore = pregolya-server; reverse-edge violation).
+- `pregolya-checkpoint` (checkpoint store): durable append-only GuardrailJournal storage (SQLite backend, same store as BC-2.10.002 EvidenceJournal); `init_guardrail_journal(run_id)` (called at run start by graph::provenance iff hook registered — creates the empty journal record), `append_guardrail_entry(run_id, entry)` (called sync-durably by graph::provenance per successfully-returning evaluate()), and `get_guardrail_journal(run_id)` (called by server::run_read_handler at run-read time; returns None=no record exists, Some([])=record+0 entries, Some([N])=record+N entries).
 - `server::run_read_handler` (pregolya-server): assembles `guardrail_journal?` None/Some projection by querying `checkpoint_store.get_guardrail_journal(run_id)` at run-read time (S-1.29 AC-002/AC-003); NOT a terminal-state write.
 
 ## Story Anchor
