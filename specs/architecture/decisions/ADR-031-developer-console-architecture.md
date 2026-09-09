@@ -8,7 +8,7 @@ status: accepted
 date: "2026-09-06"
 producer: architect
 timestamp: 2026-09-08T00:00:00Z
-version: "1.17"
+version: "1.18"
 phase: 1b
 traces_to: ARCH-INDEX.md
 decisions: [D356]
@@ -23,8 +23,9 @@ inputs:
   - .factory/specs/architecture/decisions/ADR-021-server-config-surface-runnable-config-configurable.md
   - .factory/specs/architecture/decisions/ADR-028-server-run-lifecycle-semantics.md
   - .factory/specs/architecture/ARCH-INDEX.md
-input-hash: "fbfcc99"
+input-hash: "87d3703"
 changelog:
+  - "1.18 (DC-51/F-PDC51-01/2026-09-09, architect): F-PDC51-01 (MED) — reconcile with dependency-graph.md §Edge Table now containing pregolya-console→pregolya-server and pregolya-console→pregolya-core edges. §Decision 7 line ('This is the already-asserted console→server direction in dependency-graph.md') and DC-10 delta note ('already the asserted direction in dependency-graph.md') now resolve correctly — the edges are present. No false citation remains. No body wording change required; version bump records reconciliation. input-hash updated 87d3703 (input drift — dependency-graph.md changed in same burst)."
   - "1.17 (D-356/DC-48/F-PDC48-02/2026-09-09, architect): F-PDC48-02 (MED) — phantom `server::run_read_handler` replaced with canonical `server::handlers` in Decision 8 substrate table (two rows — evidence_journal? and guardrail_journal? both updated): 'assembled at run-read time by `server::run_read_handler`' → 'assembled at run-read time by the run-read handler in `server::handlers`'. evidence_journal? row additionally clarified: retrieval via `graph::budget::get_evidence_journal(checkpoint_store, run_id)` (typed wrapper; server→graph edge; F-PDC48-01/DC-48). `server::run_read_handler` is not a separate module (F-PDC48-02/DC-48). input-hash updated 78e89d3→fbfcc99 (input drift from prior burst)."
   - "1.16 (D-356/DC-47/F-PDC47-02/OBS/2026-09-09, architect): F-PDC47-02 (HIGH) — CLASS-SWEEP: ADR-031 already has 8-field SpanData at Decision 2/5/7 (session_id present; confirmed ✓). OBS (LOW) — D6-2 live text: strip → redact-in-place (fields retained, values → <redacted>; BC-2.24.002 {PC-008}). OBS (LOW) — DC-02 historical delta note: strip LLM payload fields → redact credential values within LLM payload fields in place (same correction). input-hash updated 78e89d3 (content change)."
   - "1.15 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog: (A) promoted 8 Decision headings from ### to ## Decision N (validator requires ^## Decision N); renamed ## Decision umbrella to ## Decisions; (B) purged 4 HS-C-001 holdout references from normative body (lines ~70/111/430/499); (D) removed 5 version pins from error-taxonomy.md (×3) and purity-boundary-map.md (×2); (E) fixed chained §Decision 2 citation in DC-07 delta note → bare Decision 2. input-hash unchanged (inputs did not change)."

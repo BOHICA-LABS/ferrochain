@@ -2,7 +2,7 @@
 document_type: architecture-section
 level: L3
 section: dependency-graph
-version: "1.13"
+version: "1.14"
 status: active
 producer: architect
 timestamp: 2026-09-09T00:00:00Z
@@ -15,6 +15,7 @@ input-hash: "90c00a6"
 traces_to: ARCH-INDEX.md
 decisions: [D4, D6, D7, D21, D23]
 changelog:
+  - "1.14 (DC-51/F-PDC51-01/2026-09-09, architect): F-PDC51-01 (MED) — pregolya-console fully registered in the DAG. (1) §Crate DAG: added pregolya-console [PLANNED Wave 3] node with console→server (SpanData+DebugSpanSource; ADR-031 Decision 7) and console→core (shared core types) edges; facade depends list extended to include pregolya-console. (2) §Edge Table: added two rows — pregolya-console→pregolya-server (SpanData + DebugSpanSource; BC-2.24.001 {INV-001}; S-console-02) and pregolya-console→pregolya-core (shared core types; BC-2.24.001 {INV-001}; S-console-01); no console→graph edge (BC-2.24.001 {INV-001} forbids). (3) §Topological Build Order: heading updated to include Wave 3; pregolya-console at position 20 (PLANNED); facade renumbered to position 21; title updated. Acyclicity confirmed: console→server→graph→core; console→core; facade→console; nothing depends back on console or facade. input-hash unchanged (inputs did not change)."
   - "1.13 (DC-50/F-2/2026-09-09, architect): F-2 (story-scope fix) — add missing Edge Table row `pregolya (facade) → pregolya-console` (runtime; facade `pregolya console` subcommand calls `pregolya_console::run_console(config)`; S-console-01 AC-001). Acyclicity confirmed: pregolya (facade) is the terminal node (position 20); pregolya-console is an impl crate that cannot depend back on the facade; no cycle introduced. input-hash unchanged (inputs did not change)."
   - "1.12 (D-356/DC-48/F-PDC48-04/2026-09-09, architect): F-PDC48-04 (LOW) — two stale edge rationales corrected. (1) pregolya-checkpoint→pregolya-core: add GuardrailEntry (core::guardrail) and associated types (GuardrailResult, IngressBoundary) as checkpoint deps — required for typed CheckpointSaver GuardrailJournal ops (append_guardrail_entry/get_guardrail_journal; BC-2.11.007); checkpoint→core dep allowed. (2) pregolya-graph→pregolya-checkpoint: add graph::provenance GuardrailJournal write-path (init_guardrail_journal, append_guardrail_entry) alongside existing graph::budget compaction read-path. input-hash updated 90c00a6 (input drift from prior burst — prd.md and module-criticality.md had changed)."
   - "1.11 (R46/F-193-01-sibling/2026-08-30): CLASS-AUDIT-2 CompiledGraph phantom sweep — Edge Table `pregolya` facade→pregolya-graph row: `CompiledGraph` (phantom bare name, non-canonical per ADR-029 §Symbol Grounding) replaced with `CompiledStateGraph` (canonical non-generic type per BC-2.02.001 {PC-001}). Sibling sweep: this was the sole remaining live-body `CompiledGraph` (bare, non-grandfathered) occurrence in this file; changelog entries v1.8/v1.10 retain old names as historical records (grandfathered per TD-VSDD-091). input-hash updated to e2207b1."
@@ -76,11 +77,14 @@ pregolya-core
   │
   └── pregolya-mcp            (uses core: Tool, Runnable; uses graph: `CompiledStateGraph` for mcp::graph_tool GraphAgentTool; optional dep on providers)
 
+pregolya-console [PLANNED Wave 3]  (developer console binary; depends on pregolya-server + pregolya-core; BC-2.24.001 {INV-001} forbids pregolya-graph dep)
+  [console→server: SpanData type + DebugSpanSource trait (ADR-031 Decision 7); console→core: shared core types]
+
 pregolya (facade)             (re-exports public API from all impl crates; terminal node)
   [depends on: pregolya-core, pregolya-graph, pregolya-checkpoint, pregolya-server,
    pregolya-splitters, pregolya-sandbox, pregolya-memory, pregolya-prompts,
    pregolya-vectorstores, pregolya-tools, pregolya-openai, pregolya-anthropic,
-   pregolya-ollama, pregolya-mcp]
+   pregolya-ollama, pregolya-mcp, pregolya-console]
 ```
 
 ## Edge Table
@@ -131,6 +135,8 @@ pregolya (facade)             (re-exports public API from all impl crates; termi
 | `pregolya` (facade) | pregolya-anthropic | runtime | Public API re-export: ChatAnthropic |
 | `pregolya` (facade) | pregolya-ollama | runtime | Public API re-export: ChatOllama, EmbeddingsOllama |
 | `pregolya` (facade) | pregolya-mcp | runtime | Public API re-export: MultiServerMcpClient, MCP tool adapters |
+| pregolya-console [PLANNED] | pregolya-server | runtime | `SpanData` type + `DebugSpanSource` trait (console→server dep direction per ADR-031 Decision 7; dependency inversion breaks console→server→console cycle); BC-2.24.001 {INV-001}; S-console-02 |
+| pregolya-console [PLANNED] | pregolya-core | runtime | Shared core types per BC-2.24.001 {INV-001}; S-console-01 |
 | `pregolya` (facade) | pregolya-console | runtime | facade `pregolya console` subcommand calls `pregolya_console::run_console(config)`; compile-time dep (S-console-01 AC-001; F-2/DC-50) |
 
 ## Cross-Cutting Dependencies (Shared by All Crates)
@@ -146,7 +152,7 @@ pregolya (facade)             (re-exports public API from all impl crates; termi
 | `kani` | Formal verification harnesses (pregolya-graph [VP-001/VP-011], pregolya-checkpoint [VP-002], pregolya-sandbox [VP-003], pregolya-vectorstores [VP-009], pregolya-core [VP-010/VP-012], pregolya-prompts [VP-006], pregolya-tools [VP-013]; dev-dep in all 7) |
 | `proptest` | Property tests (pregolya-graph [reducers/clock], pregolya-checkpoint [clock/backends], pregolya-splitters [boundary invariants], pregolya-core [VP-007 LcSerializable round-trip, VP-008 dimensionality contract], pregolya-memory [write-guard invariants], pregolya-mcp [VP-016 STATE-ISOLATION], pregolya-prompts [VP-006-B injection_guard Multi-Pair FewShotExamples]; dev-dep) |
 
-## Topological Build Order (Wave 1 → Wave 2)
+## Topological Build Order (Wave 1 → Wave 2 → Wave 3)
 
 ```
 Wave 1:
@@ -171,7 +177,10 @@ Wave 2:
   17. pregolya-ollama          (depends on core + ollama-sdk)
   18. pregolya-standard-tests  (depends on core + all adapter crates)
   19. pregolya-mcp             (depends on core + graph [mcp::graph_tool/`CompiledStateGraph`] + optional providers; graph at position 8 satisfies topological order)
-  20. pregolya (facade)        (re-exports all impl crates; terminal node; depends on all above)
+
+Wave 3 [PLANNED]:
+  20. pregolya-console [PLANNED] (depends on pregolya-server [position 9] + pregolya-core [position 2]; BC-2.24.001 {INV-001} forbids pregolya-graph dep; ADR-031 Decision 7)
+  21. pregolya (facade)        (re-exports all impl crates including pregolya-console; terminal node; depends on all above)
 ```
 
 **Note:** pregolya-graph depends on pregolya-sandbox for tool dispatch. However,
