@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.12.003
-version: "1.24"
+version: "1.25"
 status: active
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -47,6 +47,7 @@ changelog:
   - "1.22 (D-356-fix/DC-24/2026-09-08, product-owner): F-PDC24-04: {PC-013} amended to project `evidence_journal?` on the run-read response — present when `status` is a terminal state (completed, failed, cancelled, summary_halt); null/omitted for active/queued runs. Adjudication: 1:1 entity field on Run (entities-server.md); optional projection on GET /threads/{thread_id}/runs/{run_id} is the cleanest mechanism (consistent with output?, error?, completed_at? pattern; no new sub-resource route needed). BC-2.24.007 {PC-003} now cites this field as its substrate."
   - "1.23 (D-356-fix/DC-29/2026-09-08, product-owner): F-PDC29-03 (LOW/records): DC-24 blockquote contained a volatile prose file:line citation for api-surface.md (TD-VSDD-091/POL-12). Replaced with stable section anchor 'api-surface.md §pregolya-server HTTP Endpoints'."
   - "1.24 (D-356/DC-33/2026-09-08, product-owner): F-PDC33-01: {PC-013} extended — `guardrail_journal?` added to run-read response shape alongside `evidence_journal?`. Both fields present only when status is a terminal state; null/omitted for active/queued runs. `guardrail_journal?` exposes the run's GuardrailJournal evaluation history (consumed by BC-2.24.008 {PC-004} guardrail review panel; governed by BC-2.11.007). Separation invariant: evidence_journal = budget PolicyDecision outcomes (Allow/Escalate/Deny); guardrail_journal = content GuardrailResult evaluations (Pass/Fail/Transform). DC-33 human-authorized scope."
+  - "1.25 (D-356/DC-42/2026-09-09, product-owner): F-PDC42-02: Reverse-anchor completeness — {PC-013} normatively exposes evidence_journal? (consumed by BC-2.24.007 budget panel via S-console-09) and guardrail_journal? (consumed by BC-2.24.008 guardrail panel via S-console-10), but §Related BCs and §Story Anchor had no reverse edges to those consumers. §Related BCs: BC-2.24.007 (consumer — evidence_journal? for budget panel) and BC-2.24.008 (consumer — guardrail_journal? for guardrail panel) added. §Story Anchor: S-console-09 (roadmap, Wave 3 — evidence_journal? via BC-2.24.007 {PC-003}) and S-console-10 (roadmap, Wave 3 — guardrail_journal? via BC-2.24.008 {PC-004}; declares BC-2.12.003 in behavioral_contracts, traces AC-004 to {PC-013}) added. Mirrors DC-16 F-PDC16-01 pattern."
 extracted_from: null
 modified: []
 deprecated: null
@@ -332,6 +333,8 @@ pregolya-graph engine are sufficient._
 - BC-2.12.002 — depends on: Runs reference an Assistant config at creation time
 - BC-2.05.002 — sibling: HITL interrupt resume contract covers the `interrupted` pausable state resume path (interrupted → in_progress transition)
 - BC-2.24.005 — fork-from-checkpoint consumer ({INV-009} via {PC-003})
+- BC-2.24.007 — consumer: token budget panel reads `evidence_journal?` ({PC-013}) for completed-run budget history reconstruction ({PC-003})
+- BC-2.24.008 — consumer: guardrail review panel reads `guardrail_journal?` ({PC-013}) for completed-run guardrail history reconstruction ({PC-004})
 
 ## Architecture Anchors
 
@@ -344,6 +347,10 @@ pregolya-graph engine are sufficient._
 S-1.26 (primary — Run CRUD and execution lifecycle)
 
 S-console-07 (roadmap, Wave 3 — consumes {INV-009} fork-start via BC-2.24.005 {PC-003})
+
+S-console-09 (roadmap, Wave 3 — token budget panel; consumes `evidence_journal?` {PC-013} via BC-2.24.007 {PC-003})
+
+S-console-10 (roadmap, Wave 3 — guardrail review panel; declares BC-2.12.003 in behavioral_contracts; traces AC-004 to {PC-013} `guardrail_journal?` via BC-2.24.008 {PC-004})
 
 ## VP Anchors
 

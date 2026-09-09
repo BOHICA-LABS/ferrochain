@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.11.007
-version: "1.6"
+version: "1.7"
 status: draft
 producer: product-owner
 timestamp: 2026-09-08T00:00:00Z
@@ -30,6 +30,7 @@ changelog:
   - "1.4 (D-356/DC-38/2026-09-08, product-owner): F-PDC38-04: phantom entities-server.md §RunStore anchor corrected — two sites repointed to §GuardrailJournal (the correct domain-spec heading): (1) {PC-002} parenthetical '(entities-server.md §RunStore)' → '(entities-server.md §GuardrailJournal)'; (2) §Traceability Architecture Module row — added 'entities-server.md §GuardrailJournal' as explicit domain-entity anchor alongside the runtime module references (pregolya-server RunStore persistence). Runtime RunStore references in Description, {PRE-003}, {INV-002}, §Architecture Anchors, {EC-002} are code-module references — kept intact per F-PDC38-04 carve-out."
   - "1.5 (D-356/DC-39/2026-09-09, product-owner): Architect re-adjudicated persistence model — GuardrailJournal is CHECKPOINT-BACKED (pregolya-checkpoint SQLite, same backend as BC-2.10.002 EvidenceJournal), sync-durable incremental append BEFORE execution continues at each ingress boundary; NOT a terminal-state RunStore write. §Architecture Anchors replaced with architect-exact 2-bullet model: graph::provenance DURABLE ACCUMULATION to checkpoint store; server::run_read_handler assembles None/Some projection at run-read time. Whole-file sweep corrected: Description (terminal-state RunStore ref); {PRE-003} (RunStore writable → checkpoint store accessible); {PC-002} (terminal-state write → checkpoint-backed incremental, run_read_handler projection); {INV-002} (removed terminal-write tail, added checkpoint-backed tail consistent with BC-2.10.002 {INV-003}); {INV-003} (RunStore schema → checkpoint store schema); {INV-004} (RunStore record → checkpoint store); {EC-002} (RunStore failed record → checkpoint store); {EC-006} (persisted at terminal state → checkpoint-backed); TV-005 (persisted at completion → checkpoint-backed); Related BCs BC-2.10.002 (same append-only → same checkpoint-backed append-only); §Traceability Architecture Module (RunStore persistence → checkpoint-backed append + run_read_handler projection)."
   - "1.6 (D-356/DC-40/2026-09-09, product-owner): F-PDC40-03: §Architecture Anchors parity fix — added dedicated pregolya-checkpoint (checkpoint store) bullet between graph::provenance (append) and server::run_read_handler (read) bullets, mirroring BC-2.10.002 EvidenceJournal checkpoint-storage anchor form. Bullet cites append_guardrail_entry(run_id, entry) (sync-durable write by graph::provenance) and get_guardrail_journal(run_id) (read by server::run_read_handler at run-read time). Method name consistency check: append_guardrail_entry confirmed in S-1.29 Task 3 narrative; get_guardrail_journal confirmed in S-1.29 AC-003 and VP-2.11.007-A §Proof Harness — no discrepancy."
+  - "1.7 (D-356/DC-42/2026-09-09, product-owner): F-PDC42-01: §Story Anchor reverse-anchor completeness — S-console-10 (roadmap, Wave 3 guardrail review panel) declares BC-2.11.007 in behavioral_contracts frontmatter and consumes guardrail_journal? via BC-2.24.008 {PC-004}, but §Story Anchor listed only S-1.29. S-console-10 appended as roadmap consumer, mirroring DC-08/DC-16 convention. §Related BCs already carried BC-2.24.008 consumer edge — no change needed there."
 modified: []
 extracted_from: null
 deprecated: null
@@ -183,6 +184,8 @@ content evaluation results.
 ## Story Anchor
 
 S-1.29 (STORY-S-1.29-guardrail-journal-persistence, Wave-1 P0 — implements BC-2.11.007)
+
+S-console-10 (roadmap, Wave 3 — guardrail review panel; declares BC-2.11.007 in behavioral_contracts; consumes guardrail_journal? via BC-2.24.008 {PC-004})
 
 ## VP Anchors
 
