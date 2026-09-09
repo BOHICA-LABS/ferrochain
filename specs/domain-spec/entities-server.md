@@ -2,11 +2,12 @@
 document_type: domain-spec-section
 level: L2
 section: entities-server
-version: "1.19"
+version: "1.20"
 status: active
 producer: business-analyst
 timestamp: 2026-09-08T00:00:00Z
 changelog:
+  - "1.20 (DC-34/F-PDC34-03+O-PDC34-A/2026-09-08, business-analyst): §GuardrailJournal GuardrailEntry type corrected per architect DC-34 ruling. F-PDC34-03: boundary field type String → IngressBoundary (existing canonical enum, BC-2.06.001 §Postconditions {PC-002}; values ToolResult | RagChunk | MemoryItem). O-PDC34-A: transform_applied: Option<String> field DROPPED — result.Transform.new_content: IngressContent is the authoritative transform payload; the prose description field was redundant and non-canonical. Resulting canonical GuardrailEntry shape: { boundary: IngressBoundary, result: GuardrailResult (Pass | Fail{reason,severity} | Transform{new_content}), provenance: ProvenanceTag, timestamp_ms: u64 }. Whole-file sweep: two live-body hits corrected (boundary:String and transform_applied lines); v1.19 changelog entry is historical and preserved. Dated DC-34 delta note added to §GuardrailJournal."
   - "1.19 (DC-33/F-PDC33-02/2026-09-08, business-analyst): GuardrailJournal entity added — durable per-run guardrail evaluation log closing the CAP-047 completed-run substrate gap. (1) §EvidenceJournal: budget-only clarifying note added — EvidenceJournal records PolicyDecision (Allow/Escalate/Deny) only; GuardrailResult (Pass/Fail/Transform) outcomes from GuardrailHook::evaluate() live in the separate GuardrailJournal; the two governance dimensions MUST NOT be conflated. (2) §GuardrailJournal: new entity — GuardrailEntry type { boundary: String, result: GuardrailResult, provenance: ProvenanceTag, timestamp_ms: u64, transform_applied: Option<String> }; guardrail_journal: Vec<GuardrailEntry> per-run append-only log; guardrail_journal? projected on terminal-status runs in run-read response, parity with evidence_journal? (BC-2.11.007). (3) §GuardrailHook: cross-ref bullet added — each evaluate() call appends one GuardrailEntry to the run's GuardrailJournal. (4) Relationships Summary: GuardrailJournal belongs-to Run (1——1) added. Authority: F-PDC33-02, architect DC-33 ruling."
   - "1.18 (D-356/2026-09-06, business-analyst): D-356 dev-console scope expansion — Actors/Roles section added (§Actors / Roles). Introduces the developer-operator as an explicit first-class actor with persona breakdown (P1–P5) and need→WF→CAP chain. Cross-references CAP-041–CAP-047 (capabilities-p1-p2.md §P1 — Developer Console). Research memo (.factory/planning/devconsole-adk-research.md) added to inputs; input-hash set to PENDING-RECOMPUTE. D356 added to decisions list. Roadmap-only delta: no existing content modified."
   - "1.17 (burst-315/F-AUD-C-02/2026-08-17): §PregolyaError category field: append EXEC as 13th Category variant. Prior text listed 12 codes (VAL | AUTH | RATE | TIMEOUT | TRANSPORT | INTERNAL | DURABILITY | POLICY | TOOL | CONCURRENCY | SECURITY | TENANCY); EXEC was added burst-302b/D-170 per ADR-010 §Category Axis Expansion but was not propagated to this L2 entity definition. Fix: appended '| EXEC' so all 13 taxonomy codes are present. Authority: error-taxonomy §Error Categories (EXEC row) + ADR-010 §Category Axis Expansion (D26)."
@@ -138,13 +139,14 @@ Append-only log of `GuardrailHook` evaluations for a single Run — one entry pe
 
 > **DC-33/F-PDC33-02 (2026-09-08, business-analyst).** Net-new entity per architect DC-33 ruling. Prior to this addition, `GuardrailResult (Pass | Fail | Transform)` outcomes from `GuardrailHook::evaluate()` had no persistence substrate — the `EvidenceJournal` is budget-only and records only `PolicyDecision (Allow | Escalate | Deny)`. `GuardrailJournal` closes that gap. Completed-run guardrail history substrate for CAP-047 is now `guardrail_journal?` (BC-2.11.007).
 
+> **DC-34/F-PDC34-03+O-PDC34-A (2026-09-08, business-analyst).** GuardrailEntry type corrected per architect DC-34 ruling. F-PDC34-03: `boundary` type was `String` — corrected to `IngressBoundary` (existing canonical enum, BC-2.06.001 §Postconditions {PC-002}). O-PDC34-A: `transform_applied: Option<String>` field DROPPED — `result.Transform.new_content: IngressContent` is the authoritative transform payload; the prose description field was redundant and non-canonical. Canonical shape is now `{ boundary: IngressBoundary, result: GuardrailResult, provenance: ProvenanceTag, timestamp_ms: u64 }`.
+
 - **Fields:** run_id: Uuid, entries: Vec<GuardrailEntry>
 - **GuardrailEntry type:**
-  - `boundary: String` — ingress boundary label at which the evaluation occurred (e.g., `"ToolResult"`, `"RagChunk"`, `"MemoryItem"`)
-  - `result: GuardrailResult` — evaluation outcome: `Pass` | `Fail { reason: String, severity: GuardrailSeverity }` | `Transform { new_content: IngressContent }` — canonical variants per §GuardrailHook
+  - `boundary: IngressBoundary` — ingress boundary at which the evaluation occurred: `ToolResult | RagChunk | MemoryItem` — canonical enum per BC-2.06.001 §Postconditions {PC-002}
+  - `result: GuardrailResult` — evaluation outcome: `Pass` | `Fail { reason: String, severity: GuardrailSeverity }` | `Transform { new_content: IngressContent }` — canonical variants per §GuardrailHook; `Transform.new_content: IngressContent` is the authoritative transform payload
   - `provenance: ProvenanceTag` — the `ProvenanceTag` attached to the evaluated content at the ingress boundary (§ProvenanceTag)
   - `timestamp_ms: u64` — wall-clock timestamp (milliseconds since Unix epoch) of the evaluation
-  - `transform_applied: Option<String>` — human-readable description of the transformation applied; `Some` for `Transform`; `None` for `Pass` and `Fail`
 - **Invariant:** Append-only — no entry may be modified or deleted after writing. One entry is appended per `GuardrailHook::evaluate()` call at an ingress boundary.
 - **Projection:** The run-read response (`GET /threads/{id}/runs/{run_id}`) includes `guardrail_journal?` on terminal-status runs (`completed`, `failed`, `cancelled`, `summary_halt`) — projection parity with `evidence_journal?` (BC-2.11.007).
 - **Relationships:** GuardrailJournal belongs-to Run (1——1).

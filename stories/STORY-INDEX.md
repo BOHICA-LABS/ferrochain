@@ -1,11 +1,12 @@
 ---
 document_type: story-index
 level: L3
-version: "1.84"
+version: "1.85"
 status: active
 producer: state-manager
 timestamp: 2026-09-08T23:59:45Z
 changelog:
+  - "1.85 (D-356/DC-34/2026-09-08, state-manager): DC-34 fix-burst CLOSED (DC-33 GuardrailJournal residue). F-PDC34-01/02[HIGH] VP-2.11.007-A re-anchored {INV-002}+graph::provenance across VP body+5 mirrors. F-PDC34-03[HIGH] GuardrailEntry.boundary→IngressBoundary (BC-2.11.007 {PC-001}+TV-001, ADR §Decision 8, entities-server §GuardrailJournal, S-console-10). O-PDC34-A[LOW] transform_applied dropped everywhere. F-PDC34-04[MED] ADR §Decision 8 DC-29 block inline SUPERSEDED-BY-DC-33. F-PDC34-05[MED] BC-2.11.007 MINT-REQUIRED ×3 removed. F-PDC34-06[MED] S-1.29 Wave-1 P0 story (5pts) authored (BC-2.11.007 impl; depends_on [S-1.19, S-1.26]; blocks [S-console-10]). F-PDC34-07[MED] ADR-031 changelog→descending. O-PDC34-B[LOW] BC-2.24.008 severity-wire sentence added. BC-2.11.007 BC-to-Story Anchor Map: S-console-10→S-1.29. S-console-10 depends_on: +S-1.29. Census: stories 52→53 / pts 372→377. BC 149 / VP 42 UNCHANGED. strict streak reset 0/3 (fix push; DC-35 gates new HEAD)."
   - "1.84 (D-356/DC-33/2026-09-08, state-manager): DC-33 fix-burst CLOSED. S-console-10 behavioral_contracts updated: +BC-2.11.007 (SS-11 P0 durable GuardrailJournal) +BC-2.12.003 (SS-12 P1 run-read {PC-013} projects guardrail_journal?) per F-PDC33-02 human-authorized Option a. SS-11 BC count 6→7. BC-2.11.007 row added to SS-11 BC-to-Story Coverage section. BC-2.11.007 row added to BC-to-Story Anchor Map. Census: BC 148→149 / VP 41→42 (+VP-2.11.007-A). stories 52 / pts 372 / EC 145 UNCHANGED. strict streak reset 0/3 (fix push; DC-34 gates new HEAD)."
   - "1.83 (D-356/DC-32/2026-09-08, state-manager): F-PDC32-02 — S-console-02 AC-004 SpanData field list corrected to 8-field shape (added session_id: String after end_time_ms per ADR-031 §Decision 2/§Decision 7 and BC-2.24.002 {INV-007}). F-PDC32-01 — S-console-09 EC-005 aligned to AC-007 + BC-2.24.007 {EC-005} (no gauge/timeline for terminal runs; EvidenceJournal area only; ADR-031 §Decision 8). F-PDC32-03 — S-console-06 + S-console-10 bare ADR-030 §Decision → §Decision 2 (POL-19 ambiguous-anchor). Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
   - "1.82 (D-356/DC-29/2026-09-08, state-manager): S-console-06 (story-writer; D8 completed-run sweep — run-read+evidence_journal?+trace spans; no StreamEvent replay per ADR-031 §Decision 8). S-console-09 (story-writer; D8 completed-run sweep). S-console-10 (story-writer; D8 completed-run sweep). BC-INDEX. ARCH-INDEX. L2-INDEX. Census UNCHANGED: stories 52 / pts 372 / BCs 148 / VPs 41 / EC 145."
@@ -103,18 +104,18 @@ input-hash: "34034c0"
 
 # STORY-INDEX: pregolya Phase 2 Story Inventory
 
-> **52 stories total — 28 Wave 1 / 12 Wave 2 / 10 Wave 3 / 1 Wave 6 / 1 Maint (S-MAINT-001 housekeeping, out-of-wave)**
-> **Product-story census: 51 (28 Wave 1 / 12 Wave 2 / 10 Wave 3 / 1 Wave 6). S-MAINT-001 is maintenance, not a product feature.**
-> **BC coverage: 148 BCs — 51 P0 / 94 P1 / 3 P2 — all covered**
+> **53 stories total — 29 Wave 1 / 12 Wave 2 / 10 Wave 3 / 1 Wave 6 / 1 Maint (S-MAINT-001 housekeeping, out-of-wave)**
+> **Product-story census: 52 (29 Wave 1 / 12 Wave 2 / 10 Wave 3 / 1 Wave 6). S-MAINT-001 is maintenance, not a product feature.**
+> **BC coverage: 149 BCs — 52 P0 / 94 P1 / 3 P2 — all covered**
 > **Story files:** Individual STORY-NNN specs live in `.factory/stories/stories/`
 
 ## Census
 
 | Metric | Count |
 |--------|-------|
-| Total Story Files | 52 |
-| Product Stories | 51 |
-| Wave 1 stories | 28 |
+| Total Story Files | 53 |
+| Product Stories | 52 |
+| Wave 1 stories | 29 |
 | Wave 2 stories | 12 |
 | Wave 3 stories | 10 |
 | Wave 6 stories | 1 |
@@ -122,8 +123,8 @@ input-hash: "34034c0"
 | Product Epics | 23 |
 | Maintenance Epics | 1 |
 | Total Epics | 24 |
-| BCs covered | 148 / 148 |
-| Stories with VP anchor | 25 |
+| BCs covered | 149 / 149 |
+| Stories with VP anchor | 26 |
 | Stories with Red-Gate obligations | 10 |
 
 ## Story Inventory
@@ -199,6 +200,12 @@ input-hash: "34034c0"
 |----|-------|---------------------|-----------|-------------|-----|-----|------------|--------|
 | S-1.28 | LedgerChannel and PromoteRetireChannel — Ledger-Style State Channels | BC-2.02.007, BC-2.02.008, BC-2.02.009 | SS-02 | pregolya-graph | P1 | 5 | [S-1.14] | draft |
 
+### Wave 1 — pregolya-graph DC-34 addition (GuardrailJournal persistence)
+
+| ID | Title | Behavioral Contracts | Subsystem | Target Crate | Pri | Pts | depends_on | Status |
+|----|-------|---------------------|-----------|-------------|-----|-----|------------|--------|
+| S-1.29 | GuardrailJournal Persistence — Durable Journaling of Guardrail Evaluation Results | BC-2.11.007 | SS-11 | pregolya-graph | P0 | 5 | [S-1.19, S-1.26] | draft |
+
 ---
 
 ### Wave 2 — pregolya-core D21 additions (LC Serialization and Retrieval)
@@ -268,7 +275,7 @@ input-hash: "34034c0"
 | S-console-07 | Checkpoint History Browser and Fork-from-Checkpoint Trajectory Replay | BC-2.24.005, BC-2.12.001 | SS-24 | pregolya-console | P1 | 5 | [S-console-05] | roadmap |
 | S-console-08 | HITL Approval Dialog and Resume Dispatch | BC-2.24.006 | SS-24 | pregolya-console | P1 | 5 | [S-console-06] | roadmap |
 | S-console-09 | Token/Context Budget Monitoring Panel | BC-2.24.007 | SS-24 | pregolya-console | P1 | 5 | [S-console-06] | roadmap |
-| S-console-10 | Guardrail/Security Decision Review Panel | BC-2.24.008, BC-2.11.007, BC-2.12.003 | SS-24 | pregolya-console | P1 | 5 | [S-console-06] | roadmap |
+| S-console-10 | Guardrail/Security Decision Review Panel | BC-2.24.008, BC-2.11.007, BC-2.12.003 | SS-24 | pregolya-console | P1 | 5 | [S-console-06, S-1.29] | roadmap |
 
 ---
 
@@ -451,7 +458,7 @@ input-hash: "34034c0"
 | BC-2.11.004 | GuardrailHook at Memory Ingress | S-1.19 | P0 |
 | BC-2.11.005 | Rejected Content Never Enters Model Context | S-1.19 | P0 |
 | BC-2.11.006 | No-Hook Default — Pass-Through with WARNING LOG | S-1.19 | P0 |
-| BC-2.11.007 | Guardrail Evaluation Results Are Durably Journaled | S-console-10 | P0 |
+| BC-2.11.007 | Guardrail Evaluation Results Are Durably Journaled | S-1.29 | P0 |
 
 ### SS-12 Durable-Run HTTP Server (7 BCs)
 
@@ -583,7 +590,7 @@ input-hash: "34034c0"
 | BC-2.24.006 | HITL Approval Dialog and Resume Dispatch | S-console-08 | P1 |
 | BC-2.24.007 | Token/Context Budget Monitoring Panel | S-console-09 | P1 |
 | BC-2.24.008 | Guardrail/Security Decision Review Panel | S-console-10 | P1 |
-| BC-2.11.007 | Guardrail Evaluation Results Are Durably Journaled | S-console-10 | P0 |
+| BC-2.11.007 | Guardrail Evaluation Results Are Durably Journaled | S-1.29 | P0 |
 
 ---
 

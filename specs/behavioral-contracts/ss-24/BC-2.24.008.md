@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.24.008
-version: "1.7"
+version: "1.8"
 status: draft
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -27,6 +27,7 @@ changelog:
   - "1.5 (D-356-fix/DC-29/2026-09-08, product-owner): F-PDC29-01 (HIGH): Description/PRE-002/PC-004/INV-002 all referenced non-existent stored StreamEvent list for completed-run reconstruction. Replaced throughout with D8 realizable substrate: evidence_journal? on run-read response (BC-2.12.003 {PC-013}) is the authoritative source for completed-run guardrail history (StreamEvent is transient per ADR-030 §Decision 2; ADR-031 Decision 8). INV-002 completeness obligation now correctly spans SSE stream (live) and evidence_journal? (terminal-status runs)."
   - "1.6 (D-356-fix/DC-30/F-PDC30-02/2026-09-08, product-owner): F-PDC30-02 (MED): `ADR-030 §Decision` → `ADR-030 §Decision 2` in {PC-004} body, DC-29 delta note, and DC-29 changelog entry. `§Decision 2` is the canonical ADR-030 clause establishing StreamEvent transience."
   - "1.7 (D-356/DC-33/2026-09-08, product-owner): F-PDC33-02: DC-29 used wrong field — `evidence_journal?` is the budget PolicyDecision journal (BC-2.10.002 / EvidenceJournal); completed-run guardrail history is `guardrail_journal?` (BC-2.11.007 / GuardrailJournal). All normative references to completed-run guardrail history updated: Description, PRE-002, PC-004 (architect-exact wording per DC-33), INV-002 — all `evidence_journal?` → `guardrail_journal?`. NOTE in PC-004 added clarifying that evidence_journal? records a SEPARATE governance dimension (budget). DC-33 human-authorized scope."
+  - "1.8 (D-356/DC-34/2026-09-08, product-owner): O-PDC34-B: {PC-002} — completed-run severity mapping sentence added: guardrail_journal? entries carry Fail{severity: GuardrailSeverity} (domain type); the panel maps to GuardrailSeverityWire for display; mapping is isomorphic Critical/High/Medium/Low 1:1 (no data loss). Shape-consistency sweep: BC-2.24.008 does not enumerate GuardrailEntry fields beyond a high-level reference in {PC-004}; no transform_applied drift found."
 traces_to:
   - domain-spec/capabilities-p1-p2.md#CAP-047
   - architecture/decisions/ADR-031-developer-console-architecture.md
@@ -34,7 +35,7 @@ inputs:
   - .factory/specs/domain-spec/capabilities-p1-p2.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/planning/devconsole-adk-research.md
-input-hash: "85c2216"
+input-hash: "3d77ae1"
 extracted_from: null
 modified: []
 deprecated: null
@@ -46,6 +47,8 @@ removal_reason: null
 ---
 
 # BC-2.24.008: Guardrail/Security Decision Review Panel (CAP-047)
+
+> **D-356 adversary fix DC-34 (2026-09-08, product-owner).** O-PDC34-B: {PC-002} — completed-run severity mapping sentence added. `guardrail_journal?` entries carry `Fail{severity: GuardrailSeverity}` (domain type); the panel displays `GuardrailSeverityWire`; the mapping is isomorphic Critical/High/Medium/Low 1:1 (no data loss). Shape-consistency sweep: BC-2.24.008 enumerates no `GuardrailEntry` field list beyond a high-level result reference in {PC-004}; no `transform_applied` drift found.
 
 > **D-356 adversary fix DC-33 (2026-09-08, product-owner).** F-PDC33-02: DC-29 used the wrong field for completed-run guardrail history. `evidence_journal?` is the budget `PolicyDecision` journal (BC-2.10.002 / `EvidenceJournal`; records Allow/Escalate/Deny outcomes); completed-run guardrail history is `guardrail_journal?` (BC-2.11.007 / `GuardrailJournal`; records `GuardrailResult` Pass/Fail/Transform per `GuardrailHook::evaluate` call). These are distinct governance dimensions. All normative references in Description, PRE-002, PC-004, and INV-002 corrected: `evidence_journal?` → `guardrail_journal?`. PC-004 rewritten with architect-exact wording per DC-33 adjudication. DC-29 blockquote preserved as historical record; this DC-33 note supersedes its field-name claim.
 
@@ -81,6 +84,7 @@ visibility during untrusted-tool-result ingestion).
 2. {PC-002} **Per-entry fields:** Each entry in the feed shows:
    - `boundary`: `IngressBoundary` — one of `ToolResult | RagChunk | MemoryItem` (per BC-2.06.001 §Postconditions PC-002 `StreamEvent::GuardrailDecision`; authority: ADR-006 §Decision).
    - `GuardrailSeverityWire`: `Critical | High | Medium | Low` — `Some` for `Fail` decisions; `None` for `Transform` decisions (per BC-2.06.001 §Postconditions PC-002 and ADR-006 §Decision).
+   - **Completed-run severity mapping:** `guardrail_journal?` entries carry `Fail{severity: GuardrailSeverity}` (domain type); the panel maps this to `GuardrailSeverityWire` for display — the mapping is isomorphic (Critical/High/Medium/Low 1:1; no data loss, no truncation).
    - Decision: `Fail` or `Transform` (`decision` field on `StreamEvent::GuardrailDecision`).
    - For `Fail`: the `reason` string (`reason: Option<String>` — `Some` for `Fail`; `None` for `Transform`).
 3. {PC-003} **Real-time update (live runs):** For in-progress runs, new `guardrail_decision` events are appended to the feed as they arrive via the shared SSE subscription (one `EventSource` per run, shared with BC-2.24.004 and BC-2.24.007).

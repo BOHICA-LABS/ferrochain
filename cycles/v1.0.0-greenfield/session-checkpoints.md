@@ -1,8 +1,9 @@
 ---
 document_type: session-checkpoints
 level: ops
-version: "2.4"
+version: "2.5"
 changelog:
+  - "2.5 (D-356/DC-34 fix-burst/2026-09-08): D-356/DC-33 checkpoint archived"
   - "2.4 (D-356/DC-33 fix-burst/2026-09-08): D-356/DC-32 checkpoint archived"
   - "2.3 (D-356/DC-02 fix-burst/2026-09-07): D-356/DC-01 checkpoint archived"
   - "2.2 (D-347/round-68/2026-09-02): D-346 checkpoint archived"
@@ -4646,3 +4647,28 @@ PR #1 MERGEABLE but requires GENUINE HUMAN MERGE (self-authored PR, DIRECTIVE 4 
 
 ### PENDING USER-APPROVED WORK
 DC-33 adversary pass PENDING (orchestrator, strict streak 0/3). PR #1 merge (human action required). DEV-TOOLING-D255 v1 dev-tooling expansion — ready to start post-merge. DTU clones (openai/anthropic/ollama): Phase-4 prerequisite.
+
+---
+
+## Archived Checkpoint: D-356/DC-33 fix-burst (2026-09-08)
+
+### RESUME IN ONE BREATH
+pregolya Phase-2 CONVERGED+gate-APPROVED (anchor 81d16ca); Phase-3 IN PROGRESS at workspace-init. D-356 Phase-1 spec amendment COMPLETE (developer-console ROADMAP-ONLY; census: BC 149 / VP 42 / EC 145 / stories 52 / pts 372). D-356/DC-01 through DC-33 fix-bursts COMPLETE: DC-01..DC-27 details in burst-log.md + STATE §DC-28..DC-33 steps. DC-22=CLEAN(strict) streak1/3 [banked, then broken]; DC-28=RECORDS-ONLY; DC-29=1H+1MED+1LOW; DC-30=2H+1MED; DC-31=1H+1MED; DC-32=3MED; DC-33=4[2H+1MED+1LOW] — ALL CLOSED. Full trajectory: →5→...→3MED→4[2H+1MED+1LOW]. D-357: human-authorized Option a durable GuardrailJournal (BC-2.11.007 SS-11 P0; VP-2.11.007-A; EvidenceJournal BUDGET-ONLY). OBS-DC05-01 RESOLVED-BY-DC-23; PG-7 RESOLVED-BY-DEVOPS-6beaa88 (POL-14→BLOCKING); PG-DC32 OPEN; PG-DC33 OPEN (architect edited STATE.md directly). BC-INDEX updated to DC-33 census; STORY-INDEX updated to DC-33 census; ARCH-INDEX at DC-32 (VP mirrors 42). strict streak reset 0/3 (DC-33 fix push); DC-34 gates new HEAD. PR #1 (workspace scaffold) REVIEWED-CLEAN + MERGEABLE (PR-1 HEAD c9712c2) but BLOCKED from agent-merge (self-authored PR) — needs GENUINE HUMAN MERGE.
+
+### HEADS
+- develop: `bfe0592` — LOCAL ONLY (2 commits ahead of origin/develop at `644d1ad`; push required before Phase-3); factory-artifacts: HEAD updated by DC-33 fix-burst commit (this burst). Main worktree on `chore/phase3-workspace-init` (NOT develop; return to develop post-merge). PR #1 branch `chore/phase3-workspace-init`: head c9712c2 prefix (OPEN, MERGEABLE, CI 17/17 green, cycle-13 APPROVE 0-blocking).
+
+### RESUME NEXT-ACTION
+(1) Dispatch DC-34 adversary pass (fresh-context) against current factory-artifacts HEAD; strict streak 0/3. (2) Get PR #1 human-merged (squash-merge targeting develop). (3) Post-merge: return main worktree to develop; push develop 2 local-only commits; launch S-1.01 (PregolyaError) in pregolya-core. Standing directives DIRECTIVE 1/2/3/4 in force. 7 open convergence-close deferrals (C-1/PG-1/PG-2/PG-3/PG-4/PG-5/PG-6; PG-7 RESOLVED); PG-DC32 OPEN; PG-DC33 OPEN. OBS-DC05-01 CLOSED.
+
+### DECISION-LOG DELTA (D-356/D-357/DC-33 fix-burst)
+D-357/DC-33 (2026-09-08): DC-33 fix-burst CLOSED. trajectory-tail →2H+1MED→1H+1MED→3MED→4[2H+1MED+1LOW] (DC-30=2H+1MED CLOSED; DC-31=1H+1MED CLOSED; DC-32=3MED CLOSED; DC-33=4[2H+1MED+1LOW] ALL CLOSED). F-PDC33-02[HIGH, HUMAN-AUTHORIZED Option a] durable GuardrailJournal: BC-2.11.007 (SS-11, P0); entities-server §GuardrailJournal; BC-2.12.003 {PC-013} guardrail_journal?; BC-2.24.008 re-pointed; CAP-047+CAP-043 superseding; ADR-031 §Decision 8 de-pended; S-console-10 re-pointed; VP-2.11.007-A minted; all VP mirrors at 42. F-PDC33-01[HIGH] SpanData session_id — ADR-031 §Decision 5 + api-surface.md session_id field 5 of 8-field shape. F-PDC33-03[MED] ADR-031 "six"→"eight" binding decisions + "Binding Status" heading. F-PDC33-04[LOW/records] BC-2.24.005 version-pin removed. BC-INDEX updated (149 BCs, 52 P0). STORY-INDEX updated (BC-2.11.007 + SS-11 count 7). records-lint PASS FAIL=0. changelog-direction PASS FAIL=0. ZERO 0000000 remain. Census: BC 148→149 (+BC-2.11.007 SS-11 P0) / VP 41→42 (+VP-2.11.007-A integration P0). EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / SS 24 / crates 22 UNCHANGED. D-357 logged. PG-DC33 logged. strict streak reset 0/3 (DC-33 fix push; DC-34 gates new HEAD).
+
+### WORKTREE INVENTORY
+Main worktree on `chore/phase3-workspace-init` (NOT develop). .worktrees/ absent. Phase-3 workspace init PENDING human merge of PR #1.
+
+### STANDING HUMAN-GATE OBS
+PR #1 MERGEABLE but requires GENUINE HUMAN MERGE (self-authored PR, DIRECTIVE 4 CAVEAT). Phase-3 TDD stories cannot start until PR #1 merges.
+
+### PENDING USER-APPROVED WORK
+DC-34 adversary pass PENDING (orchestrator, strict streak 0/3). PR #1 merge (human action required). DEV-TOOLING-D255: v1 dev-tooling expansion — ready to start post-merge. DTU clones (openai/anthropic/ollama): Phase-4 prerequisite.

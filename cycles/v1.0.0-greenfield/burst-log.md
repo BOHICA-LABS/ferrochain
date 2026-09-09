@@ -1,8 +1,9 @@
 ---
 document_type: burst-log
 level: ops
-version: "1.6"
+version: "1.7"
 changelog:
+  - "1.7 (D-356/DC-34/2026-09-08): DC-28 step archived from STATE.md Current Phase Steps (5-row rolling window from DC-34 fix-burst close)"
   - "1.6 (D-356/DC-28/2026-09-08): DC-23+DC-21 archive entries (5-row rolling window from DC-28 RECORDS-ONLY micro-burst close)"
   - "1.5 (burst-316/2026-08-18): burst-311 archive entry (5-row rolling window) + burst-316 COMPLETE entry appended"
   - "1.4 (burst-315/2026-08-17): burst-310 archive entry (5-row rolling window) + burst-315 COMPLETE entry appended"
@@ -7179,3 +7180,7 @@ BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24 �
 ### DC-30 Burst Summary (archived from STATE.md Current Phase Steps — DC-33 fix-burst 2026-09-08)
 
 | D-356/DC-30 fix-burst (2026-09-08) — CLOSED. 2H+1MED ALL CLOSED (DC-29-fix residue). trajectory-tail →1L+1OBS→1H+1MED+1LOW→2H+1MED→1H+1MED (DC-27=1H+2M+1L; DC-28=1L+1OBS RECORDS-ONLY; DC-29=1H+1MED+1LOW; DC-30=2H+1MED ALL CLOSED). F-PDC30-01[HIGH] BC-2.24.002 {INV-007} session_id=run_id invariant added (ADR-031 §Decision 2 session-key binding: DebugSpanExporter sets session_id=run_id at insertion; all spans addressable via GET /debug/trace/session/{run_id}). F-PDC30-03[HIGH] BC-2.24.007 {TV-004} rewrote — terminal-run panel shows EvidenceJournal Allow/Escalate/Deny table ONLY; compaction markers transient (ADR-030 §Decision 2 + ADR-031 §Decision 8); {PRE-002} ADR-030 §Decision → §Decision 2 corrected. F-PDC30-02[MED] ADR-030 §Decision→§Decision 2 sweep: ADR-031 §Decision 2 (6 sites); BC-2.24.004 {PRE-004}/{PC-006}; BC-2.24.008 {PC-004}. BC-INDEX. ARCH-INDEX. verify-form-a-changelog-direction.sh PASS: FAIL=0 BC_UNVERIFIED=0. ZERO 0000000 remain. Census UNCHANGED: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / SS 24 / crates 22. strict streak reset 0/3 (fix push; DC-31 gates new HEAD). | state-manager | COMPLETE | STATE.md §D-356/DC-30. Single commit per TD-VSDD-053. |
+
+### DC-28 Burst Summary (archived from STATE.md Current Phase Steps — DC-34 fix-burst 2026-09-08)
+
+| D-356/DC-28 RECORDS-ONLY micro-burst (2026-09-08) — CLEAN(PR-merge)=YES (zero CRIT/HIGH/MED); trajectory-tail →1H+1MED→1H+2M→1H+2M+1L→1L+1OBS (DC-25..28 ALL CLOSED). 1L[F-PDC28-01 S-console-05: Token Budget Estimate table backfilled with BC-2.24.004 row (~300 tokens); total ~8,100→~8,400; POL-8 step 4 satisfied]+1OBS[F-PDC28-02 ARCH-INDEX: removed vestigial '; DI-004)' from VP-2.24.005-A/B description cells; all 20 SS-24 §VP rows now DI-annotation-free]. Deep-semantic/cross-BC-CAP/VP-coherence/changelog classes CONFIRMED CONVERGED (L-288 sweep holds; 4/8 BCs fully coherent, remainder clean). STORY-INDEX updated (census UNCHANGED). verify-form-a-changelog-direction.sh PASS: FAIL=0 BC_UNVERIFIED=0. ZERO 0000000 remain. Census UNCHANGED: BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / SS 24 / crates 22. streak UNCHANGED 0/3 (records-only per TD-RECORDS-MICRO-BURST-001; DC-29 gates new HEAD as strict-streak pass 1). | state-manager | COMPLETE | STATE.md §D-356/DC-28. Single commit per TD-VSDD-053. |

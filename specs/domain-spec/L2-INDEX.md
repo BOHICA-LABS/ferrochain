@@ -4,7 +4,7 @@ level: L2
 version: "1.35"
 status: active
 producer: state-manager
-timestamp: 2026-09-08T24:30:00Z
+timestamp: 2026-09-08T23:59:00Z
 phase: 1a
 inputs:
   - .factory/specs/product-brief.md

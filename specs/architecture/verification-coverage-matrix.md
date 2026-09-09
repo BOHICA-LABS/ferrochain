@@ -2,18 +2,19 @@
 document_type: architecture-section
 level: L3
 section: verification-coverage-matrix
-version: "3.43"
+version: "3.44"
 status: active
 producer: state-manager
-timestamp: 2026-09-07T00:00:00Z
+timestamp: 2026-09-08T00:00:00Z
 phase: 1b
 inputs:
   - .factory/specs/verification-properties/VP-INDEX.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/module-criticality.md
-input-hash: "ffcaa4f"
+input-hash: "517c921"
 traces_to: ARCH-INDEX.md
 changelog:
+  - "3.44 (D-356/DC-34/F-PDC34-01/F-PDC34-02/2026-09-08, architect): F-PDC34-01 — VP-2.11.007-A bc_anchor corrected {INV-003}→{INV-002} (BC-2.11.007 {INV-002} = completeness/DI-012; {INV-003} = separation from EvidenceJournal; VP tests completeness). F-PDC34-02 — VP-2.11.007-A module repointed server::guardrail_journal (phantom)→graph::provenance (pregolya-graph); phantom Per-Module row server::guardrail_journal removed; graph::provenance Integration column and Notes updated to cite VP-2.11.007-A. Preamble: 93→92 physical rows; MEDIUM 42→41 (phantom removed; graph::provenance is HIGH); tiered 84→83. input-hash updated to 517c921 (VP-INDEX.md v1.53 input drift)."
   - "3.43 (D-356/DC-33/2026-09-08, architect): VP-2.11.007-A registered — GuardrailJournal completeness integration P0 (BC-2.11.007 {PC-001}/{INV-003}; DI-012; server::guardrail_journal; pregolya-server; Phase 3). VP-to-Module table: add VP-2.11.007-A row after VP-020. Totals: 41→42 VPs, integration 12→13, P0 6→7. Per-Module Coverage Status: add server::guardrail_journal MEDIUM row. Preamble arithmetic updated. input-hash updated (VP-INDEX.md v1.52 input drift). Human-authorized DC-33 core-domain amendment."
   - "3.42 (D-356/DC-19/2026-09-08, architect): F-PDC19-01+F-PDC19-02 — VP-2.24.003-B Title corrected: Graph Descriptor Pure Termination (Kani) → No self-loops in graph descriptor (Kani) (BC-2.24.003 §VP table source of truth). VP-2.24.003-C Title corrected: Graph Endpoint Unit (unit) → Start node always present in graph descriptor (unit); Module/Crate repointed: server::debug_routes/pregolya-server → graph::descriptor/pregolya-graph. Totals UNCHANGED: 41 VPs | Kani: 10 | proptest: 10 | integration: 12 | unit: 8 | compile-fail: 1. input-hash unchanged (inputs did not change)."
   - "3.41 (D-356/DC-07/2026-09-07, architect): F-PDC07-03 — 10 panel-VP Module column cells repointed to canonical SPA component path form: spa/components/run_inspector (VP-2.24.004-A/B), spa/components/checkpoint_panel (VP-2.24.005-A/B), spa/components/hitl_panel (VP-2.24.006-A/B), spa/components/budget_panel (VP-2.24.007-A/B), spa/components/guardrail_panel (VP-2.24.008-A/B). CORRECTION: v3.37 (DC-02) set these to console::* Rust module notation — non-canonical for SPA components. Totals UNCHANGED: 41 VPs | Kani: 10 | proptest: 10 | integration: 12 | unit: 8 | compile-fail: 1. input-hash unchanged (inputs did not change)."
@@ -112,7 +113,7 @@ changelog:
 | VP-018 | Trajectory Compaction Retention Integrity | checkpoint::trajectory | pregolya-checkpoint | proptest | BC-2.04.011 {INV-001} | 3 | draft |
 | VP-019 | Trajectory Compaction Crash Isolation | checkpoint::trajectory | pregolya-checkpoint | integration | BC-2.04.011 {INV-003} | 6 | draft |
 | VP-020 | PromoteRetireChannel Idempotency | graph::channels | pregolya-graph | proptest | BC-2.02.009 {INV-001}+{INV-002} | 3 | draft |
-| VP-2.11.007-A | GuardrailJournal Completeness — Every evaluate() Call Produces an Entry | server::guardrail_journal | pregolya-server | integration | BC-2.11.007 {PC-001}/{INV-003} | 3 | draft |
+| VP-2.11.007-A | GuardrailJournal Completeness — Every evaluate() Call Produces an Entry | graph::provenance | pregolya-graph | integration | BC-2.11.007 {PC-001}/{INV-002} | 3 | draft |
 | VP-2.24.001-A | Console Server Lifecycle (unit) | console::server | pregolya-console | unit | BC-2.24.001 | 3 | draft |
 | VP-2.24.001-B | Console Server Zero-Cap Error (unit) | console::server | pregolya-console | unit | BC-2.24.001 | 3 | draft |
 | VP-2.24.001-C | Console Server Type Safety (compile-fail) | console::server | pregolya-console | compile-fail | BC-2.24.001 | 3 | draft |
@@ -147,13 +148,15 @@ changelog:
 
 > **[DC-33 addendum, 2026-09-08, architect]:** VP-2.11.007-A registered — GuardrailJournal completeness integration P0 (BC-2.11.007 {PC-001}/{INV-003}; DI-012; server::guardrail_journal; pregolya-server; Phase 3). VP-to-Module table: row added after VP-020. Totals 41→42 VPs; integration 12→13; P0 6→7. Per-Module Coverage Status: server::guardrail_journal MEDIUM row added after server::cron. Preamble 92→93 physical rows; MEDIUM 41→42; tiered 83→84. Human-authorized DC-33 core-domain amendment; propagated from VP-INDEX.md v1.52 in same burst.
 
+> **[DC-34 correction, 2026-09-08, architect — F-PDC34-01/F-PDC34-02]:** DC-33 values superseded. VP-2.11.007-A bc_anchor corrected {INV-003}→{INV-002} (BC-2.11.007 {INV-002} = completeness/DI-012; the VP tests completeness, not EvidenceJournal separation). VP-2.11.007-A module repointed server::guardrail_journal (phantom module, not in module-decomposition.md)→graph::provenance (pregolya-graph; canonical for GuardrailHook dispatch and journal-append per module-decomposition.md §pregolya-graph and BC-2.11.007 §Architecture Anchors). Per-Module Coverage Status: phantom server::guardrail_journal MEDIUM row removed; graph::provenance (HIGH) Integration column updated to VP-2.11.007-A/yes. Preamble corrected: 93→92 physical rows; MEDIUM 42→41; tiered 84→83. VP census UNCHANGED: 42 VPs total.
+
 **Totals: 42 VPs | Kani: 10 | proptest: 10 | fuzz: 0 | integration: 13 | unit: 8 | compile-fail: 1**
 
 ## Per-Module Coverage Status
 
-> This table covers 93 physical rows (additions: ADR-030/VP-018 checkpoint::trajectory MEDIUM + core::trajectory definitions-only rows; DC-33 server::guardrail_journal MEDIUM).
-> Two collapse-pairs reduce 93 physical rows to 91 distinct modules: (1) `core::runnable`: 2 rows for 1 HIGH module (pipe-associativity + VP-014 key-completeness); (2) `core::serializable`: 2 rows for 1 module spanning CRITICAL (VP-010 Reviver) and HIGH (VP-007 LcSerializable round-trip), counted once in CRITICAL as its highest tier per F-P210-01.
-> Tiered groupings: CRITICAL 12 / HIGH 28 / MEDIUM 42 / LOW 2 = 84 tiered (84 distinct tiered modules). Definitions-only/exempt: 8 (Tier=—; no kill rate obligation; count corrected from stale 6: core::invocation_context was added at v3.28 but not reflected in prior count, now fixed; core::trajectory added here).
+> This table covers 92 physical rows (additions: ADR-030/VP-018 checkpoint::trajectory MEDIUM + core::trajectory definitions-only rows).
+> Two collapse-pairs reduce 92 physical rows to 90 distinct modules: (1) `core::runnable`: 2 rows for 1 HIGH module (pipe-associativity + VP-014 key-completeness); (2) `core::serializable`: 2 rows for 1 module spanning CRITICAL (VP-010 Reviver) and HIGH (VP-007 LcSerializable round-trip), counted once in CRITICAL as its highest tier per F-P210-01.
+> Tiered groupings: CRITICAL 12 / HIGH 28 / MEDIUM 41 / LOW 2 = 83 tiered (83 distinct tiered modules). Definitions-only/exempt: 8 (Tier=—; no kill rate obligation; count corrected from stale 6: core::invocation_context was added at v3.28 but not reflected in prior count, now fixed; core::trajectory added here).
 
 | Module | Crate | Kani | proptest | fuzz | Integration | Notes |
 |--------|-------|------|---------|------|-------------|-------|
@@ -162,7 +165,7 @@ changelog:
 | graph::hitl | pregolya-graph | VP-011 | — | — | yes | D23/SS-05; PreToolCallHook fail-closed; Kani P0 (BC-2.05.007) |
 | graph::scheduler | pregolya-graph | — | — | — | yes | Pending ADR-001 |
 | graph::budget | pregolya-graph | — | yes | — | yes | EvidenceJournal ordering |
-| graph::provenance | pregolya-graph | — | — | — | yes | Hook dispatch |
+| graph::provenance | pregolya-graph | — | — | — | VP-2.11.007-A/yes | HIGH; SS-11; GuardrailHook dispatch and journal-append; VP-2.11.007-A integration P0 (BC-2.11.007 {PC-001}/{INV-002}/DI-012); completeness — every evaluate() call produces exactly one GuardrailEntry |
 | graph::event_emitter | pregolya-graph | — | — | — | yes | Streaming/unary equivalence |
 | checkpoint::session_index | pregolya-checkpoint | VP-002 | yes | — | yes | Core VP target |
 | checkpoint::clock | pregolya-checkpoint | — | yes | — | yes | Monotonic property |
@@ -222,7 +225,6 @@ changelog:
 | checkpoint::memory | pregolya-checkpoint | — | — | — | yes | In-memory checkpoint backend; deterministic HashMap; unit tests |
 | checkpoint::postgres | pregolya-checkpoint | — | — | — | yes | PostgreSQL checkpoint backend; integration tests (stretch feature) |
 | server::cron | pregolya-server | — | — | — | yes | CronSchedule parsing and proactive run triggering; integration tests |
-| server::guardrail_journal | pregolya-server | — | — | — | VP-2.11.007-A/yes | MEDIUM; SS-11; append-only log of GuardrailHook::evaluate() results per run; VP-2.11.007-A integration P0 (BC-2.11.007 {PC-001}/{INV-003}/DI-012); completeness — every evaluate() call produces exactly one GuardrailEntry |
 | sandbox::container | pregolya-sandbox | — | — | — | yes | Container execution backend (sandbox-container feature); integration tests |
 | sandbox::seatbelt | pregolya-sandbox | — | — | — | yes | macOS Seatbelt deny-by-default profile (NE-16); integration tests |
 | sandbox::process | pregolya-sandbox | — | — | — | yes | ProcessBackend OS subprocess execution; integration tests (BC-2.13.002) |

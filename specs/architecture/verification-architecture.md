@@ -2,7 +2,7 @@
 document_type: architecture-section
 level: L3
 section: verification-architecture
-version: "2.48"
+version: "2.49"
 status: active
 producer: architect
 timestamp: 2026-09-07T00:00:00Z
@@ -33,6 +33,7 @@ input-hash: "7ff48dc"
 traces_to: ARCH-INDEX.md
 decisions: [D17, D21, D23, D356]
 changelog:
+  - "2.49 (D-356/DC-34/F-PDC34-01/F-PDC34-02/2026-09-08, architect): VP-2.11.007-A corrections — F-PDC34-01: bc_anchor {INV-003}→{INV-002} in Committed VP Obligations table + §P0 catalog formal statement. F-PDC34-02: module server::guardrail_journal→graph::provenance in Committed VP Obligations table + §P0 catalog header. Preamble narrative corrected. Census UNCHANGED: 42 total."
   - "2.48 (D-356/DC-33/2026-09-08, architect): VP-2.11.007-A minted — GuardrailJournal completeness integration P0 (BC-2.11.007 {PC-001}/{INV-003}; DI-012; server::guardrail_journal; pregolya-server; Phase 3). Census 41→42; integration ×12→×13; P0 6→7. BC-2.11.007.md added to inputs. Human-authorized DC-33 core-domain amendment. Propagated from VP-INDEX.md v1.52 in same burst."
   - "2.47 (D-356/DC-20/2026-09-08, architect): F-PDC20-01+O-PDC20-A — 5 DI-column re-anchors in VP-to-Module table: VP-2.24.005-A DI-002→DI-004; VP-2.24.005-B DI-002→DI-004; VP-2.24.006-A DI-014→DI-003; VP-2.24.006-B DI-014→DI-003; VP-2.24.008-A DI-014→DI-012. BCs are source of truth (BC-2.24.005/006/008 di_anchors + INV-001/INV-002). Census UNCHANGED: 41 total. input-hash unchanged (inputs did not change)."
   - "2.46 (D-356/DC-19/2026-09-08, architect): F-PDC19-02 — VP-2.24.003-C module repointed server::debug_routes → graph::descriptor (BC-2.24.003 §VP table is source of truth; BC declares VP-2.24.003-C as start-node-always-present targeting graph::descriptor/pregolya-graph). VP-2.24.003-B module already correct (graph::descriptor); no change needed in this mirror (harness_fn not tracked here). Census UNCHANGED: 41 total. input-hash unchanged (inputs did not change)."
@@ -90,7 +91,7 @@ on a `Future` will fail at verification time. Consequences:
 
 ## Committed VP Obligations (D17-Q7 + R11 + D21 + D23)
 
-Forty-two VPs committed before v1.0 release — VP-001..005 (original five) plus VP-006..010 (D21 ecosystem-parity expansion) plus VP-006-B (SEC-003 multi-pair few-shot mandate) plus VP-011..013 (D23 tools/budget layer) plus VP-014 (burst-302b LCEL composition expansion) plus VP-015 (architect-reconcile-burst MCP credential-redaction) plus VP-016 (GAP-01/ADR-029 GraphAgentTool state-isolation) plus VP-017 (ADR-030 LedgerChannel dedup-idempotency, dual-anchored BC-2.02.007 + BC-2.02.008) plus VP-018 (BC-2.04.011 TrajectoryCompactor retention-integrity) plus VP-019 (BC-2.04.011 {INV-003} trajectory compaction crash-isolation integration P1) plus VP-020 (ADR-030 PromoteRetireChannel idempotency proptest P1, BC-2.02.009 {INV-001}+{INV-002}) plus VP-2.11.007-A (DC-33 GuardrailJournal completeness integration P0, BC-2.11.007 {PC-001}/{INV-003}) plus VP-2.24.001-A through VP-2.24.008-B (D-356 SS-24 Developer Console SEED registrations, BC-2.24.001–008):
+Forty-two VPs committed before v1.0 release — VP-001..005 (original five) plus VP-006..010 (D21 ecosystem-parity expansion) plus VP-006-B (SEC-003 multi-pair few-shot mandate) plus VP-011..013 (D23 tools/budget layer) plus VP-014 (burst-302b LCEL composition expansion) plus VP-015 (architect-reconcile-burst MCP credential-redaction) plus VP-016 (GAP-01/ADR-029 GraphAgentTool state-isolation) plus VP-017 (ADR-030 LedgerChannel dedup-idempotency, dual-anchored BC-2.02.007 + BC-2.02.008) plus VP-018 (BC-2.04.011 TrajectoryCompactor retention-integrity) plus VP-019 (BC-2.04.011 {INV-003} trajectory compaction crash-isolation integration P1) plus VP-020 (ADR-030 PromoteRetireChannel idempotency proptest P1, BC-2.02.009 {INV-001}+{INV-002}) plus VP-2.11.007-A (DC-33 GuardrailJournal completeness integration P0, BC-2.11.007 {PC-001}/{INV-002}) plus VP-2.24.001-A through VP-2.24.008-B (D-356 SS-24 Developer Console SEED registrations, BC-2.24.001–008):
 
 | VP | BC Anchor | DI | Module | Tool | Phase | Priority |
 |----|-----------|-----|--------|------|-------|---------|
@@ -115,7 +116,7 @@ Forty-two VPs committed before v1.0 release — VP-001..005 (original five) plus
 | VP-018 | BC-2.04.011 {INV-001} | DI-002 | `checkpoint::trajectory` | proptest | 3 | P1 |
 | VP-019 | BC-2.04.011 {INV-003} | DI-002 | `checkpoint::trajectory` | integration | 6 | P1 |
 | VP-020 | BC-2.02.009 {INV-001}+{INV-002} | DI-001 | `graph::channels` | proptest | 3 | P1 |
-| VP-2.11.007-A | BC-2.11.007 {PC-001}/{INV-003} | DI-012 | `server::guardrail_journal` | integration | 3 | P0 |
+| VP-2.11.007-A | BC-2.11.007 {PC-001}/{INV-002} | DI-012 | `graph::provenance` | integration | 3 | P0 |
 | VP-2.24.001-A | BC-2.24.001 | DI-014 | `console::server` | unit | 3 | P1 |
 | VP-2.24.001-B | BC-2.24.001 | DI-014 | `console::server` | unit | 3 | P1 |
 | VP-2.24.001-C | BC-2.24.001 | DI-014 | `console::server` | compile-fail | 3 | P1 |
@@ -158,6 +159,8 @@ Forty-two VPs committed before v1.0 release — VP-001..005 (original five) plus
 > **D-356 adversary fix DC-20 (2026-09-08, architect).** F-PDC20-01+O-PDC20-A: 5 DI-column re-anchors in VP-to-Module table: VP-2.24.005-A DI-002→DI-004 (BC-2.24.005 INV-001 step_idx monotone ordering → DI-004); VP-2.24.005-B DI-002→DI-004 (fork-from-checkpoint creates new run_id via DI-004 fork lineage; O-PDC20-A CHANGE); VP-2.24.006-A DI-014→DI-003 (approve/deny dispatch is HITL resume-value delivery; O-PDC20-A CHANGE); VP-2.24.006-B DI-014→DI-003 (BC-2.24.006 INV-001 FIFO ordering → DI-003); VP-2.24.008-A DI-014→DI-012 (BC-2.24.008 INV-002 complete feed → DI-012). BCs are source of truth (BC-2.24.005/006/008 di_anchors). All other VP-2.24.* DI-014 kept. Census UNCHANGED: 41 total. POL-2 orphan closure: DI-003/DI-004/DI-012 each ≥1 VP. Propagated from VP-INDEX.md v1.51 in same burst.
 
 > **[DC-33 addendum, 2026-09-08, architect]:** VP-2.11.007-A minted — GuardrailJournal completeness integration P0 (BC-2.11.007 {PC-001}/{INV-003}; DI-012; server::guardrail_journal; pregolya-server; Phase 3). Human-authorized DC-33 core-domain amendment. Census 41→42; integration ×12→×13; P0 6→7. VP-2.11.007-A row added to Committed VP Obligations table and to §P0 Must Prove catalog. Totals line updated 41→42. Propagated from VP-INDEX.md v1.52 in same burst.
+
+> **[DC-34 corrections, 2026-09-08, architect]:** VP-2.11.007-A corrections — F-PDC34-01: bc_anchor corrected {INV-003}→{INV-002} in Committed VP Obligations row, §P0 catalog formal statement, and preamble narrative ({INV-002} is Completeness/DI-012; {INV-003} is Separation from EvidenceJournal — not what this VP tests). F-PDC34-02: module repointed server::guardrail_journal→graph::provenance in Committed VP Obligations row and §P0 catalog header (graph::provenance is the canonical GuardrailHook dispatch and journal-append site per BC-2.11.007 §Architecture Anchors; server::guardrail_journal was phantom). Census UNCHANGED: 42 total.
 
 > **D-356 adversary fix DC-19 (2026-09-08, architect).** F-PDC19-02: VP-2.24.003-C module repointed `server::debug_routes` → `graph::descriptor` — BC-2.24.003 §VP table is source of truth; BC declares VP-2.24.003-C as "Start node always present in descriptor" targeting `graph::descriptor`/`pregolya-graph`. VP-2.24.003-B module (`graph::descriptor`) already correct in this mirror; harness_fn is not tracked here (harness_fn is VP-INDEX.md scope only). Census UNCHANGED: 41 total.
 
@@ -459,7 +462,7 @@ variants plus `#[non_exhaustive]` wildcard — CBMC solves branch reachability q
 seconds. Estimated proof time: < 2 min.
 See VP-011.md §Feasibility Assessment for full factor table.
 
-**VP-2.11.007-A — GuardrailJournal Completeness** (`server::guardrail_journal`) `integration P0`
+**VP-2.11.007-A — GuardrailJournal Completeness** (`graph::provenance`) `integration P0`
 
 Property: For any run that reaches terminal status, `guardrail_journal.len()` equals the
 total number of `GuardrailHook::evaluate()` calls made during that run. No entry is
@@ -467,7 +470,7 @@ suppressed — Pass, Fail, and Transform results are all recorded in call order.
 Entry fields match the evaluate call: `boundary`, `result`, `provenance`, `timestamp_ms`
 (monotone), `transform_applied` (Some iff result=Transform, None otherwise).
 
-Formal statement (BC-2.11.007 {PC-001}/{INV-003}):
+Formal statement (BC-2.11.007 {PC-001}/{INV-002}):
 ```
 ∀ run_id: RunId,
   let calls = evaluate_calls_during_run(run_id),
@@ -1128,6 +1131,7 @@ Modules where behavioral testing is the primary verification method:
 
 | Version | Date | Author | Decision | Change |
 |---------|------|--------|----------|--------|
+| 2.49 | 2026-09-08 | architect | D-356/DC-34/2026-09-08 | VP-2.11.007-A corrections — F-PDC34-01: bc_anchor {INV-003}→{INV-002} in VP table + §P0 catalog. F-PDC34-02: module server::guardrail_journal→graph::provenance in VP table + §P0 catalog. Census UNCHANGED: 42 total. |
 | 2.48 | 2026-09-08 | architect | D-356/DC-33/2026-09-08 | VP-2.11.007-A minted — GuardrailJournal completeness integration P0 (BC-2.11.007 {PC-001}/{INV-003}; DI-012; server::guardrail_journal; pregolya-server; Phase 3). Census 41→42; integration ×12→×13; P0 6→7. Human-authorized DC-33 core-domain amendment; BC-2.11.007 authored by PO; entities-server.md §GuardrailJournal defined by BA. |
 | 2.47 | 2026-09-08 | architect | D-356/DC-20/2026-09-08 | F-PDC20-01+O-PDC20-A — 5 DI-column re-anchors: VP-2.24.005-A/B DI-002→DI-004 (step_idx ordering + fork lineage → DI-004); VP-2.24.006-A/B DI-014→DI-003 (approve/deny dispatch + FIFO ordering → DI-003); VP-2.24.008-A DI-014→DI-012 (complete Fail/Transform feed → DI-012). BCs source of truth. Census UNCHANGED: 41 total. POL-2 orphan closure: DI-003/DI-004/DI-012 each ≥1 VP. |
 | 2.46 | 2026-09-08 | architect | D-356/DC-19/2026-09-08 | F-PDC19-02 — VP-2.24.003-C module repointed server::debug_routes → graph::descriptor (BC-2.24.003 §VP table source of truth; start-node-always-present property targets graph::descriptor/pregolya-graph). VP-2.24.003-B module already correct. Census UNCHANGED: 41 total. |

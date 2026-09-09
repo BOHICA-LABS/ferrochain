@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-console-10
 epic_id: E-console
-version: "1.4"
+version: "1.5"
 status: draft
 producer: story-writer
 timestamp: 2026-09-06T00:00:00Z
@@ -13,16 +13,17 @@ changelog:
   - "1.2 (D-356/DC-29/2026-09-08, story-writer): F-PDC29-01 — AC-004 + AC-005 + Task 4 + File Structure corrected for ADR-031 Decision 8: completed-run reconstruction uses evidence_journal from run-read, not stored event list (StreamEvent is transient)."
   - "1.3 (D-356/DC-32/2026-09-08, story-writer): F-PDC32-03 — ADR-030 bare §Decision ordinal-gap fixed: AC-004 body occurrence of ADR-030 §Decision updated to ADR-030 §Decision 2 per POL-19."
   - "1.4 (D-356/DC-33/2026-09-08, story-writer): DC-33 human-authorized re-point — completed-run guardrail substrate corrected from evidence_journal? to guardrail_journal? (BC-2.11.007 persistence; BC-2.12.003 PC-013 projection); GuardrailEntry shape documented; evidence_journal? clarified as budget-only (PolicyDecision Allow/Escalate/Deny); Task 4 marked blocked-until-build on BC-2.11.007."
+  - "1.5 (D-356/DC-34/2026-09-08, story-writer): DC-34 architect ruling — (1) boundary type IngressBoundary confirmed correct (ingress-boundary label semantic per BC-2.06.001 PC-002, no String/hook-identity residual); (2) transform_applied removed from GuardrailEntry shape in AC-004 and Task 4 (transform content = result.Transform.new_content, not a separate field); (3) wave wording corrected: BC-2.11.007 is Wave-1 core (S-1.29), consumed by this Wave-3 panel — not a Wave-3 blocked dependency; (4) S-1.29 added to depends_on."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-24/BC-2.24.008.md
   - .factory/specs/architecture/decisions/ADR-031-developer-console-architecture.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "8bcada7"
+input-hash: "40988f0"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
-depends_on: [S-console-06]
+depends_on: [S-console-06, S-1.29]
 blocks: []
 behavioral_contracts: [BC-2.24.008, BC-2.11.007, BC-2.12.003]
 verification_properties: [VP-2.24.008-A, VP-2.24.008-B]
@@ -50,6 +51,8 @@ tdd_mode: strict
 
 > **D-356 adversary fix DC-33 (2026-09-08, story-writer).** DC-33 human-authorized re-point — completed-run guardrail history substrate corrected from `evidence_journal?` to `guardrail_journal?`. `evidence_journal?` is a separate budget dimension (PolicyDecision Allow/Escalate/Deny — budget panel substrate; do not conflate). `guardrail_journal?` persists durable `GuardrailEntry` records (BC-2.11.007 GuardrailJournal persistence) and is projected on run-read by BC-2.12.003 postcondition PC-013. GuardrailEntry shape: `{ boundary: IngressBoundary, result: GuardrailResult (Pass|Fail|Transform), provenance, timestamp_ms, transform_applied? }`. Affected locations: AC-004, AC-005, Task 4, File Structure api.ts row.
 
+> **D-356 architect ruling DC-34 (2026-09-08, story-writer).** Three corrections applied: (1) F-PDC34-03 boundary type confirmed — `boundary: IngressBoundary` is correct (IngressBoundary is the canonical ingress-boundary-label enum with values ToolResult|RagChunk|MemoryItem; semantic = label of the ingress boundary at which the hook fired, not hook identity; no String residual). (2) O-PDC34-A `transform_applied` dropped from GuardrailEntry shape — the field does not exist; Transform content is carried in `result.Transform.new_content`, not a separate field; corrected in AC-004 and Task 4. (3) F-PDC34-06 wave wording corrected — BC-2.11.007 GuardrailJournal persistence is Wave-1 core (S-1.29, created by this burst); it is already available when this Wave-3 panel is implemented; the panel's roadmap-only status is unchanged. S-1.29 added to depends_on. Affected locations: AC-004, Task 4.
+
 ## Narrative
 
 - **As a** developer-operator or SOC analyst reviewing agent behavior on untrusted inputs
@@ -76,7 +79,7 @@ Each entry in the security feed shows: `boundary` (an `IngressBoundary` value �
 For in-progress runs, new `guardrail_decision` events are appended to the security feed as they arrive via the shared `EventSource`. The shared SSE subscription from S-console-06 is reused — there is ONE `EventSource` per run. Verified by `test_BC_2_24_008_realtime_append_shared_sse()`.
 
 ### AC-004 (traces to BC-2.24.008 postcondition PC-004; BC-2.11.007 GuardrailJournal persistence; BC-2.12.003 postcondition PC-013)
-For completed (terminal-status) runs, the security feed reconstructs from the `guardrail_journal?` field returned by the run-read endpoint (`GET /threads/{thread_id}/runs/{run_id}`) — persisted per BC-2.11.007 (GuardrailJournal persistence) and projected by BC-2.12.003 postcondition PC-013. Each `GuardrailEntry` in the journal carries: `boundary` (IngressBoundary), `result` (GuardrailResult: Pass|Fail|Transform), `provenance`, `timestamp_ms`, and optional `transform_applied?`. The console filters and displays entries where `result` is `Fail` or `Transform`. No `EventSource` is opened for completed runs. There is NO stored StreamEvent list — StreamEvent is transient (ADR-030 §Decision 2; ADR-031 Decision 8). **NOTE:** `evidence_journal?` is a separate budget dimension (PolicyDecision Allow/Escalate/Deny — budget panel substrate); do not conflate with `guardrail_journal?`. **Roadmap (Wave 3):** This step is blocked-until-build on BC-2.11.007 — GuardrailJournal persistence must be built before the completed-run reconstruction path can be exercised. Verified by `test_BC_2_24_008_completed_run_reconstruction()`.
+For completed (terminal-status) runs, the security feed reconstructs from the `guardrail_journal?` field returned by the run-read endpoint (`GET /threads/{thread_id}/runs/{run_id}`) — persisted per BC-2.11.007 (GuardrailJournal persistence) and projected by BC-2.12.003 postcondition PC-013. Each `GuardrailEntry` in the journal carries: `boundary` (IngressBoundary), `result` (GuardrailResult: Pass|Fail|Transform — for Transform, new content is in `result.Transform.new_content`), `provenance`, and `timestamp_ms`. The console filters and displays entries where `result` is `Fail` or `Transform`. No `EventSource` is opened for completed runs. There is NO stored StreamEvent list — StreamEvent is transient (ADR-030 §Decision 2; ADR-031 Decision 8). **NOTE:** `evidence_journal?` is a separate budget dimension (PolicyDecision Allow/Escalate/Deny — budget panel substrate); do not conflate with `guardrail_journal?`. **Roadmap (Wave 3):** This step depends on BC-2.11.007 GuardrailJournal persistence — built in Wave 1 (S-1.29) and available by the time this Wave-3 panel is implemented. Verified by `test_BC_2_24_008_completed_run_reconstruction()`.
 
 ### AC-005 (traces to BC-2.24.008 invariant INV-002)
 Every `guardrail_decision` event with a Fail or Transform outcome that appears in the live SSE stream (in_progress runs) or in the `guardrail_journal` reconstruction (terminal-status runs) MUST appear in the security feed. No silent omission. The feed is a complete audit log of all qualifying events. Filtering is limited to outcome type (Fail/Transform only) — no other filtering that could drop events is permitted. Verified by `test_BC_2_24_008_complete_audit_no_omission()`.
@@ -136,7 +139,7 @@ High-volume runs with many `guardrail_decision` Fail events (e.g., 50 events for
 1. [ ] Write failing tests for all ACs (test-writer; unit + E2E/component tests)
 2. [ ] Create `spa/src/components/SecurityFeedPanel.*` — security feed with Fail/Transform filter; empty state; malformed-event placeholder; virtual scroll for high-volume
 3. [ ] Add `guardrail_decision` event handler in `spa/src/lib/sse.ts`: filter to Fail/Transform outcomes only; append to security feed state
-4. [ ] Implement completed-run reconstruction: fetch `guardrail_journal?` from run-read (`GET /threads/{thread_id}/runs/{run_id}`) (BC-2.11.007 persistence; BC-2.12.003 PC-013); filter GuardrailEntry items where result=Fail|Transform — no stored event list (StreamEvent is transient; ADR-031 Decision 8). **Blocked-until-build: BC-2.11.007 GuardrailJournal persistence must be built (Wave 3 roadmap dependency).**
+4. [ ] Implement completed-run reconstruction: fetch `guardrail_journal?` from run-read (`GET /threads/{thread_id}/runs/{run_id}`) (BC-2.11.007 persistence; BC-2.12.003 PC-013); filter GuardrailEntry items where result=Fail|Transform — no stored event list (StreamEvent is transient; ADR-031 Decision 8). **Wave dependency:** BC-2.11.007 GuardrailJournal persistence is built in Wave 1 (S-1.29) and is available before this Wave-3 panel implementation begins.
 5. [ ] Implement malformed-event placeholder: wrap event parsing in try/catch; render raw JSON in placeholder row on parse error
 6. [ ] Add empty state rendering when no qualifying events exist
 7. [ ] Ensure security feed reuses the shared `EventSource` from S-console-06 (no new SSE connection)
