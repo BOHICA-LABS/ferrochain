@@ -1,7 +1,7 @@
 ---
 document_type: architecture-index
 level: L3
-version: "1.85"
+version: "1.86"
 status: active
 producer: state-manager
 timestamp: 2026-09-08T23:59:00Z
@@ -17,6 +17,7 @@ traces_to: prd.md
 deployment_topology: single-service
 decisions: [D4, D6, D9, D11, D13, D17, D20, D21, D23, D356]
 changelog:
+  - "1.86 (D-356/DC-38/F-PDC38-07/2026-09-08, architect): VP-2.11.007-A description cell updated — 'every evaluate() call produces one entry' → 'one entry per successfully-returning evaluate() call'. Census UNCHANGED: ADR 31 / VP 42."
   - "1.85 (D-356/DC-34/F-PDC34-01/F-PDC34-02/2026-09-08, architect): VP-2.11.007-A bc_anchor corrected {INV-003}→{INV-002} (BC-2.11.007 {INV-002} = completeness/DI-012). VP-2.11.007-A module repointed server::guardrail_journal (phantom)→graph::provenance (pregolya-graph; canonical per module-decomposition.md §pregolya-graph). Census UNCHANGED: ADR 31 / VP 42."
   - "1.84 (D-356/DC-33/2026-09-08, architect): VP-2.11.007-A registered — GuardrailJournal completeness integration P0 (BC-2.11.007 {PC-001}/{INV-003}; DI-012; server::guardrail_journal; pregolya-server; Phase 3). §Verification Properties preamble and table updated 41→42 VPs; integration P0 added. Census: ADR 31 / VP 42. Human-authorized DC-33 core-domain amendment."
   - "1.83 (D-356/DC-32/2026-09-08, state-manager): F-PDC32-02 — ADR-031 §Decision 2 + §Decision 7 updated: SpanData gains typed `session_id: String` as field 5 (8-field shape: span_id, trace_id, start_time_ms, end_time_ms, session_id, attributes, llm_request, llm_response); set by DebugSpanExporter at insertion per {INV-007}; enables get_session_spans typed-field equality filter. ADR-031 row description updated in §ADR Registry. Census UNCHANGED: ADR 31 / VP 41."
@@ -285,7 +286,7 @@ R6 namespace reservation: publish-all.sh must cover all 21 currently-published c
 | VP-018 | BC-2.04.011 {INV-001} (TrajectoryCompactor retention-integrity; DI-002) | `checkpoint::trajectory` | proptest | P1 | draft |
 | VP-019 | BC-2.04.011 {INV-003} (trajectory compaction crash-isolation — SQLite atomicity under SIGKILL; DI-002) | `checkpoint::trajectory` | integration | P1 | draft |
 | VP-020 | BC-2.02.009 {INV-001}+{INV-002} (PromoteRetireChannel idempotency/ordering; DI-001) | `graph::channels` | proptest | P1 | draft |
-| VP-2.11.007-A | BC-2.11.007 {PC-001}/{INV-002} (GuardrailJournal completeness — every evaluate() call produces one entry; DC-33/DC-34) | `graph::provenance` | integration | P0 | draft |
+| VP-2.11.007-A | BC-2.11.007 {PC-001}/{INV-002} (GuardrailJournal completeness — one entry per successfully-returning evaluate() call; DC-33/DC-34/DC-38) | `graph::provenance` | integration | P0 | draft |
 | VP-2.24.001-A | BC-2.24.001 (console::server lifecycle — unit) | `console::server` | unit | P1 | draft |
 | VP-2.24.001-B | BC-2.24.001 (console::server zero-cap error — unit) | `console::server` | unit | P1 | draft |
 | VP-2.24.001-C | BC-2.24.001 (console::server type safety — compile-fail) | `console::server` | compile-fail | P1 | draft |
@@ -328,3 +329,5 @@ R6 namespace reservation: publish-all.sh must cover all 21 currently-published c
 > **D-356 adversary fix DC-33 (2026-09-08, architect).** VP-2.11.007-A registered — GuardrailJournal completeness integration P0 (BC-2.11.007 {PC-001}/{INV-003}; DI-012; server::guardrail_journal; pregolya-server; Phase 3). Human-authorized DC-33 core-domain amendment: GuardrailJournal append-only entity (one GuardrailEntry per GuardrailHook::evaluate() call) + BC-2.11.007 + BC-2.12.003 {PC-013}. VP census 41→42; integration 12→13; P0 6→7.
 
 > **D-356 adversary fix DC-34 correction (2026-09-08, architect — F-PDC34-01/F-PDC34-02).** DC-33 values superseded. VP-2.11.007-A bc_anchor corrected {INV-003}→{INV-002} (BC-2.11.007 {INV-002} = completeness/DI-012; {INV-003} = separation from EvidenceJournal). VP-2.11.007-A module repointed server::guardrail_journal (phantom)→graph::provenance (pregolya-graph; canonical per module-decomposition.md §pregolya-graph and BC-2.11.007 §Architecture Anchors). VP census UNCHANGED: 42 total.
+
+> **D-356 adversary fix DC-38 (2026-09-08, architect — F-PDC38-07).** VP-2.11.007-A description cell updated — subtitle corrected: 'every evaluate() call produces one entry' → 'one entry per successfully-returning evaluate() call'; DC-38 added to DC ref list in cell. VP census UNCHANGED: 42 total.

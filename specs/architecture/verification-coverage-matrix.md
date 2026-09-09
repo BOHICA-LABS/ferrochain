@@ -2,7 +2,7 @@
 document_type: architecture-section
 level: L3
 section: verification-coverage-matrix
-version: "3.44"
+version: "3.45"
 status: active
 producer: state-manager
 timestamp: 2026-09-08T00:00:00Z
@@ -11,9 +11,10 @@ inputs:
   - .factory/specs/verification-properties/VP-INDEX.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/module-criticality.md
-input-hash: "517c921"
+input-hash: "f65fe21"
 traces_to: ARCH-INDEX.md
 changelog:
+  - "3.45 (D-356/DC-38/F-PDC38-07/2026-09-08, architect): F-PDC38-07 — VP-2.11.007-A VP-to-Module title cell updated: 'Every evaluate() Call Produces an Entry' → 'One Entry Per Successfully-Returning evaluate() Call'. Per-Module Notes cell updated: 'every evaluate() call produces exactly one GuardrailEntry' → 'one entry per successfully-returning evaluate() call'. Census UNCHANGED: 42 total. input-hash updated 517c921→f65fe21 (VP-INDEX.md v1.55 input drift)."
   - "3.44 (D-356/DC-34/F-PDC34-01/F-PDC34-02/2026-09-08, architect): F-PDC34-01 — VP-2.11.007-A bc_anchor corrected {INV-003}→{INV-002} (BC-2.11.007 {INV-002} = completeness/DI-012; {INV-003} = separation from EvidenceJournal; VP tests completeness). F-PDC34-02 — VP-2.11.007-A module repointed server::guardrail_journal (phantom)→graph::provenance (pregolya-graph); phantom Per-Module row server::guardrail_journal removed; graph::provenance Integration column and Notes updated to cite VP-2.11.007-A. Preamble: 93→92 physical rows; MEDIUM 42→41 (phantom removed; graph::provenance is HIGH); tiered 84→83. input-hash updated to 517c921 (VP-INDEX.md v1.53 input drift)."
   - "3.43 (D-356/DC-33/2026-09-08, architect): VP-2.11.007-A registered — GuardrailJournal completeness integration P0 (BC-2.11.007 {PC-001}/{INV-003}; DI-012; server::guardrail_journal; pregolya-server; Phase 3). VP-to-Module table: add VP-2.11.007-A row after VP-020. Totals: 41→42 VPs, integration 12→13, P0 6→7. Per-Module Coverage Status: add server::guardrail_journal MEDIUM row. Preamble arithmetic updated. input-hash updated (VP-INDEX.md v1.52 input drift). Human-authorized DC-33 core-domain amendment."
   - "3.42 (D-356/DC-19/2026-09-08, architect): F-PDC19-01+F-PDC19-02 — VP-2.24.003-B Title corrected: Graph Descriptor Pure Termination (Kani) → No self-loops in graph descriptor (Kani) (BC-2.24.003 §VP table source of truth). VP-2.24.003-C Title corrected: Graph Endpoint Unit (unit) → Start node always present in graph descriptor (unit); Module/Crate repointed: server::debug_routes/pregolya-server → graph::descriptor/pregolya-graph. Totals UNCHANGED: 41 VPs | Kani: 10 | proptest: 10 | integration: 12 | unit: 8 | compile-fail: 1. input-hash unchanged (inputs did not change)."
@@ -113,7 +114,7 @@ changelog:
 | VP-018 | Trajectory Compaction Retention Integrity | checkpoint::trajectory | pregolya-checkpoint | proptest | BC-2.04.011 {INV-001} | 3 | draft |
 | VP-019 | Trajectory Compaction Crash Isolation | checkpoint::trajectory | pregolya-checkpoint | integration | BC-2.04.011 {INV-003} | 6 | draft |
 | VP-020 | PromoteRetireChannel Idempotency | graph::channels | pregolya-graph | proptest | BC-2.02.009 {INV-001}+{INV-002} | 3 | draft |
-| VP-2.11.007-A | GuardrailJournal Completeness — Every evaluate() Call Produces an Entry | graph::provenance | pregolya-graph | integration | BC-2.11.007 {PC-001}/{INV-002} | 3 | draft |
+| VP-2.11.007-A | GuardrailJournal Completeness — One Entry Per Successfully-Returning evaluate() Call | graph::provenance | pregolya-graph | integration | BC-2.11.007 {PC-001}/{INV-002} | 3 | draft |
 | VP-2.24.001-A | Console Server Lifecycle (unit) | console::server | pregolya-console | unit | BC-2.24.001 | 3 | draft |
 | VP-2.24.001-B | Console Server Zero-Cap Error (unit) | console::server | pregolya-console | unit | BC-2.24.001 | 3 | draft |
 | VP-2.24.001-C | Console Server Type Safety (compile-fail) | console::server | pregolya-console | compile-fail | BC-2.24.001 | 3 | draft |
@@ -150,6 +151,8 @@ changelog:
 
 > **[DC-34 correction, 2026-09-08, architect — F-PDC34-01/F-PDC34-02]:** DC-33 values superseded. VP-2.11.007-A bc_anchor corrected {INV-003}→{INV-002} (BC-2.11.007 {INV-002} = completeness/DI-012; the VP tests completeness, not EvidenceJournal separation). VP-2.11.007-A module repointed server::guardrail_journal (phantom module, not in module-decomposition.md)→graph::provenance (pregolya-graph; canonical for GuardrailHook dispatch and journal-append per module-decomposition.md §pregolya-graph and BC-2.11.007 §Architecture Anchors). Per-Module Coverage Status: phantom server::guardrail_journal MEDIUM row removed; graph::provenance (HIGH) Integration column updated to VP-2.11.007-A/yes. Preamble corrected: 93→92 physical rows; MEDIUM 42→41; tiered 84→83. VP census UNCHANGED: 42 VPs total.
 
+> **[DC-38 correction, 2026-09-08, architect — F-PDC38-07]:** VP-2.11.007-A title updated — VP-to-Module table title cell: 'Every evaluate() Call Produces an Entry' → 'One Entry Per Successfully-Returning evaluate() Call'. Per-Module Coverage Status graph::provenance Notes cell updated: 'every evaluate() call produces exactly one GuardrailEntry' → 'one entry per successfully-returning evaluate() call'. Census UNCHANGED: 42 total. input-hash updated 517c921→f65fe21 (VP-INDEX.md v1.55 input drift).
+
 **Totals: 42 VPs | Kani: 10 | proptest: 10 | fuzz: 0 | integration: 13 | unit: 8 | compile-fail: 1**
 
 ## Per-Module Coverage Status
@@ -165,7 +168,7 @@ changelog:
 | graph::hitl | pregolya-graph | VP-011 | — | — | yes | D23/SS-05; PreToolCallHook fail-closed; Kani P0 (BC-2.05.007) |
 | graph::scheduler | pregolya-graph | — | — | — | yes | Pending ADR-001 |
 | graph::budget | pregolya-graph | — | yes | — | yes | EvidenceJournal ordering |
-| graph::provenance | pregolya-graph | — | — | — | VP-2.11.007-A/yes | HIGH; SS-11; GuardrailHook dispatch and journal-append; VP-2.11.007-A integration P0 (BC-2.11.007 {PC-001}/{INV-002}/DI-012); completeness — every evaluate() call produces exactly one GuardrailEntry |
+| graph::provenance | pregolya-graph | — | — | — | VP-2.11.007-A/yes | HIGH; SS-11; GuardrailHook dispatch and journal-append; VP-2.11.007-A integration P0 (BC-2.11.007 {PC-001}/{INV-002}/DI-012); completeness — one entry per successfully-returning evaluate() call |
 | graph::event_emitter | pregolya-graph | — | — | — | yes | Streaming/unary equivalence |
 | checkpoint::session_index | pregolya-checkpoint | VP-002 | yes | — | yes | Core VP target |
 | checkpoint::clock | pregolya-checkpoint | — | yes | — | yes | Monotonic property |

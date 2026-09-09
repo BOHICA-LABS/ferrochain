@@ -1,7 +1,7 @@
 ---
 document_type: verification-property-index
 level: L3
-version: "1.54"
+version: "1.55"
 status: active
 producer: state-manager
 timestamp: 2026-09-08T00:00:00Z
@@ -9,6 +9,7 @@ phase: 1b
 input-hash: "[live-index]"
 traces_to: ARCH-INDEX.md
 changelog:
+  - "1.55 (D-356/DC-38/F-PDC38-07/2026-09-08, architect): VP-2.11.007-A retitled — subtitle 'Every evaluate() Call Produces an Entry' → 'One Entry Per Successfully-Returning evaluate() Call'. Table row unchanged (no title column; BC anchor, module, tool, crate all unchanged). Census UNCHANGED: 42 total."
   - "1.54 (D-356/DC-37/F-PDC37-05/2026-09-08, architect): F-PDC37-05 — DC-33 addendum annotated inline with supersession note (SUPERSEDED by DC-34: {INV-003}→{INV-002}; server::guardrail_journal [phantom]→graph::provenance; pregolya-server→pregolya-graph) per F-PDC34-04 ADR-031 pattern. Authoritative table row already reflects corrected values from DC-34; this annotation prevents present-tense stale-triple confusion for sequential readers. Census UNCHANGED: 42 total."
   - "1.53 (D-356/DC-34/F-PDC34-01/F-PDC34-02/2026-09-08, architect): VP-2.11.007-A corrections — F-PDC34-01: bc_anchor {INV-003}→{INV-002} (Completeness/DI-012 is {INV-002}; Separation is {INV-003}). F-PDC34-02: module server::guardrail_journal→graph::provenance; crate pregolya-server→pregolya-graph (canonical journal-append site per BC-2.11.007 §Architecture Anchors). Census UNCHANGED: 42 total."
   - "1.52 (D-356/DC-33/2026-09-08, architect): VP-2.11.007-A minted — GuardrailJournal completeness integration P0 (BC-2.11.007 {PC-001}/{INV-003}; DI-012; server::guardrail_journal; pregolya-server; Phase 3). Human-authorized DC-33 core-domain amendment; BC-2.11.007 authored by PO; entities-server.md §GuardrailJournal entity defined by BA. Census 41→42; integration ×12→×13; P0 6→7. Arithmetic: total (42) = P0 (7) + P1 (35) = Kani (10) + proptest (10) + integration (13) + unit (8) + compile-fail (1)."
@@ -165,6 +166,8 @@ changelog:
 > **[DC-33 addendum, 2026-09-08, architect]:** *(SUPERSEDED by DC-34: {INV-003}→{INV-002}; server::guardrail_journal [phantom]→graph::provenance; pregolya-server→pregolya-graph — see authoritative table row and DC-34 corrections note below)* VP-2.11.007-A minted — GuardrailJournal completeness integration P0 (BC-2.11.007 {PC-001}/{INV-003}; DI-012; server::guardrail_journal; pregolya-server; Phase 3). Every GuardrailHook::evaluate() call for a run produces exactly one GuardrailEntry in the run's guardrail_journal, preserving call order. Human-authorized DC-33 core-domain amendment; BC-2.11.007 authored by PO; entities-server.md §GuardrailJournal entity defined by BA; BC-2.12.003 {PC-013} updated with guardrail_journal? projection. Census 41→42; integration ×12→×13; P0 6→7. Arithmetic: total (42) = P0 (7) + P1 (35) = Kani (10) + proptest (10) + integration (13) + unit (8) + compile-fail (1). Propagated to verification-architecture.md, verification-coverage-matrix.md, ARCH-INDEX.md in same burst.
 
 > **[DC-34 corrections, 2026-09-08, architect]:** VP-2.11.007-A row corrected — F-PDC34-01: bc_anchor {INV-003}→{INV-002} ({INV-002} is Completeness/DI-012; {INV-003} is Separation from EvidenceJournal — not what this VP tests). F-PDC34-02: module server::guardrail_journal→graph::provenance; crate pregolya-server→pregolya-graph (graph::provenance is the canonical GuardrailHook dispatch and journal-append site per BC-2.11.007 §Architecture Anchors; server::guardrail_journal was a phantom). Census UNCHANGED: 42 total. Propagated to verification-architecture.md, verification-coverage-matrix.md, ARCH-INDEX.md in same burst.
+
+> **[DC-38 correction, 2026-09-08, architect]:** VP-2.11.007-A retitled — F-PDC38-07: subtitle 'Every evaluate() Call Produces an Entry' → 'One Entry Per Successfully-Returning evaluate() Call'. VP body v1.4→v1.5. VP-INDEX table row UNCHANGED (no title column). Propagated to verification-coverage-matrix.md VP-to-Module title cell, ARCH-INDEX.md VP description cell, verification-architecture.md §P0 catalog header in same burst. F-PDC38-01: VP body §Property Statement rewritten graph-side + successfully-returning wording (server-side framing removed; {EC-003} carve-out explicit). F-PDC38-02: VP body §Feasibility Assessment RunStore/SQLite references struck; deterministic in-process GraphTestFixture wording. Census UNCHANGED: 42 total.
 
 > **D-356 adversary fix DC-02 addendum (2026-09-07, architect).** VP-2.24.002-D registered — SpanData SEC-BOUND-001 sanitization before ring-buffer insertion (unit P1; `console::span_exporter`; `pregolya-console`; BC-2.24.002; DI-014; harness `test_BC_2_24_002_span_data_sanitization_sec_bound_001`). Sanitization-location ruling: AT INSERTION (production-grade choice; in-memory ring buffer must never hold unsanitized `llm_request`/`llm_response`/`attributes` fields). PO follow-up: BC-2.24.002 PC-008 wording "before being served at /debug/trace/*" → "before ring-buffer insertion" to match S-console-02 AC-011. Census 40→41; unit 7→8; P1 34→35. State-manager to reconcile STATE.md VP census 40→41.
 

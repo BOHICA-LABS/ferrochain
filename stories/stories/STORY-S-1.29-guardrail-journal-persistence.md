@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-1.29
 epic_id: E-11
-version: "1.3"
+version: "1.4"
 status: draft
 producer: story-writer
 timestamp: 2026-09-08T00:00:00Z
@@ -12,12 +12,13 @@ changelog:
   - "1.1 (D-356/DC-35/2026-09-08, story-writer): F-PDC35-01 — EC-001 corrected: no-hook ⇒ guardrail_journal? None (not Some([])) per BC-2.11.007 INV-004/EC-004/TV-002; AC-003 conditioned on hook-registered; test for no-hook case added. F-PDC35-03 — VP-2.11.007-A added to verification_properties (S-1.29 is anchor story); test file renamed guardrail_journal.rs → guardrail_journal_completeness.rs (canonical VP harness path). F-PDC35-05 — BC-2.11.007 title corrected to canonical H1 in body BC table."
   - "1.2 (D-356/DC-36/2026-09-08, story-writer): F-PDC36-01 — terminal GuardrailJournal persistence relocated from pregolya-graph to pregolya-server (architect ruling: pregolya-graph MUST NOT import RunStore — forbidden reverse edge). Architecture Mapping, Purity Classification, Forbidden Dependencies, File Structure, Task 5, and Token Budget updated. In-flight append stays pregolya-graph/src/provenance.rs; terminal write moves to server::handlers (same site as evidence_journal persistence)."
   - "1.3 (D-356/DC-37/2026-09-08, story-writer): F-PDC37-01 — §Previous Story Intelligence S-1.19 panic-gotcha corrected: caught evaluate() panic ⇒ Err(E-CORE-007) fail-closed, NO GuardrailEntry appended (per BC-2.11.007 {EC-003} / S-1.19 AC-025); tdd_mode note, AC-001, and EC-006 updated accordingly. F-PDC37-03 — §File Structure split into two test files: graph-side guardrail_journal_completeness.rs (AC-001, VP-2.11.007-A) and server-side guardrail_journal_server_integration.rs (AC-002 + AC-003); §Tasks, §Token Budget, AC test-file references updated."
+  - "1.4 (D-356/DC-38/2026-09-08, story-writer): F-PDC38-03 — AC-004 reworded: 'count of GuardrailHook::evaluate() calls' qualified to 'SUCCESSFULLY-RETURNING evaluate() calls; panicking/erroring appends no entry per BC-2.11.007 {EC-003}/{INV-002}'; test renamed test_BC_2_11_007_journal_entry_count_equals_successful_evaluate_calls(); file reference added (graph-side); sweep found no other unqualified phrasings."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-11/BC-2.11.007.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "78a15a6"
+input-hash: "b4d403d"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-1.19, S-1.26]
@@ -45,6 +46,8 @@ tdd_mode: strict
 
 > **D-356/DC-36 (2026-09-08, story-writer).** F-PDC36-01 architect ruling — terminal GuardrailJournal persistence relocated from `pregolya-graph` to `pregolya-server`. Rationale: `pregolya-graph` MUST NOT import `RunStore` from `pregolya-server` — that is a forbidden reverse edge (`pregolya-server → pregolya-graph` is the correct direction; a `pregolya-graph → pregolya-server` import would create a cycle). Model: identical to how `evidence_journal` is split — graph accumulates in-flight, server persists atomically at terminal transition. In-flight append stays `pregolya-graph/src/provenance.rs` (unchanged). Terminal write moves to `pregolya-server/src/handlers/` (run-state-machine terminal-state write site, same function as evidence_journal persistence). Affected locations: Architecture Mapping §Terminal row, Purity Classification, Forbidden Dependencies, File Structure, Task 5, Token Budget.
 
+> **D-356/DC-38 (2026-09-08, story-writer).** F-PDC38-03 — AC-004 unqualified completeness count corrected: "count of evaluate() calls" → "count of SUCCESSFULLY-RETURNING evaluate() calls; panicking/erroring appends no entry per BC-2.11.007 {EC-003}/{INV-002}". Test renamed to `test_BC_2_11_007_journal_entry_count_equals_successful_evaluate_calls()` with graph-side file reference added. Sweep: no other unqualified "entries == evaluate calls" phrasing found.
+
 > **D-356/DC-37 (2026-09-08, story-writer).** F-PDC37-01 — §Previous Story Intelligence S-1.19 panic-gotcha corrected: prior text claimed "journal append fires on panic" — WRONG per BC-2.11.007 {EC-003} and S-1.19 AC-025. Correct: a caught `evaluate()` panic causes `Err(E-CORE-007)` to propagate fail-closed; NO `GuardrailEntry` is appended because no `GuardrailResult` exists. Affected: §Previous Story Intelligence S-1.19 gotcha column, tdd_mode preamble note, AC-001 success-path clarification, EC-006 added (panic path). F-PDC37-03 — §File Structure split into two test files: `crates/pregolya-graph/tests/guardrail_journal_completeness.rs` (graph-side; AC-001 / VP-2.11.007-A; asserts on accumulated `Vec<GuardrailEntry>` from graph execution result; NO pregolya-server dependency) and `crates/pregolya-server/tests/guardrail_journal_server_integration.rs` (server-side; AC-002 RunStore terminal persistence + AC-003 run-read None/Some projection). Affected: §File Structure, §Tasks Task 1 + Task 9, §Token Budget, AC-002/AC-003 test-file annotations. Rationale: `pregolya-graph` MUST NOT import `RunStore` from `pregolya-server` — that is a forbidden reverse edge (`pregolya-server → pregolya-graph` is the correct direction; a `pregolya-graph → pregolya-server` import would create a cycle). Model: identical to how `evidence_journal` is split — graph accumulates in-flight, server persists atomically at terminal transition. In-flight append stays `pregolya-graph/src/provenance.rs` (unchanged). Terminal write moves to `pregolya-server/src/handlers/` (run-state-machine terminal-state write site, same function as evidence_journal persistence). Affected locations: Architecture Mapping §Terminal row, Purity Classification, Forbidden Dependencies, File Structure, Task 5, Token Budget.
 
 ## Narrative
@@ -71,7 +74,7 @@ When a run transitions to any terminal state (`completed`, `failed`, `cancelled`
 The run-read endpoint (`GET /threads/{thread_id}/runs/{run_id}`) exposes the journal as `guardrail_journal?` in the response body under these conditions: (a) For in-progress runs: the field is absent (`None`), regardless of hook registration. (b) For terminal-status runs where a hook was registered: the field contains the complete `Vec<GuardrailEntry>` written at terminal transition — `Some([])` when registered but no ingress occurred; `Some([entries])` when N ingress events were evaluated. (c) For terminal-status runs where NO hook was registered: the field is absent (`None`) — per BC-2.11.007 INV-004. No hook registered is semantically distinct from hook registered with zero evaluations. Verified by `test_BC_2_11_007_run_read_projection_terminal()`, `test_BC_2_11_007_run_read_projection_in_progress_absent()`, and `test_BC_2_11_007_run_read_projection_no_hook_none()` in `crates/pregolya-server/tests/guardrail_journal_server_integration.rs` (server-side).
 
 ### AC-004 (traces to BC-2.11.007 invariant INV-002 — completeness DI-012)
-The count of `GuardrailEntry` records in the persisted journal equals the count of `GuardrailHook::evaluate()` calls made during the run — no calls are silently omitted. For a run with N evaluate calls, the terminal journal contains exactly N entries. Verified by `test_BC_2_11_007_journal_entry_count_equals_evaluate_calls()`.
+The count of `GuardrailEntry` records in the accumulated journal equals the count of SUCCESSFULLY-RETURNING `GuardrailHook::evaluate()` calls made during the run — no successful calls are silently omitted. A panicking/erroring evaluate() (EC-006) appends no entry and does NOT increment the count per BC-2.11.007 {EC-003}/{INV-002}. For a run with N successful evaluate calls, the accumulated journal contains exactly N entries. Verified by `test_BC_2_11_007_journal_entry_count_equals_successful_evaluate_calls()` in `crates/pregolya-graph/tests/guardrail_journal_completeness.rs` (graph-side).
 
 ### AC-005 (traces to BC-2.11.007 invariant INV-003 — separation from evidence_journal)
 The `guardrail_journal` field contains only `GuardrailEntry` records (boundary + GuardrailResult). It does NOT contain `PolicyDecision` (Allow/Escalate/Deny) records — those belong exclusively to `evidence_journal`. No budget-policy record appears in `guardrail_journal`; no guardrail-hook record appears in `evidence_journal`. The two journals are always kept separate in storage and on the wire. Verified by `test_BC_2_11_007_separation_from_evidence_journal()`.
