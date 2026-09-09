@@ -6155,3 +6155,27 @@ P2A-250=0/CLEAN(strict,streak1/3)
 - Phase-3 TDD: PENDING — wave order: pregolya-core → pregolya-graph → partners (D7)
 
 **NEXT: Phase-3 TDD Implementation.**
+
+---
+
+## Phase-3 D-356 Adversary Cascade (DC-01 through DC-43)
+
+### Overview
+Phase-3 spec amendment cascade (D-356/D-357: developer-console ROADMAP-ONLY; GuardrailJournal durable substrate). Full trajectory DC-01..DC-43. Census final at DC-43 close: BC 149 / VP 42 / EC 145 / TV 795 / ADR 31 / SS 24 / stories 53 / pts 377 / crates 22.
+
+### DC-43 Pass Summary (2026-09-09)
+- **Pass type:** RECORDS-ONLY adversary pass (TD-RECORDS-MICRO-BURST-001)
+- **Findings:** 2 LOW, ZERO CRIT/HIGH/MED
+- **CLEAN(strict):** no
+- **CLEAN(PR-merge):** yes
+- **Strict streak:** NOT RESET per TD-RECORDS-MICRO-BURST-001 (holds at 0/3)
+- **Trajectory tail:** →2MED+2OBS→1MED+2OBS→1MED+1LOW→2LOW[RECORDS-ONLY]
+
+**F-PDC43-01 [LOW]** — module-decomposition §pregolya-server server::handlers row absent run-read journal-projection responsibility. server::run_read_handler assembles evidence_journal?/guardrail_journal? projections at read time by querying checkpoint store (get_evidence_journal/get_guardrail_journal(run_id)). Cited in ≥2 normative artifacts (VP-2.11.007-A body, BC-2.11.007 §Architecture Anchors) but absent from module-decomposition registry until this burst. Symmetric server-side sibling of DC-41/O-PDC41-01 checkpoint-side note. Fix: server::handlers row extended (module-decomposition §pregolya-server, Wave-1 buildable per S-1.29 AC-003/Task 6).
+
+**F-PDC43-02 [LOW]** — VP-2.11.007-A frontmatter modified: array incorrect (DC-40 absent). DC-40 bumped VP body from v1.6→v1.7 and annotated DC-37 delta note; it was a version-bumping burst. DC-41 correctly NOT in array (VP body not touched at DC-41). Fix: frontmatter modified: array corrected +DC-40.
+
+**PG-DC43 logged:** module-path symbols cited-but-unregistered class — mechanical verify-module-canonicality check proposed. OPEN — orchestrator resolves PG-DC32/33/34/43 before D-356 CONVERGED.
+
+### Next pass
+DC-44 adversary pass — strict-streak pass 1 (streak 0/3 per TD-RECORDS-MICRO-BURST-001 not-reset rule).

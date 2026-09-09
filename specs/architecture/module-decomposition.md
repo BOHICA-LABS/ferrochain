@@ -2,7 +2,7 @@
 document_type: architecture-section
 level: L3
 section: module-decomposition
-version: "1.65"
+version: "1.66"
 status: active
 producer: architect
 timestamp: 2026-09-09T00:00:00Z
@@ -15,6 +15,7 @@ input-hash: "c79f46c"
 traces_to: ARCH-INDEX.md
 decisions: [D4, D6, D7, D12, D13, D17, D20, D21, D23]
 changelog:
+  - "1.66 (D-356/DC-43/F-PDC43-01/2026-09-09, architect): F-PDC43-01 (LOW) — §pregolya-server: server::handlers row extended with run-read journal-projection responsibility: run-read handler assembles evidence_journal?/guardrail_journal? projections at read time by querying the checkpoint store (get_evidence_journal/get_guardrail_journal(run_id)); Wave-1 buildable per S-1.29 AC-003/Task 6. Symmetric server-side sibling of the checkpoint-side journal-storage note added at DC-41/O-PDC41-01. input-hash unchanged (no new BC inputs)."
   - "1.65 (D-356/DC-41/O-PDC41-01/2026-09-09, architect): O-PDC41-01 — §pregolya-checkpoint: added journal-storage note after VP anchors line documenting that the checkpoint store (checkpoint::sqlite/checkpoint::saver) backs durable per-run journal storage for both EvidenceJournal (BC-2.10.002) and GuardrailJournal (BC-2.11.007) via append_*/get_*_journal. Closes anchor-softness gap flagged by DC-39 architecture ruling (graph::provenance + BC-2.11.007 both reference pregolya-checkpoint journal storage but the §pregolya-checkpoint section had no corresponding mention). input-hash unchanged (no new BC inputs)."
   - "1.64 (D-356/DC-39/F-PDC39-02/OBS-1/2026-09-09, architect): F-PDC39-02 — graph::provenance row updated: DC-36 F-PDC36-06 model was stale (claimed Vec returned in graph result + RunStore terminal write). Checkpoint model: graph::provenance appends GuardrailEntry sync-durable to checkpoint-backed GuardrailJournal (pregolya-checkpoint; same SQLite backend as EvidenceJournal in graph::budget) BEFORE execution continues at each ingress boundary — NO Vec return, NO RunStore write; run-read projection assembled by server::run_read_handler from checkpoint store at read time. OBS-1 — core::guardrail table row and blockquote note: added IngressBoundary (3-way: ToolResult | RagChunk | MemoryItem; BC-2.06.001 §PC-002; per ADR-023 §Exempt Inventory) and GuardrailDecisionKind (binary: Fail/Transform; per ADR-023 §Exempt Inventory) to type list. input-hash unchanged (no new BC inputs)."
   - "1.63 (D-356/DC-36/F-PDC36-06/2026-09-08, architect): F-PDC36-06 — graph::provenance row updated: added GuardrailJournal accumulation responsibility (appends one GuardrailEntry after each evaluate() returns; accumulated Vec<GuardrailEntry> returned as part of graph execution result; durable RunStore persistence = pregolya-server terminal-state write, NOT graph::provenance; BC-2.11.007; DI-012). Consistent with F-PDC36-01 accumulate/persist split ruling (mirrors EvidenceJournal pattern in graph::budget). input-hash updated c79f46c (input drift from this burst)."
@@ -208,7 +209,7 @@ Responsibilities: Axum HTTP server, resource CRUD, cron scheduler, security defa
 
 | Module | Responsibility | Criticality | SS |
 |--------|---------------|-------------|-----|
-| `server::handlers` | Thread/Assistant/Run/Schedule CRUD routes | HIGH | SS-12 |
+| `server::handlers` | Thread/Assistant/Run/Schedule CRUD routes; run-read handler assembles `evidence_journal?`/`guardrail_journal?` projections at read time by querying the checkpoint store (`get_evidence_journal`/`get_guardrail_journal(run_id)`) — Wave-1 buildable per S-1.29 AC-003/Task 6 | HIGH | SS-12 |
 | `server::security` | `SecurityConfig::default()` deny-CORS, debug route opt-in (DI-013) | HIGH | SS-12 |
 | `server::streaming` | SSE streaming endpoint; same engine as unary (DI-011) | HIGH | SS-12 |
 | `server::stores` | `IdempotencyStore` / `RateLimitStore` / `RunStore` trait seams (NE-08) | HIGH | SS-12 |

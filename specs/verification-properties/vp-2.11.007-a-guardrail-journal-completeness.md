@@ -3,14 +3,14 @@ document_type: verification-property
 level: L4
 id: VP-2.11.007-A
 title: "GuardrailJournal Completeness — One Entry Per Successfully-Returning evaluate() Call"
-version: "1.7"
+version: "1.8"
 status: draft
 producer: architect
 timestamp: 2026-09-08T00:00:00Z
 phase: 3
 inputs:
   - .factory/specs/behavioral-contracts/ss-11/BC-2.11.007.md
-input-hash: "7d79183"
+input-hash: "d64dd2c"
 traces_to: VP-INDEX.md
 source_bc: BC-2.11.007
 module: graph::provenance
@@ -22,7 +22,7 @@ proof_file_hash: null
 # Lifecycle fields (DF-030)
 lifecycle_status: active
 introduced: DC-33
-modified: [DC-34, DC-35, DC-36, DC-37, DC-38, DC-39]
+modified: [DC-34, DC-35, DC-36, DC-37, DC-38, DC-39, DC-40]
 deprecated: null
 deprecated_by: null
 replacement: null
@@ -40,6 +40,7 @@ priority: P0
 harness_fn: "n/a (integration test)"
 file: vp-2.11.007-a-guardrail-journal-completeness.md
 changelog:
+  - "1.8 (D-356/DC-43/F-PDC43-02/2026-09-09, architect): F-PDC43-02 (LOW) — frontmatter modified: array corrected: DC-40 appended (DC-40 bumped VP body from v1.6→v1.7 and annotated DC-37 note — it was a version-bumping burst). DC-41 NOT added (VP body was not touched at DC-41; only ADR-031 and module-decomposition.md were edited then). input-hash refreshed (BC-2.11.007 input drift from prior burst)."
   - "1.7 (D-356/DC-40/F-PDC40-01/2026-09-09, architect): F-PDC40-01 (MED) — DC-37 delta note annotated with inline supersession marker: persistence is checkpoint-backed, NOT a RunStore terminal-state write; no accumulated-Vec graph-result channel. DC-37 note was a sibling of DC-36 (now superseded) and carried the same false model in its PO-routing clause. Annotation follows F-PDC34-04 pattern applied to DC-29 note. Body-only change; no property, harness, or catalog row changes."
   - "1.6 (D-356/DC-39/F-PDC39-01/F-PDC39-02/F-PDC39-03/2026-09-08, architect): F-PDC39-02 (HIGH) — Persistence model corrected: EvidenceJournal analogy (DC-36 F-PDC36-01) was FALSE. GuardrailJournal is checkpoint-backed (pregolya-checkpoint), same model as BC-2.10.002 EvidenceJournal; graph::provenance appends sync-durable per successful evaluate() BEFORE execution continues; journal queried from checkpoint store (not returned via graph result Vec); §Proof Harness rewritten to query fixture.checkpoint_store.get_guardrail_journal(run_id); DC-36 delta note annotated PARTIALLY SUPERSEDED. §Property Statement NOTE updated: 'durable RunStore write' replaced with 'run-read projection from checkpoint store'. §Formal Invariant checkpoint NOTEs updated. §Proof Method Coverage updated. F-PDC39-03 (MED) — §Source Contract {INV-002} bullet rewritten: removed 'terminal-status run'/'persistence layer'; added 'successfully-returning'/{EC-003}/checkpoint-backed graph-side language. F-PDC39-01 (HIGH) — §P0 catalog in verification-architecture.md rewritten in same burst."
   - "1.5 (D-356/DC-38/F-PDC38-01/F-PDC38-02/F-PDC38-07/2026-09-08, architect): F-PDC38-07 — VP retitled: subtitle changed from 'Every evaluate() Call Produces an Entry' to 'One Entry Per Successfully-Returning evaluate() Call' (frontmatter title + H1); propagated to all 4 mirrors. F-PDC38-01 — §Property Statement rewritten graph-side + successfully-returning wording: removed 'terminal status'/'run-read response' server-side framing; scoped to graph::provenance accumulation; {EC-003} carve-out explicit; matches §Formal Invariant already correct since DC-37. F-PDC38-02 — §Feasibility Assessment: all RunStore/SQLite references struck; Side effects row corrected to 'No — deterministic in-process GraphTestFixture; no RunStore, no SQLite'; Runtime availability corrected to 'pregolya-graph in-process graph execution'; CI time corrected to 'in-process only; no external service'. input-hash updated 7e6b00f→0c89d05 (BC-2.11.007 input drift)."
