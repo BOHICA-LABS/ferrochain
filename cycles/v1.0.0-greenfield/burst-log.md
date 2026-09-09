@@ -1,8 +1,9 @@
 ---
 document_type: burst-log
 level: ops
-version: "1.7"
+version: "1.8"
 changelog:
+  - "1.8 (D-356/DC-54/2026-09-09): DC-48 step archived from STATE.md Current Phase Steps (5-row rolling window; DC-54 row inserted)"
   - "1.7 (D-356/DC-34/2026-09-08): DC-28 step archived from STATE.md Current Phase Steps (5-row rolling window from DC-34 fix-burst close)"
   - "1.6 (D-356/DC-28/2026-09-08): DC-23+DC-21 archive entries (5-row rolling window from DC-28 RECORDS-ONLY micro-burst close)"
   - "1.5 (burst-316/2026-08-18): burst-311 archive entry (5-row rolling window) + burst-316 COMPLETE entry appended"
@@ -7260,3 +7261,7 @@ BC 148 / VP 41 / EC 145 / TV 795 / stories 52 / pts 372 / ADR 31 / holdout 24 �
 ### DC-47 Burst Summary (archived from STATE.md Current Phase Steps — records-straggler scrub close 2026-09-09)
 
 | D-356/D-357/DC-47/2026-09-09 — CLOSED. trajectory-tail →1MED+1LOW→1MED→1H+10PG→1CRIT+1HIGH+1OBS. DC-47 (strict-streak pass 1) = 1CRIT+1HIGH+1OBS ALL CLOSED — DC-32 session_id sibling-sweep was incomplete (self-certified but missed 3 sites). F-PDC47-01[CRIT] S-console-03 SpanData 7→8-field (session_id field 5) per BC-2.24.002 {INV-007} — server::debug_span build vehicle; class-sweep confirmed only S-console-03 had the 7-field defect. F-PDC47-02[HIGH] module-decomposition + purity-boundary-map §server::debug_span SpanData corrected to 8-field shape. OBS SEC-BOUND-001 strip→redact-in-place wording (6 arch sites) per BC-2.24.002 {PC-008}. PG-DC46 RESOLVED — .git/hooks/pre-commit restored (human-authorized 2026-09-09); OPEN follow-up: durable guard (devops story; resolve with PG-DC32/33/34/43 before D-356 CONVERGED per S-7.02). records-lint PASS FAIL=0. changelog-direction PASS FAIL=0. ZERO 0000000. Census UNCHANGED: stories 53 / pts 377 / BC 149 / VP 42 / EC 145 / TV 841 / ADR 31 / SS 24 / crates 22. strict streak reset 0/3 (fix push; DC-48 gates new HEAD). | state-manager | COMPLETE | STATE.md §D-356/D-357/DC-47. Single commit per TD-VSDD-053. |
+
+### DC-48 Burst Summary (archived from STATE.md Current Phase Steps — DC-54 RECORDS-ONLY close 2026-09-09)
+
+| D-356/D-357/DC-48/2026-09-09 — CLOSED. trajectory-tail →1MED→1H+10PG→1CRIT+1HIGH+1OBS→3MED+1LOW+1OBS. DC-48 (strict-streak pass 1) = 3MED+1LOW+1OBS ALL CLOSED — checkpoint-backed persistence crate-graph + phantom module/trait naming (DC-39/DC-44 placeholder identifiers). F-PDC48-01[MED] evidence_journal retrieval via CheckpointSaver raw ops (append_evidence_entry_raw/get_evidence_journal_raw) + graph::budget typed wrapper get_evidence_journal — avoids forbidden checkpoint→graph dep; JournalEntry stays pregolya-graph; no BC-2.10.002 change. F-PDC48-02[MED] run-read handler canonicalized server::handlers / routes/runs.rs (server::run_read_handler + api/runs.rs retired; 6 normative sites in BC-2.11.007; BC-2.12.003 + entities-server×3 + VP-2.11.007-A×2 + arch files + epics §E-11 normative body also swept). F-PDC48-03[MED] checkpoint trait canonicalized CheckpointSaver (CheckpointStore phantom retired in S-1.29 Arc<dyn CheckpointSaver>). F-PDC48-04[LOW] dependency-graph edge rationales: checkpoint→core +GuardrailEntry; graph→checkpoint +GuardrailJournal write-path. F-PDC48-05[OBS] BC-2.24.008 {PRE-001} completed-run guardrail_journal? path reconciled. records-lint PASS FAIL=0. changelog-direction PASS FAIL=0. ZERO 0000000. Census UNCHANGED: stories 53 / pts 377 / BC 149 / VP 42 / EC 145 / TV 841 / ADR 31 / SS 24 / crates 22. strict streak reset 0/3 (fix push; DC-49 gates new HEAD). | state-manager | COMPLETE | STATE.md §D-356/D-357/DC-48. Single commit per TD-VSDD-053. |
