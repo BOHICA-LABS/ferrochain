@@ -3,14 +3,14 @@ document_type: verification-property
 level: L4
 id: VP-2.11.007-A
 title: "GuardrailJournal Completeness — One Entry Per Successfully-Returning evaluate() Call"
-version: "1.13"
+version: "1.14"
 status: draft
 producer: architect
-timestamp: 2026-09-08T00:00:00Z
+timestamp: 2026-09-09T00:00:00Z
 phase: 3
 inputs:
   - .factory/specs/behavioral-contracts/ss-11/BC-2.11.007.md
-input-hash: "48d5a26"
+input-hash: "ca31e6b"
 traces_to: VP-INDEX.md
 source_bc: BC-2.11.007
 module: graph::provenance
@@ -22,7 +22,7 @@ proof_file_hash: null
 # Lifecycle fields (DF-030)
 lifecycle_status: active
 introduced: DC-33
-modified: [DC-34, DC-35, DC-36, DC-37, DC-38, DC-39, DC-40, DC-44]
+modified: [DC-34, DC-35, DC-36, DC-37, DC-38, DC-39, DC-40, DC-44, DC-55]
 deprecated: null
 deprecated_by: null
 replacement: null
@@ -40,11 +40,12 @@ priority: P0
 harness_fn: "n/a (integration test)"
 file: vp-2.11.007-a-guardrail-journal-completeness.md
 changelog:
+  - "1.14 (DC-55/F-PDC55-01/F-PDC55-02/2026-09-09, architect): F-PDC55-01 (HIGH) — §Proof Harness double-unwrap fix: get_guardrail_journal returns Result<Option<Vec<GuardrailEntry>>, PregolyaError>; single .expect() yields Option<Vec<GuardrailEntry>>, not Vec<GuardrailEntry> — .len() and index access on Option do not compile. Both harness functions (guardrail_journal_completeness_all_variants and guardrail_journal_completeness_zero_ingress_boundaries) now chain .expect(\"hook registered so journal record exists\") on the Option layer, after the Result-level .expect(). The Option-unwrap is safe because the init-op (init_guardrail_journal at run start, iff hook is registered) guarantees Some(...) is returned when a hook is registered; the .expect() message is self-documenting. Also corrects false DC-44 harness-compatibility closure (TD-VSDD-059): DC-44 delta note §Harness compatibility claim 'harness unchanged' / 'No harness changes needed' was provably wrong (single .expect() left the harness uncompilable); that section now carries a correction note. v1.9 changelog entry similarly annotated. F-PDC55-02 (LOW) — §BC Traceability Invariant row: 'every evaluate() call produces one entry' → 'every successfully-returning evaluate() call produces one entry' ({EC-003} qualifier; matches all other live-body sites swept in DC-37..DC-39 cascade). Sibling sweep: zero other VP files use the Result<Option<Vec<...>>> single-unwrap pattern; zero other live-body occurrences of the unqualified phrase found corpus-wide. input-hash updated 48d5a26→ca31e6b (BC-2.11.007 input drift)."
   - "1.13 (records-straggler/A-02/A-03/2026-09-09, architect): A-02 (LOW) — §Source Contract first bullet: BC-2.11.007 §PC-001 → BC-2.11.007 {PC-001} (ADR-027 stable clause anchor form). A-03 sibling: BC-2.06.001 §PC-002 already fixed in DC-52 (v1.12). input-hash unchanged (BC-2.11.007 input did not change)."
   - "1.12 (DC-52/F-PDC52-01/2026-09-09, architect): F-PDC52-01 (LOW) — §PC-002→{PC-002} at two live-body sites: (1) §Property Statement boundary field description; (2) §Proof Harness SCOPE-NOTE boundary comment. Canonical clause anchor form is {PC-002} (ADR-027 stable clause anchors); DC-46 swept §INV-002→{INV-002} but missed these two §PC-002 siblings. input-hash unchanged (BC-2.11.007 input did not change)."
   - "1.11 (D-356/DC-48/F-PDC48-02/2026-09-09, architect): F-PDC48-02 (MED) — phantom `server::run_read_handler` replaced with canonical `server::handlers` at two live-body sites: (1) §Property Statement NOTE block ('assembled from the checkpoint store by server::run_read_handler' → 'assembled from the checkpoint store by the run-read handler in server::handlers'); (2) §Proof Harness SCOPE NOTE comment ('assembled by server::run_read_handler from checkpoint store' → 'assembled by the run-read handler in server::handlers from checkpoint store'). server::run_read_handler is not a separate module (F-PDC48-02/DC-48). input-hash updated 122e08a→9293d4e (input drift from prior burst)."
   - "1.10 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog fix — phantom anchor `ADR-031 §DC-44 delta note` → `ADR-031 §Decision 8` (frontmatter changelog + body DC-44 note; verify-adr-anchor-citations.sh); item anchor `BC-2.11.007 §INV-002` → `BC-2.11.007 {INV-002}` in §Source Contract (BC item anchor form, not heading form). input-hash refreshed 122e08a (computed by hook during this burst)."
-  - "1.9 (D-356/DC-44/F-PDC44-01/2026-09-09, architect): F-PDC44-01 (MED) — DC-44 delta note added: journal-existence/initialization mechanism ruling (init_guardrail_journal at run start). modified: array updated to add DC-44. No body content changes: harness .expect() calls are already compatible with Some([]) guarantee from init op; harness unchanged. Downstream wording for PO/BA/story-writer in ADR-031 §Decision 8. input-hash unchanged (BC-2.11.007 unchanged)."
+  - "1.9 (D-356/DC-44/F-PDC44-01/2026-09-09, architect): F-PDC44-01 (MED) — DC-44 delta note added: journal-existence/initialization mechanism ruling (init_guardrail_journal at run start). modified: array updated to add DC-44. NOTE(DC-55/F-PDC55-01): the harness-compatibility claim originally recorded here ('harness .expect() calls are already compatible ... harness unchanged') was incorrect — single .expect() on Result<Option<Vec<GuardrailEntry>>> yields Option<Vec<GuardrailEntry>>, not Vec<GuardrailEntry>; .len() and index access on Option do not compile; the double-unwrap form is required and was applied in v1.14 (DC-55). Downstream wording for PO/BA/story-writer in ADR-031 §Decision 8. input-hash unchanged (BC-2.11.007 unchanged)."
   - "1.8 (D-356/DC-43/F-PDC43-02/2026-09-09, architect): F-PDC43-02 (LOW) — frontmatter modified: array corrected: DC-40 appended (DC-40 bumped VP body from v1.6→v1.7 and annotated DC-37 note — it was a version-bumping burst). DC-41 NOT added (VP body was not touched at DC-41; only ADR-031 and module-decomposition.md were edited then). input-hash refreshed (BC-2.11.007 input drift from prior burst)."
   - "1.7 (D-356/DC-40/F-PDC40-01/2026-09-09, architect): F-PDC40-01 (MED) — DC-37 delta note annotated with inline supersession marker: persistence is checkpoint-backed, NOT a RunStore terminal-state write; no accumulated-Vec graph-result channel. DC-37 note was a sibling of DC-36 (now superseded) and carried the same false model in its PO-routing clause. Annotation follows F-PDC34-04 pattern applied to DC-29 note. Body-only change; no property, harness, or catalog row changes."
   - "1.6 (D-356/DC-39/F-PDC39-01/F-PDC39-02/F-PDC39-03/2026-09-08, architect): F-PDC39-02 (HIGH) — Persistence model corrected: EvidenceJournal analogy (DC-36 F-PDC36-01) was FALSE. GuardrailJournal is checkpoint-backed (pregolya-checkpoint), same model as BC-2.10.002 EvidenceJournal; graph::provenance appends sync-durable per successful evaluate() BEFORE execution continues; journal queried from checkpoint store (not returned via graph result Vec); §Proof Harness rewritten to query fixture.checkpoint_store.get_guardrail_journal(run_id); DC-36 delta note annotated PARTIALLY SUPERSEDED. §Property Statement NOTE updated: 'durable RunStore write' replaced with 'run-read projection from checkpoint store'. §Formal Invariant checkpoint NOTEs updated. §Proof Method Coverage updated. F-PDC39-03 (MED) — §Source Contract {INV-002} bullet rewritten: removed 'terminal-status run'/'persistence layer'; added 'successfully-returning'/{EC-003}/checkpoint-backed graph-side language. F-PDC39-01 (HIGH) — §P0 catalog in verification-architecture.md rewritten in same burst."
@@ -159,9 +160,14 @@ async fn guardrail_journal_completeness_all_variants() {
     let run_id = fixture.run_graph("test input").await;
 
     // Query checkpoint store for accumulated journal entries (parallel to VP-BUDGET-03 pattern)
+    // get_guardrail_journal returns Result<Option<Vec<GuardrailEntry>>, PregolyaError>:
+    //   first .expect() unwraps Result → Option<Vec<GuardrailEntry>>
+    //   second .expect() unwraps Option → Vec<GuardrailEntry>
+    //   Option-unwrap is safe: hook registered → init_guardrail_journal guarantees Some(...)
     let journal = fixture.checkpoint_store
         .get_guardrail_journal(run_id).await
-        .expect("journal query should succeed");
+        .expect("journal query should succeed")
+        .expect("hook registered so journal record exists");
 
     // Assert completeness (BC-2.11.007 {INV-002})
     assert_eq!(journal.len(), 3, "one entry per successful evaluate() call");
@@ -190,9 +196,14 @@ async fn guardrail_journal_completeness_zero_ingress_boundaries() {
 
     let run_id = fixture.run_graph_no_ingress_boundaries().await;
 
+    // get_guardrail_journal returns Result<Option<Vec<GuardrailEntry>>, PregolyaError>:
+    //   first .expect() unwraps Result → Option<Vec<GuardrailEntry>>
+    //   second .expect() unwraps Option → Vec<GuardrailEntry>
+    //   Option-unwrap is safe: hook registered → init_guardrail_journal guarantees Some([])
     let journal = fixture.checkpoint_store
         .get_guardrail_journal(run_id).await
-        .expect("journal query should succeed");
+        .expect("journal query should succeed")
+        .expect("hook registered so journal record exists");
     assert_eq!(
         journal.len(),
         0,
@@ -215,7 +226,7 @@ Run-read `guardrail_journal?` None/Some projection is tested in
 | Source | BC / Invariant |
 |--------|---------------|
 | Primary BC | BC-2.11.007 {PC-001} — write obligation per evaluate() call |
-| Invariant | BC-2.11.007 {INV-002} — completeness: every evaluate() call produces one entry, no gaps, no double-writes (DI-012) |
+| Invariant | BC-2.11.007 {INV-002} — completeness: every successfully-returning evaluate() call produces one entry, no gaps, no double-writes (DI-012) |
 | Projection BC | BC-2.12.003 {PC-013} — run-read response includes guardrail_journal? |
 | DI Anchor | DI-012 — Guardrail Coverage at Ingress Boundaries |
 | Architecture Module | graph::provenance (pregolya-graph) — canonical GuardrailHook dispatch and journal-append site per BC-2.11.007 §Architecture Anchors |
@@ -282,4 +293,4 @@ budget PolicyDecision outcomes only and does not conflict.
 >
 > **Downstream corrections required (PO scope — BC-2.11.007):** §Architecture Anchors: remove "server::handlers (pregolya-server): DURABLE RunStore persistence — writes accumulated Vec<GuardrailEntry> to RunStore atomically with terminal state-machine transition, same site and pattern as evidence_journal (BC-2.10.002)"; replace with: "`graph::provenance` (pregolya-graph): GuardrailHook dispatch, GuardrailJournal DURABLE ACCUMULATION — appends one `GuardrailEntry` to the checkpoint-backed `GuardrailJournal` (pregolya-checkpoint, same SQLite backend as BC-2.10.002 EvidenceJournal) sync-durably BEFORE execution continues at each ingress boundary, after each successfully-returning `evaluate()`; pregolya-graph imports the checkpoint abstraction (NOT RunStore; RunStore = pregolya-server; reverse-edge violation)." Remove/correct {PC-002} RunStore terminal-state framing. Fix {INV-002} to remove "persisted to RunStore by the server's terminal-state write (AC-002/AC-003; F-PDC36-01)". **Story-writer scope (S-1.29):** Remove Task 5 "move 'write completed GuardrailJournal to RunStore'..." (that function does not exist); replace with "graph::provenance implements checkpoint-backed GuardrailJournal"; AC-002/AC-003 (run-read projection) should specify server::run_read_handler queries checkpoint_store at read time. **BA scope (entities-server.md):** Add GuardrailJournal persistence path (pregolya-checkpoint) and run-read projection bridge (server::run_read_handler queries by run_id). OBS-2 (IngressBoundary↔BoundaryType mapping): IngressBoundary::RagChunk ↔ BoundaryType::RAGRetrieval; IngressBoundary::MemoryItem ↔ BoundaryType::MemoryIngress; IngressBoundary::ToolResult ↔ BoundaryType::ToolResult.
 
-> **D-356 adversary fix DC-44 (2026-09-09, architect). F-PDC44-01 (MED) — GuardrailJournal 3-state initialization mechanism RULING:** The DC-39 checkpoint-backed model uses `append_guardrail_entry` for each successful `evaluate()` call. Gap: with only `append_guardrail_entry`, both the "no hook registered" case and the "hook registered + zero ingress boundaries reached" case produce zero checkpoint rows — `get_guardrail_journal(run_id)` cannot distinguish them, making `Some([])` unreachable (both return `None`). This makes {INV-004} TV-002/TV-005 unsatisfiable and leaves the `guardrail_journal_completeness_zero_ingress_boundaries` harness test in this VP relying on `.expect()` against a possible `None` return. **RULING: guardrail-specific init op at run start.** `graph::provenance` calls `checkpoint_store.init_guardrail_journal(run_id)` **if and only if** `invocation_context.guardrail_hook().is_some()`, sync-durable, before the first ingress boundary evaluation. This creates an empty journal record and makes `get_guardrail_journal` return `None` (no record = no hook) vs `Some([])` (record exists but empty = hook registered + zero ingress) vs `Some([N])` (record exists with N entries). **Harness compatibility:** The existing harness tests are already compatible — `guardrail_journal_completeness_all_variants` (3 hooks → 3 entries) and `guardrail_journal_completeness_zero_ingress_boundaries` (1 hook + zero ingress → empty journal) both use `.expect()` which now succeeds because the init op guarantees `Some(...)` is returned when a hook is registered. No harness changes needed. The `None` case ({INV-004}/{EC-004}) is a server-side concern tested in `crates/pregolya-server/tests/` (S-1.29 AC-003) — correctly outside this VP's scope. **Downstream wording for PO/BA/story-writer:** See ADR-031 §Decision 8 for exact replacement wording. Summary: PO — add `init_guardrail_journal(run_id)` call site to BC-2.11.007 §Architecture Anchors, {PC-002}, {INV-004}, {PRE-001}; BA — add journal record creation mechanism to entities-server.md §GuardrailJournal; story-writer — add initialization task to S-1.29 before journal-accumulation task. **BC-2.10.002 DOES NOT need editing.** No human authorization required (resolves realizability gap within already-authorized {INV-004}).
+> **D-356 adversary fix DC-44 (2026-09-09, architect). F-PDC44-01 (MED) — GuardrailJournal 3-state initialization mechanism RULING:** The DC-39 checkpoint-backed model uses `append_guardrail_entry` for each successful `evaluate()` call. Gap: with only `append_guardrail_entry`, both the "no hook registered" case and the "hook registered + zero ingress boundaries reached" case produce zero checkpoint rows — `get_guardrail_journal(run_id)` cannot distinguish them, making `Some([])` unreachable (both return `None`). This makes {INV-004} TV-002/TV-005 unsatisfiable and leaves the `guardrail_journal_completeness_zero_ingress_boundaries` harness test in this VP relying on `.expect()` against a possible `None` return. **RULING: guardrail-specific init op at run start.** `graph::provenance` calls `checkpoint_store.init_guardrail_journal(run_id)` **if and only if** `invocation_context.guardrail_hook().is_some()`, sync-durable, before the first ingress boundary evaluation. This creates an empty journal record and makes `get_guardrail_journal` return `None` (no record = no hook) vs `Some([])` (record exists but empty = hook registered + zero ingress) vs `Some([N])` (record exists with N entries). **Harness compatibility (CORRECTED by DC-55/F-PDC55-01):** The DC-44 claim that "harness tests are already compatible" and "No harness changes needed" was incorrect — a paper-closure (TD-VSDD-059). `get_guardrail_journal` returns `Result<Option<Vec<GuardrailEntry>>, PregolyaError>`; after a single `.expect()` on the `Result` layer, the value is `Option<Vec<GuardrailEntry>>`, not `Vec<GuardrailEntry>`. Calling `.len()` or indexing on `Option<Vec<_>>` does not compile. **The double-unwrap form is required:** both harness functions chain `.expect("hook registered so journal record exists")` on the `Option` layer after the `Result`-level `.expect()`. This Option-unwrap is safe because the init-op guarantees `Some(...)` when a hook is registered. Applied in v1.14 (DC-55). The `None` case ({INV-004}/{EC-004}) is a server-side concern tested in `crates/pregolya-server/tests/` (S-1.29 AC-003) — correctly outside this VP's scope. **Downstream wording for PO/BA/story-writer:** See ADR-031 §Decision 8 for exact replacement wording. Summary: PO — add `init_guardrail_journal(run_id)` call site to BC-2.11.007 §Architecture Anchors, {PC-002}, {INV-004}, {PRE-001}; BA — add journal record creation mechanism to entities-server.md §GuardrailJournal; story-writer — add initialization task to S-1.29 before journal-accumulation task. **BC-2.10.002 DOES NOT need editing.** No human authorization required (resolves realizability gap within already-authorized {INV-004}).
