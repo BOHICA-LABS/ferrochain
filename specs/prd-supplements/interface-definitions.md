@@ -1,12 +1,13 @@
 ---
 document_type: prd-supplement-interface-definitions
 level: L3
-version: "3.14"
+version: "3.15"
 status: active
 producer: architect
-timestamp: 2026-09-01T00:00:00Z
+timestamp: 2026-09-09T00:00:00Z
 phase: 1d
 changelog:
+  - "3.15 (DC-58/F-PDC58-01+OBS-PDC58-1/2026-09-09, architect): F-PDC58-01 [HIGH] Add three GuardrailJournal ops to §CheckpointSaver trait — init_guardrail_journal(run_id: Uuid), append_guardrail_entry(run_id: Uuid, entry: &GuardrailEntry), get_guardrail_journal(run_id: Uuid) -> Result<Option<Vec<GuardrailEntry>>, PregolyaError>. All three are async, #[async_trait]-desugared, and object-safe via Arc<dyn CheckpointSaver> (matching the VP-2.11.007-A §Proof Harness double-unwrap pattern). BC anchor updated to include BC-2.11.007. Gate #31 type note updated with GuardrailEntry resolution. Also add canonical GuardrailEntry struct definition (4 fields: boundary: IngressBoundary, result: GuardrailResult, provenance: ProvenanceTag, timestamp_ms: u64; O-PDC34-A no transform_applied; canonical location core::guardrail). OBS-PDC58-1 [LOW] Add explicit derive sets to GuardrailResult (#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]), IngressContent (same), GuardrailSeverity (#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]), IngressBoundary (same), and new GuardrailEntry (#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]). Also add #[non_exhaustive] to all five per CLAUDE.md API surface mandate. PartialEq + Debug: VP-2.11.007-A assert_eq!(journal[0].result, GuardrailResult::Pass); Serialize + Deserialize + Clone: checkpoint-backed persistence. Harness asymmetry (journal[0] assert_eq!/unit-variant vs journal[1]/[2] matches!/struct-variant) is intentional and correct — assert_eq! for Pass unit variant, matches!+if-let for Fail/Transform struct variants. No harness normalization needed. TD-VSDD-060 sibling sweep: IngressBoundary added as dependency type for GuardrailEntry.boundary."
   - "3.14 (round-62/F-P2A234-01+F-P2A234-02+F-P2A234-03+OBS-3/2026-09-01): §TrajectoryCompactor: doc comment updated from staging-table to per-run single-transaction DELETE mechanism (ADR-030 §Compaction Atomicity Decision). Error note: add E-TRAJ-006 TrajectoryIntegrityCheckFailed (DURABILITY, Never) for AES-GCM auth-tag mismatch during conflict-detection decrypt (F-P2A234-03). §TrajectoryRetentionPolicy promoted field: add semantics note — step_idx values in promoted are retained even if < retention_frontier (OBS-3). No signature changes."
   - "3.13 (round-58/F-P2A229-01/2026-09-01): F-P2A229-01 [MED] §LedgerChannel PromoteRetireOp<T> enum: add #[derive(Clone, Debug)]. Clone satisfies Channel::Update: Clone; derive is sound because LedgerEntry: Clone (supertrait bundles Clone), so no spurious bound beyond T: LedgerEntry is introduced (does not trigger rustc #26925 — contrast with Default, which is NOT in the LedgerEntry bundle and is why the marker structs use manual Default impls). Debug added conventionally for a data-bearing update enum; conditional on T: Debug (LedgerEntry does not bundle Debug). Doc-comment updated to state rationale. LedgerChannel<T> code block is unaffected (Update = T; T: LedgerEntry implies T: Clone — Channel::Update: Clone already satisfied)."
   - "3.12 (round-57/O-P2A228-A/2026-09-01): O-P2A228-A [OBS] §LedgerChannel Invariants table: BC clause tag format corrected from 2-digit ({INV-1}, {INV-2}) to canonical 3-digit form; semantic mapping corrected from {INV-001}/{INV-002} (monotonic-length and entry_id-set structural invariants) to {PC-001}/{PC-002} (novel-reduce appends / seen-reduce no-op postconditions per BC-2.02.007 §Postconditions — the behaviors described in those rows are postconditions of the reduce call, not the monotonicity/uniqueness invariants)."
@@ -130,7 +131,7 @@ inputs:
   - .factory/specs/prd.md
   - .factory/specs/domain-spec/capabilities-p0.md
   - .factory/specs/domain-spec/capabilities-p1-p2.md
-input-hash: "57e6447"
+input-hash: "11ea31c"
 traces_to: prd.md
 primary_consumers: [implementer, test-writer, devops-engineer]
 note: "pregolya is a Rust library framework, not a CLI tool. 'Interface' covers public Rust traits/types, pregolya-server HTTP API, Cargo feature flags, and config schemas."
@@ -762,12 +763,71 @@ pub trait CheckpointSaver: Send + Sync {
         query: &str,
         config: FtsSearchConfig<'_>,
     ) -> Result<Vec<FtsSearchResult>, PregolyaError>;
+
+    /// Initialize an empty `GuardrailJournal` record for a run in the checkpoint store.
+    ///
+    /// Called by `graph::provenance` at run start **iff**
+    /// `invocation_context.guardrail_hook().is_some()`, before any ingress boundary
+    /// evaluation. Sync-durable write — creates the empty journal record that enables
+    /// the 3-state discriminator in [`CheckpointSaver::get_guardrail_journal`]
+    /// (BC-2.11.007 {INV-004}; DC-44 ruling):
+    ///
+    /// - `None`      — no init was called (no hook registered)
+    /// - `Some([])` — init called, zero entries appended
+    /// - `Some([N])` — init called, N entries appended
+    ///
+    /// `GuardrailEntry` ∈ `core::guardrail` (`pregolya-core`); `checkpoint → core`
+    /// dependency direction is permitted (F-PDC48-04/DC-48).
+    ///
+    /// # Errors
+    /// - `Err(PregolyaError { category: DURABILITY, .. })` on checkpoint storage failure.
+    async fn init_guardrail_journal(
+        &self,
+        run_id: Uuid,
+    ) -> Result<(), PregolyaError>;
+
+    /// Append one `GuardrailEntry` to the run's checkpoint-backed journal.
+    ///
+    /// Called by `graph::provenance` sync-durably after each **successfully-returning**
+    /// `GuardrailHook::evaluate()` call, before graph execution continues at the
+    /// ingress boundary (BC-2.11.007 {PC-001}/{INV-002}). Not called on panicking or
+    /// erroring `evaluate()` calls ({EC-003}).
+    ///
+    /// # Errors
+    /// - `Err(PregolyaError { category: DURABILITY, .. })` on checkpoint storage failure.
+    async fn append_guardrail_entry(
+        &self,
+        run_id: Uuid,
+        entry: &GuardrailEntry,
+    ) -> Result<(), PregolyaError>;
+
+    /// Read the `GuardrailJournal` for a run from the checkpoint store.
+    ///
+    /// Returns the 3-state discriminator (BC-2.11.007 {INV-004}; DC-44 ruling):
+    ///
+    /// - `Ok(None)`       — no journal record for `run_id`
+    ///   (hook not registered; `init_guardrail_journal` was never called)
+    /// - `Ok(Some([]))`   — journal record exists, zero entries
+    ///   (hook registered + zero ingress boundaries reached)
+    /// - `Ok(Some([N]))`  — journal record exists with N entries
+    ///
+    /// Called by the run-read handler in `server::handlers` at run-read time to
+    /// assemble the `guardrail_journal?` None/Some projection
+    /// (BC-2.12.003 {PC-013}; S-1.29 AC-002/AC-003; `server::run_read_handler`
+    /// is not a separate module — F-PDC48-02/DC-48).
+    ///
+    /// # Errors
+    /// - `Err(PregolyaError { category: DURABILITY, .. })` on checkpoint storage failure.
+    async fn get_guardrail_journal(
+        &self,
+        run_id: Uuid,
+    ) -> Result<Option<Vec<GuardrailEntry>>, PregolyaError>;
 }
 ```
 
-**BC anchor:** BC-2.04.001 through BC-2.04.008; `put` method: BC-2.04.002 PC4/EC-002, BC-2.04.001 EC-003, BC-2.04.006 PC2, BC-2.04.007 PC1+INV-1; `get_next_version` provided method: BC-2.04.003 PC1/PC5; `fts_search` method: BC-2.04.008 PC1/PC3–PC6, EC-001–006
+**BC anchor:** BC-2.04.001 through BC-2.04.008, BC-2.11.007 (guardrail journal ops: `init_guardrail_journal`, `append_guardrail_entry`, `get_guardrail_journal`); `put` method: BC-2.04.002 PC4/EC-002, BC-2.04.001 EC-003, BC-2.04.006 PC2, BC-2.04.007 PC1+INV-1; `get_next_version` provided method: BC-2.04.003 PC1/PC5; `fts_search` method: BC-2.04.008 PC1/PC3–PC6, EC-001–006; guardrail journal methods: BC-2.11.007 {PRE-001}/{PC-001}/{PC-002}/{INV-002}/{INV-004}
 
-> **Gate #31 type note — `CheckpointConfig`, `ChannelName`, `ChannelValue`, `TaskId`, `CheckpointTuple`, `Checkpoint`, `CheckpointMetadata`, `CheckpointId`, `FtsSearchConfig`, `FtsSearchResult`:** `CheckpointConfig` is the checkpoint-addressing config; not formally enumerated as a spec-level struct — logically derived from BC-2.04.006 triple-address invariant (`thread_id: Uuid`, `checkpoint_ns: NamespaceId`, `checkpoint_id: Option<LogicalClockId>`); flagged corpus-unresolved for architect. `ChannelName` and `ChannelValue` are defined in entities-graph.md §GraphState (`Map<ChannelName, ChannelValue>`). `TaskId` is defined in VP-001.md (Kani harness: `TaskId(i as u64)` newtype around u64). `CheckpointTuple` is defined in entities-graph.md §CheckpointTuple. `Checkpoint` and `CheckpointMetadata` are defined in entities-graph.md §Checkpoint (`Checkpoint` has fields `checkpoint_id: LogicalClockId`, `thread_id`, `checkpoint_ns: NamespaceId`, `parent_checkpoint_id: Option<LogicalClockId>`, `state: GraphState`, `metadata: CheckpointMetadata`, `pending_sends: Vec<Send>`; `CheckpointMetadata` is the inline metadata sub-type on `Checkpoint`). `CheckpointId` is a newtype over `u64` per ADR-005 / BC-2.04.003 Architecture Anchors (monotonic logical clock; `get_next_version` produces instances). `FtsSearchConfig` and `FtsSearchResult` are RESOLVED — defined in `pregolya-checkpoint/src/fts.rs` per BC-2.04.008 Architecture Anchors: `FtsSearchConfig { thread_id: Option<&str>, limit: usize }` (BC-2.04.008 PC3; `thread_id: Option<&str>` is legitimately `&str` not `Option<Uuid>` — FTS5 virtual table stores thread_ids as serialized strings; `FtsSearchResult.thread_id: String` confirms FTS operates in string space; OBS-P2A094-2 adjudication); `FtsSearchResult { checkpoint_id: CheckpointId, thread_id: String, checkpoint_ns: String, message_role: MessageRole, content_snippet: String, rank: f64 }` (BC-2.04.008 PC1; BM25 rank ascending = most relevant first).
+> **Gate #31 type note — `CheckpointConfig`, `ChannelName`, `ChannelValue`, `TaskId`, `CheckpointTuple`, `Checkpoint`, `CheckpointMetadata`, `CheckpointId`, `FtsSearchConfig`, `FtsSearchResult`:** `CheckpointConfig` is the checkpoint-addressing config; not formally enumerated as a spec-level struct — logically derived from BC-2.04.006 triple-address invariant (`thread_id: Uuid`, `checkpoint_ns: NamespaceId`, `checkpoint_id: Option<LogicalClockId>`); flagged corpus-unresolved for architect. `ChannelName` and `ChannelValue` are defined in entities-graph.md §GraphState (`Map<ChannelName, ChannelValue>`). `TaskId` is defined in VP-001.md (Kani harness: `TaskId(i as u64)` newtype around u64). `CheckpointTuple` is defined in entities-graph.md §CheckpointTuple. `Checkpoint` and `CheckpointMetadata` are defined in entities-graph.md §Checkpoint (`Checkpoint` has fields `checkpoint_id: LogicalClockId`, `thread_id`, `checkpoint_ns: NamespaceId`, `parent_checkpoint_id: Option<LogicalClockId>`, `state: GraphState`, `metadata: CheckpointMetadata`, `pending_sends: Vec<Send>`; `CheckpointMetadata` is the inline metadata sub-type on `Checkpoint`). `CheckpointId` is a newtype over `u64` per ADR-005 / BC-2.04.003 Architecture Anchors (monotonic logical clock; `get_next_version` produces instances). `FtsSearchConfig` and `FtsSearchResult` are RESOLVED — defined in `pregolya-checkpoint/src/fts.rs` per BC-2.04.008 Architecture Anchors: `FtsSearchConfig { thread_id: Option<&str>, limit: usize }` (BC-2.04.008 PC3; `thread_id: Option<&str>` is legitimately `&str` not `Option<Uuid>` — FTS5 virtual table stores thread_ids as serialized strings; `FtsSearchResult.thread_id: String` confirms FTS operates in string space; OBS-P2A094-2 adjudication); `FtsSearchResult { checkpoint_id: CheckpointId, thread_id: String, checkpoint_ns: String, message_role: MessageRole, content_snippet: String, rank: f64 }` (BC-2.04.008 PC1; BM25 rank ascending = most relevant first). `GuardrailEntry` is RESOLVED — defined in §GuardrailHook below (added DC-58/F-PDC58-01): `{ boundary: IngressBoundary, result: GuardrailResult, provenance: ProvenanceTag, timestamp_ms: u64 }` (entities-server.md §GuardrailJournal; DC-34/O-PDC34-A — no `transform_applied`; canonical location `pregolya-core/src/guardrail.rs`). `run_id: Uuid` used directly in guardrail journal methods — consistent with `TrajectoryRecord.run_id: Uuid` / `TrajectoryReader::replay(run_id: Uuid)` precedent; `RunId` (StreamEvent wire field) is a distinct type from the `Uuid` used in checkpoint store ops.
 
 ### GuardrailHook
 
@@ -797,6 +857,8 @@ pub trait GuardrailHook: Send + Sync {
     ) -> GuardrailResult;
 }
 
+#[non_exhaustive]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum GuardrailResult {
     /// Content passes through to model context unchanged.
     Pass,
@@ -829,6 +891,8 @@ pub enum GuardrailResult {
 ///
 /// BC authorities: BC-2.11.002 PC1 (ToolResult boundary),
 /// BC-2.11.003 PC1/PC5 (RAG boundary), BC-2.11.004 PC1/PC5 (memory boundary).
+#[non_exhaustive]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum IngressContent {
     /// ContentBlock from a tool-result ingress boundary (BC-2.11.002 PC1).
     /// Inner type: `ContentBlock` per entities-graph.md §ContentBlock.
@@ -843,6 +907,8 @@ pub enum IngressContent {
 
 /// Severity of a `GuardrailResult::Fail` outcome.
 /// Determines whether the run continues (High/Medium/Low) or transitions to `failed` (Critical).
+#[non_exhaustive]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum GuardrailSeverity {
     /// Run transitions to `failed`; inference halted; no further nodes execute.
     /// Authority: BC-2.11.002 INV-3, BC-2.11.003 PC3, BC-2.11.004 PC3, BC-2.11.005 PC4.
@@ -853,6 +919,40 @@ pub enum GuardrailSeverity {
     Medium,
     /// Error block substituted at content position; run continues (BC-2.11.005 PC5).
     Low,
+}
+
+/// A single guardrail evaluation record appended to the checkpoint-backed
+/// `GuardrailJournal` (BC-2.11.007) after each successfully-returning
+/// `GuardrailHook::evaluate` call.
+///
+/// Canonical location: `pregolya-core/src/guardrail.rs` (`core::guardrail`).
+/// Authority: entities-server.md §GuardrailJournal; DC-34/O-PDC34-A ruling —
+/// `transform_applied: Option<String>` is absent; `result.Transform.new_content: IngressContent`
+/// is the authoritative transform payload.
+///
+/// # Derive rationale
+/// - `Debug`, `PartialEq`: required by VP-2.11.007-A §Proof Harness —
+///   `assert_eq!(journal[0].result, GuardrailResult::Pass)` requires
+///   `GuardrailResult: PartialEq + Debug` (propagated from field types).
+/// - `Clone`, `Serialize`, `Deserialize`: required for checkpoint-backed persistence —
+///   `CheckpointSaver::append_guardrail_entry` serializes `GuardrailEntry` to the SQLite
+///   backend; `get_guardrail_journal` deserializes `Vec<GuardrailEntry>` on read
+///   (BC-2.11.007 {PC-001}/{INV-002}).
+#[non_exhaustive]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct GuardrailEntry {
+    /// The ingress boundary at which the evaluation occurred.
+    /// Canonical enum per BC-2.06.001 {PC-002}; values `ToolResult | RagChunk | MemoryItem`.
+    pub boundary: IngressBoundary,
+    /// The evaluation outcome returned by `GuardrailHook::evaluate`.
+    /// `Transform.new_content: IngressContent` is the authoritative transform payload
+    /// (O-PDC34-A — `transform_applied: Option<String>` is not a field).
+    pub result: GuardrailResult,
+    /// The `ProvenanceTag` attached to the evaluated content at the ingress boundary.
+    pub provenance: ProvenanceTag,
+    /// Wall-clock timestamp of the evaluation in milliseconds since the Unix epoch.
+    /// Monotone across entries within a run (BC-2.11.007 {INV-002}).
+    pub timestamp_ms: u64,
 }
 ```
 
@@ -1506,7 +1606,10 @@ pub enum StreamEvent {
 
 /// The ingress boundary at which a GuardrailDecision was produced.
 /// Maps to IngressContent variants in GuardrailHook (§GuardrailHook above).
+/// Also the type of `GuardrailEntry.boundary` (checkpoint-backed journal ops).
 /// BC authority: BC-2.11.001–BC-2.11.004 (three boundary types).
+#[non_exhaustive]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum IngressBoundary { ToolResult, RagChunk, MemoryItem }
 
 /// The non-trivial outcome streamed to observers. Pass is never streamed.
