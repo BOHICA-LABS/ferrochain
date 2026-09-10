@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.11.007
-version: "1.11"
+version: "1.12"
 status: draft
 producer: product-owner
 timestamp: 2026-09-09T00:00:00Z
@@ -35,7 +35,8 @@ changelog:
   - "1.9 (D-356/DC-48/2026-09-09, product-owner): F-PDC48-02: canonical module/path names applied per architect DC-48 ruling. `server::run_read_handler` → `server::handlers` at 5 normative body sites (§Description, {PC-002}, {EC-002}, §Architecture Anchors pregolya-checkpoint bullet, §Architecture Anchors server bullet header) and 1 Traceability row (Architecture Module column). Path `runs.rs` route (Traceability only; primary path fix in BC-2.12.003). No behavioral change — all projection semantics unchanged."
   - "1.10 (D-356/records-straggler/2026-09-09, product-owner): CLASS A-01: {PC-001} Rust pseudocode comment `(BC-2.06.001 §PC-002)` → `(BC-2.06.001 {PC-002})` — canonical item-anchor form per ADR-027. CLASS B-01: §Description 'Every call' → 'Every successfully-returning call'; add '{EC-003}: panicking or erroring call appends NO entry' carve-out. CLASS B-02: {PC-001} heading + body — heading 'Journal append on every evaluate() call' → 'Journal append on every successfully-returning evaluate() call ({EC-003}: panicking/erroring append NO entry)'; body body first sentence qualified with 'successfully-returning'; '{EC-003}' carve-out added at end of first sentence. Records-lint L9 exit 0."
   - "1.11 (D-356/DC-56/2026-09-09, product-owner): {EC-005} successfully-returning qualifier — 'Each hook's evaluate() call appends one entry independently' → 'Each hook's successfully-returning evaluate() call appends one entry independently'; {EC-003} carve-out appended to Expected Behavior for parity with {PC-001}/{INV-002} write-obligation qualifier per DC-37/38/39+DC-55/56 cascade. In-file sweep (TD-VSDD-060): §Description (QUALIFIED), {PC-001} (QUALIFIED), {PC-002} (QUALIFIED), {INV-002} (QUALIFIED), §Architecture Anchors graph::provenance (QUALIFIED), §Architecture Anchors pregolya-checkpoint (QUALIFIED), VP-2.11.007-A (QUALIFIED), §VP Anchors (QUALIFIED) — {EC-005} was sole straggler. Records-lint exit 0."
-modified: ["DC-56"]
+  - "1.12 (D-356/DC-57/2026-09-09, product-owner): F-PDC57-02 (LOW) — modified[] array reverted to [] for corpus-consistency. DF-030 modified-array population is a VP-file practice; BC files use []; the DC-56 [\"DC-56\"] value was the sole non-empty modified[] in the 149-BC corpus and therefore a corpus outlier. Orchestrator-adjudicated mechanical fix — no behavioral, postcondition, invariant, EC, TV, or anchor content changed."
+modified: []
 extracted_from: null
 deprecated: null
 deprecated_by: null

@@ -3,14 +3,14 @@ document_type: verification-property
 level: L4
 id: VP-2.11.007-A
 title: "GuardrailJournal Completeness — One Entry Per Successfully-Returning evaluate() Call"
-version: "1.15"
+version: "1.16"
 status: draft
 producer: architect
 timestamp: 2026-09-09T00:00:00Z
 phase: 3
 inputs:
   - .factory/specs/behavioral-contracts/ss-11/BC-2.11.007.md
-input-hash: "ca31e6b"
+input-hash: "555acab"
 traces_to: VP-INDEX.md
 source_bc: BC-2.11.007
 module: graph::provenance
@@ -22,7 +22,10 @@ proof_file_hash: null
 # Lifecycle fields (DF-030)
 lifecycle_status: active
 introduced: DC-33
-modified: [DC-34, DC-35, DC-36, DC-37, DC-38, DC-39, DC-40, DC-44, DC-46, DC-48, DC-52, DC-55, DC-56]
+modified: [DC-34, DC-35, DC-36, DC-37, DC-38, DC-39, DC-40, DC-44, DC-46, DC-48, DC-52, DC-55, DC-56, DC-57]
+# DF-030 scope: modified[] tracks DC-burst body edits only. Records-only micro-bursts and
+# non-DC bursts (e.g., v1.13 records-straggler) are recorded via the changelog and are
+# exempt from this array per PGAP-DF030-MODIFIED-ARRAY.
 deprecated: null
 deprecated_by: null
 replacement: null
@@ -40,6 +43,7 @@ priority: P0
 harness_fn: "n/a (integration test)"
 file: vp-2.11.007-a-guardrail-journal-completeness.md
 changelog:
+  - "1.16 (DC-57/F-PDC57-01/F-PDC57-03/2026-09-09, architect): F-PDC57-01 (HIGH) — §Proof Harness full compile audit: three E0533 struct-variant-as-bare-value defects fixed. (1) register_guardrail_hook('hook_b', GuardrailResult::Fail) → Fail { reason: 'test-fail-reason'.to_string(), severity: GuardrailSeverity::High }; (2) register_guardrail_hook('hook_c', GuardrailResult::Transform) → Transform { new_content: IngressContent::ToolResult(ContentBlock::Text(TextContentBlock { text: ..., annotations: vec![] })) } (same-boundary rule per BC-2.11.002 {EC-003}); (3) assert_eq!(journal[1].result, GuardrailResult::Fail) — bare struct-variant path in assert_eq! arg is also E0533 — replaced with matches!()+if-let field-check mirroring the existing journal[2] Transform arm pattern. All other harness sites confirmed correct: GuardrailResult::Pass unit variant (OK), double-unwrap chain (DC-55 fix, OK), GuardrailEntry.timestamp_ms u64 monotone assertions (OK), journal.len() count assertions (OK), zero-ingress function (OK). F-PDC57-03 (LOW, process-gap) — DF-030 modified[] scope note added as frontmatter comment: modified[] tracks DC-burst body edits only; records-only micro-bursts and non-DC bursts recorded via changelog are exempt. Aligns with PGAP-DF030-MODIFIED-ARRAY. input-hash refreshed (BC-2.11.007 input drift from parallel PO burst)."
   - "1.15 (DC-56/F-PDC56-01/F-PDC56-02/2026-09-09, architect): F-PDC56-01 (LOW) — frontmatter modified: array incomplete: DC-46, DC-48, DC-52 each edited the VP body but were omitted from the modified: array. Added DC-46 (v1.10 body edit: §Source Contract item anchor form fix — §INV-002 → {INV-002}), DC-48 (v1.11 body edit: phantom server::run_read_handler → server::handlers at §Property Statement NOTE + §Proof Harness SCOPE NOTE), DC-52 (v1.12 body edit: §PC-002 → {PC-002} at §Property Statement boundary field + §Proof Harness SCOPE NOTE), and DC-56. F-PDC56-02 (LOW) — §Source Contract {PC-001} bullet missing 'successfully-returning' qualifier: 'Every GuardrailHook::evaluate() call appends' → 'Every successfully-returning GuardrailHook::evaluate() call appends'. The {EC-003} carve-out citation already present — the parity fix aligns §Source Contract {PC-001} with §Formal Invariant PC-001, §Source Contract {INV-002}, and §BC Traceability Invariant row (all carry 'successfully-returning'). Exhaustive corpus sweep: all other live-body {PC-001} paraphrases in .factory/specs/ + .factory/stories/ confirmed qualified or changelog-context; one straggler in BC-2.11.007 {EC-005} ('each hook's evaluate() call appends one entry independently' — missing qualifier) is product-owner-owned, outside architect scope — reported to orchestrator per companion principle. input-hash unchanged (BC-2.11.007 input did not change)."
   - "1.14 (DC-55/F-PDC55-01/F-PDC55-02/2026-09-09, architect): F-PDC55-01 (HIGH) — §Proof Harness double-unwrap fix: get_guardrail_journal returns Result<Option<Vec<GuardrailEntry>>, PregolyaError>; single .expect() yields Option<Vec<GuardrailEntry>>, not Vec<GuardrailEntry> — .len() and index access on Option do not compile. Both harness functions (guardrail_journal_completeness_all_variants and guardrail_journal_completeness_zero_ingress_boundaries) now chain .expect(\"hook registered so journal record exists\") on the Option layer, after the Result-level .expect(). The Option-unwrap is safe because the init-op (init_guardrail_journal at run start, iff hook is registered) guarantees Some(...) is returned when a hook is registered; the .expect() message is self-documenting. Also corrects false DC-44 harness-compatibility closure (TD-VSDD-059): DC-44 delta note §Harness compatibility claim 'harness unchanged' / 'No harness changes needed' was provably wrong (single .expect() left the harness uncompilable); that section now carries a correction note. v1.9 changelog entry similarly annotated. F-PDC55-02 (LOW) — §BC Traceability Invariant row: 'every evaluate() call produces one entry' → 'every successfully-returning evaluate() call produces one entry' ({EC-003} qualifier; matches all other live-body sites swept in DC-37..DC-39 cascade). Sibling sweep: zero other VP files use the Result<Option<Vec<...>>> single-unwrap pattern; zero other live-body occurrences of the unqualified phrase found corpus-wide. input-hash updated 48d5a26→ca31e6b (BC-2.11.007 input drift)."
   - "1.13 (records-straggler/A-02/A-03/2026-09-09, architect): A-02 (LOW) — §Source Contract first bullet: BC-2.11.007 §PC-001 → BC-2.11.007 {PC-001} (ADR-027 stable clause anchor form). A-03 sibling: BC-2.06.001 §PC-002 already fixed in DC-52 (v1.12). input-hash unchanged (BC-2.11.007 input did not change)."
@@ -155,8 +159,17 @@ async fn guardrail_journal_completeness_all_variants() {
     // {EC-003}: panicking/erroring evaluate() appends no entry
     let fixture = GraphTestFixture::new().await;
     fixture.register_guardrail_hook("hook_a", GuardrailResult::Pass);
-    fixture.register_guardrail_hook("hook_b", GuardrailResult::Fail);
-    fixture.register_guardrail_hook("hook_c", GuardrailResult::Transform);
+    fixture.register_guardrail_hook("hook_b", GuardrailResult::Fail {
+        reason: "test-fail-reason".to_string(),
+        severity: GuardrailSeverity::High,
+    });
+    fixture.register_guardrail_hook("hook_c", GuardrailResult::Transform {
+        // new_content must be same IngressContent variant as evaluated content (BC-2.11.002 {EC-003})
+        new_content: IngressContent::ToolResult(ContentBlock::Text(TextContentBlock {
+            text: "transformed content".to_string(),
+            annotations: vec![],
+        })),
+    });
 
     let run_id = fixture.run_graph("test input").await;
 
@@ -176,7 +189,10 @@ async fn guardrail_journal_completeness_all_variants() {
     // Assert ordering and field correctness (BC-2.11.007 {PC-001})
     // boundary is IngressBoundary (ToolResult | RagChunk | MemoryItem per BC-2.06.001 {PC-002})
     assert_eq!(journal[0].result, GuardrailResult::Pass);
-    assert_eq!(journal[1].result, GuardrailResult::Fail);
+    assert!(matches!(journal[1].result, GuardrailResult::Fail { .. }));
+    if let GuardrailResult::Fail { ref reason, ref severity } = journal[1].result {
+        let _ = (reason, severity); // exact assertion per Phase 3 fixture
+    }
     assert!(matches!(journal[2].result, GuardrailResult::Transform { .. }));
     // Transform payload is result.Transform.new_content: IngressContent (O-PDC34-A)
     if let GuardrailResult::Transform { ref new_content } = journal[2].result {
