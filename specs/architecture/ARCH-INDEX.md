@@ -1,9 +1,9 @@
 ---
 document_type: architecture-index
 level: L3
-version: "1.95"
+version: "1.96"
 status: active
-producer: state-manager
+producer: architect
 timestamp: 2026-09-10T00:00:00Z
 phase: 1b
 inputs:
@@ -17,6 +17,7 @@ traces_to: prd.md
 deployment_topology: single-service
 decisions: [D4, D6, D9, D11, D13, D17, D20, D21, D23, D356]
 changelog:
+  - "1.96 (DC-65/F-PDC65-02/2026-09-10, architect): F-PDC65-02 (architect share) — §Verification Properties VP-2.11.007-B Module corrected checkpoint::encryption→checkpoint::serializer (canonical per interface-definitions.md §Serializer §Implementors; Source-of-Truth per CLAUDE.md precedence rule #3). Census UNCHANGED: ADR 31 / VP 43."
   - "1.95 (DC-62/DC-63/2026-09-10, state-manager): F-PDC63-01[HIGH] — ARCH-INDEX §Verification Properties VP-mirror was not propagated for DC-62 VP-2.11.007-B mint (POL-9 violation). Fixed: (1) preamble count 42→43 VPs; (2) integration P1 breakdown 12→13; (3) VP-2.11.007-B row added after VP-2.11.007-A (BC-2.11.007 {INV-005} + BC-2.04.007 {INV-006}; checkpoint::encryption; integration P1; draft); (4) DC-62 blockquote note added. ARCH-INDEX VP count/breakdown now byte-matches VP-INDEX (43 total = 7 P0 + 36 P1 = Kani 10 + proptest 10 + integration 14 + unit 8 + compile-fail 1). Census: ADR 31 / VP 43."
   - "1.94 (D-356/records-straggler/2026-09-09, state-manager): Records-straggler scrub (post-DC-52 exhaustive audit) — clause-anchor and successfully-returning qualifier fixes across arch and domain-spec files. CLASS A-02 vp-2.11.007-a §Source Contract first bullet: BC-2.11.007 §PC-001→{PC-001} item-anchor form. CLASS A-03 verification-architecture §P0 VP-2.11.007-A Must-Prove prose: BC-2.06.001 §PC-002→{PC-002} item-anchor form. CLASS A-04 capabilities-p1-p2 CAP-047 IngressBoundary bullet: §PC-002→{PC-002} item-anchor form. CLASS B-03 entities-server §GuardrailJournal opening sentence: 'one entry per evaluate() call'→'one entry per successfully-returning evaluate() call; panicking or erroring calls append NO entry ({EC-003})'. CLASS B-04 entities-server §GuardrailHook cross-ref bullet: 'Each evaluate() call appends'→'Each successfully-returning evaluate() call appends; panicking or erroring calls append NO entry ({EC-003})'. Census UNCHANGED: ADR 31 / VP 42."
   - "1.93 (D-356/DC-52/2026-09-09, state-manager): DC-52 RECORDS-ONLY CLOSED (TD-RECORDS-MICRO-BURST-001). OBS (pre-existing) dependency-graph pregolya-community DAG node + community→core edge + Wave-2 build-order block added (DAG now 22 crates = ARCH-INDEX Canonical Crate Roster; acyclic; pregolya-community was already crate #8 in roster). F-PDC52-01[LOW] VP-2.11.007-A {PC-002} citation fix (bare §PC-002→{PC-002}; 2 sites). F-PDC52-02[LOW] entities-server §GuardrailJournal append-invariant corrected (only successfully-returning evaluate() calls produce an entry; {EC-003} carve-out). Census UNCHANGED: ADR 31 / VP 42."
@@ -296,7 +297,7 @@ R6 namespace reservation: publish-all.sh must cover all 21 currently-published c
 | VP-019 | BC-2.04.011 {INV-003} (trajectory compaction crash-isolation — SQLite atomicity under SIGKILL; DI-002) | `checkpoint::trajectory` | integration | P1 | draft |
 | VP-020 | BC-2.02.009 {INV-001}+{INV-002} (PromoteRetireChannel idempotency/ordering; DI-001) | `graph::channels` | proptest | P1 | draft |
 | VP-2.11.007-A | BC-2.11.007 {PC-001}/{INV-002} (GuardrailJournal completeness — one entry per successfully-returning evaluate() call; DC-33/DC-34/DC-38) | `graph::provenance` | integration | P0 | draft |
-| VP-2.11.007-B | BC-2.11.007 {INV-005} + BC-2.04.007 {INV-006} (GuardrailJournal encryption-at-rest — DC-62/DC-63) | `checkpoint::encryption` | integration | P1 | draft |
+| VP-2.11.007-B | BC-2.11.007 {INV-005} + BC-2.04.007 {INV-006} (GuardrailJournal encryption-at-rest — DC-62/DC-63/DC-64/DC-65) | `checkpoint::serializer` | integration | P1 | draft |
 | VP-2.24.001-A | BC-2.24.001 (console::server lifecycle — unit) | `console::server` | unit | P1 | draft |
 | VP-2.24.001-B | BC-2.24.001 (console::server zero-cap error — unit) | `console::server` | unit | P1 | draft |
 | VP-2.24.001-C | BC-2.24.001 (console::server type safety — compile-fail) | `console::server` | compile-fail | P1 | draft |

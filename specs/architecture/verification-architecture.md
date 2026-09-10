@@ -2,10 +2,10 @@
 document_type: architecture-section
 level: L3
 section: verification-architecture
-version: "2.56"
+version: "2.58"
 status: active
 producer: architect
-timestamp: 2026-09-07T00:00:00Z
+timestamp: 2026-09-10T00:00:00Z
 phase: 1b
 inputs:
   - .factory/specs/domain-spec/invariants.md
@@ -30,10 +30,12 @@ inputs:
   - .factory/specs/behavioral-contracts/ss-04/BC-2.04.011.md
   - .factory/specs/behavioral-contracts/ss-11/BC-2.11.007.md
   - .factory/specs/behavioral-contracts/ss-04/BC-2.04.007.md
-input-hash: "01961b2"
+input-hash: "78f0c8b"
 traces_to: ARCH-INDEX.md
 decisions: [D17, D21, D23, D356]
 changelog:
+  - "2.58 (DC-65/F-PDC65-02-addendum/2026-09-10, architect): F-PDC65-02 exhaustive-sweep addendum — Provable Properties Catalog table row for VP-2.11.007-B: module column checkpoint::encryption→checkpoint::serializer (same rename as §P1 header; both sites must match VP-INDEX source of truth). This was a missed sibling site discovered during mandatory DC-65 sweep. Census UNCHANGED: 43 total. input-hash refreshed (BC-2.04.007.md newly included in inputs since DC-62)."
+  - "2.57 (DC-65/F-PDC65-01/F-PDC65-02/2026-09-10, architect): F-PDC65-01 [HIGH] — §P1 VP-2.11.007-B formal-statement block rewritten: stale concrete CheckpointSaverSqlite::new(path, Some(Arc::new(EncryptedSerializer::new(key)))) + by-value entry.clone() + phantom EncryptedSerializer::decrypt(&raw) replaced with abstract CheckpointTestFixture pattern mirroring VP-B §Formal Invariant verbatim (CheckpointTestFixture::with_encryption(key), fixture.saver.init_guardrail_journal/append_guardrail_entry(run_id, &entry), fixture.serializer.deserialize(&raw), fixture.db_path; no concrete saver in formal statement; no decrypt). F-PDC65-02 (architect share) [HIGH] — module rename checkpoint::encryption→checkpoint::serializer at §P1 catalog header; prose CheckpointSaverSqlite→SqliteCheckpointSaver at §Property and §DI-seam sentences. Census UNCHANGED: 43 total."
   - "2.56 (DC-62/2026-09-10, architect): VP-2.11.007-B minted — GuardrailJournal encryption-at-rest integration P1 (BC-2.11.007 {INV-005} + BC-2.04.007 {INV-006}; DI-012; checkpoint::encryption; pregolya-checkpoint; Phase 3). Preamble twenty-two→twenty-three; Forty-two→Forty-three. Committed VP Obligations table row added. VP total 42→43, P1 35→36, integration ×13→×14. §P1 catalog entry added. BC-2.04.007.md added to inputs. Census 42→43. input-hash updated (BC-2.04.007.md added as input)."
   - "2.55 (DC-52/A-03/2026-09-09, architect): A-03 (LOW) — VP-2.11.007-A §P0 Must-Prove prose block: BC-2.06.001 §PC-002 → BC-2.06.001 {PC-002} (ADR-027 stable clause anchor form; records-straggler sweep). Census UNCHANGED: 42 total. input-hash unchanged (inputs did not change)."
   - "2.54 (D-356/DC-48/F-PDC48-02/2026-09-09, architect): F-PDC48-02 (MED) — phantom `server::run_read_handler` replaced with canonical `server::handlers` in VP-2.11.007-A NOTE block: 'assembled from the checkpoint store by server::run_read_handler' → 'assembled from the checkpoint store by the run-read handler in server::handlers'. server::run_read_handler is not a separate module (F-PDC48-02/DC-48). Census UNCHANGED: 42 total. input-hash unchanged (inputs did not change)."
@@ -125,7 +127,7 @@ Forty-three VPs committed before v1.0 release — VP-001..005 (original five) pl
 | VP-019 | BC-2.04.011 {INV-003} | DI-002 | `checkpoint::trajectory` | integration | 6 | P1 |
 | VP-020 | BC-2.02.009 {INV-001}+{INV-002} | DI-001 | `graph::channels` | proptest | 3 | P1 |
 | VP-2.11.007-A | BC-2.11.007 {PC-001}/{INV-002} | DI-012 | `graph::provenance` | integration | 3 | P0 |
-| VP-2.11.007-B | BC-2.11.007 {INV-005} + BC-2.04.007 {INV-006} | DI-012 | `checkpoint::encryption` | integration | 3 | P1 |
+| VP-2.11.007-B | BC-2.11.007 {INV-005} + BC-2.04.007 {INV-006} | DI-012 | `checkpoint::serializer` | integration | 3 | P1 |
 | VP-2.24.001-A | BC-2.24.001 | DI-014 | `console::server` | unit | 3 | P1 |
 | VP-2.24.001-B | BC-2.24.001 | DI-014 | `console::server` | unit | 3 | P1 |
 | VP-2.24.001-C | BC-2.24.001 | DI-014 | `console::server` | compile-fail | 3 | P1 |
@@ -1112,27 +1114,39 @@ same wave as `PromoteRetireChannel` implementation under BC-2.02.009.
 
 See `vp-020-promote-retire-channel-idempotency.md` for the complete harness specification.
 
-**VP-2.11.007-B — GuardrailJournal Encryption at Rest** (`checkpoint::encryption`) `integration P1 Phase 3`
+**VP-2.11.007-B — GuardrailJournal Encryption at Rest** (`checkpoint::serializer`) `integration P1 Phase 3`
 
-Property: When `EncryptedSerializer` is active on `CheckpointSaverSqlite`, the raw bytes
+Property: When `EncryptedSerializer` is active on `SqliteCheckpointSaver`, the raw bytes
 written to the `guardrail_journal` SQLite table by `init_guardrail_journal` and
 `append_guardrail_entry` are **not** valid plaintext-deserialized `GuardrailEntry` values.
 After decryption with the active key, those bytes deserialize to the original `GuardrailEntry`
 (boundary, result, provenance, timestamp_ms). NOTE: `transform_applied` is absent (O-PDC34-A).
 `EncryptedSerializer` is wired via `Option<Arc<dyn Serializer + Send + Sync>>` at
-`CheckpointSaverSqlite` construction (BC-2.04.007 {INV-005} DI seam).
+`SqliteCheckpointSaver` construction (BC-2.04.007 {INV-005} DI seam).
 
 Formal statement (BC-2.11.007 {INV-005} + BC-2.04.007 {INV-006}):
 ```
 ∀ run_id: RunId, entry: GuardrailEntry,
-  let saver = CheckpointSaverSqlite::new(path, Some(Arc::new(EncryptedSerializer::new(key)))),
-  let () = saver.init_guardrail_journal(run_id),
-  let () = saver.append_guardrail_entry(run_id, entry.clone()),
-  let raw = sqlite_select_guardrail_journal_raw_bytes(run_id, seq=0):
-    rmp_serde::from_slice::<GuardrailEntry>(&raw).is_err()
-    ∧ ¬contains(&raw, legible_plaintext_sentinel)
-    ∧ EncryptedSerializer::decrypt(&raw).is_ok()
-    ∧ rmp_serde::from_slice::<GuardrailEntry>(&decrypt(&raw)).unwrap() == entry
+  // Abstract fixture pattern (F-PDC64-04): concrete saver wiring is a Phase 3 obligation
+  let fixture = CheckpointTestFixture::with_encryption(key),
+  let () = fixture.saver.init_guardrail_journal(run_id),
+  let () = fixture.saver.append_guardrail_entry(run_id, &entry),
+  let raw = sqlite_select_guardrail_journal_raw_bytes(fixture.db_path, run_id, seq=0):
+
+  // BC-2.11.007 {INV-005} / BC-2.04.007 {INV-006}
+  rmp_serde::from_slice::<GuardrailEntry>(&raw).is_err()
+  ∧ ∀ sentinel ∈ legible_plaintext_fields(entry):
+      ¬contains(&raw, sentinel)
+  // Decryption round-trip via Serializer::deserialize (canonical trait method — F-PDC64-02;
+  // there is NO decrypt method on Serializer or EncryptedSerializer)
+  ∧ let dec = fixture.serializer.deserialize(&raw): dec.is_ok()
+  ∧ rmp_serde::from_slice::<GuardrailEntry>(&dec.unwrap()).is_ok()
+  ∧ rmp_serde::from_slice::<GuardrailEntry>(&dec.unwrap()).unwrap()
+      == entry
+
+// NOTE: transform_applied field absent (O-PDC34-A)
+// NOTE: no-encryption baseline: same pipeline with CheckpointTestFixture::without_encryption()
+//       → raw bytes ARE valid plaintext GuardrailEntry (baseline confirms assertion is non-vacuous)
 ```
 
 Proof method: Integration test (inspector-reads-raw-storage pattern; mirror BC-2.04.007).

@@ -1,13 +1,14 @@
 ---
 document_type: prd-supplement-interface-definitions
 level: L3
-version: "3.20"
+version: "3.21"
 status: active
 producer: architect
 timestamp: 2026-09-10T00:00:00Z
 phase: 1d
-modified: [DC-62, DC-63, DC-64]
+modified: [DC-62, DC-63, DC-64, DC-65]
 changelog:
+  - "3.21 (DC-65/F-PDC65-04/2026-09-10, architect): F-PDC65-04 [MED] — define SqliteCheckpointSaver as the canonical concrete CheckpointSaver trait implementor for the SQLite backend (module checkpoint::saver; pregolya-checkpoint/src/saver.rs). Constructor accepts Option<Arc<dyn Serializer + Send + Sync>> DI seam (BC-2.04.007 {PRE-001}/{INV-005}); Some(enc_ser) activates at-rest encryption on ALL write paths (put, put_writes, init_guardrail_journal, append_guardrail_entry per F-PDC62-03/DC-62). Definition added as #### Concrete Implementor subsection within §CheckpointSaver section (after Gate #31 type note, before §GuardrailHook). Adjudication: SqliteCheckpointSaver is canonical (majority form matching 4 Wave-1 stories: S-1.10/S-1.11/S-1.18/S-2.12; idiomatic Rust qualifier-prefix; convergence-trajectory.md P2A-025 established canonical name). CheckpointSaverSqlite was non-canonical and is retired. records-lint exit 0."
   - "3.20 (DC-64/F-PDC64-01-adj/2026-09-10, architect): F-PDC64-01 adjudication — EncryptedSerializer::new infallibility. §Serializer EncryptedSerializer::new doc comment updated: added explicit infallibility note and compile-time key-length guarantee rationale. The &[u8; 32] fixed-size-array type enforces key length at compile time; there is no runtime empty-key path; BC-2.04.007 EC-003 E-CORE-005 empty-key construction path is UNREACHABLE when this signature is used. Product-owner routing documented: BC-2.04.007 EC-003 should be retired or updated to reflect the &[u8; 32] compile-time enforcement (see VP-2.11.007-B §BC Contradictions Flagged for exact routing). records-lint exit 0."
   - "3.19 (DC-63/F-PDC63-02/2026-09-10, architect): F-PDC63-02 [HIGH] Add canonical constructors to ProvenanceTag and GuardrailEntry for cross-crate construction — resolves E0639 (struct literal on #[non_exhaustive] struct outside defining crate) and enables VP-2.11.007-B proof harness compilation. impl ProvenanceTag { pub fn new(boundary_type: BoundaryType, ingress_id: Uuid, sequence_position: usize) -> Self }. impl GuardrailEntry { pub fn new(boundary: IngressBoundary, result: GuardrailResult, provenance: ProvenanceTag, timestamp_ms: u64) -> Self }. #[non_exhaustive] preserved on both structs — constructors are the sanctioned cross-crate build path. BC authority: BC-2.11.001 PC1-PC3 (ProvenanceTag construction precondition); BC-2.11.007 {PC-001} (GuardrailEntry construction for append_guardrail_entry). TD-VSDD-060 sibling sweep: no prior constructors existed for either type; these are first constructors. records-lint exit 0."
   - "3.18 (DC-62/F-PDC62-03/2026-09-10, architect): F-PDC62-03 [MED] Architect adjudication — GuardrailJournal write path at-rest encryption obligation. The EncryptedSerializer is application-level (per-method call via DI seam), NOT database-level; BC-2.04.007 {INV-003} scoping to 'state blob or per-task write payload' (put/put_writes) means the guardrail-journal write path (init_guardrail_journal, append_guardrail_entry) is currently OUTSIDE the encryption boundary as specified — inheritance is NOT automatic. Explicit obligation added: (1) init_guardrail_journal and append_guardrail_entry doc comments extended with # Encryption sections — concrete CheckpointSaver implementors MUST call self.serializer.serialize(bytes) on these write paths when EncryptedSerializer is active; (2) CheckpointSaver BC anchor extended to include BC-2.04.007 {INV-003}/{INV-005} for guardrail journal write ops; (3) Serializer section description and BC anchor extended to name init_guardrail_journal/append_guardrail_entry as in-scope write ops. Sensitivity rationale: GuardrailEntry.result can carry Transform{new_content: IngressContent::ToolResult(ContentBlock)} — potentially sensitive content; CWE-312 at-rest exposure if unencrypted. Downstream routing: (a) PO to add BC-2.04.007 linkage + {INV-005} to BC-2.11.007; (b) S-1.29 needs new encryption AC (see adjudication report); (c) BC-2.04.007 {INV-003} needs scope extension (see adjudication report). TD-VSDD-060 sibling sweep: §Serializer BC anchor and description both updated. records-lint exit 0."
@@ -861,6 +862,63 @@ pub trait CheckpointSaver: Send + Sync {
 ```
 
 **BC anchor:** BC-2.04.001 through BC-2.04.008, BC-2.11.007 (guardrail journal ops: `init_guardrail_journal`, `append_guardrail_entry`, `get_guardrail_journal`); `put` method: BC-2.04.002 PC4/EC-002, BC-2.04.001 EC-003, BC-2.04.006 PC2, BC-2.04.007 PC1+INV-1; `get_next_version` provided method: BC-2.04.003 PC1/PC5; `fts_search` method: BC-2.04.008 PC1/PC3–PC6, EC-001–006; guardrail journal methods: BC-2.11.007 {PRE-001}/{PC-001}/{PC-002}/{INV-002}/{INV-004}, BC-2.04.007 {INV-003}/{INV-005} (guardrail-journal write ops — `init_guardrail_journal` and `append_guardrail_entry` — MUST encrypt via EncryptedSerializer DI seam when active; inheritance is NOT automatic; F-PDC62-03/DC-62 architect adjudication)
+
+#### Concrete Implementor: `SqliteCheckpointSaver`
+
+**Module:** `pregolya-checkpoint` (`checkpoint::saver`; file: `pregolya-checkpoint/src/saver.rs`)
+**ADR:** ADR-005 §CheckpointSaver; BC-2.04.007 {PRE-001}/{INV-005}
+**VP:** VP-2.11.007-B (integration P1; encryption-at-rest for `guardrail_journal` table)
+**Established:** convergence-trajectory.md P2A-025 (D-232); canonical name `SqliteCheckpointSaver` adopted over `SqliteCheckpointStore` (F-PDC65-04 adjudication).
+
+The canonical concrete implementation of `CheckpointSaver` for the SQLite backend.
+Wires the optional `EncryptedSerializer` DI seam at construction; when `Some(serializer)` is
+supplied, ALL write operations (`put`, `put_writes`, `init_guardrail_journal`,
+`append_guardrail_entry`) call `self.serializer.serialize(bytes)` before storage
+(BC-2.04.007 {INV-005}/{INV-006}; F-PDC62-03/DC-62 scope extension to guardrail-journal write ops).
+When `None`, storage is plaintext (opt-in model per ADR-030 at-rest confidentiality decision).
+
+```rust
+// pregolya-checkpoint (checkpoint::saver) — concrete implementor
+
+/// Canonical concrete SQLite implementation of `CheckpointSaver`.
+///
+/// Accepts an optional `Serializer` DI seam at construction. When `Some(serializer)` is
+/// active, ALL write paths (`put`, `put_writes`, `init_guardrail_journal`,
+/// `append_guardrail_entry`) encrypt bytes via `serializer.serialize(bytes)` before
+/// SQLite storage, covering all checkpoint tables including `guardrail_journal`
+/// (BC-2.04.007 {INV-005}/{INV-006}).
+///
+/// **BC anchor:** BC-2.04.007 {PRE-001} (serializer DI seam wired at construction),
+///   BC-2.04.007 {INV-005}/{INV-006} (EncryptedSerializer covers all checkpoint tables),
+///   BC-2.11.007 {INV-005} (guardrail_journal raw bytes are not valid plaintext
+///   GuardrailEntry when EncryptedSerializer is active)
+pub struct SqliteCheckpointSaver { /* opaque */ }
+
+impl SqliteCheckpointSaver {
+    /// Construct with a database path and an optional at-rest serializer.
+    ///
+    /// `serializer: None`      → plaintext storage (no encryption).
+    /// `serializer: Some(enc)` → ALL write ops encrypt via `enc.serialize(bytes)`.
+    ///
+    /// Schema initialization is idempotent (`CREATE TABLE IF NOT EXISTS`).
+    ///
+    /// # BC anchor
+    /// BC-2.04.007 {PRE-001} — `Option<Arc<dyn Serializer + Send + Sync>>` DI seam.
+    pub async fn new(
+        path: impl AsRef<std::path::Path>,
+        serializer: Option<Arc<dyn Serializer + Send + Sync>>,
+    ) -> Result<Self, PregolyaError>;
+}
+
+// impl CheckpointSaver for SqliteCheckpointSaver
+```
+
+**`CheckpointTestFixture` (Phase 3 obligation):** `SqliteCheckpointSaver` is wired internally
+by `CheckpointTestFixture::with_encryption(key)` (active serializer path) and
+`CheckpointTestFixture::without_encryption()` (plaintext path). The fixture exposes:
+- `fixture.saver: Arc<dyn CheckpointSaver>` — the initialized saver for API calls
+- `fixture.db_path: std::path::PathBuf` — raw SQLite path for inspector access
+- `fixture.serializer: Arc<dyn Serializer + Send + Sync>` — active serializer (`with_encryption` only)
 
 > **Gate #31 type note — `CheckpointConfig`, `ChannelName`, `ChannelValue`, `TaskId`, `CheckpointTuple`, `Checkpoint`, `CheckpointMetadata`, `CheckpointId`, `FtsSearchConfig`, `FtsSearchResult`:** `CheckpointConfig` is the checkpoint-addressing config; not formally enumerated as a spec-level struct — logically derived from BC-2.04.006 triple-address invariant (`thread_id: Uuid`, `checkpoint_ns: NamespaceId`, `checkpoint_id: Option<LogicalClockId>`); flagged corpus-unresolved for architect. `ChannelName` and `ChannelValue` are defined in entities-graph.md §GraphState (`Map<ChannelName, ChannelValue>`). `TaskId` is defined in VP-001.md (Kani harness: `TaskId(i as u64)` newtype around u64). `CheckpointTuple` is defined in entities-graph.md §CheckpointTuple. `Checkpoint` and `CheckpointMetadata` are defined in entities-graph.md §Checkpoint (`Checkpoint` has fields `checkpoint_id: LogicalClockId`, `thread_id`, `checkpoint_ns: NamespaceId`, `parent_checkpoint_id: Option<LogicalClockId>`, `state: GraphState`, `metadata: CheckpointMetadata`, `pending_sends: Vec<Send>`; `CheckpointMetadata` is the inline metadata sub-type on `Checkpoint`). `CheckpointId` is a newtype over `u64` per ADR-005 / BC-2.04.003 Architecture Anchors (monotonic logical clock; `get_next_version` produces instances). `FtsSearchConfig` and `FtsSearchResult` are RESOLVED — defined in `pregolya-checkpoint/src/fts.rs` per BC-2.04.008 Architecture Anchors: `FtsSearchConfig { thread_id: Option<&str>, limit: usize }` (BC-2.04.008 PC3; `thread_id: Option<&str>` is legitimately `&str` not `Option<Uuid>` — FTS5 virtual table stores thread_ids as serialized strings; `FtsSearchResult.thread_id: String` confirms FTS operates in string space; OBS-P2A094-2 adjudication); `FtsSearchResult { checkpoint_id: CheckpointId, thread_id: String, checkpoint_ns: String, message_role: MessageRole, content_snippet: String, rank: f64 }` (BC-2.04.008 PC1; BM25 rank ascending = most relevant first). `GuardrailEntry` is RESOLVED — defined in §GuardrailHook below (added DC-58/F-PDC58-01): `{ boundary: IngressBoundary, result: GuardrailResult, provenance: ProvenanceTag, timestamp_ms: u64 }` (entities-server.md §GuardrailJournal; DC-34/O-PDC34-A — no `transform_applied`; canonical location `pregolya-core/src/guardrail.rs`). `run_id: Uuid` used directly in guardrail journal methods — consistent with `TrajectoryRecord.run_id: Uuid` / `TrajectoryReader::replay(run_id: Uuid)` precedent; `RunId` (StreamEvent wire field) is a distinct type from the `Uuid` used in checkpoint store ops.
 

@@ -3,7 +3,7 @@ document_type: verification-property
 level: L4
 id: VP-2.11.007-B
 title: "GuardrailJournal Encryption at Rest — Raw Bytes in guardrail_journal Table Are Not Valid Plaintext GuardrailEntry"
-version: "1.2"
+version: "1.3"
 status: draft
 producer: architect
 timestamp: 2026-09-10T00:00:00Z
@@ -11,7 +11,7 @@ phase: 3
 inputs:
   - .factory/specs/behavioral-contracts/ss-11/BC-2.11.007.md
   - .factory/specs/behavioral-contracts/ss-04/BC-2.04.007.md
-input-hash: "1eba69d"
+input-hash: "17a01a8"
 traces_to: VP-INDEX.md
 source_bc: BC-2.11.007
 module: checkpoint::serializer
@@ -23,7 +23,7 @@ proof_file_hash: null
 # Lifecycle fields (DF-030)
 lifecycle_status: active
 introduced: DC-62
-modified: [DC-63, DC-64]
+modified: [DC-63, DC-64, DC-65]
 deprecated: null
 deprecated_by: null
 replacement: null
@@ -41,7 +41,8 @@ priority: P1
 harness_fn: "n/a (integration test)"
 file: vp-2.11.007-b-guardrail-journal-encryption-at-rest.md
 changelog:
-  - "1.2 (DC-64/F-PDC64-01/F-PDC64-02/F-PDC64-03/F-PDC64-04/2026-09-10, architect): ROOT-CAUSE FIX — all four DC-64 compile-blocking findings closed by rewriting §Proof Harness to the abstract CheckpointTestFixture pattern (mirrors VP-2.11.007-A §GraphTestFixture). F-PDC64-04 (HIGH): Remove concrete CheckpointSaverSqlite::new(...) calls from harness; replace with CheckpointTestFixture::with_encryption(KEY).await and CheckpointTestFixture::without_encryption().await — fixture abstracts saver construction via DI seams (Phase 3 implementer obligation per CLAUDE.md §Arc-DI wiring). F-PDC64-01 (HIGH): Remove EncryptedSerializer::new(...).expect(...) — EncryptedSerializer::new(key: &[u8; 32]) -> Self is INFALLIBLE; .expect() on Self does not compile; compile-time key-length enforcement via &[u8; 32] eliminates runtime empty-key path; fixture now handles construction internally; see interface-definitions.md §Serializer adjudication (DC-64). F-PDC64-02 (MED): Replace phantom enc_ser_ref.decrypt(&raw_bytes) with canonical Serializer trait method fixture.serializer.deserialize(&raw_bytes) -> Result<Vec<u8>, PregolyaError> (interface-definitions.md §Serializer; NO decrypt method exists on Serializer or EncryptedSerializer); same fix applied to §Formal Invariant pseudocode; drop 'EncryptedSerializer exposes decrypt()' Proof Obligation row. F-PDC64-03 (MED): module checkpoint::encryption -> checkpoint::serializer throughout (frontmatter module:, §Property Statement, §Formal Invariant, §BC Traceability Architecture Module row, §Proof Harness SCOPE NOTE) — interface-definitions.md §Serializer §Implementors line is Source-of-Truth (CLAUDE.md precedence rule #3); three architecture registries swept in same burst: module-decomposition.md §pregolya-checkpoint (SS-04), purity-boundary-map.md §Effectful Shell, module-criticality.md §Module Classification. BC-2.04.007 EC-003 adjudication: EncryptedSerializer::new is infallible; EC-003 empty-key path is invalidated; product-owner routing documented in §BC Contradictions Flagged. input-hash refreshed (BC inputs edited in parallel PO burst)."
+  - "1.3 (DC-65/F-PDC65-03/F-PDC65-04/2026-09-10, architect): F-PDC65-03 [MED] sentinel alignment — all three sentinel occurrences in §Proof Harness (encrypted case line sentinel=..., baseline case line sentinel=..., and §Proof Harness post-harness prose note) replaced with canonical sentinel 'SENTINEL-GUARDRAIL-PLAINTEXT' (BC-2.11.007 TV-008 + S-1.29 AC-008/EC-009 alignment; VP-B ↔ TV-008 ↔ AC-008/EC-009 now agree). F-PDC65-04 [MED] concrete-saver rename — all prose occurrences (§Property Statement, §Source Contract, §Proof Harness comments, post-harness prose, §BC Traceability, §Proof Obligations) renamed SqliteCheckpointSaver→SqliteCheckpointSaver (canonical majority form matching 4 Wave-1 stories: S-1.10/S-1.11/S-1.18/S-2.12; idiomatic Rust qualifier-prefix adjudication in F-PDC65-04). input-hash refreshed (BC inputs changed by parallel PO burst)."
+  - "1.2 (DC-64/F-PDC64-01/F-PDC64-02/F-PDC64-03/F-PDC64-04/2026-09-10, architect): ROOT-CAUSE FIX — all four DC-64 compile-blocking findings closed by rewriting §Proof Harness to the abstract CheckpointTestFixture pattern (mirrors VP-2.11.007-A §GraphTestFixture). F-PDC64-04 (HIGH): Remove concrete SqliteCheckpointSaver::new(...) calls from harness; replace with CheckpointTestFixture::with_encryption(KEY).await and CheckpointTestFixture::without_encryption().await — fixture abstracts saver construction via DI seams (Phase 3 implementer obligation per CLAUDE.md §Arc-DI wiring). F-PDC64-01 (HIGH): Remove EncryptedSerializer::new(...).expect(...) — EncryptedSerializer::new(key: &[u8; 32]) -> Self is INFALLIBLE; .expect() on Self does not compile; compile-time key-length enforcement via &[u8; 32] eliminates runtime empty-key path; fixture now handles construction internally; see interface-definitions.md §Serializer adjudication (DC-64). F-PDC64-02 (MED): Replace phantom enc_ser_ref.decrypt(&raw_bytes) with canonical Serializer trait method fixture.serializer.deserialize(&raw_bytes) -> Result<Vec<u8>, PregolyaError> (interface-definitions.md §Serializer; NO decrypt method exists on Serializer or EncryptedSerializer); same fix applied to §Formal Invariant pseudocode; drop 'EncryptedSerializer exposes decrypt()' Proof Obligation row. F-PDC64-03 (MED): module checkpoint::encryption -> checkpoint::serializer throughout (frontmatter module:, §Property Statement, §Formal Invariant, §BC Traceability Architecture Module row, §Proof Harness SCOPE NOTE) — interface-definitions.md §Serializer §Implementors line is Source-of-Truth (CLAUDE.md precedence rule #3); three architecture registries swept in same burst: module-decomposition.md §pregolya-checkpoint (SS-04), purity-boundary-map.md §Effectful Shell, module-criticality.md §Module Classification. BC-2.04.007 EC-003 adjudication: EncryptedSerializer::new is infallible; EC-003 empty-key path is invalidated; product-owner routing documented in §BC Contradictions Flagged. input-hash refreshed (BC inputs edited in parallel PO burst)."
   - "1.1 (DC-63/F-PDC63-02/2026-09-10, architect): F-PDC63-02 [HIGH] Rewrite §Proof Harness Skeleton to use canonical constructors — fixes two Red Gate compile errors + two additional defects found in full compile audit. (1) E0639: both test functions constructed GuardrailEntry via struct literal; #[non_exhaustive] forbids this outside the defining crate (pregolya-core). Replaced with GuardrailEntry::new(boundary, result, provenance, timestamp_ms) — canonical constructor added to interface-definitions.md §GuardrailHook in this same burst. (2) E0599: both test functions called ProvenanceTag::default(); ProvenanceTag derives Debug/Clone/PartialEq/Serialize/Deserialize only — no Default. Replaced with ProvenanceTag::new(BoundaryType::ToolResult, uuid::Uuid::nil(), 0) — canonical constructor added in same burst. (3) E0308 (hidden by E0639 — would surface after fixing 1+2): entry.clone() passed where &GuardrailEntry expected by append_guardrail_entry trait signature; replaced with &entry. (4) E0433 (corpus-gap, compile-audit follow-up per coordinator DC-63): both test functions used pregolya_core::RunId::new_v4() for the run_id: Uuid argument — RunId has NO canonical type definition in the spec corpus (corpus-wide grep returned nothing; Gate #31 note in interface-definitions.md confirms RunId is a StreamEvent wire field distinct from the Uuid used in CheckpointSaver ops); replaced with uuid::Uuid::new_v4() to match the canonical run_id: Uuid trait signature. BoundaryType added to use import. GuardrailResult::Fail{reason: sentinel, severity: High} sentinel preserved in both tests — non-vacuous assertion intact (TD-VSDD-059)."
   - "1.0 (DC-62/2026-09-10, architect): Minted. GuardrailJournal encryption-at-rest integration P1. BC-2.11.007 {INV-005} + BC-2.04.007 {INV-006}; DI-012; checkpoint::encryption; pregolya-checkpoint; Phase 3. Raw bytes written to guardrail_journal table by init_guardrail_journal + append_guardrail_entry under EncryptedSerializer are NOT valid plaintext GuardrailEntry; after decryption with the active key they round-trip to the original GuardrailEntry values. Pattern: mirror BC-2.04.007 inspector-reads-raw-storage. Census 42→43; integration 13→14; P1 35→36."
 ---
@@ -50,7 +51,7 @@ changelog:
 
 ## Property Statement
 
-When `EncryptedSerializer` is active on `CheckpointSaverSqlite`, the raw bytes written
+When `EncryptedSerializer` is active on `SqliteCheckpointSaver`, the raw bytes written
 to the `guardrail_journal` SQLite table by `init_guardrail_journal` and
 `append_guardrail_entry` are **not** valid plaintext-deserialized `GuardrailEntry` values.
 After decryption with the active key, those bytes are valid msgpack and deserialize to
@@ -60,17 +61,17 @@ application layer; the `GuardrailJournal` API surface is unchanged from the call
 perspective. NOTE: `transform_applied` is not a field on `GuardrailEntry` (O-PDC34-A).
 NOTE: `EncryptedSerializer` is the canonical concrete implementor of
 `core::serializer::Serializer`; it is wired via `Option<Arc<dyn Serializer + Send + Sync>>`
-at `CheckpointSaverSqlite` construction (BC-2.04.007 {INV-005} DI seam).
+at `SqliteCheckpointSaver` construction (BC-2.04.007 {INV-005} DI seam).
 
 ## Source Contract
 
-- BC-2.11.007 {INV-005}: When `EncryptedSerializer` is wired into `CheckpointSaverSqlite`,
+- BC-2.11.007 {INV-005}: When `EncryptedSerializer` is wired into `SqliteCheckpointSaver`,
   all bytes written to the `guardrail_journal` table are encrypted at rest; raw table bytes
   must not be valid plaintext `GuardrailEntry` values.
 - BC-2.04.007 {INV-006}: The encryption-at-rest guarantee extends to the `guardrail_journal`
   table in addition to state and event payloads; `EncryptedSerializer` covers all checkpoint
-  tables written by `CheckpointSaverSqlite`.
-- BC-2.04.007 {INV-005}: `CheckpointSaverSqlite` accepts `Option<Arc<dyn Serializer + Send + Sync>>`;
+  tables written by `SqliteCheckpointSaver`.
+- BC-2.04.007 {INV-005}: `SqliteCheckpointSaver` accepts `Option<Arc<dyn Serializer + Send + Sync>>`;
   `EncryptedSerializer` is the canonical concrete implementor providing AES-GCM
   (or equivalent) encryption; when `Some(enc_ser)` is supplied, all bytes written to SQLite
   are encrypted.
@@ -138,7 +139,7 @@ at `CheckpointSaverSqlite` construction (BC-2.04.007 {INV-005} DI seam).
 //   VP-2.11.007-A (crates/pregolya-graph/tests/).
 //
 // ABSTRACT FIXTURE PATTERN (F-PDC64-04):
-//   CheckpointTestFixture wires CheckpointSaverSqlite with optional EncryptedSerializer
+//   CheckpointTestFixture wires SqliteCheckpointSaver with optional EncryptedSerializer
 //   via the CheckpointSaver + Serializer DI seams — analogous to GraphTestFixture in
 //   VP-2.11.007-A. Exposes:
 //     fixture.saver: Arc<dyn CheckpointSaver> — the initialized saver
@@ -169,7 +170,7 @@ async fn guardrail_journal_entries_are_encrypted_at_rest() {
     // raw bytes must NOT be valid plaintext GuardrailEntry.
     const KEY: &[u8; 32] = b"test-encryption-key-32bytes-pad!";
     // CheckpointTestFixture::with_encryption wires EncryptedSerializer (infallible new)
-    // and CheckpointSaverSqlite via the DI seams — no concrete saver type named in harness
+    // and SqliteCheckpointSaver via the DI seams — no concrete saver type named in harness
     // (F-PDC64-04 abstract-fixture discipline, matching VP-2.11.007-A §GraphTestFixture).
     let fixture = CheckpointTestFixture::with_encryption(KEY).await;
 
@@ -181,7 +182,7 @@ async fn guardrail_journal_entries_are_encrypted_at_rest() {
         .expect("init_guardrail_journal must succeed");
 
     // Sentinel string must appear in plaintext but not in encrypted bytes
-    let sentinel = "test-plaintext-sentinel";
+    let sentinel = "SENTINEL-GUARDRAIL-PLAINTEXT";
     // GuardrailEntry::new + ProvenanceTag::new — canonical cross-crate constructors
     // (struct literal forbidden outside pregolya-core per #[non_exhaustive]).
     // GuardrailResult::Fail{reason: sentinel} preserves the non-vacuous plaintext-absence
@@ -265,14 +266,14 @@ async fn guardrail_journal_entries_are_encrypted_at_rest() {
 #[tokio::test]
 async fn guardrail_journal_baseline_no_encryption_is_plaintext() {
     // CheckpointTestFixture::without_encryption wires None serializer — plaintext path.
-    // No concrete CheckpointSaverSqlite::new in harness (F-PDC64-04 abstract-fixture).
+    // No concrete SqliteCheckpointSaver::new in harness (F-PDC64-04 abstract-fixture).
     let fixture = CheckpointTestFixture::without_encryption().await;
 
     let run_id = uuid::Uuid::new_v4();
     fixture.saver.init_guardrail_journal(run_id).await
         .expect("init_guardrail_journal must succeed");
 
-    let sentinel = "baseline-sentinel-plaintext";
+    let sentinel = "SENTINEL-GUARDRAIL-PLAINTEXT";
     // Same canonical constructors — struct literal forbidden outside pregolya-core
     // per #[non_exhaustive].
     let entry = GuardrailEntry::new(
@@ -314,7 +315,7 @@ async fn guardrail_journal_baseline_no_encryption_is_plaintext() {
 
 Note: `CheckpointTestFixture::with_encryption(key)` wires `EncryptedSerializer`
 (infallible `new(key: &[u8; 32]) -> Self`; interface-definitions.md §Serializer v3.20
-adjudication — no `.expect()` needed) and `CheckpointSaverSqlite` via the
+adjudication — no `.expect()` needed) and `SqliteCheckpointSaver` via the
 `Option<Arc<dyn Serializer + Send + Sync>>` DI seam (BC-2.04.007 {INV-005}).
 `fixture.db_path` exposes the SQLite file for the inspector — `sqlx::SqlitePool`
 reads the `data` column of `guardrail_journal` directly, bypassing the checkpoint API.
@@ -322,7 +323,7 @@ reads the `data` column of `guardrail_journal` directly, bypassing the checkpoin
 method (interface-definitions.md §Serializer: `fn deserialize(&self, ciphertext: &[u8])
 -> Result<Vec<u8>, PregolyaError>`; there is NO `decrypt` method — F-PDC64-02);
 `fixture.serializer` is `Arc<dyn Serializer + Send + Sync>` configured with the active key.
-The sentinel string `"test-plaintext-sentinel"` must be absent from raw bytes under
+The sentinel string `"SENTINEL-GUARDRAIL-PLAINTEXT"` must be absent from raw bytes under
 encryption and present under the plaintext baseline — non-vacuous assertion (TD-VSDD-059).
 `GuardrailResult::Fail` is a struct variant requiring `{ reason: String, severity: GuardrailSeverity }`
 construction (DC-57 struct-variant discipline). `transform_applied` is not a field (O-PDC34-A).
@@ -332,9 +333,9 @@ construction (DC-57 struct-variant discipline). `transform_applied` is not a fie
 | Source | BC / Invariant |
 |--------|---------------|
 | Primary BC | BC-2.11.007 {INV-005} — when EncryptedSerializer is active, guardrail_journal raw bytes must not be valid plaintext GuardrailEntry (PO adding {INV-005} in DC-62 parallel burst) |
-| Co-BC | BC-2.04.007 {INV-006} — encryption-at-rest coverage extends to guardrail_journal table; all tables written by CheckpointSaverSqlite are covered (PO adding {INV-006} in DC-62 parallel burst) |
+| Co-BC | BC-2.04.007 {INV-006} — encryption-at-rest coverage extends to guardrail_journal table; all tables written by SqliteCheckpointSaver are covered (PO adding {INV-006} in DC-62 parallel burst) |
 | DI Anchor | DI-012 — Guardrail Coverage at Ingress Boundaries; durable audit log must not be readable from raw storage |
-| Encryption seam | BC-2.04.007 {INV-005} — CheckpointSaverSqlite DI seam for Option<Arc<dyn Serializer + Send + Sync>> |
+| Encryption seam | BC-2.04.007 {INV-005} — SqliteCheckpointSaver DI seam for Option<Arc<dyn Serializer + Send + Sync>> |
 | Architecture Module | checkpoint::serializer (pregolya-checkpoint) — EncryptedSerializer lives here; CRITICAL tier per module-criticality.md |
 | Subsystem | SS-04 (Checkpoint & Persistence) / SS-11 (Guardrails) |
 
@@ -380,7 +381,7 @@ pregolya-checkpoint). The two VPs are complementary, not contradictory.
 |------------|--------|-------|
 | BC-2.11.007 {INV-005} active | Phase 3 obligation | PO minting in DC-62 parallel burst |
 | BC-2.04.007 {INV-006} active | Phase 3 obligation | PO minting in DC-62 parallel burst |
-| CheckpointTestFixture wires CheckpointSaverSqlite + optional EncryptedSerializer via DI seams | Phase 3 obligation | Implementer; Arc<dyn CheckpointSaver> + Arc<dyn Serializer + Send + Sync> exposed on fixture |
+| CheckpointTestFixture wires SqliteCheckpointSaver + optional EncryptedSerializer via DI seams | Phase 3 obligation | Implementer; Arc<dyn CheckpointSaver> + Arc<dyn Serializer + Send + Sync> exposed on fixture |
 | CheckpointSaver implementor calls Serializer::serialize on all guardrail_journal write ops | Phase 3 obligation | Implementer; interface-definitions.md §CheckpointSaver encryption note |
 | Test compiles against live checkpoint::serializer API | Phase 3 Red Gate | Pre-delivery |
 

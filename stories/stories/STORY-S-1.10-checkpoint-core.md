@@ -3,10 +3,10 @@ document_type: story
 level: ops
 story_id: S-1.10
 epic_id: E-05
-version: "1.4"
+version: "1.5"
 status: draft
 producer: story-writer
-timestamp: 2026-08-24T00:00:00Z
+timestamp: 2026-09-10T00:00:00Z
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-04/BC-2.04.001.md
@@ -18,7 +18,7 @@ inputs:
   - .factory/specs/behavioral-contracts/ss-04/BC-2.04.007.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "6087bc8"
+input-hash: "db34305"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 13
 depends_on: [S-1.04, S-1.02]
@@ -149,7 +149,7 @@ During `_reapply_writes_to_succeeded_nodes` crash recovery, if the storage query
 | `MonotonicClock::get_next_version` | `pregolya_checkpoint::clock` | pregolya-checkpoint | Effectful Shell (reads persisted-max `CheckpointId` from SQLite; ADR-005 rev-2 cross-restart monotonicity) |
 | `fork` | `pregolya_checkpoint::fork` | pregolya-checkpoint | Effectful Shell (writes parent-pointer checkpoint row to SQLite; no state payload copied) |
 | `recovery` module | `pregolya_checkpoint::recovery` | pregolya-checkpoint | Effectful Shell (reads `pending_writes` table from SQLite to build committed-task set) |
-| `EncryptedSerializer` | `pregolya_checkpoint::encryption` | pregolya-checkpoint | Effectful Shell (wraps `put` and `put_writes` with AES-256-GCM; no unencrypted write path) |
+| `EncryptedSerializer` | `pregolya_checkpoint::serializer` | pregolya-checkpoint | Effectful Shell (wraps `put` and `put_writes` with AES-256-GCM; no unencrypted write path) |
 | `session_tenancy_harness` (VP-002 Kani stub) | `pregolya_checkpoint::proofs::session_tenancy` | pregolya-checkpoint | Pure (`#[cfg(kani)]`; stub body `todo!()` for Phase 6; proof vehicle for VP-002) |
 
 **Subsystem anchor:** SS-04 owns this story's scope because SS-04 is the Checkpoint subsystem (pregolya-checkpoint crate) per ARCH-INDEX Subsystem Registry. Pure-core / effectful-shell boundary: `storage_address` and data types are the pure core; `SqliteCheckpointSaver`, `MonotonicClock`, `fork`, `recovery`, and `EncryptedSerializer` are effectful shells. The VP-002 Kani harness stub lives at `crates/pregolya-checkpoint/src/proofs/session_tenancy.rs`.
@@ -165,7 +165,7 @@ During `_reapply_writes_to_succeeded_nodes` crash recovery, if the storage query
 | `MonotonicClock::get_next_version` (`pregolya_checkpoint::clock`) | Effectful Shell | Reads persisted-max `CheckpointId` from SQLite; ADR-005 rev-2 cross-restart monotonicity |
 | `fork` (`pregolya_checkpoint::fork`) | Effectful Shell | Writes parent-pointer checkpoint row to SQLite; no state payload copied |
 | `recovery` module (`pregolya_checkpoint::recovery`) | Effectful Shell | Reads `pending_writes` table from SQLite to build committed-task set |
-| `EncryptedSerializer` (`pregolya_checkpoint::encryption`) | Effectful Shell | Applies AES-256-GCM to `put` and `put_writes`; no unencrypted write path |
+| `EncryptedSerializer` (`pregolya_checkpoint::serializer`) | Effectful Shell | Applies AES-256-GCM to `put` and `put_writes`; no unencrypted write path |
 
 ## Token Budget Estimate
 
@@ -272,6 +272,7 @@ Files to MODIFY:
 
 | Version | Date | Change | Source |
 |---------|------|--------|--------|
+| 1.5 | 2026-09-10 | DC-64/F-PDC64-01: BC-2.04.007 EC-003 retired → AC-021 retired via strikethrough; no coverage gap — retired EC tested unreachable runtime empty-key path now compile-guaranteed by `EncryptedSerializer::new(&[u8;32])`. DC-65/F-PDC65-02: module path `pregolya_checkpoint::encryption` → `pregolya_checkpoint::serializer` in Architecture Mapping and Purity Classification tables. | DC-64 F-PDC64-01, DC-65 F-PDC65-02 |
 | 1.4 | 2026-09-02 | round-79/F-P2A251-02: BC table title cells corrected to verbatim canonical H1 per POL-7/F-P2A251-02. | round-79 F-P2A251-02 |
 | 1.3 | 2026-08-26 | SW-2/bc-completeness-hardening: BC-2.04.001 → AC-023 (EC-005 async join-failure at run exit → run failed, E-CHKPT-001; graph output NOT returned); BC-2.04.005 → AC-024 (EC-007 pending_writes reapply read/deserialize failure → E-CHKPT-003). EC-006/EC-007 added. | SW-2 |
 | 1.2 | 2026-08-24 | P2A-043 F-05: prose ordinal cross-refs converted to stable tags | P2A-043 F-05 |

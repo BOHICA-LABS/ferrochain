@@ -1,14 +1,15 @@
 ---
 document_type: verification-property-index
 level: L3
-version: "1.59"
+version: "1.60"
 status: active
-producer: state-manager
-timestamp: 2026-09-09T00:00:00Z
+producer: architect
+timestamp: 2026-09-10T00:00:00Z
 phase: 1b
 input-hash: "[live-index]"
 traces_to: ARCH-INDEX.md
 changelog:
+  - "1.60 (DC-65/F-PDC65-02/2026-09-10, architect): F-PDC65-02 (architect share) — VP-2.11.007-B catalog row Module corrected checkpoint::encryption→checkpoint::serializer (canonical per interface-definitions.md §Serializer §Implementors; Source-of-Truth per CLAUDE.md precedence rule #3). Census UNCHANGED: 43 total. input-hash: [live-index] unchanged."
   - "1.59 (DC-62/2026-09-10, architect): VP-2.11.007-B minted — GuardrailJournal encryption-at-rest integration P1 (BC-2.11.007 {INV-005} + BC-2.04.007 {INV-006}; DI-012; checkpoint::encryption; pregolya-checkpoint; Phase 3). Raw bytes in guardrail_journal table under EncryptedSerializer are NOT valid plaintext GuardrailEntry; after decryption with active key they round-trip to original values. Pattern: mirror BC-2.04.007 inspector-reads-raw-storage. Census 42→43; integration 13→14; P1 35→36. Propagated to verification-architecture.md, verification-coverage-matrix.md in same burst."
   - "1.58 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog fix — 14 spa/components/ module path forms converted to spa_components:: namespace::module form in VP catalog table and body blockquote notes (verify-module-canonicality.sh canonical pattern). SPA module convention preamble note updated to cite spa_components:: form. Census UNCHANGED: 42 total."
   - "1.57 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog fix — removed version pins from 3 body blockquote notes (DC-07/DC-20/DC-19; verify-no-version-pins.sh L9b). Census UNCHANGED: 42 total."
@@ -144,7 +145,7 @@ changelog:
 | VP-019 | BC-2.04.011 {INV-003} | checkpoint::trajectory | integration | 6 | P1 | draft | DI-002 | pregolya-checkpoint | n/a (integration test) | vp-019-trajectory-compaction-crash-isolation.md |
 | VP-020 | BC-2.02.009 {INV-001}+{INV-002} | graph::channels | proptest | 3 | P1 | draft | DI-001 | pregolya-graph | `promote_retire_channel_idempotency` | vp-020-promote-retire-channel-idempotency.md |
 | VP-2.11.007-A | BC-2.11.007 {PC-001}/{INV-002} | graph::provenance | integration | 3 | P0 | draft | DI-012 | pregolya-graph | n/a (integration test) | vp-2.11.007-a-guardrail-journal-completeness.md |
-| VP-2.11.007-B | BC-2.11.007 {INV-005} + BC-2.04.007 {INV-006} | checkpoint::encryption | integration | 3 | P1 | draft | DI-012 | pregolya-checkpoint | n/a (integration test) | vp-2.11.007-b-guardrail-journal-encryption-at-rest.md |
+| VP-2.11.007-B | BC-2.11.007 {INV-005} + BC-2.04.007 {INV-006} | checkpoint::serializer | integration | 3 | P1 | draft | DI-012 | pregolya-checkpoint | n/a (integration test) | vp-2.11.007-b-guardrail-journal-encryption-at-rest.md |
 | VP-2.24.001-A | BC-2.24.001 | console::server | unit | 3 | P1 | draft | DI-014 | pregolya-console | n/a (unit test) | SEED |
 | VP-2.24.001-B | BC-2.24.001 | console::server | unit | 3 | P1 | draft | DI-014 | pregolya-console | `test_BC_2_24_001_zero_cap_err` | SEED |
 | VP-2.24.001-C | BC-2.24.001 | console::server | compile-fail | 3 | P1 | draft | DI-014 | pregolya-console | n/a (compile-fail test) | SEED |
