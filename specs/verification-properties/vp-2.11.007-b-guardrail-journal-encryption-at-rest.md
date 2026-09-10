@@ -3,10 +3,10 @@ document_type: verification-property
 level: L4
 id: VP-2.11.007-B
 title: "GuardrailJournal Encryption at Rest — Raw Bytes in guardrail_journal Table Are Not Valid Plaintext GuardrailEntry"
-version: "1.4"
+version: "1.5"
 status: draft
 producer: architect
-timestamp: 2026-09-10T00:00:00Z
+timestamp: 2026-09-10T01:00:00Z
 phase: 3
 inputs:
   - .factory/specs/behavioral-contracts/ss-11/BC-2.11.007.md
@@ -23,7 +23,7 @@ proof_file_hash: null
 # Lifecycle fields (DF-030)
 lifecycle_status: active
 introduced: DC-62
-modified: [DC-63, DC-64, DC-65, DC-66]
+modified: [DC-63, DC-64, DC-65, DC-66, DC-67]
 deprecated: null
 deprecated_by: null
 replacement: null
@@ -41,6 +41,7 @@ priority: P1
 harness_fn: "n/a (integration test)"
 file: vp-2.11.007-b-guardrail-journal-encryption-at-rest.md
 changelog:
+  - "1.5 (DC-67/F-PDC67-02/F-PDC67-03/2026-09-10, architect): F-PDC67-02 [LOW, TD-VSDD-091] — de-pin three interposed-version-pin occurrences (§Serializer v3.20 form) in live-body prose: (1) §Proof Harness ABSTRACT FIXTURE PATTERN comment; (2) post-harness Note; (3) §BC Contradictions Flagged action-required prose. All three replaced with 'interface-definitions.md §Serializer (per F-PDC64-01/DC-64)' — durable finding/decision anchor replaces volatile vN.N. F-PDC67-03 [LOW] — §BC Contradictions Flagged 'Product-owner action required' block converted to past-tense RESOLVED annotation with durable anchor DC-64/F-PDC64-01; both action items closed: EC-003 retired, E-CORE-005 retained at BC-2.14.006."
   - "1.4 (DC-66/F-PDC66-04/2026-09-10, architect): F-PDC66-04 [LOW, records] — v1.3 changelog entry: no-op arrow corrected. 'renamed SqliteCheckpointSaver→SqliteCheckpointSaver' had identical operands (no-op); the OLD operand before DC-65 was CheckpointSaverSqlite. Corrected to 'renamed CheckpointSaverSqlite→SqliteCheckpointSaver'. input-hash refreshed 058b831 (BC inputs changed by parallel PO burst)."
   - "1.3 (DC-65/F-PDC65-03/F-PDC65-04/2026-09-10, architect): F-PDC65-03 [MED] sentinel alignment — all three sentinel occurrences in §Proof Harness (encrypted case line sentinel=..., baseline case line sentinel=..., and §Proof Harness post-harness prose note) replaced with canonical sentinel 'SENTINEL-GUARDRAIL-PLAINTEXT' (BC-2.11.007 TV-008 + S-1.29 AC-008/EC-009 alignment; VP-B ↔ TV-008 ↔ AC-008/EC-009 now agree). F-PDC65-04 [MED] concrete-saver rename — all prose occurrences (§Property Statement, §Source Contract, §Proof Harness comments, post-harness prose, §BC Traceability, §Proof Obligations) renamed CheckpointSaverSqlite→SqliteCheckpointSaver (canonical majority form matching 4 Wave-1 stories: S-1.10/S-1.11/S-1.18/S-2.12; idiomatic Rust qualifier-prefix adjudication in F-PDC65-04). input-hash refreshed (BC inputs changed by parallel PO burst)."
   - "1.2 (DC-64/F-PDC64-01/F-PDC64-02/F-PDC64-03/F-PDC64-04/2026-09-10, architect): ROOT-CAUSE FIX — all four DC-64 compile-blocking findings closed by rewriting §Proof Harness to the abstract CheckpointTestFixture pattern (mirrors VP-2.11.007-A §GraphTestFixture). F-PDC64-04 (HIGH): Remove concrete SqliteCheckpointSaver::new(...) calls from harness; replace with CheckpointTestFixture::with_encryption(KEY).await and CheckpointTestFixture::without_encryption().await — fixture abstracts saver construction via DI seams (Phase 3 implementer obligation per CLAUDE.md §Arc-DI wiring). F-PDC64-01 (HIGH): Remove EncryptedSerializer::new(...).expect(...) — EncryptedSerializer::new(key: &[u8; 32]) -> Self is INFALLIBLE; .expect() on Self does not compile; compile-time key-length enforcement via &[u8; 32] eliminates runtime empty-key path; fixture now handles construction internally; see interface-definitions.md §Serializer adjudication (DC-64). F-PDC64-02 (MED): Replace phantom enc_ser_ref.decrypt(&raw_bytes) with canonical Serializer trait method fixture.serializer.deserialize(&raw_bytes) -> Result<Vec<u8>, PregolyaError> (interface-definitions.md §Serializer; NO decrypt method exists on Serializer or EncryptedSerializer); same fix applied to §Formal Invariant pseudocode; drop 'EncryptedSerializer exposes decrypt()' Proof Obligation row. F-PDC64-03 (MED): module checkpoint::encryption -> checkpoint::serializer throughout (frontmatter module:, §Property Statement, §Formal Invariant, §BC Traceability Architecture Module row, §Proof Harness SCOPE NOTE) — interface-definitions.md §Serializer §Implementors line is Source-of-Truth (CLAUDE.md precedence rule #3); three architecture registries swept in same burst: module-decomposition.md §pregolya-checkpoint (SS-04), purity-boundary-map.md §Effectful Shell, module-criticality.md §Module Classification. BC-2.04.007 EC-003 adjudication: EncryptedSerializer::new is infallible; EC-003 empty-key path is invalidated; product-owner routing documented in §BC Contradictions Flagged. input-hash refreshed (BC inputs edited in parallel PO burst)."
@@ -149,7 +150,7 @@ at `SqliteCheckpointSaver` construction (BC-2.04.007 {INV-005} DI seam).
 //                                            — active serializer (with_encryption only)
 //   Phase 3 obligation: CheckpointTestFixture infrastructure (implementer).
 //   EncryptedSerializer::new(key: &[u8; 32]) -> Self is INFALLIBLE — fixture calls it
-//   without .expect(); see interface-definitions.md §Serializer v3.20 adjudication.
+//   without .expect(); see interface-definitions.md §Serializer (per F-PDC64-01/DC-64) adjudication.
 //
 // IMPORT NOTE: all types use qualified paths; no glob imports.
 // GuardrailEntry fields: boundary: IngressBoundary, result: GuardrailResult,
@@ -315,7 +316,7 @@ async fn guardrail_journal_baseline_no_encryption_is_plaintext() {
 ```
 
 Note: `CheckpointTestFixture::with_encryption(key)` wires `EncryptedSerializer`
-(infallible `new(key: &[u8; 32]) -> Self`; interface-definitions.md §Serializer v3.20
+(infallible `new(key: &[u8; 32]) -> Self`; interface-definitions.md §Serializer (per F-PDC64-01/DC-64)
 adjudication — no `.expect()` needed) and `SqliteCheckpointSaver` via the
 `Option<Arc<dyn Serializer + Send + Sync>>` DI seam (BC-2.04.007 {INV-005}).
 `fixture.db_path` exposes the SQLite file for the inspector — `sqlx::SqlitePool`
@@ -353,12 +354,14 @@ the fixed-size array type provides compile-time key-length enforcement; the Rust
 rejects keys of any length other than 32 bytes before runtime. The runtime empty-key path
 (E-CORE-005 at construction) is UNREACHABLE when `new` accepts `&[u8; 32]`.
 
-**Product-owner action required:** (1) Retire or update BC-2.04.007 EC-003 — the `E-CORE-005
-EmptyEncryptionKey` construction path is invalidated by the `&[u8; 32]` type; (2) If
-`E-CORE-005` is not needed elsewhere in the error taxonomy, retire it; (3) If key-validity
-errors are still needed at a different boundary (e.g., key rotation), document the correct
-error site. See `interface-definitions.md §Serializer v3.20` for the canonical infallibility
-rationale. Architect cannot edit BC files per CLAUDE.md Companion Principle §Routing.
+**[RESOLVED at DC-64/F-PDC64-01: BC-2.04.007 EC-003 retired (empty-key path unreachable
+under &[u8;32]); E-CORE-005 RETAINED as general-purpose VAL code @ BC-2.14.006]**
+BC-2.04.007 EC-003 was retired — the `E-CORE-005 EmptyEncryptionKey` construction path
+was invalidated by the `&[u8; 32]` type; compile-time key-length enforcement removes the
+runtime empty-key path. `E-CORE-005` is retained as a general-purpose validation code
+at BC-2.14.006. See `interface-definitions.md §Serializer (per F-PDC64-01/DC-64)` for
+the canonical infallibility rationale. Architect cannot edit BC files per CLAUDE.md
+Companion Principle (routing discipline).
 
 VP-2.11.007-A covers the write-completeness property (graph::provenance, pregolya-graph) and
 does not overlap with this VP's storage-layer encryption concern (checkpoint::serializer,
