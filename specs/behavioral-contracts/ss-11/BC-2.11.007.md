@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.11.007
-version: "1.16"
+version: "1.17"
 status: active
 producer: product-owner
 timestamp: 2026-09-10T00:00:00Z
@@ -40,6 +40,7 @@ changelog:
   - "1.14 (F-PDC62-03/DC-62/2026-09-10, product-owner): {INV-005} added — encryption at rest extends to guardrail journal ops: when EncryptedSerializer is active on the CheckpointSaver (BC-2.04.007 {INV-006} DI seam), GuardrailEntry bytes written via init_guardrail_journal and append_guardrail_entry MUST be encrypted before reaching SQLite; plaintext GuardrailEntry payloads (including Transform{new_content}/Fail{reason}) prohibited when EncryptedSerializer configured; obligation is NOT automatic and must be explicitly enforced by concrete CheckpointSaver implementor (CWE-312 motivation; architect-adjudicated F-PDC62-03/DC-62). TV-008 added for at-rest encryption via GuardrailJournal write ops. VP-2.11.007-B anchored (architect minting in parallel; P1 integration test; anchors {INV-005}). §Related BCs: BC-2.04.007 entry added."
   - "1.15 (F-PDC63-03/F-PDC63-05/DC-63/2026-09-10, product-owner): F-PDC63-03 [MED] closed: {INV-005} DI-seam citation corrected — body text '(BC-2.04.007 {INV-006} DI seam)' changed to '(BC-2.04.007 {INV-005} DI seam)'; {INV-005} is the CheckpointSaver DI seam; {INV-006} is the ALL-WRITE-OPS coverage invariant (not the DI seam). Historical changelog 1.14 entry retains the erroneous phrasing as an immutable record (append-only); normative body is corrected. TV-008 all-write-ops {INV-006} reference in Category column retained (correct — that citation is the all-write-ops invariant, not the DI seam). F-PDC63-05 [MED] (part): TV-008 changed from vacuous Pass-only scenario to non-vacuous Fail scenario matching VP-2.11.007-B harness — input now uses GuardrailResult::Fail{reason: \"SENTINEL-GUARDRAIL-PLAINTEXT\", severity: GuardrailSeverity::High}; expected output asserts sentinel NOT present in raw at-rest ciphertext and deserializes to Fail{reason: \"SENTINEL-GUARDRAIL-PLAINTEXT\", severity: High} after decryption; Category updated to 'at-rest encryption non-vacuous (BC-2.04.007 {INV-003}/{INV-006} via GuardrailJournal write ops; VP-2.11.007-B)'. Sentinel token: \"SENTINEL-GUARDRAIL-PLAINTEXT\" (story-writer must use this exact token for AC-008/EC-009 alignment with VP-2.11.007-B)."
   - "1.16 (F-PDC66-01/DC-66/2026-09-10, product-owner): F-PDC66-01 [MED, POL-20] resolved — `status: draft` corrected to `status: active` to eliminate internal contradiction with `lifecycle_status: active`. BC-2.11.007 is integrated into BC-INDEX; the bc-authoring-plan.md governance rule (in-index implies status: active for all spec artifacts) and all 17 SS-11/SS-04 siblings (all status: active) confirm active is the correct state. No behavioral, postcondition, invariant, EC, TV, or anchor content changed."
+  - "1.17 (F-PDC68-01/DC-68/2026-09-10, product-owner): DC-62 sibling-sweep miss resolved — §Traceability VP Registration row now co-lists VP-2.11.007-A and VP-2.11.007-B. VP-2.11.007-B (at-rest encryption; anchors {INV-005}; module checkpoint::serializer; integration, P1) was already present in §Verification Properties table and §VP Anchors (minted DC-62) but absent from the §Traceability VP Registration row, understating VP coverage. Row updated: VP-2.11.007-A (anchors {PC-001}/{INV-002}; module graph::provenance) + VP-2.11.007-B (at-rest encryption; anchors {INV-005}; module checkpoint::serializer; integration, P1) — both registered in VP-INDEX. No behavioral, postcondition, invariant, EC, TV, or anchor content changed."
 modified: []
 extracted_from: null
 deprecated: null
@@ -238,4 +239,4 @@ S-console-10 (roadmap, Wave 3 — guardrail review panel; declares BC-2.11.007 i
 | Binding Decisions | D17-Q8 (guardrail subsystem, Phase-1 BC); D-356 DC-33 (durable GuardrailJournal authoring, human-authorized scope) |
 | Architecture Module | pregolya-graph (checkpoint-backed GuardrailEntry append on evaluate(); pregolya-checkpoint SQLite backend); pregolya-server (run-read projection via server::handlers; entities-server.md §GuardrailJournal) |
 | Stories | S-1.29 |
-| VP Registration | VP-2.11.007-A (minted and registered in VP-INDEX; anchors {PC-001}/{INV-002} and module `graph::provenance`) |
+| VP Registration | VP-2.11.007-A (anchors {PC-001}/{INV-002}; module `graph::provenance`) + VP-2.11.007-B (at-rest encryption; anchors {INV-005}; module `checkpoint::serializer`; integration, P1) — both registered in VP-INDEX |

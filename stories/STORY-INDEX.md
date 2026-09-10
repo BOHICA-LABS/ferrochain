@@ -1,11 +1,12 @@
 ---
 document_type: story-index
 level: L3
-version: "1.97"
+version: "1.98"
 status: active
 producer: state-manager
-timestamp: 2026-09-09T00:00:00Z
+timestamp: 2026-09-10T08:00:00Z
 changelog:
+  - "1.98 (DC-68/F-PDC68-01/2026-09-10, state-manager): DC-68 VP-2.11.007-B mirror propagation — VP-to-Story Anchor Map: VP-2.11.007-B→S-1.29 row added (anchors BC-2.11.007 {INV-005}+BC-2.04.007 {INV-006}; P1; pregolya-checkpoint; integration test in guardrail_journal_encryption_at_rest.rs per S-1.29 Task 15). sprint-state S-1.29 vps field extended: [VP-2.11.007-A]→[VP-2.11.007-A, VP-2.11.007-B]. Census UNCHANGED: BC 149 / VP 43 / EC 147 / TV 844 / stories 53 / pts 377 / ADR 31 / SS 24 / crates 22."
   - "1.97 (DC-59/2026-09-09, state-manager): DC-59 fix-burst CLOSED — S-1.29 §Acceptance-Criteria: AC-006 (→{EC-007}: init_guardrail_journal+append_guardrail_entry failure → E-CHKPT-012) + AC-007 (→{EC-008}: get_guardrail_journal failure → E-CHKPT-013) added; TV-006+TV-007 rows added; Tasks 13+14 added (error propagation via CheckpointSaver ops); verify-ac-pc-trace PASS (citations=7 drift=0). Census: EC 145→147 (+E-CHKPT-012, +E-CHKPT-013); TV 841→843 (+TV-006, +TV-007). BC 149 / VP 42 / stories 53 / pts 377 / ADR 31 / SS 24 / crates 22 UNCHANGED. CLEAN(strict)=no CLEAN(PR-merge)=no. Strict streak RESET 0/3 (MED fixed + new HEAD pushed; BC-5.39.001 frozen-HEAD rule). DC-60 gates new HEAD as strict-streak pass 1."
   - "1.96 (D-356/records-straggler/2026-09-09, state-manager): Records-straggler scrub (post-DC-52 exhaustive audit) — CLASS B-05 S-1.29 §Architecture Mapping purity table pregolya-graph/src/provenance.rs Justification cell: 'each evaluate() call produces exactly one GuardrailEntry'→'each successfully-returning evaluate() call produces exactly one GuardrailEntry'; consistent with BC-2.11.007 {INV-002}/{EC-003} and AC-001/EC-006 already-correct sites. Census UNCHANGED: stories 53 / pts 377 / BC 149 / VP 42 / EC 145 / TV 841 / ADR 31 / SS 24 / crates 22. CLEAN(PR-merge)=yes CLEAN(strict)=no. Per TD-RECORDS-MICRO-BURST-001 strict streak NOT RESET (holds 0/3). DC-53 gates fully-scrubbed HEAD as pass 1."
   - "1.95 (D-356/DC-50/2026-09-09, state-manager): DC-50 (strict-streak pass 2) = F-PDC50-01 (1MED) → exhaustive story-scope audit expanded to 8-finding class, ALL CLOSED. F-1(CRIT) S-1.29 pregolya-checkpoint (SS-04) scope: saver.rs/sqlite.rs/memory.rs MODIFY rows added + three Tasks (CheckpointSaver journal methods + SQLite 3-state table + memory backend) + Task-7/Task-9 caller-not-definer corrected; subsystem field [SS-04,SS-11,SS-12]. F-2(MED) S-console-01 crates/pregolya/Cargo.toml MODIFY (pregolya-console dep) + dependency-graph pregolya→pregolya-console edge. F-3(LOW) S-console-03 Task-7 router-creation-time gate clarified. F-4..F-8(LOW) S-console-04/07/08/09/10: subsystem field corrected to [SS-24] (over-scoping removed). S-1.29 inventory row subsystem: SS-11 → SS-04, SS-11, SS-12. Census UNCHANGED: stories 53 / pts 377 / BC 149 / VP 42 / EC 145 / TV 841 / ADR 31 / crates 22. strict streak 0/3 (fix push; DC-51 gates new HEAD as pass 1)."
@@ -634,6 +635,7 @@ input-hash: "34034c0"
 | VP-019 | BC-2.04.011 {INV-003} | S-2.12 | P1 | pregolya-checkpoint |
 | VP-020 | BC-2.02.009 {INV-001}+{INV-002} | S-1.28 | P1 | pregolya-graph |
 | VP-2.11.007-A | BC-2.11.007 {PC-001}/{INV-002} | S-1.29 | P0 | pregolya-graph |
+| VP-2.11.007-B | BC-2.11.007 {INV-005} + BC-2.04.007 {INV-006} | S-1.29 | P1 | pregolya-checkpoint |
 | VP-2.24.001-A | BC-2.24.001 | S-console-01 | P1 | pregolya-console |
 | VP-2.24.001-B | BC-2.24.001 | S-console-01 | P1 | pregolya-console |
 | VP-2.24.001-C | BC-2.24.001 | S-console-01 | P1 | pregolya-console |

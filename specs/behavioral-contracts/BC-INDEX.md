@@ -1,15 +1,16 @@
 ---
 document_type: bc-index
 level: L3
-version: "4.59"
+version: "4.60"
 status: active
 producer: state-manager
-timestamp: 2026-09-10T00:00:00Z
+timestamp: 2026-09-10T08:00:00Z
 project: pregolya
 cycle: v1.0.0-greenfield
 input-hash: "[live-index]"
 traces_to: .factory/specs/prd.md
 changelog:
+  - "4.60 (DC-68/F-PDC68-01/2026-09-10, state-manager): DC-68 VP-2.11.007-B BC-INDEX mirror propagation — F-PDC68-01 state-manager share: BC-2.04.007 VP column EMPTY→VP-2.11.007-B (co-anchors {INV-006}; encryption-at-rest all-write-ops coverage); BC-2.11.007 VP column VP-2.11.007-A→VP-2.11.007-A+VP-2.11.007-B (adds at-rest encryption integration P1; DC-62 sibling-sweep miss resolved). Convention: VP listed under each BC it anchors (BC-2.11.007+BC-2.04.007 both listed per BC-2.02.007/008 dual-anchor precedent). Census UNCHANGED: BC 149 / VP 43 / EC 147 / TV 844 / stories 53 / pts 377 / ADR 31 / SS 24 / crates 22."
   - "4.59 (DC-62/2026-09-10, state-manager): DC-62 fix-burst CLOSED — F-PDC62-01 [HIGH] TV grand-total corrected (DC-46 v3.26 overcounted SS-24 TVs at +46; body-authoritative count +38; BC-2.11.007 TV-001..TV-005 never rolled in; TV-008 added this burst). TV 843→844. F-PDC62-02 [MED] BC count corrected 150→149 in test-vectors.md. F-PDC62-03 [MED] BC-2.11.007 {INV-005} encryption-at-rest obligation (architect-adjudicated; NOT automatic) + VP-2.11.007-B minted + S-1.29 AC-008 + TV-008. F-PDC62-04 [LOW] S-1.29 AC-001 boundary-source clarification. VP 42→43 (+VP-2.11.007-B integration P1, module checkpoint::encryption, crate pregolya-checkpoint, anchors BC-2.11.007 {INV-005}+BC-2.04.007 {INV-006}). Census: BC 149 / VP 43 / EC 147 / TV 844 / stories 53 / pts 377 / ADR 31 / SS 24 / crates 22. CLEAN(strict)=no CLEAN(PR-merge)=no. STRICT STREAK RESET 0/3 (HIGH+MED fixed + new HEAD; BC-5.39.001 frozen-HEAD rule). DC-63 gates new HEAD as strict-streak pass 1."
   - "4.58 (DC-59/2026-09-09, state-manager): DC-59 fix-burst CLOSED — F-PDC59-01[MED] guardrail-journal error-contract gap. BC-2.11.007 §Error-Contract: E-CHKPT-012 (GuardrailJournalWriteFailed) + E-CHKPT-013 (GuardrailJournalReadFailed) minted in error-taxonomy §Error-Codes; {EC-007}+{EC-008} edge cases added; TV-006+TV-007 rows added; interface-definitions.md §CheckpointSaver 3 # Errors sections cited. OBS-PDC59-1[LOW] ProvenanceTag derives homed; OBS-PDC59-2[LOW] GuardrailDecisionKind+GuardrailSeverityWire wire-enum parity (#[non_exhaustive]+derives) — ALL CLOSED. Census: EC 145→147 (+E-CHKPT-012, +E-CHKPT-013); TV 841→843 (+TV-006, +TV-007). BC 149 / VP 42 / stories 53 / pts 377 / ADR 31 / SS 24 / crates 22 UNCHANGED. CLEAN(strict)=no CLEAN(PR-merge)=no. Strict streak RESET 0/3 (MED fixed + new HEAD pushed; BC-5.39.001 frozen-HEAD rule). DC-60 gates new HEAD as strict-streak pass 1."
   - "4.57 (D-356/records-straggler/2026-09-09, state-manager): Records-straggler scrub (post-DC-52 exhaustive audit) — 14 LOW sites across 2 classes ALL CLOSED. CLASS A (clause-anchor §clause→{clause}): A-01 BC-2.11.007 {PC-001} Rust pseudocode comment citation corrected to {PC-002} canonical item-anchor form. A-05..A-09 BC-2.24.006 five §EC-003→{EC-003} cross-BC citations at {PRE-002} body, {PC-001}(a) body, {PC-002} node-boundary paragraph, TV-005 row, §Related BCs BC-2.12.007 entry. CLASS B (successfully-returning qualifier + {EC-003} carve-out): B-01 BC-2.11.007 §Description 'Every call'→'Every successfully-returning call' + {EC-003} carve-out sentence. B-02 BC-2.11.007 {PC-001} heading + body first sentence qualified with successfully-returning + {EC-003} carve-out. Census UNCHANGED: stories 53 / pts 377 / BC 149 / VP 42 / EC 145 / TV 841 / ADR 31 / SS 24 / crates 22. CLEAN(PR-merge)=yes CLEAN(strict)=no. Per TD-RECORDS-MICRO-BURST-001 strict streak NOT RESET (holds 0/3). DC-53 gates fully-scrubbed HEAD as pass 1."
@@ -283,7 +284,7 @@ _VP-004 and VP-005 are integration VPs (from BC-2.09.004/005); registered in VP-
 | BC-2.04.004 | Fork Lineage via parent_checkpoint_id Pointers; No State Copy on Fork | CAP-005 | | DI-004 | P0 | | | ss-04/BC-2.04.004.md |
 | BC-2.04.005 | Crash Recovery — Completed Tasks Not Re-Executed After Process Restart | CAP-005 | | DI-002 | P0 | | | ss-04/BC-2.04.005.md |
 | BC-2.04.006 | Session Triple-Address Uniqueness (thread_id, checkpoint_ns, checkpoint_id) — Kani VP Seed | CAP-005 | NE-12 | DI-005 | P0 | | **VP-002** | ss-04/BC-2.04.006.md |
-| BC-2.04.007 | Encryption at Rest Covers Both State AND Event Payloads; Rotation Errors Propagate | CAP-005 | NE-11 | | P0 | | | ss-04/BC-2.04.007.md |
+| BC-2.04.007 | Encryption at Rest Covers Both State AND Event Payloads; Rotation Errors Propagate | CAP-005 | NE-11 | | P0 | | **VP-2.11.007-B** | ss-04/BC-2.04.007.md |
 | BC-2.04.008 | FTS Conversation Search Over Checkpoint History (Single-Process; SQLite FTS5) | CAP-005 | | DI-002,DI-008,DI-014 | P1 | | | ss-04/BC-2.04.008.md |
 | BC-2.04.009 | TrajectoryWriter::put_record Durability | CAP-040 | | DI-002, DI-014 | P1 | | | ss-04/BC-2.04.009.md |
 | BC-2.04.010 | TrajectoryReader::replay Ascending step_idx Order | CAP-040 | | DI-004, DI-014 | P1 | | | ss-04/BC-2.04.010.md |
@@ -339,7 +340,7 @@ _VP-004 and VP-005 are integration VPs (from BC-2.09.004/005); registered in VP-
 | BC-2.11.004 | GuardrailHook Fires at Memory Ingress | CAP-013 | NE-06 | DI-012 | P0 | | | ss-11/BC-2.11.004.md |
 | BC-2.11.005 | Rejected Content Does Not Enter Model Context Under Any Code Path | CAP-013 | | DI-012 | P0 | | | ss-11/BC-2.11.005.md |
 | BC-2.11.006 | No-Hook Default — Content Passes Through with WARNING LOG (Default-Permit) | CAP-013 | | DI-012 | P0 | | | ss-11/BC-2.11.006.md |
-| BC-2.11.007 | Guardrail Evaluation Results Are Durably Journaled | CAP-013, CAP-047 | | DI-012 | P0 | | **VP-2.11.007-A** | ss-11/BC-2.11.007.md |
+| BC-2.11.007 | Guardrail Evaluation Results Are Durably Journaled | CAP-013, CAP-047 | | DI-012 | P0 | | **VP-2.11.007-A + VP-2.11.007-B** | ss-11/BC-2.11.007.md |
 | BC-2.12.001 | Thread Resource CRUD (Create, Read, List, Delete Durable Conversation History) | CAP-014 | | | P1 | | | ss-12/BC-2.12.001.md |
 | BC-2.12.002 | Assistant Resource CRUD (Named Agent Config with Graph Reference) | CAP-014 | | | P1 | | | ss-12/BC-2.12.002.md |
 | BC-2.12.003 | Run Creation and Execution Lifecycle (queued → in_progress → completed/failed/cancelled/summary_halt; interrupted is pausable/resumable) | CAP-014 | | | P1 | | | ss-12/BC-2.12.003.md |

@@ -3,10 +3,10 @@ document_type: story
 level: ops
 story_id: S-1.10
 epic_id: E-05
-version: "1.7"
+version: "1.8"
 status: draft
 producer: story-writer
-timestamp: 2026-09-10T01:00:00Z
+timestamp: 2026-09-10T02:00:00Z
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-04/BC-2.04.001.md
@@ -124,7 +124,7 @@ No backend implementation may use bare `thread_id` as a sole primary key. Every 
 If a storage collision occurs (two `SessionKey` triples map to the same address), the error surfaces as `Err(PregolyaError { code: "E-CHKPT-005", message: "SessionAddressCollision: ...", .. })`. In practice this is prevented by the monotonic clock (AC-008/AC-010) but the error code must exist and be returned if a collision is detected. Verified by `test_BC_2_04_006_session_address_collision_error()`.
 
 ### AC-020 (traces to BC-2.04.007 INV-001)
-`EncryptedSerializer` wraps `CheckpointSaver` and encrypts BOTH `put` AND `put_writes` paths. There is no unencrypted write path when `EncryptedSerializer` is in the chain. Verified by `test_BC_2_04_007_encrypted_serializer_covers_both_paths()`.
+`EncryptedSerializer` is injected into `SqliteCheckpointSaver` via the `Option<Arc<dyn Serializer + Send + Sync>>` construction seam (it does NOT wrap the saver); when present, the saver serializes (encrypts) BOTH `put` AND `put_writes` payloads before storage. There is no unencrypted write path when `EncryptedSerializer` is in the chain. Verified by `test_BC_2_04_007_encrypted_serializer_covers_both_paths()`.
 
 ### ~~AC-021~~ — RETIRED DC-64/F-PDC64-01: BC-2.04.007 EC-003 retired. `EncryptedSerializer::new(key: &[u8; 32])` is infallible — fixed-size array parameter enforces key length at compile time; an empty or wrong-length key cannot reach `new()`. This acceptance criterion tested an unreachable runtime path and is retired alongside EC-003. (Prior trace: BC-2.04.007 EC-003)
 ~~Constructing `EncryptedSerializer` with empty key material returns `Err(PregolyaError { code: "E-CORE-005", message: "Validation failed for 'encryption_key': key material must not be empty", .. })`. Verified by `test_BC_2_04_007_empty_key_rejected()`.~~
@@ -193,7 +193,7 @@ Exceeds the single-load threshold. Implementer strategy: load BCs in groups (BC-
 - [ ] Create `pregolya-checkpoint/src/clock.rs` — `MonotonicClock` implementing `get_next_version`, cross-restart persistence via persisted-max seeding (ADR-005 rev-2)
 - [ ] Create `pregolya-checkpoint/src/fork.rs` — `fork` method producing parent-pointer checkpoint with no state copy
 - [ ] Create `pregolya-checkpoint/src/recovery.rs` — crash recovery logic: read pending_writes, skip-on-reapply set enforcement
-- [ ] Create `pregolya-checkpoint/src/serializer.rs` — `EncryptedSerializer` wrapping `CheckpointSaver`; symmetric coverage; E-CHKPT-004/007
+- [ ] Create `pregolya-checkpoint/src/serializer.rs` — `EncryptedSerializer` implementing `core::serializer::Serializer`, injected into `SqliteCheckpointSaver` via the DI seam (does NOT wrap the saver); symmetric put/put_writes coverage; E-CHKPT-004/007
 - [ ] Write unit tests for all 24 ACs (`test_BC_2_04_001_async_put_writes_join_failure_at_run_exit`, `test_BC_2_04_005_pending_writes_reapply_read_failure`, `test_BC_2_04_005_pending_writes_reapply_deserialize_failure` for new ACs)
 - [ ] Create `crates/pregolya-checkpoint/src/proofs/session_tenancy.rs` — `#[cfg(kani)]` `session_tenancy_harness` stub (body `todo!()` for Phase 6 formal hardening; VP-002)
 - [ ] Add `pregolya-checkpoint` to workspace `Cargo.toml` members
@@ -275,6 +275,7 @@ Files to MODIFY:
 
 | Version | Date | Change | Source |
 |---------|------|--------|--------|
+| 1.8 | 2026-09-10 | DC-68/F-PDC68-02 — EncryptedSerializer ownership reworded wraps→DI-seam-injected in AC-020 and serializer.rs task to match Task-5 constructor/BC-2.04.007 {INV-005}/interface-definitions §Serializer. Architecture Mapping path-coverage "wraps put and put_writes" (neutral, describing covered paths not ownership) retained. | DC-68 F-PDC68-02 |
 | 1.7 | 2026-09-10 | DC-67/F-PDC67-01 — encryption.rs→serializer.rs + encryption_tests.rs→serializer_tests.rs in Tasks and File Structure Requirements to match the checkpoint::serializer module rename that DC-65 applied only to the Architecture Mapping/Purity tables. | DC-67 F-PDC67-01 |
 | 1.6 | 2026-09-10 | DC-66/F-PDC66-02: saver/sqlite module split — `CheckpointSaver` trait definition moved to `pregolya_checkpoint::saver` (`saver.rs`); `lib.rs` re-exports trait via `pub use`. Concrete `struct SqliteCheckpointSaver` + `impl CheckpointSaver` placed in `pregolya_checkpoint::sqlite` (`sqlite.rs`; default Cargo feature `checkpoint-sqlite`). Architecture Mapping and Purity Classification updated (SqliteCheckpointSaver module `saver` → `sqlite`; CheckpointSaver trait row split from `lib.rs` to `saver`). Tasks and File Structure updated: lib.rs task scoped to CheckpointTuple/DurabilityTier + re-export; saver.rs task now trait-only; new sqlite.rs task added; sqlite.rs CREATE row added. | DC-66 F-PDC66-02 |
 | 1.5 | 2026-09-10 | DC-64/F-PDC64-01: BC-2.04.007 EC-003 retired → AC-021 retired via strikethrough; no coverage gap — retired EC tested unreachable runtime empty-key path now compile-guaranteed by `EncryptedSerializer::new(&[u8;32])`. DC-65/F-PDC65-02: module path `pregolya_checkpoint::encryption` → `pregolya_checkpoint::serializer` in Architecture Mapping and Purity Classification tables. | DC-64 F-PDC64-01, DC-65 F-PDC65-02 |
