@@ -1,7 +1,7 @@
 ---
 document_type: module-criticality
 level: L3
-version: "2.22"
+version: "2.23"
 status: active
 producer: architect
 timestamp: 2026-08-31T00:00:00Z
@@ -10,11 +10,12 @@ inputs:
   - .factory/specs/prd-supplements/module-criticality.md
   - .factory/specs/architecture/ARCH-INDEX.md
   - .factory/specs/architecture/module-decomposition.md
-input-hash: "46bde59"
+input-hash: "22b3cb1"
 traces_to: ARCH-INDEX.md
 lifecycle: "Mutable through Phase 5; frozen after Phase 5 gate passes."
 note: "This is the architecture-view criticality. The prd-supplements/module-criticality.md is the PO draft; this file is authoritative post-Phase 1b."
 changelog:
+  - "2.23 (DC-64/F-PDC64-03/2026-09-10, architect): F-PDC64-03 [MED] module name correction — checkpoint::encryption -> checkpoint::serializer in two live body rows: (1) §Module Classification CRITICAL tier table (kill-rate ≥95%); (2) §CRITICAL Module — Security Profile table. interface-definitions.md §Serializer §Implementors is Source-of-Truth. TD-VSDD-060 sibling sweep: module-decomposition.md §pregolya-checkpoint (SS-04) + purity-boundary-map.md §Effectful Shell renamed in same burst. input-hash refreshed (module-decomposition.md §pregolya-checkpoint (SS-04) edited)."
   - "2.22 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog follow-up — 5 TypeScript SPA panel modules added (verify-module-canonicality.sh in-decomp-not-here closure): spa_components::run_inspector/checkpoint_panel/hitl_panel/budget_panel/guardrail_panel — all MEDIUM [PLANNED Wave 3] with integration P1 VPs (VP-2.24.004-008). Classification Summary: MEDIUM 44→49; Total 111→116. input-hash updated 46bde59."
   - "2.21 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog — 6 SS-24 Wave 3 [PLANNED] modules added (verify-module-canonicality.sh set-diff closure): graph::descriptor HIGH (Kani P1 VP-2.24.003-B), console::ring_buffer MEDIUM (proptest VP-2.24.002-A/B), console::span_exporter MEDIUM (unit VP-2.24.002-D), console::server LOW, server::debug_routes MEDIUM (integration VP-2.24.002-C), server::debug_span definitions-only. Classification Summary: CRITICAL 12 / HIGH 29 / MEDIUM 44 / LOW 3 / definitions-only 9 = 97 tiered + 9 definitions-only = 106 total. input-hash updated f6903d5 (module-decomposition.md DC-46 additions)."
   - "2.20 (ADR-030 Stage 1/2026-08-31): Add `checkpoint::trajectory` MEDIUM row (pregolya-checkpoint; SS-04; TrajectoryWriter+TrajectoryReader execution; no Kani VP — Effectful Shell; MEDIUM consistent with checkpoint::sqlite/memory/postgres sibling pattern; ADR-030 Decision 2). Add `core::trajectory` definitions-only row (pregolya-core; SS-04; TrajectoryRecord/TrajectoryWriter/TrajectoryReader type definitions only; no kill rate obligation; ADR-009 Option 3 precedent; ADR-030 Decision 2). Classification Summary: MEDIUM 40→41; definitions-only 7→8; Total 89→91; tiered 82→83. Breakdown note updated. input-hash updated (module-decomposition.md §Changelog (v1.61) input drift)."
@@ -71,7 +72,7 @@ changelog:
 | `graph::hitl` | — | pregolya-graph | SS-05 | CRITICAL | VP-011 | ≥ 95% | P3 per-story + P5 |
 | `checkpoint::session_index` | — | pregolya-checkpoint | SS-04 | CRITICAL | VP-002 | ≥ 95% | P3 per-story + P5 |
 | `checkpoint::clock` | — | pregolya-checkpoint | SS-04 | CRITICAL | — | ≥ 95% | P3 per-story + P5 |
-| `checkpoint::encryption` | — | pregolya-checkpoint | SS-04 | CRITICAL | — | ≥ 95% | P3 per-story + P5 |
+| `checkpoint::serializer` | — | pregolya-checkpoint | SS-04 | CRITICAL | — | ≥ 95% | P3 per-story + P5 |
 | `sandbox::path_guard` | — | pregolya-sandbox | SS-13 | CRITICAL | VP-003 | ≥ 95% | P3 per-story + P5 |
 | `core::credentials` | — | pregolya-core | SS-14 | CRITICAL | — | ≥ 95% | P3 per-story + P5 |
 | `core::error` | — | pregolya-core | SS-14 | CRITICAL | — | ≥ 95% | P3 per-story + P5 |
@@ -232,7 +233,7 @@ changelog:
 | `graph::hitl` | all HITL scenarios | medium (auth gates in Domain A) | VP-011 |
 | `checkpoint::session_index` | multi-tenant isolation | HIGH (cross-tenant data leak) | VP-002 |
 | `checkpoint::clock` | all durable runs | medium (ordering) | — |
-| `checkpoint::encryption` | all checkpoint state | HIGH (data at rest) | — |
+| `checkpoint::serializer` | all checkpoint state | HIGH (data at rest) | — |
 | `sandbox::path_guard` | all tool execution | HIGH (path traversal, Domain C) | VP-003 |
 | `core::credentials` | error observability | HIGH (credential leak) | — |
 | `core::error` | API contract | HIGH (leaks in Debug output) | — |

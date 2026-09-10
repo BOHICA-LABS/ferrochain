@@ -2,7 +2,7 @@
 document_type: architecture-section
 level: L3
 section: module-decomposition
-version: "1.72"
+version: "1.73"
 status: active
 producer: architect
 timestamp: 2026-09-09T00:00:00Z
@@ -11,10 +11,11 @@ inputs:
   - .factory/specs/prd.md
   - .factory/specs/prd-supplements/module-criticality.md
   - .factory/specs/module-criticality.md
-input-hash: "dbc0ead"
+input-hash: "55e5f44"
 traces_to: ARCH-INDEX.md
 decisions: [D4, D6, D7, D12, D13, D17, D20, D21, D23]
 changelog:
+  - "1.73 (DC-64/F-PDC64-03/2026-09-10, architect): F-PDC64-03 [MED] module name correction — checkpoint::encryption -> checkpoint::serializer in live body table (SS-04 CRITICAL row). interface-definitions.md §Serializer §Implementors is the Source-of-Truth: EncryptedSerializer lives in checkpoint::serializer (pregolya-checkpoint); the old name checkpoint::encryption was a naming drift. Changelog historical references (v1.35 list) preserved as-is (historical snapshot). TD-VSDD-060 sibling sweep: purity-boundary-map.md §Effectful Shell + module-criticality.md §Module Classification renamed in same DC-64 burst. input-hash unchanged (no BC input changes)."
   - "1.72 (D-356/DC-48/F-PDC48-01/F-PDC48-02/F-PDC48-03/F-PDC48-04/2026-09-09, architect): F-PDC48-01 (MED) — evidence_journal typed retrieval routed through graph::budget wrapper to avoid forbidden checkpoint→graph dep: CheckpointSaver gains raw ops (append_evidence_entry_raw/get_evidence_journal_raw returning serde_json::Value); graph::budget provides typed wrapper get_evidence_journal(store, run_id) -> Vec<JournalEntry>; server::handlers calls graph::budget wrapper (allowed server→graph edge); no BC-2.10.002 amendment needed; JournalEntry stays in pregolya-graph per BC-2.10.002. core::guardrail D21 row extended with ProvenanceTag and GuardrailEntry types (required for checkpoint→core typed GuardrailJournal ops per F-PDC48-04 prerequisite; ProvenanceTag already referenced as core::guardrail::ProvenanceTag in purity-boundary-map SS-11 canon). checkpoint::saver row extended with full journal op enumeration (init_guardrail_journal, append_guardrail_entry, get_guardrail_journal typed for GuardrailEntry; raw ops for EvidenceJournal). server::handlers row: evidence_journal retrieval fixed to graph::budget wrapper; file path canonical pregolya-server/src/routes/runs.rs added (F-PDC48-02). graph::provenance row: server::run_read_handler phantom replaced with run-read handler in server::handlers (F-PDC48-02). Journal-storage blockquote updated with typed/raw distinction. F-PDC48-04 (LOW) — dependency-graph rationale edits delegated to dependency-graph.md §Edge Table in this same burst. input-hash unchanged (no BC input changes)."
   - "1.71 (D-356/DC-47/F-PDC47-02/OBS/2026-09-09, architect): F-PDC47-02 (HIGH) — server::debug_span row: SpanData session_id field 5 added to 7-field enumeration → canonical 8-field shape (span_id, trace_id, start_time_ms, end_time_ms, session_id, attributes, llm_request, llm_response; DC-32; ADR-031 Decision 7). OBS (LOW) — console::span_exporter row: strip → redact-in-place wording (fields retained, values → <redacted>; BC-2.24.002 {PC-008}). input-hash updated dbc0ead (content change)."
   - "1.70 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog E — resolve verify-adr-anchor-citations ambiguous §Exempt Inventory: 4 body citations updated from ADR-023 §Exempt Inventory to ADR-023 §Decision 3 — Exempt Inventory (full heading per ADR-023 H2); also collapsed double-ADR-023 wrap artifact on GuardrailDecisionKind blockquote line. input-hash updated dbc0ead (content change)."
@@ -200,7 +201,7 @@ Responsibilities: durable per-task checkpointing, monotonic clock, fork lineage,
 | `checkpoint::session_index` | Triple-address (thread_id, checkpoint_ns, checkpoint_id) enforcement | CRITICAL | SS-04 |
 | `checkpoint::clock` | Monotonic logical clock; rejects wall-clock UUIDs | CRITICAL | SS-04 |
 | `checkpoint::lineage` | Fork via parent_checkpoint_id; no state copy on fork | HIGH | SS-04 |
-| `checkpoint::encryption` | At-rest encryption covering state AND event payloads; rotation error propagation | CRITICAL | SS-04 |
+| `checkpoint::serializer` | At-rest encryption covering state AND event payloads; EncryptedSerializer canonical implementor of core::serializer::Serializer; rotation error propagation | CRITICAL | SS-04 |
 | `checkpoint::sqlite` | SQLite backend (default Cargo feature `checkpoint-sqlite`) | MEDIUM | SS-04 |
 | `checkpoint::memory` | In-memory backend for tests (`checkpoint-memory` feature) | MEDIUM | SS-04 |
 | `checkpoint::postgres` | PostgreSQL backend (stretch; `checkpoint-postgres` feature) | MEDIUM | SS-04 |

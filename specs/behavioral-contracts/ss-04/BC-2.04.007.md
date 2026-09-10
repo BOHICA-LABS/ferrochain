@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.04.007
-version: "1.12"
+version: "1.13"
 status: active
 producer: product-owner
 timestamp: 2026-09-10T00:00:00Z
@@ -38,6 +38,7 @@ changelog:
   - "1.10 (F-P2A123-01/2026-08-28): §Story Anchor backfilled to S-1.10; §Architecture Module confirmed as pregolya-checkpoint — from STORY-INDEX forward map (SS-04 coverage map) and self §Architecture Anchors (module-decomposition.md §pregolya-checkpoint). No behavioral change."
   - "1.11 (round-52/F-P2A216-02/2026-08-31): DI seam applied to {PRE-001} and {INV-005} — `CheckpointSaver` accepts `Option<Arc<dyn Serializer + Send + Sync>>` at construction (the `core::serializer::Serializer` trait from `pregolya-core`); `EncryptedSerializer` (`checkpoint::serializer`, `pregolya-checkpoint`) is the canonical concrete implementor. No behavioral change — encryption coverage and error propagation semantics are unchanged."
   - "1.12 (F-PDC62-03/DC-62/2026-09-10, product-owner): {INV-006} added — encryption at rest covers ALL CheckpointSaver write ops: put, put_writes, init_guardrail_journal, and append_guardrail_entry all encrypt payload bytes before reaching SQLite backend when EncryptedSerializer is active; no CheckpointSaver write method may bypass the EncryptedSerializer (F-PDC62-03/DC-62). §Related BCs: BC-2.11.007 entry added (extends to guardrail journal write ops). input-hash refreshed (input drift resolved at burst F-PDC62-03)."
+  - "1.13 (DC-64/F-PDC64-01/2026-09-10, product-owner): EC-003 retired — architect adjudication (DC-64): `EncryptedSerializer::new(key: &[u8; 32])` accepts a fixed-size array; the compiler enforces key length at compile time; an empty or wrong-length key cannot reach `new()`. EC-003 documented a runtime construction error that is UNREACHABLE under the `&[u8; 32]` parameter type. Empty-key TV row retired (it tested the EC-003 path). E-CORE-005 is NOT retired from error-taxonomy.md — it is a general-purpose validation code with primary taxonomy anchor BC-2.14.006 and is used by many other BCs; the error-taxonomy.md entry is unchanged. Census delta: BC-2.04.007 active EC count 4→3 (EC-003 retired); active TV count 4→3 (empty-key TV retired); global active EC count 147→146."
 modified: []
 deprecated: null
 deprecated_by: null
@@ -111,7 +112,7 @@ swallowed or logged-only. This satisfies NE-11.
 |----|-------------|-------------------|
 | EC-001 | Key rotation mid-run: old key invalidated before new key is propagated to all active write paths | `put_writes` calls that acquire the old key after invalidation return `Err(E-CHKPT-004 EncryptionKeyRotationFailed)` (`PregolyaError { category: INTERNAL, .. }`); the graph surfaces this to the caller; no partial plaintext write occurs |
 | EC-002 | Read of a blob encrypted with a retired key that is no longer in the keyring | `Err(E-CHKPT-004 EncryptionKeyRotationFailed { message: "EncryptionKeyRotationFailed: key not found: <key_id>" })` (`PregolyaError { category: INTERNAL, .. }`) returned from `get_tuple`; no partial decryption |
-| EC-003 | `EncryptedSerializer` constructed with null or zero-length key material | `Err(PregolyaError { category: VAL, code: E-CORE-005, message: "Validation failed for 'key_material': must be non-empty", .. })` at construction time; no writes proceed |
+| ~~EC-003~~ | ~~`EncryptedSerializer` constructed with null or zero-length key material~~ | **RETIRED (DC-64/F-PDC64-01):** `EncryptedSerializer::new(key: &[u8; 32])` accepts a fixed-size array enforced at compile time; an empty or wrong-length key cannot reach `new()`; this runtime path is unreachable. ~~`Err(PregolyaError { category: VAL, code: E-CORE-005, message: "Validation failed for 'key_material': must be non-empty", .. })` at construction time; no writes proceed.~~ |
 | EC-004 | Backend storage contains a mix of encrypted and unencrypted blobs (migration scenario) | Unencrypted blobs that lack the cipher header return `Err(PregolyaError { category: INTERNAL, code: E-CHKPT-007, message: "CipherHeaderMissing: missing cipher header: blob may be unencrypted", .. })`; reads of unencrypted legacy data do not silently succeed |
 
 ## Canonical Test Vectors
@@ -121,7 +122,7 @@ swallowed or logged-only. This satisfies NE-11.
 | Write a checkpoint via `put` with `EncryptedSerializer`; read raw bytes from storage backend | Raw bytes are NOT valid msgpack plaintext; after decryption with the active key, bytes are valid msgpack and deserialize to the original state | happy-path |
 | Write per-task writes via `put_writes` with `EncryptedSerializer`; read raw bytes from storage | Raw bytes are ciphertext; after decryption, writes match the original task write payloads exactly | happy-path |
 | Key rotation: active key set to `key-v2`; `put_writes` called; then `key-v2` is invalidated and `get_tuple` called | `get_tuple` returns `Err(E-CHKPT-004 EncryptionKeyRotationFailed { message: "EncryptionKeyRotationFailed: key not found: key-v2" })`; no partial data returned | error |
-| `EncryptedSerializer::new(key: &[])` with empty key | `Err(PregolyaError { category: VAL, code: E-CORE-005, .. })` at construction time; no serializer created | error |
+| ~~`EncryptedSerializer::new(key: &[])` with empty key~~ | **RETIRED (DC-64/F-PDC64-01):** tests EC-003 path — unreachable under `&[u8; 32]` compile-time enforcement. ~~`Err(PregolyaError { category: VAL, code: E-CORE-005, .. })` at construction time; no serializer created.~~ | ~~error~~ |
 
 ## Verification Properties
 

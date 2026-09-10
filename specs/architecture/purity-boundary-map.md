@@ -2,7 +2,7 @@
 document_type: architecture-section
 level: L3
 section: purity-boundary-map
-version: "1.51"
+version: "1.52"
 status: active
 producer: architect
 timestamp: 2026-09-06T00:00:00Z
@@ -14,6 +14,7 @@ input-hash: "c0cfd11"
 traces_to: ARCH-INDEX.md
 decisions: [D17, D21, D23, D356]
 changelog:
+  - "1.52 (DC-64/F-PDC64-03/2026-09-10, architect): F-PDC64-03 [MED] module name correction — checkpoint::encryption -> checkpoint::serializer in Effectful Shell table live body row (CSPRNG / IV generation). interface-definitions.md §Serializer §Implementors is Source-of-Truth. TD-VSDD-060 sibling sweep: module-decomposition.md §pregolya-checkpoint (SS-04) + module-criticality.md §Module Classification renamed in same burst. input-hash unchanged (inputs did not change)."
   - "1.51 (D-356/DC-47/F-PDC47-02/OBS/2026-09-09, architect): F-PDC47-02 (HIGH) — server::debug_span row: SpanData session_id field 5 added to 7-field enumeration → canonical 8-field shape (span_id, trace_id, start_time_ms, end_time_ms, session_id, attributes, llm_request, llm_response; DC-32; ADR-031 Decision 7). OBS (LOW) — console::span_exporter Pure part row: strip → redact-in-place (fields retained, values → <redacted>; BC-2.24.002 {PC-008}). OBS (LOW) — DC-02 addendum delta note: strip → redact-in-place (same correction). input-hash unchanged (inputs did not change)."
   - "1.50 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog fix — 5 SPA panel modules added to Effectful Shell section (verify-module-canonicality.sh in-decomp-not-here closure): spa_components::run_inspector, spa_components::checkpoint_panel, spa_components::hitl_panel, spa_components::budget_panel, spa_components::guardrail_panel — TypeScript Wave 3 SPA panels; Effectful Shell (DOM + network). Intro counts 98→103 total (Effectful Shell 43→48; [PLANNED] 6→11). input-hash unchanged (inputs did not change)."
   - "1.49 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog fix — version pin removed from server::debug_routes body blockquote note (error-taxonomy.md reference; verify-no-version-pins.sh L9b). input-hash unchanged (inputs did not change)."
@@ -161,7 +162,7 @@ Kani is not applicable here.
 | `checkpoint::postgres` | pregolya-checkpoint | TCP database connection | Integration |
 | `checkpoint::trajectory` | pregolya-checkpoint | async SQLite/backend storage I/O; `TrajectoryWriter` + `TrajectoryReader` impl; durable audit-grade trajectory record persistence; isolated from `checkpoint::saver` compaction path per ADR-030 Decision 2; SS-04 | Integration |
 | `checkpoint::memory` | pregolya-checkpoint | in-memory HashMap (deterministic for tests) | Unit |
-| `checkpoint::encryption` | pregolya-checkpoint | random IV generation (CSPRNG) | Integration |
+| `checkpoint::serializer` | pregolya-checkpoint | random IV generation (CSPRNG) | Integration |
 | `server::handlers` | pregolya-server | HTTP request/response, async task spawn | Integration |
 | `server::streaming` | pregolya-server | SSE event stream, async channel | Integration + Soak |
 | `server::cron` | pregolya-server | Wall-clock timer, background task | Integration |

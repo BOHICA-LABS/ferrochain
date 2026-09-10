@@ -1,13 +1,14 @@
 ---
 document_type: prd-supplement-interface-definitions
 level: L3
-version: "3.19"
+version: "3.20"
 status: active
 producer: architect
 timestamp: 2026-09-10T00:00:00Z
 phase: 1d
-modified: [DC-62, DC-63]
+modified: [DC-62, DC-63, DC-64]
 changelog:
+  - "3.20 (DC-64/F-PDC64-01-adj/2026-09-10, architect): F-PDC64-01 adjudication — EncryptedSerializer::new infallibility. §Serializer EncryptedSerializer::new doc comment updated: added explicit infallibility note and compile-time key-length guarantee rationale. The &[u8; 32] fixed-size-array type enforces key length at compile time; there is no runtime empty-key path; BC-2.04.007 EC-003 E-CORE-005 empty-key construction path is UNREACHABLE when this signature is used. Product-owner routing documented: BC-2.04.007 EC-003 should be retired or updated to reflect the &[u8; 32] compile-time enforcement (see VP-2.11.007-B §BC Contradictions Flagged for exact routing). records-lint exit 0."
   - "3.19 (DC-63/F-PDC63-02/2026-09-10, architect): F-PDC63-02 [HIGH] Add canonical constructors to ProvenanceTag and GuardrailEntry for cross-crate construction — resolves E0639 (struct literal on #[non_exhaustive] struct outside defining crate) and enables VP-2.11.007-B proof harness compilation. impl ProvenanceTag { pub fn new(boundary_type: BoundaryType, ingress_id: Uuid, sequence_position: usize) -> Self }. impl GuardrailEntry { pub fn new(boundary: IngressBoundary, result: GuardrailResult, provenance: ProvenanceTag, timestamp_ms: u64) -> Self }. #[non_exhaustive] preserved on both structs — constructors are the sanctioned cross-crate build path. BC authority: BC-2.11.001 PC1-PC3 (ProvenanceTag construction precondition); BC-2.11.007 {PC-001} (GuardrailEntry construction for append_guardrail_entry). TD-VSDD-060 sibling sweep: no prior constructors existed for either type; these are first constructors. records-lint exit 0."
   - "3.18 (DC-62/F-PDC62-03/2026-09-10, architect): F-PDC62-03 [MED] Architect adjudication — GuardrailJournal write path at-rest encryption obligation. The EncryptedSerializer is application-level (per-method call via DI seam), NOT database-level; BC-2.04.007 {INV-003} scoping to 'state blob or per-task write payload' (put/put_writes) means the guardrail-journal write path (init_guardrail_journal, append_guardrail_entry) is currently OUTSIDE the encryption boundary as specified — inheritance is NOT automatic. Explicit obligation added: (1) init_guardrail_journal and append_guardrail_entry doc comments extended with # Encryption sections — concrete CheckpointSaver implementors MUST call self.serializer.serialize(bytes) on these write paths when EncryptedSerializer is active; (2) CheckpointSaver BC anchor extended to include BC-2.04.007 {INV-003}/{INV-005} for guardrail journal write ops; (3) Serializer section description and BC anchor extended to name init_guardrail_journal/append_guardrail_entry as in-scope write ops. Sensitivity rationale: GuardrailEntry.result can carry Transform{new_content: IngressContent::ToolResult(ContentBlock)} — potentially sensitive content; CWE-312 at-rest exposure if unencrypted. Downstream routing: (a) PO to add BC-2.04.007 linkage + {INV-005} to BC-2.11.007; (b) S-1.29 needs new encryption AC (see adjudication report); (c) BC-2.04.007 {INV-003} needs scope extension (see adjudication report). TD-VSDD-060 sibling sweep: §Serializer BC anchor and description both updated. records-lint exit 0."
   - "3.17 (DC-61/F-PDC61-01/2026-09-09, architect): F-PDC61-01 [LOW] Add BoundaryType enum definition to §GuardrailHook — closes transitive-closure derive gap: ProvenanceTag.boundary_type: BoundaryType had no enum definition anywhere in the corpus (corpus-wide grep returned nothing). BoundaryType variants: ToolResult | RAGRetrieval | MemoryIngress (ingress-audit vocabulary; BC-2.11.001 PC1-PC3 / ProvenanceTag field comment canon). Derive set: #[non_exhaustive] #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)] — Copy+Eq appropriate for a fieldless C-like enum. BoundaryType is DISTINCT from IngressBoundary (StreamEvent wire vocabulary; IngressBoundary variants: ToolResult | RagChunk | MemoryItem). Transitive-closure audit completed: GuardrailEntry full closure walked — all architect-owned leaves OK after this fix. Cross-owner gap: ContentBlock (IngressContent::ToolResult payload) has no explicit derive block pinned in BC-2.01.001 or entities-graph.md; routed to orchestrator for product-owner dispatch. TD-VSDD-060 sibling sweep: BoundaryType was the sole missing leaf in the architect-owned GuardrailEntry derive closure."
@@ -3311,6 +3312,16 @@ pub struct EncryptedSerializer { /* opaque; key stored in memory only */ }
 
 impl EncryptedSerializer {
     /// Construct with a 256-bit AES-GCM key.
+    ///
+    /// **Infallible** — returns `Self`, not `Result<Self, _>`. The `&[u8; 32]`
+    /// fixed-size-array type enforces key length at compile time: callers cannot
+    /// pass an empty key or a key of wrong length (the Rust type system rejects it).
+    /// BC-2.04.007 EC-003's `E-CORE-005 EmptyEncryptionKey` runtime construction path
+    /// is therefore **UNREACHABLE** when this signature is used — the runtime check is
+    /// replaced by a compile-time type invariant (DC-64 architect adjudication).
+    /// Product-owner routing: BC-2.04.007 EC-003 should be retired or updated to
+    /// reflect the `&[u8; 32]` compile-time enforcement; see VP-2.11.007-B
+    /// §BC Contradictions Flagged for exact routing instructions.
     pub fn new(key: &[u8; 32]) -> Self;
 }
 // impl Serializer for EncryptedSerializer

@@ -18,7 +18,7 @@ inputs:
   - .factory/specs/behavioral-contracts/ss-04/BC-2.04.007.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "a17e084"
+input-hash: "6087bc8"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 13
 depends_on: [S-1.04, S-1.02]
@@ -126,8 +126,8 @@ If a storage collision occurs (two `SessionKey` triples map to the same address)
 ### AC-020 (traces to BC-2.04.007 INV-001)
 `EncryptedSerializer` wraps `CheckpointSaver` and encrypts BOTH `put` AND `put_writes` paths. There is no unencrypted write path when `EncryptedSerializer` is in the chain. Verified by `test_BC_2_04_007_encrypted_serializer_covers_both_paths()`.
 
-### AC-021 (traces to BC-2.04.007 EC-003)
-Constructing `EncryptedSerializer` with empty key material returns `Err(PregolyaError { code: "E-CORE-005", message: "Validation failed for 'encryption_key': key material must not be empty", .. })`. Verified by `test_BC_2_04_007_empty_key_rejected()`.
+### ~~AC-021~~ — RETIRED DC-64/F-PDC64-01: BC-2.04.007 EC-003 retired. `EncryptedSerializer::new(key: &[u8; 32])` is infallible — fixed-size array parameter enforces key length at compile time; an empty or wrong-length key cannot reach `new()`. This acceptance criterion tested an unreachable runtime path and is retired alongside EC-003. (Prior trace: BC-2.04.007 EC-003)
+~~Constructing `EncryptedSerializer` with empty key material returns `Err(PregolyaError { code: "E-CORE-005", message: "Validation failed for 'encryption_key': key material must not be empty", .. })`. Verified by `test_BC_2_04_007_empty_key_rejected()`.~~
 
 ### AC-022 (traces to BC-2.04.007 EC-002)
 Attempting to rotate an encryption key returns `Err(PregolyaError { code: "E-CHKPT-004", message: "EncryptionKeyRotationFailed: ...", .. })` classified as INTERNAL severity. Reading data written with a different key (cipher header mismatch) returns `Err(PregolyaError { code: "E-CHKPT-007", message: "CipherHeaderMissing: ...", .. })`. Verified by `test_BC_2_04_007_key_rotation_error()` and `test_BC_2_04_007_cipher_header_missing_error()`.
