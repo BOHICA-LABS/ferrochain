@@ -3,7 +3,7 @@ document_type: story
 level: ops
 story_id: S-1.10
 epic_id: E-05
-version: "1.5"
+version: "1.6"
 status: draft
 producer: story-writer
 timestamp: 2026-09-10T00:00:00Z
@@ -144,8 +144,9 @@ During `_reapply_writes_to_succeeded_nodes` crash recovery, if the storage query
 |-----------|--------|-------|---------------|
 | `storage_address(key: &SessionKey) -> StorageAddress` | `pregolya_checkpoint::session_index` | pregolya-checkpoint | Pure (deterministic bijection; VP-002 Kani proof vehicle `session_tenancy_harness`) |
 | `SessionKey`, `StorageAddress` | `pregolya_checkpoint::session_index` | pregolya-checkpoint | Pure (data types; no I/O) |
-| `CheckpointSaver` trait, `CheckpointTuple`, `DurabilityTier` | `pregolya_checkpoint` (`lib.rs`) | pregolya-checkpoint | Pure (trait and enum definitions; no I/O) |
-| `SqliteCheckpointSaver` (`put`, `put_writes`, `get_tuple`, `list`) | `pregolya_checkpoint::saver` | pregolya-checkpoint | Effectful Shell (SQLite reads and writes via `rusqlite`) |
+| `CheckpointSaver` trait | `pregolya_checkpoint::saver` | pregolya-checkpoint | Pure (trait definition only; no I/O; `lib.rs` re-exports via `pub use`) |
+| `CheckpointTuple`, `DurabilityTier` | `pregolya_checkpoint` (`lib.rs`) | pregolya-checkpoint | Pure (data types and enum definitions; no I/O) |
+| `SqliteCheckpointSaver` (`put`, `put_writes`, `get_tuple`, `list`) | `pregolya_checkpoint::sqlite` | pregolya-checkpoint | Effectful Shell (SQLite reads and writes via `rusqlite`) |
 | `MonotonicClock::get_next_version` | `pregolya_checkpoint::clock` | pregolya-checkpoint | Effectful Shell (reads persisted-max `CheckpointId` from SQLite; ADR-005 rev-2 cross-restart monotonicity) |
 | `fork` | `pregolya_checkpoint::fork` | pregolya-checkpoint | Effectful Shell (writes parent-pointer checkpoint row to SQLite; no state payload copied) |
 | `recovery` module | `pregolya_checkpoint::recovery` | pregolya-checkpoint | Effectful Shell (reads `pending_writes` table from SQLite to build committed-task set) |
@@ -161,7 +162,7 @@ During `_reapply_writes_to_succeeded_nodes` crash recovery, if the storage query
 | `storage_address(key: &SessionKey) -> StorageAddress` (`pregolya_checkpoint::session_index`) | Pure | Deterministic bijection; no database I/O; VP-002 Kani harness vehicle (`session_tenancy_harness`) |
 | `SessionKey`, `StorageAddress`, `CheckpointId`, `DurabilityTier` | Pure | Data types and enum definitions; no I/O |
 | `CheckpointSaver` trait | Pure | Trait definition only; no I/O side effects in the trait itself |
-| `SqliteCheckpointSaver::put_writes` / `put` / `get_tuple` / `list` (`pregolya_checkpoint::saver`) | Effectful Shell | Reads and writes to SQLite via `rusqlite` |
+| `SqliteCheckpointSaver::put_writes` / `put` / `get_tuple` / `list` (`pregolya_checkpoint::sqlite`) | Effectful Shell | Reads and writes to SQLite via `rusqlite` |
 | `MonotonicClock::get_next_version` (`pregolya_checkpoint::clock`) | Effectful Shell | Reads persisted-max `CheckpointId` from SQLite; ADR-005 rev-2 cross-restart monotonicity |
 | `fork` (`pregolya_checkpoint::fork`) | Effectful Shell | Writes parent-pointer checkpoint row to SQLite; no state payload copied |
 | `recovery` module (`pregolya_checkpoint::recovery`) | Effectful Shell | Reads `pending_writes` table from SQLite to build committed-task set |
@@ -185,9 +186,10 @@ Exceeds the single-load threshold. Implementer strategy: load BCs in groups (BC-
 ## Tasks
 
 - [ ] Create `pregolya-checkpoint/Cargo.toml`
-- [ ] Create `pregolya-checkpoint/src/lib.rs` — `CheckpointSaver` trait, `CheckpointTuple`, `DurabilityTier` enum
+- [ ] Create `pregolya-checkpoint/src/lib.rs` — `CheckpointTuple`, `DurabilityTier` enum; re-exports `CheckpointSaver` from `saver` via `pub use crate::saver::CheckpointSaver`
 - [ ] Create `pregolya-checkpoint/src/session_index.rs` — `SessionKey`, `StorageAddress`, `storage_address` pure fn
-- [ ] Create `pregolya-checkpoint/src/saver.rs` — concrete `SqliteCheckpointSaver` implementing `put_writes`, `put`, `get_tuple`, `list`
+- [ ] Create `pregolya-checkpoint/src/saver.rs` — DEFINE the `CheckpointSaver` TRAIT (method signatures for `put`, `put_writes`, `get_tuple`, `list`; journal-op signatures added later per S-1.29 Task 3); `lib.rs` re-exports from `saver`
+- [ ] Create `pregolya-checkpoint/src/sqlite.rs` — `struct SqliteCheckpointSaver` (opaque fields) + `impl CheckpointSaver for SqliteCheckpointSaver` implementing `put_writes`, `put`, `get_tuple`, `list` (default Cargo feature `checkpoint-sqlite`); constructor `SqliteCheckpointSaver::new(path, Option<Arc<dyn Serializer + Send + Sync>>)` per BC-2.04.007 PRE-001/INV-005 DI seam
 - [ ] Create `pregolya-checkpoint/src/clock.rs` — `MonotonicClock` implementing `get_next_version`, cross-restart persistence via persisted-max seeding (ADR-005 rev-2)
 - [ ] Create `pregolya-checkpoint/src/fork.rs` — `fork` method producing parent-pointer checkpoint with no state copy
 - [ ] Create `pregolya-checkpoint/src/recovery.rs` — crash recovery logic: read pending_writes, skip-on-reapply set enforcement
@@ -240,7 +242,8 @@ Files to CREATE:
 - `/pregolya-checkpoint/src/lib.rs`
 - `/pregolya-checkpoint/src/session_index.rs` — `SessionKey`, `StorageAddress`, `storage_address` pure fn
 - `/pregolya-checkpoint/src/proofs/session_tenancy.rs` — VP-002 Kani harness stub (`session_tenancy_harness`; body `todo!()` for Phase 6)
-- `/pregolya-checkpoint/src/saver.rs`
+- `/pregolya-checkpoint/src/saver.rs` — `CheckpointSaver` trait definition only (no concrete struct/impl)
+- `/pregolya-checkpoint/src/sqlite.rs` — `struct SqliteCheckpointSaver` + `impl CheckpointSaver for SqliteCheckpointSaver` (default Cargo feature `checkpoint-sqlite`)
 - `/pregolya-checkpoint/src/clock.rs`
 - `/pregolya-checkpoint/src/fork.rs`
 - `/pregolya-checkpoint/src/recovery.rs`
@@ -272,6 +275,7 @@ Files to MODIFY:
 
 | Version | Date | Change | Source |
 |---------|------|--------|--------|
+| 1.6 | 2026-09-10 | DC-66/F-PDC66-02: saver/sqlite module split — `CheckpointSaver` trait definition moved to `pregolya_checkpoint::saver` (`saver.rs`); `lib.rs` re-exports trait via `pub use`. Concrete `struct SqliteCheckpointSaver` + `impl CheckpointSaver` placed in `pregolya_checkpoint::sqlite` (`sqlite.rs`; default Cargo feature `checkpoint-sqlite`). Architecture Mapping and Purity Classification updated (SqliteCheckpointSaver module `saver` → `sqlite`; CheckpointSaver trait row split from `lib.rs` to `saver`). Tasks and File Structure updated: lib.rs task scoped to CheckpointTuple/DurabilityTier + re-export; saver.rs task now trait-only; new sqlite.rs task added; sqlite.rs CREATE row added. | DC-66 F-PDC66-02 |
 | 1.5 | 2026-09-10 | DC-64/F-PDC64-01: BC-2.04.007 EC-003 retired → AC-021 retired via strikethrough; no coverage gap — retired EC tested unreachable runtime empty-key path now compile-guaranteed by `EncryptedSerializer::new(&[u8;32])`. DC-65/F-PDC65-02: module path `pregolya_checkpoint::encryption` → `pregolya_checkpoint::serializer` in Architecture Mapping and Purity Classification tables. | DC-64 F-PDC64-01, DC-65 F-PDC65-02 |
 | 1.4 | 2026-09-02 | round-79/F-P2A251-02: BC table title cells corrected to verbatim canonical H1 per POL-7/F-P2A251-02. | round-79 F-P2A251-02 |
 | 1.3 | 2026-08-26 | SW-2/bc-completeness-hardening: BC-2.04.001 → AC-023 (EC-005 async join-failure at run exit → run failed, E-CHKPT-001; graph output NOT returned); BC-2.04.005 → AC-024 (EC-007 pending_writes reapply read/deserialize failure → E-CHKPT-003). EC-006/EC-007 added. | SW-2 |

@@ -1,13 +1,14 @@
 ---
 document_type: prd-supplement-interface-definitions
 level: L3
-version: "3.21"
+version: "3.22"
 status: active
 producer: architect
 timestamp: 2026-09-10T00:00:00Z
 phase: 1d
-modified: [DC-62, DC-63, DC-64, DC-65]
+modified: [DC-62, DC-63, DC-64, DC-65, DC-66]
 changelog:
+  - "3.22 (DC-66/F-PDC66-02/F-PDC66-04/2026-09-10, architect): F-PDC66-02 [MED] — §Concrete Implementor Module/file adjudicated: checkpoint::saver (saver.rs) → checkpoint::sqlite (sqlite.rs). Justification: module-decomposition assigns 'SQLite backend' to checkpoint::sqlite and 'CheckpointSaver TRAIT + put_writes contract' to checkpoint::saver — the concrete struct SqliteCheckpointSaver and impl CheckpointSaver for SqliteCheckpointSaver belong in the backend module (checkpoint::sqlite/sqlite.rs); purity-boundary-map confirms checkpoint::sqlite = Effectful Shell (SQLite I/O) while checkpoint::saver = Boundary Module (trait + validation). S-1.29 Task 4 already correctly places guardrail methods in sqlite.rs — the contradiction was in S-1.10 (base methods) and interface-definitions (both pointing to saver.rs). Module field + code comment updated; §Concrete Implementor body unchanged. S-1.10 changes required (route to story-writer): (1) architecture mapping + purity classification module ref for SqliteCheckpointSaver: pregolya_checkpoint::saver → pregolya_checkpoint::sqlite; (2) saver.rs task → defines CheckpointSaver TRAIT only; (3) add sqlite.rs CREATE task for struct SqliteCheckpointSaver + impl. S-1.29: no changes needed — already correct. F-PDC66-04 [LOW, records] — §Concrete Implementor Established line attribution corrected: prior text attributed both Store→Saver rejection AND qualifier-prefix form to F-PDC65-04; corrected so P2A-025/D-232 owns the Store→Saver rejection and F-PDC65-04 owns only the qualifier-prefix (CheckpointSaverSqlite→SqliteCheckpointSaver) adjudication. records-lint exit 0."
   - "3.21 (DC-65/F-PDC65-04/2026-09-10, architect): F-PDC65-04 [MED] — define SqliteCheckpointSaver as the canonical concrete CheckpointSaver trait implementor for the SQLite backend (module checkpoint::saver; pregolya-checkpoint/src/saver.rs). Constructor accepts Option<Arc<dyn Serializer + Send + Sync>> DI seam (BC-2.04.007 {PRE-001}/{INV-005}); Some(enc_ser) activates at-rest encryption on ALL write paths (put, put_writes, init_guardrail_journal, append_guardrail_entry per F-PDC62-03/DC-62). Definition added as #### Concrete Implementor subsection within §CheckpointSaver section (after Gate #31 type note, before §GuardrailHook). Adjudication: SqliteCheckpointSaver is canonical (majority form matching 4 Wave-1 stories: S-1.10/S-1.11/S-1.18/S-2.12; idiomatic Rust qualifier-prefix; convergence-trajectory.md P2A-025 established canonical name). CheckpointSaverSqlite was non-canonical and is retired. records-lint exit 0."
   - "3.20 (DC-64/F-PDC64-01-adj/2026-09-10, architect): F-PDC64-01 adjudication — EncryptedSerializer::new infallibility. §Serializer EncryptedSerializer::new doc comment updated: added explicit infallibility note and compile-time key-length guarantee rationale. The &[u8; 32] fixed-size-array type enforces key length at compile time; there is no runtime empty-key path; BC-2.04.007 EC-003 E-CORE-005 empty-key construction path is UNREACHABLE when this signature is used. Product-owner routing documented: BC-2.04.007 EC-003 should be retired or updated to reflect the &[u8; 32] compile-time enforcement (see VP-2.11.007-B §BC Contradictions Flagged for exact routing). records-lint exit 0."
   - "3.19 (DC-63/F-PDC63-02/2026-09-10, architect): F-PDC63-02 [HIGH] Add canonical constructors to ProvenanceTag and GuardrailEntry for cross-crate construction — resolves E0639 (struct literal on #[non_exhaustive] struct outside defining crate) and enables VP-2.11.007-B proof harness compilation. impl ProvenanceTag { pub fn new(boundary_type: BoundaryType, ingress_id: Uuid, sequence_position: usize) -> Self }. impl GuardrailEntry { pub fn new(boundary: IngressBoundary, result: GuardrailResult, provenance: ProvenanceTag, timestamp_ms: u64) -> Self }. #[non_exhaustive] preserved on both structs — constructors are the sanctioned cross-crate build path. BC authority: BC-2.11.001 PC1-PC3 (ProvenanceTag construction precondition); BC-2.11.007 {PC-001} (GuardrailEntry construction for append_guardrail_entry). TD-VSDD-060 sibling sweep: no prior constructors existed for either type; these are first constructors. records-lint exit 0."
@@ -865,10 +866,10 @@ pub trait CheckpointSaver: Send + Sync {
 
 #### Concrete Implementor: `SqliteCheckpointSaver`
 
-**Module:** `pregolya-checkpoint` (`checkpoint::saver`; file: `pregolya-checkpoint/src/saver.rs`)
+**Module:** `pregolya-checkpoint` (`checkpoint::sqlite`; file: `pregolya-checkpoint/src/sqlite.rs`)
 **ADR:** ADR-005 §CheckpointSaver; BC-2.04.007 {PRE-001}/{INV-005}
 **VP:** VP-2.11.007-B (integration P1; encryption-at-rest for `guardrail_journal` table)
-**Established:** convergence-trajectory.md P2A-025 (D-232); canonical name `SqliteCheckpointSaver` adopted over `SqliteCheckpointStore` (F-PDC65-04 adjudication).
+**Established:** convergence-trajectory.md P2A-025 (D-232): `SqliteCheckpointStore` rejected in favor of `SqliteCheckpointSaver` (Store→Saver rejection; P2A-025/D-232). F-PDC65-04 adjudication: qualifier-prefix form (`CheckpointSaverSqlite`→`SqliteCheckpointSaver`).
 
 The canonical concrete implementation of `CheckpointSaver` for the SQLite backend.
 Wires the optional `EncryptedSerializer` DI seam at construction; when `Some(serializer)` is
@@ -878,7 +879,7 @@ supplied, ALL write operations (`put`, `put_writes`, `init_guardrail_journal`,
 When `None`, storage is plaintext (opt-in model per ADR-030 at-rest confidentiality decision).
 
 ```rust
-// pregolya-checkpoint (checkpoint::saver) — concrete implementor
+// pregolya-checkpoint (checkpoint::sqlite) — concrete implementor
 
 /// Canonical concrete SQLite implementation of `CheckpointSaver`.
 ///
