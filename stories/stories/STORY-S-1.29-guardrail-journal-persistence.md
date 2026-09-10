@@ -3,10 +3,10 @@ document_type: story
 level: ops
 story_id: S-1.29
 epic_id: E-11
-version: "2.1"
+version: "2.2"
 status: draft
 producer: story-writer
-timestamp: 2026-09-08T00:00:00Z
+timestamp: 2026-09-09T00:00:00Z
 changelog:
   - "1.0 (D-356/DC-34/2026-09-08, story-writer): Initial story — GuardrailJournal persistence (BC-2.11.007); Wave-1 companion to S-1.19 per DC-34 architect ruling. PO must set BC-2.11.007 §Story Anchor to S-1.29."
   - "1.1 (D-356/DC-35/2026-09-08, story-writer): F-PDC35-01 — EC-001 corrected: no-hook ⇒ guardrail_journal? None (not Some([])) per BC-2.11.007 INV-004/EC-004/TV-002; AC-003 conditioned on hook-registered; test for no-hook case added. F-PDC35-03 — VP-2.11.007-A added to verification_properties (S-1.29 is anchor story); test file renamed guardrail_journal.rs → guardrail_journal_completeness.rs (canonical VP harness path). F-PDC35-05 — BC-2.11.007 title corrected to canonical H1 in body BC table."
@@ -20,12 +20,13 @@ changelog:
   - "1.9 (D-356/DC-48/2026-09-09, story-writer): F-PDC48-03 — Task 5 Arc<dyn CheckpointStore> replaced with Arc<dyn CheckpointSaver> (CheckpointStore is phantom; CheckpointSaver is the canonical checkpoint trait in pregolya-checkpoint::checkpoint::saver). F-PDC48-02 — server::run_read_handler replaced with server::handlers in DC-39 delta note and AC-003 (2 live-body hits; changelog entry v1.5 is immutable historical record). F-PDC48-01 not applicable (no evidence_journal assembly in S-1.29). Corpus-sweep: 1 CheckpointStore hit fixed, 2 backtick-server::run_read_handler hits fixed, 0 get_evidence_journal hits."
   - "2.0 (D-356/DC-50/2026-09-09, story-writer): F-PDC50-01 — pregolya-checkpoint scope added: (1) File Structure: 3 MODIFY rows added for pregolya-checkpoint/src/saver.rs (CheckpointSaver trait extension), sqlite.rs (guardrail_journal table + 3-state discrimination), memory.rs (in-memory backend for GraphTestFixture). (2) Tasks: 3 new tasks (3-5) inserted before old Task 3; old Tasks 3-10 renumbered to 6-13; Task 7 corrected to CALLS checkpoint_store.init_guardrail_journal (not implements); Task 9 corrected to CALLS pregolya-checkpoint APIs (not implements). (3) subsystems: SS-04 + SS-12 added (SS-04 = pregolya-checkpoint modified here; SS-12 = pregolya-server routes/runs.rs MODIFY in scope). (4) Token Budget: pregolya-checkpoint row updated from read-only interface context to MODIFIED 3-file scope."
   - "2.1 (D-356/records-straggler/2026-09-09, story-writer): B-05 — Purity Classification table pregolya-graph/src/provenance.rs Justification cell: added 'successfully-returning' qualifier before evaluate() call (matches BC-2.11.007 {INV-002}/{EC-003} + AC-001/EC-006 already-correct sites)."
+  - "2.2 (D-356/DC-59/2026-09-09, story-writer): F-PDC59-02 — BC-2.11.007 §Edge-Cases added {EC-007} (durable-write failure, E-CHKPT-012, fail-closed) and {EC-008} (read failure, E-CHKPT-013, propagate error). Propagated into S-1.29: AC-006 (traces to BC-2.11.007 EC-007) and AC-007 (traces to BC-2.11.007 EC-008) added; EC-007/EC-008 rows + TV-006/TV-007 references added to Edge Cases table; BC table covered-ACs updated to AC-001..AC-007; Task 1 extended; Tasks 14-15 added (write-failure and read-failure implementation tasks); File Structure test file rows updated; Token Budget adjusted. input-hash refreshed (BC-2.11.007 §Edge-Cases updated upstream)."
 phase: 2
 inputs:
   - .factory/specs/behavioral-contracts/ss-11/BC-2.11.007.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/architecture/dependency-graph.md
-input-hash: "eecb89c"
+input-hash: "5f7da5f"
 traces_to: .factory/stories/STORY-INDEX.md
 points: 5
 depends_on: [S-1.19, S-1.26]
@@ -73,7 +74,7 @@ tdd_mode: strict
 
 | BC | Title | Covered ACs |
 |----|-------|------------|
-| BC-2.11.007 | Guardrail Evaluation Results Are Durably Journaled | AC-001..AC-005 |
+| BC-2.11.007 | Guardrail Evaluation Results Are Durably Journaled | AC-001..AC-007 |
 
 ## Acceptance Criteria
 
@@ -91,6 +92,12 @@ The count of `GuardrailEntry` records in the journal equals the count of SUCCESS
 
 ### AC-005 (traces to BC-2.11.007 INV-003 — separation from evidence_journal)
 The `guardrail_journal` field contains only `GuardrailEntry` records (boundary + GuardrailResult). It does NOT contain `PolicyDecision` (Allow/Escalate/Deny) records — those belong exclusively to `evidence_journal`. No budget-policy record appears in `guardrail_journal`; no guardrail-hook record appears in `evidence_journal`. The two journals are always kept separate in storage and on the wire. Verified by `test_BC_2_11_007_separation_from_evidence_journal()`.
+
+### AC-006 (traces to BC-2.11.007 EC-007 — durable-write failure fail-closed)
+When `init_guardrail_journal(run_id)` or `append_guardrail_entry(run_id, entry)` returns `Err(E-CHKPT-012)` (GuardrailJournalWriteFailed) from the checkpoint store, `graph::provenance` propagates the error fail-closed — graph execution does NOT continue after the failed write. `get_guardrail_journal(run_id)` returns only entries committed before the failure; the failing entry (when `append_guardrail_entry` fails mid-run) is absent and no partial write is observable by the caller. Composes with {EC-003}: {EC-003} fires when `evaluate()` itself panics/errors (no `GuardrailResult` exists to journal); {EC-007} fires when `evaluate()` returns successfully but the subsequent checkpoint write fails. Verified by a write-failure-injection test in `crates/pregolya-graph/tests/guardrail_journal_completeness.rs` using checkpoint store error injection (TV-006).
+
+### AC-007 (traces to BC-2.11.007 EC-008 — read failure propagate error)
+When `get_guardrail_journal(run_id)` returns `Err(E-CHKPT-013)` (GuardrailJournalReadFailed) from the checkpoint store at run-read time, `server::handlers` propagates the error to the caller; `guardrail_journal?` is absent from the run-read response — it is NOT silently null and no partial `Vec<GuardrailEntry>` is returned as `Ok`. The error propagates up the handler chain rather than being swallowed or defaulted to `None`. Verified by a read-failure test in `crates/pregolya-server/tests/guardrail_journal_server_integration.rs` using checkpoint store error injection (TV-007).
 
 ## Architecture Mapping
 
@@ -120,6 +127,8 @@ The `guardrail_journal` field contains only `GuardrailEntry` records (boundary +
 | EC-004 | evidence_journal entries present | Separation invariant: guardrail_journal contains zero PolicyDecision records; evidence_journal contains zero GuardrailEntry records |
 | EC-005 | Transform result | GuardrailEntry carries result=Transform with new_content accessible via result.Transform.new_content; no separate transform_applied field |
 | EC-006 | GuardrailHook::evaluate() panics (caught by catch_unwind) | Err(E-CORE-007) propagated fail-closed per S-1.19 AC-025; NO GuardrailEntry appended (no GuardrailResult exists); journal count is NOT incremented; per BC-2.11.007 {EC-003} |
+| EC-007 | `init_guardrail_journal(run_id)` or `append_guardrail_entry(run_id, entry)` returns checkpoint store I/O error (disk-full, connection loss) | Graph execution aborted fail-closed: E-CHKPT-012 GuardrailJournalWriteFailed raised; `graph::provenance` does NOT continue executing. Journal remains consistent — only entries committed before the failure are visible; no partial write observable via `get_guardrail_journal`. Composes with {EC-003}: {EC-003} fires when evaluate() itself panics/errors; {EC-007} fires when evaluate() succeeds but the checkpoint write fails. RetryHint Maybe. Per BC-2.11.007 {EC-007}/TV-006 |
+| EC-008 | `get_guardrail_journal(run_id)` returns checkpoint store I/O error at run-read time in `server::handlers` | E-CHKPT-013 GuardrailJournalReadFailed raised; `guardrail_journal?` absent from the run-read response (not silently null — the error propagates to the caller). No partial `Vec<GuardrailEntry>` returned as `Ok`. RetryHint Maybe. Per BC-2.11.007 {EC-008}/TV-007 |
 
 ## Token Budget Estimate (MANDATORY)
 
@@ -133,16 +142,16 @@ The `guardrail_journal` field contains only `GuardrailEntry` records (boundary +
 | `pregolya-graph/src/provenance.rs` journal-init + journal-append + checkpoint-write additions (~70 lines) | ~875 |
 | `pregolya-checkpoint` (MODIFIED — saver.rs trait extension + sqlite.rs guardrail_journal table + memory.rs in-memory backend, ~150 code lines) | ~1,800 |
 | `pregolya-server/src/routes/runs.rs` projection additions (~30 lines) | ~400 |
-| Test files — graph-side guardrail_journal_completeness.rs (~60 lines) | ~800 |
-| Test files — server-side guardrail_journal_server_integration.rs (~80 lines) | ~1,000 |
+| Test files — graph-side guardrail_journal_completeness.rs (~80 lines, incl. AC-006 write-failure injection) | ~1,000 |
+| Test files — server-side guardrail_journal_server_integration.rs (~105 lines, incl. AC-007 read-failure injection) | ~1,300 |
 | Tool outputs | ~300 |
-| **Total** | **~13,075** |
+| **Total** | **~13,575** |
 | Agent context window | 200K (Sonnet) |
 | **Budget usage** | **~7%** |
 
 ## Tasks (MANDATORY)
 
-1. [ ] Write failing tests for all ACs (test-writer): (a) graph-side tests in `crates/pregolya-graph/tests/guardrail_journal_completeness.rs` for AC-001 (append on successful evaluate; VP-2.11.007-A vehicle; NO pregolya-server dependency); (b) server-side tests in `crates/pregolya-server/tests/guardrail_journal_server_integration.rs` for AC-002 (checkpoint persistence per evaluate()) and AC-003 (run-read None/Some projection)
+1. [ ] Write failing tests for all ACs (test-writer): (a) graph-side tests in `crates/pregolya-graph/tests/guardrail_journal_completeness.rs` for AC-001 (append on successful evaluate; VP-2.11.007-A vehicle; NO pregolya-server dependency); (b) server-side tests in `crates/pregolya-server/tests/guardrail_journal_server_integration.rs` for AC-002 (checkpoint persistence per evaluate()) and AC-003 (run-read None/Some projection); (c) graph-side write-failure-injection test in `crates/pregolya-graph/tests/guardrail_journal_completeness.rs` for AC-006 (TV-006: inject checkpoint store I/O error on `append_guardrail_entry` mid-run; assert E-CHKPT-012 raised fail-closed, `get_guardrail_journal` returns only pre-failure entries, no partial write observable); (d) server-side read-failure test in `crates/pregolya-server/tests/guardrail_journal_server_integration.rs` for AC-007 (TV-007: inject checkpoint store I/O error on `get_guardrail_journal`; assert E-CHKPT-013 raised, `guardrail_journal?` absent from run-read response, no partial Vec returned as Ok)
 2. [ ] Add `GuardrailEntry` struct and `GuardrailJournal = Vec<GuardrailEntry>` type alias to `pregolya-core/src/guardrail.rs`. Fields: `boundary: IngressBoundary`, `result: GuardrailResult`, `provenance: ProvenanceTag`, `timestamp_ms: u64`. No `transform_applied` field — Transform content is in `result.Transform.new_content`
 3. [ ] Extend `CheckpointSaver` trait in `crates/pregolya-checkpoint/src/saver.rs` — add `init_guardrail_journal(run_id)`, `append_guardrail_entry(run_id, &GuardrailEntry)`, `get_guardrail_journal(run_id) -> Result<Option<Vec<GuardrailEntry>>, PregolyaError>` (`GuardrailEntry` from `core::guardrail`; checkpoint→core dep allowed per the established crate hierarchy).
 4. [ ] Implement new `CheckpointSaver` methods in `crates/pregolya-checkpoint/src/sqlite.rs` — add `guardrail_journal` table schema + INSERT (append_guardrail_entry) + SELECT (get_guardrail_journal) with 3-state discrimination: None = no journal record for run_id; Some([]) = journal initialized via init_guardrail_journal, zero appends; Some([N]) = N entries appended.
@@ -154,7 +163,9 @@ The `guardrail_journal` field contains only `GuardrailEntry` records (boundary +
 10. [ ] Add `guardrail_journal: Option<GuardrailJournal>` to the `Run` response model; populate from `checkpoint_store.get_guardrail_journal(run_id)` for terminal-status runs; absent for in-progress runs (AC-003 / BC-2.11.007 PC-003). This modifies `pregolya-server/src/routes/runs.rs` run-read handler.
 11. [ ] Implement separation assertion: add test that a run using BOTH budget policy and guardrail hook produces entries exclusively in their respective journals with no cross-contamination (AC-005 / BC-2.11.007 INV-003)
 12. [ ] Export `GuardrailEntry` and `GuardrailJournal` from `pregolya-core/src/lib.rs`
-13. [ ] Run `cargo nextest run -p pregolya-core -p pregolya-graph --no-fail-fast` — graph-side tests (AC-001) green; then `cargo nextest run -p pregolya-server --no-fail-fast` — server-side tests (AC-002/AC-003) green
+13. [ ] Implement write-failure fail-closed error propagation in `pregolya-graph/src/provenance.rs` for AC-006 (BC-2.11.007 {EC-007}): when `checkpoint_store.append_guardrail_entry(run_id, &entry)` returns `Err(E-CHKPT-012)`, propagate the error fail-closed — do NOT continue graph execution; when `checkpoint_store.init_guardrail_journal(run_id)` returns `Err(E-CHKPT-012)`, abort at run start. The journal exposed by `get_guardrail_journal` must reflect only entries committed before the failure (no partial write observable). Distinct from {EC-003}: this path activates only when `evaluate()` returns successfully but the subsequent checkpoint write fails.
+14. [ ] Implement read-failure error propagation in `pregolya-server/src/routes/runs.rs` run-read handler for AC-007 (BC-2.11.007 {EC-008}): when `checkpoint_store.get_guardrail_journal(run_id)` returns `Err(E-CHKPT-013)`, propagate the error to the caller — do NOT convert to `None` or swallow; `guardrail_journal?` must be absent from the response and the error must surface to the HTTP layer (no partial `Vec<GuardrailEntry>` returned as Ok).
+15. [ ] Run `cargo nextest run -p pregolya-core -p pregolya-graph --no-fail-fast` — graph-side tests (AC-001, AC-004, AC-006) green; then `cargo nextest run -p pregolya-server --no-fail-fast` — server-side tests (AC-002, AC-003, AC-005, AC-007) green
 
 ## Previous Story Intelligence (MANDATORY)
 
@@ -196,5 +207,5 @@ The `guardrail_journal` field contains only `GuardrailEntry` records (boundary +
 | `crates/pregolya-checkpoint/src/memory.rs` | MODIFY | In-memory backend: same 3-state discrimination as sqlite.rs — used by GraphTestFixture for unit tests without a live DB |
 | `crates/pregolya-graph/src/provenance.rs` | MODIFY | Add init_guardrail_journal (run-start, iff hook registered) and sync-durable append_guardrail_entry per evaluate() dispatch site (AC-001/AC-002/AC-003 / BC-2.11.007 PC-001/PC-002/PC-003); no in-flight Vec; no RunStore import |
 | `crates/pregolya-server/src/routes/runs.rs` | MODIFY | Add `guardrail_journal?` to run-read response; query via `checkpoint_store.get_guardrail_journal(run_id)` for terminal-status runs (AC-003) |
-| `crates/pregolya-graph/tests/guardrail_journal_completeness.rs` | CREATE | AC-001 completeness/append tests — VP-2.11.007-A 2-function harness (graph-side): `guardrail_journal_completeness_zero_ingress_boundaries` asserts Some([]) (hook + zero ingress via init_guardrail_journal); `guardrail_journal_completeness_all_variants` asserts Some([N]) (hook + N successfully-returning evaluate()); NO None (no-hook) assertion here — that is server-side per AC-003; NO pregolya-server dependency |
-| `crates/pregolya-server/tests/guardrail_journal_server_integration.rs` | CREATE | AC-002 checkpoint persistence per evaluate() + AC-003 run-read projection tests: None (no-hook, `test_BC_2_11_007_run_read_projection_no_hook_none()`), Some([]) (in-progress absent, `test_BC_2_11_007_run_read_projection_in_progress_absent()`), Some([N]) (`test_BC_2_11_007_run_read_projection_terminal()`) (server-side; queries checkpoint_store.get_guardrail_journal(run_id) via HTTP) |
+| `crates/pregolya-graph/tests/guardrail_journal_completeness.rs` | CREATE | AC-001 completeness/append tests (VP-2.11.007-A 2-function harness) + AC-006 write-failure-injection test (graph-side): `guardrail_journal_completeness_zero_ingress_boundaries` asserts Some([]) (hook + zero ingress via init_guardrail_journal); `guardrail_journal_completeness_all_variants` asserts Some([N]) (hook + N successfully-returning evaluate()); write-failure injection test asserts E-CHKPT-012 fail-closed, journal consistent with pre-failure entries only (TV-006); NO None (no-hook) assertion here — that is server-side per AC-003; NO pregolya-server dependency |
+| `crates/pregolya-server/tests/guardrail_journal_server_integration.rs` | CREATE | AC-002 checkpoint persistence per evaluate() + AC-003 run-read projection tests + AC-007 read-failure test (server-side): None (no-hook, `test_BC_2_11_007_run_read_projection_no_hook_none()`), Some([]) (in-progress absent, `test_BC_2_11_007_run_read_projection_in_progress_absent()`), Some([N]) (`test_BC_2_11_007_run_read_projection_terminal()`); read-failure injection test asserts E-CHKPT-013 raised and `guardrail_journal?` absent from response (TV-007); queries checkpoint_store.get_guardrail_journal(run_id) via HTTP |

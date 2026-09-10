@@ -1,12 +1,13 @@
 ---
 document_type: prd-supplement-interface-definitions
 level: L3
-version: "3.15"
+version: "3.16"
 status: active
 producer: architect
 timestamp: 2026-09-09T00:00:00Z
 phase: 1d
 changelog:
+  - "3.16 (DC-59/F-PDC59-01+OBS-PDC59-1+OBS-PDC59-2/2026-09-09, architect): F-PDC59-01 [HIGH] Cite concrete error codes in §CheckpointSaver guardrail journal # Errors sections — init_guardrail_journal + append_guardrail_entry: bare 'Err(PregolyaError { category: DURABILITY, .. })' → 'Err(E-CHKPT-012) — GuardrailJournalWriteFailed (DURABILITY) (BC-2.11.007 {EC-007})'; get_guardrail_journal: bare category citation → 'Err(E-CHKPT-013) — GuardrailJournalReadFailed (DURABILITY) (BC-2.11.007 {EC-008})'. Citation style matches sibling fts_search / get_next_version 'Err(E-CHKPT-NNN) — description' form for exact parity. OBS-PDC59-1 [LOW] Pin ProvenanceTag derive obligation — add canonical struct definition to §GuardrailHook (same family as IngressBoundary/GuardrailResult/GuardrailSeverity — interface-definitions.md is the correct home per field-type family precedent): #[non_exhaustive] #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)] on pub struct ProvenanceTag { boundary_type: BoundaryType, ingress_id: Uuid, sequence_position: usize }. Derive rationale: GuardrailEntry (provenance: ProvenanceTag field) derives the same set for checkpoint persistence and VP-2.11.007-A assertion equality; derives must propagate to all field types. entities-server.md §ProvenanceTag unchanged (L2 domain prose; no content change needed). OBS-PDC59-2 [LOW] Wire-enum parity fix (in-scope — trivial §StreamEvent annotation gap, no BC-2.06.001 body reconciliation needed): add #[non_exhaustive] + #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)] to GuardrailDecisionKind and GuardrailSeverityWire; matches the 5 §GuardrailHook types annotated in DC-58 (GuardrailResult/IngressContent/GuardrailSeverity/IngressBoundary/GuardrailEntry). TD-VSDD-060 sibling sweep: ProvenanceTag was the sole field-type gap in the GuardrailEntry family; GuardrailDecisionKind/GuardrailSeverityWire were the sole annotation gaps in the §StreamEvent family; all three gaps closed in this burst."
   - "3.15 (DC-58/F-PDC58-01+OBS-PDC58-1/2026-09-09, architect): F-PDC58-01 [HIGH] Add three GuardrailJournal ops to §CheckpointSaver trait — init_guardrail_journal(run_id: Uuid), append_guardrail_entry(run_id: Uuid, entry: &GuardrailEntry), get_guardrail_journal(run_id: Uuid) -> Result<Option<Vec<GuardrailEntry>>, PregolyaError>. All three are async, #[async_trait]-desugared, and object-safe via Arc<dyn CheckpointSaver> (matching the VP-2.11.007-A §Proof Harness double-unwrap pattern). BC anchor updated to include BC-2.11.007. Gate #31 type note updated with GuardrailEntry resolution. Also add canonical GuardrailEntry struct definition (4 fields: boundary: IngressBoundary, result: GuardrailResult, provenance: ProvenanceTag, timestamp_ms: u64; O-PDC34-A no transform_applied; canonical location core::guardrail). OBS-PDC58-1 [LOW] Add explicit derive sets to GuardrailResult (#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]), IngressContent (same), GuardrailSeverity (#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]), IngressBoundary (same), and new GuardrailEntry (#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]). Also add #[non_exhaustive] to all five per CLAUDE.md API surface mandate. PartialEq + Debug: VP-2.11.007-A assert_eq!(journal[0].result, GuardrailResult::Pass); Serialize + Deserialize + Clone: checkpoint-backed persistence. Harness asymmetry (journal[0] assert_eq!/unit-variant vs journal[1]/[2] matches!/struct-variant) is intentional and correct — assert_eq! for Pass unit variant, matches!+if-let for Fail/Transform struct variants. No harness normalization needed. TD-VSDD-060 sibling sweep: IngressBoundary added as dependency type for GuardrailEntry.boundary."
   - "3.14 (round-62/F-P2A234-01+F-P2A234-02+F-P2A234-03+OBS-3/2026-09-01): §TrajectoryCompactor: doc comment updated from staging-table to per-run single-transaction DELETE mechanism (ADR-030 §Compaction Atomicity Decision). Error note: add E-TRAJ-006 TrajectoryIntegrityCheckFailed (DURABILITY, Never) for AES-GCM auth-tag mismatch during conflict-detection decrypt (F-P2A234-03). §TrajectoryRetentionPolicy promoted field: add semantics note — step_idx values in promoted are retained even if < retention_frontier (OBS-3). No signature changes."
   - "3.13 (round-58/F-P2A229-01/2026-09-01): F-P2A229-01 [MED] §LedgerChannel PromoteRetireOp<T> enum: add #[derive(Clone, Debug)]. Clone satisfies Channel::Update: Clone; derive is sound because LedgerEntry: Clone (supertrait bundles Clone), so no spurious bound beyond T: LedgerEntry is introduced (does not trigger rustc #26925 — contrast with Default, which is NOT in the LedgerEntry bundle and is why the marker structs use manual Default impls). Debug added conventionally for a data-bearing update enum; conditional on T: Debug (LedgerEntry does not bundle Debug). Doc-comment updated to state rationale. LedgerChannel<T> code block is unaffected (Update = T; T: LedgerEntry implies T: Clone — Channel::Update: Clone already satisfied)."
@@ -780,7 +781,8 @@ pub trait CheckpointSaver: Send + Sync {
     /// dependency direction is permitted (F-PDC48-04/DC-48).
     ///
     /// # Errors
-    /// - `Err(PregolyaError { category: DURABILITY, .. })` on checkpoint storage failure.
+    /// - `Err(E-CHKPT-012)` — `GuardrailJournalWriteFailed` (DURABILITY) on checkpoint
+    ///   storage failure (BC-2.11.007 {EC-007}).
     async fn init_guardrail_journal(
         &self,
         run_id: Uuid,
@@ -794,7 +796,8 @@ pub trait CheckpointSaver: Send + Sync {
     /// erroring `evaluate()` calls ({EC-003}).
     ///
     /// # Errors
-    /// - `Err(PregolyaError { category: DURABILITY, .. })` on checkpoint storage failure.
+    /// - `Err(E-CHKPT-012)` — `GuardrailJournalWriteFailed` (DURABILITY) on checkpoint
+    ///   storage failure (BC-2.11.007 {EC-007}).
     async fn append_guardrail_entry(
         &self,
         run_id: Uuid,
@@ -817,7 +820,8 @@ pub trait CheckpointSaver: Send + Sync {
     /// is not a separate module — F-PDC48-02/DC-48).
     ///
     /// # Errors
-    /// - `Err(PregolyaError { category: DURABILITY, .. })` on checkpoint storage failure.
+    /// - `Err(E-CHKPT-013)` — `GuardrailJournalReadFailed` (DURABILITY) on checkpoint
+    ///   storage failure (BC-2.11.007 {EC-008}).
     async fn get_guardrail_journal(
         &self,
         run_id: Uuid,
@@ -919,6 +923,29 @@ pub enum GuardrailSeverity {
     Medium,
     /// Error block substituted at content position; run continues (BC-2.11.005 PC5).
     Low,
+}
+
+/// Ingress boundary context attached to content at evaluation time.
+/// Canonical location: `pregolya-core/src/guardrail.rs` (`core::guardrail`);
+/// authority: entities-server.md §ProvenanceTag; BC-2.11.001 PC1–PC3.
+///
+/// # Derive rationale
+/// - `Debug`, `Clone`, `PartialEq`, `Serialize`, `Deserialize`: propagated from
+///   `GuardrailEntry`, which has `provenance: ProvenanceTag` as a field and derives
+///   the same set — required for checkpoint-backed persistence via
+///   `CheckpointSaver::append_guardrail_entry` / `get_guardrail_journal`, and for
+///   VP-2.11.007-A assertion equality (`assert_eq!(journal[0].provenance, ...)`).
+///   `BoundaryType` (ingress-audit vocabulary) is distinct from `IngressBoundary`
+///   (StreamEvent wire vocabulary); mapping: OBS-2 in entities-server.md §GuardrailJournal.
+#[non_exhaustive]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ProvenanceTag {
+    /// Ingress-audit boundary type. Values: `ToolResult | RAGRetrieval | MemoryIngress`.
+    pub boundary_type: BoundaryType,
+    /// Unique identifier for the ingress event.
+    pub ingress_id: Uuid,
+    /// Position of this content unit within the ingress event.
+    pub sequence_position: usize,
 }
 
 /// A single guardrail evaluation record appended to the checkpoint-backed
@@ -1614,10 +1641,14 @@ pub enum IngressBoundary { ToolResult, RagChunk, MemoryItem }
 
 /// The non-trivial outcome streamed to observers. Pass is never streamed.
 /// BC authority: BC-2.11.002 PC3 (Fail), BC-2.11.002 PC4 (Transform).
+#[non_exhaustive]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum GuardrailDecisionKind { Fail, Transform }
 
 /// Wire-serializable severity mirroring GuardrailSeverity for stream consumers.
 /// BC authority: BC-2.11.002 INV-3, BC-2.11.005 PC4/PC5.
+#[non_exhaustive]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum GuardrailSeverityWire { Critical, High, Medium, Low }
 ```
 

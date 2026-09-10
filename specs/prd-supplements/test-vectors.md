@@ -1,7 +1,7 @@
 ---
 document_type: prd-supplement-test-vectors
 level: L3
-version: "3.26"
+version: "3.27"
 status: active
 producer: product-owner
 timestamp: 2026-09-09T00:00:00Z
@@ -14,6 +14,7 @@ input-hash: "2394e59"
 traces_to: prd.md
 primary_consumers: [test-writer, holdout-evaluator]
 changelog:
+  - "3.27 (DC-59/2026-09-09, state-manager): BC-2.11.007 TV count 5→7 (+2 TVs: TV-006 init_guardrail_journal → E-CHKPT-012 ({EC-007}); TV-007 get_guardrail_journal → E-CHKPT-013 ({EC-008}); F-PDC59-01 MED closed). BC-2.11.007 inventory row added. Grand total 841→843 canonical + 11 GTV = 852→854. EC count 145→147 (+E-CHKPT-012, +E-CHKPT-013)."
   - "3.26 (D-356/DC-46/2026-09-09, product-owner): B-PDC46: §Grand-Total corrected — D-356 SS-24 dev-console BCs (BC-2.24.001..008, +46 canonical TVs) and BC-2.11.007 (+5 canonical TVs) were never rolled into the grand-total (10 new BCs, PG-DC46 pre-commit hook was no-op). Canonical total 795→841 (+46 SS-24 + not yet individually subtotalled; validator basis). GTV count unchanged at 11. Total 806→852. BC count 140→150. verify-tv-registry-count.sh blocker cleared."
   - "3.25 (round-63/D-341/2026-09-01): BC-2.04.009 TV count 6→7 (+1 TV: TV-007 AES-GCM authentication failure — single-byte ciphertext tamper during conflict-detection decrypt → E-TRAJ-006; BC-local EC-006 path; F-P2A235-05). SS-04 subtotal +1. Grand total 794→795 canonical + 11 GTV = 805→806."
   - "3.24 (round-52/F-P2A216-02+F-P2A217-01+F-P2A216-01+F-P2A219-01/2026-08-31): BC-2.04.009 TV count 4→6 (+2 TVs: TV-005 encryption+duplicate-identical-plaintext→Ok(()) no false E-TRAJ-002 — plaintext comparison under per-record-nonce; TV-006 encryption+duplicate-divergent-plaintext→E-TRAJ-002 — correct conflict detection under encryption; F-P2A217-01/{INV-001}+{INV-002}). BC-2.04.011 TV count 5→4 (TV-003 REMOVED — E-TRAJ-004 structurally unreachable; F-P2A216-01/F-P2A216-03). Net TV delta: +2-1=+1. SS-04 subtotal +1. Grand total 793→794 canonical + 11 GTV = 804→805."
@@ -154,6 +155,7 @@ changelog:
 | BC-2.11.004 | SS-11 | 4 | — | table (unlabelled) | | GuardrailHook at memory ingress |
 | BC-2.11.005 | SS-11 | 4 | — | table (unlabelled) | | Rejected content never in model context |
 | BC-2.11.006 | SS-11 | 4 | — | table (unlabelled) | | No-hook default: WARNING LOG |
+| BC-2.11.007 | SS-11 | 7 | — | `TV-NNN` | | Guardrail evaluation results journaled; TV-006 init_guardrail_journal → E-CHKPT-012 ({EC-007}); TV-007 get_guardrail_journal → E-CHKPT-013 ({EC-008}); F-PDC59-01 |
 | BC-2.12.001 | SS-12 | 9 | — | `TV-NNN` | | Thread CRUD |
 | BC-2.12.002 | SS-12 | 9 | — | `TV-NNN` | | Assistant CRUD |
 | BC-2.12.003 | SS-12 | 13 | — | `TV-NNN` | | Run lifecycle; TV-011 node-body-panic → E-GRAPH-019 STATIC ({INV-007}); TV-012 E-GRAPH-011 conditional-edge panic → static + source_node suppressed ({INV-007}; F-P2A197-01); TV-013 credential-in-Run.error.message → redact_credentials ({INV-008}; F-P2A197-02) |
@@ -213,7 +215,7 @@ changelog:
 | BC-2.23.005 | SS-23 | 8 | — | `TV-NNN` | | BashTool — sandboxed shell; non-lowerable Medium risk floor; 256 KiB cap; 30 s timeout (VP-013 Kani seed) |
 | BC-2.23.006 | SS-23 | 6 | — | `TV-NNN` | | GrepTool — in-process regex; linear-time `regex`; max_results 100 cap; PathGuard scope; E-TOOLS-001/006/008/009 (TV-006 traversal I/O error) |
 
-**Total vectors (150 authored BCs):** 841 canonical test vectors (TV Count column) + 11 golden test vectors (GTV Count column, BC-2.07.002 only) = **852 total vectors** across 150 BC files. (D-356 SS-24 dev-console BCs BC-2.24.001..008 contributed +46 canonical TVs; BC-2.11.007 contributed +5 canonical TVs; 10 new BCs since v3.25 round-63.)
+**Total vectors (150 authored BCs):** 843 canonical test vectors (TV Count column) + 11 golden test vectors (GTV Count column, BC-2.07.002 only) = **854 total vectors** across 150 BC files. (D-356 SS-24 dev-console BCs BC-2.24.001..008 contributed +46 canonical TVs; BC-2.11.007 contributed +7 canonical TVs including TV-006+TV-007 added in DC-59; 10 new BCs since v3.25 round-63.)
 
 > **Ground-truth validation requirement:** The declared total above MUST equal the sum of TV Count values parsed from individual BC body files under `behavioral-contracts/ss-NN/BC-S.SS.NNN.md §Canonical Test Vectors`, counted as data rows with `^| TV-` prefix. A validator that only checks column arithmetic (sum of TV Count column == declared total) satisfies an internal identity, not a ground-truth comparison, and will not detect drift between BC bodies and this registry. The correct check is: `sum(BC body TV counts)` == `registry declared canonical total`. devops-engineer must implement this as a blocking gate before Phase 3.
 
