@@ -3,7 +3,7 @@ document_type: verification-property
 level: L4
 id: VP-2.11.007-B
 title: "GuardrailJournal Encryption at Rest — Raw Bytes in guardrail_journal Table Are Not Valid Plaintext GuardrailEntry"
-version: "1.0"
+version: "1.1"
 status: draft
 producer: architect
 timestamp: 2026-09-10T00:00:00Z
@@ -11,7 +11,7 @@ phase: 3
 inputs:
   - .factory/specs/behavioral-contracts/ss-11/BC-2.11.007.md
   - .factory/specs/behavioral-contracts/ss-04/BC-2.04.007.md
-input-hash: "81d1276"
+input-hash: "f23152b"
 traces_to: VP-INDEX.md
 source_bc: BC-2.11.007
 module: checkpoint::encryption
@@ -23,7 +23,7 @@ proof_file_hash: null
 # Lifecycle fields (DF-030)
 lifecycle_status: active
 introduced: DC-62
-modified: []
+modified: [DC-63]
 deprecated: null
 deprecated_by: null
 replacement: null
@@ -41,6 +41,7 @@ priority: P1
 harness_fn: "n/a (integration test)"
 file: vp-2.11.007-b-guardrail-journal-encryption-at-rest.md
 changelog:
+  - "1.1 (DC-63/F-PDC63-02/2026-09-10, architect): F-PDC63-02 [HIGH] Rewrite §Proof Harness Skeleton to use canonical constructors — fixes two Red Gate compile errors + two additional defects found in full compile audit. (1) E0639: both test functions constructed GuardrailEntry via struct literal; #[non_exhaustive] forbids this outside the defining crate (pregolya-core). Replaced with GuardrailEntry::new(boundary, result, provenance, timestamp_ms) — canonical constructor added to interface-definitions.md §GuardrailHook in this same burst. (2) E0599: both test functions called ProvenanceTag::default(); ProvenanceTag derives Debug/Clone/PartialEq/Serialize/Deserialize only — no Default. Replaced with ProvenanceTag::new(BoundaryType::ToolResult, uuid::Uuid::nil(), 0) — canonical constructor added in same burst. (3) E0308 (hidden by E0639 — would surface after fixing 1+2): entry.clone() passed where &GuardrailEntry expected by append_guardrail_entry trait signature; replaced with &entry. (4) E0433 (corpus-gap, compile-audit follow-up per coordinator DC-63): both test functions used pregolya_core::RunId::new_v4() for the run_id: Uuid argument — RunId has NO canonical type definition in the spec corpus (corpus-wide grep returned nothing; Gate #31 note in interface-definitions.md confirms RunId is a StreamEvent wire field distinct from the Uuid used in CheckpointSaver ops); replaced with uuid::Uuid::new_v4() to match the canonical run_id: Uuid trait signature. BoundaryType added to use import. GuardrailResult::Fail{reason: sentinel, severity: High} sentinel preserved in both tests — non-vacuous assertion intact (TD-VSDD-059)."
   - "1.0 (DC-62/2026-09-10, architect): Minted. GuardrailJournal encryption-at-rest integration P1. BC-2.11.007 {INV-005} + BC-2.04.007 {INV-006}; DI-012; checkpoint::encryption; pregolya-checkpoint; Phase 3. Raw bytes written to guardrail_journal table by init_guardrail_journal + append_guardrail_entry under EncryptedSerializer are NOT valid plaintext GuardrailEntry; after decryption with the active key they round-trip to the original GuardrailEntry values. Pattern: mirror BC-2.04.007 inspector-reads-raw-storage. Census 42→43; integration 13→14; P1 35→36."
 ---
 
@@ -142,7 +143,7 @@ use pregolya_checkpoint::{
     encryption::EncryptedSerializer,
 };
 use pregolya_core::guardrail::{
-    GuardrailEntry, IngressBoundary, GuardrailResult, GuardrailSeverity, ProvenanceTag,
+    BoundaryType, GuardrailEntry, IngressBoundary, GuardrailResult, GuardrailSeverity, ProvenanceTag,
 };
 
 /// Encryption-at-rest property:
@@ -161,22 +162,34 @@ async fn guardrail_journal_entries_are_encrypted_at_rest() {
         .await
         .expect("CheckpointSaverSqlite with EncryptedSerializer must initialize");
 
-    let run_id = pregolya_core::RunId::new_v4();
+    // uuid::Uuid::new_v4() — CheckpointSaver methods take run_id: Uuid directly;
+    // RunId is a StreamEvent wire field with no canonical type definition in the corpus
+    // (confirmed by DC-63 corpus grep; Gate #31 note: "RunId is distinct from the Uuid
+    // used in checkpoint store ops" — using Uuid directly matches the trait signature).
+    let run_id = uuid::Uuid::new_v4();
     saver.init_guardrail_journal(run_id).await
         .expect("init_guardrail_journal must succeed");
 
     // Sentinel string must appear in plaintext but not in encrypted bytes
     let sentinel = "test-plaintext-sentinel";
-    let entry = pregolya_core::guardrail::GuardrailEntry {
-        boundary: pregolya_core::guardrail::IngressBoundary::ToolResult,
-        result: pregolya_core::guardrail::GuardrailResult::Fail {
+    // GuardrailEntry::new + ProvenanceTag::new — canonical cross-crate constructors
+    // (struct literal forbidden outside pregolya-core per #[non_exhaustive]; F-PDC63-02).
+    // GuardrailResult::Fail{reason: sentinel} keeps the non-vacuous plaintext-absence assertion:
+    // a Pass unit-variant carries no legible string; only Fail{reason} does (TD-VSDD-059).
+    // BoundaryType::ToolResult in ProvenanceTag is the audit-vocabulary name for the
+    // ToolResult ingress boundary (distinct from IngressBoundary::ToolResult wire name;
+    // OBS-2 in entities-server.md §GuardrailJournal).
+    // uuid::Uuid::nil() is a fixed all-zeros test sentinel — no Default needed.
+    let entry = GuardrailEntry::new(
+        IngressBoundary::ToolResult,
+        GuardrailResult::Fail {
             reason: sentinel.to_string(),
-            severity: pregolya_core::guardrail::GuardrailSeverity::High,
+            severity: GuardrailSeverity::High,
         },
-        provenance: pregolya_core::guardrail::ProvenanceTag::default(),
-        timestamp_ms: 1_700_000_000_000_u64,
-    };
-    saver.append_guardrail_entry(run_id, entry.clone()).await
+        ProvenanceTag::new(BoundaryType::ToolResult, uuid::Uuid::nil(), 0),
+        1_700_000_000_000_u64,
+    );
+    saver.append_guardrail_entry(run_id, &entry).await
         .expect("append_guardrail_entry must succeed");
 
     // Inspector: read raw bytes from SQLite directly (bypassing the API)
@@ -247,21 +260,24 @@ async fn guardrail_journal_baseline_no_encryption_is_plaintext() {
         .await
         .expect("CheckpointSaverSqlite without EncryptedSerializer must initialize");
 
-    let run_id = pregolya_core::RunId::new_v4();
+    // Same: uuid::Uuid::new_v4() per canonical run_id: Uuid signature (DC-63 RunId fix).
+    let run_id = uuid::Uuid::new_v4();
     saver.init_guardrail_journal(run_id).await
         .expect("init_guardrail_journal must succeed");
 
     let sentinel = "baseline-sentinel-plaintext";
-    let entry = pregolya_core::guardrail::GuardrailEntry {
-        boundary: pregolya_core::guardrail::IngressBoundary::ToolResult,
-        result: pregolya_core::guardrail::GuardrailResult::Fail {
+    // Same canonical constructors as encrypted test — struct literal forbidden
+    // outside pregolya-core per #[non_exhaustive] (F-PDC63-02).
+    let entry = GuardrailEntry::new(
+        IngressBoundary::ToolResult,
+        GuardrailResult::Fail {
             reason: sentinel.to_string(),
-            severity: pregolya_core::guardrail::GuardrailSeverity::High,
+            severity: GuardrailSeverity::High,
         },
-        provenance: pregolya_core::guardrail::ProvenanceTag::default(),
-        timestamp_ms: 1_700_000_001_000_u64,
-    };
-    saver.append_guardrail_entry(run_id, entry.clone()).await
+        ProvenanceTag::new(BoundaryType::ToolResult, uuid::Uuid::nil(), 0),
+        1_700_000_001_000_u64,
+    );
+    saver.append_guardrail_entry(run_id, &entry).await
         .expect("append_guardrail_entry must succeed");
 
     let pool = sqlx::SqlitePool::connect(

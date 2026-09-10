@@ -1,13 +1,14 @@
 ---
 document_type: prd-supplement-interface-definitions
 level: L3
-version: "3.18"
+version: "3.19"
 status: active
 producer: architect
 timestamp: 2026-09-10T00:00:00Z
 phase: 1d
-modified: [DC-62]
+modified: [DC-62, DC-63]
 changelog:
+  - "3.19 (DC-63/F-PDC63-02/2026-09-10, architect): F-PDC63-02 [HIGH] Add canonical constructors to ProvenanceTag and GuardrailEntry for cross-crate construction — resolves E0639 (struct literal on #[non_exhaustive] struct outside defining crate) and enables VP-2.11.007-B proof harness compilation. impl ProvenanceTag { pub fn new(boundary_type: BoundaryType, ingress_id: Uuid, sequence_position: usize) -> Self }. impl GuardrailEntry { pub fn new(boundary: IngressBoundary, result: GuardrailResult, provenance: ProvenanceTag, timestamp_ms: u64) -> Self }. #[non_exhaustive] preserved on both structs — constructors are the sanctioned cross-crate build path. BC authority: BC-2.11.001 PC1-PC3 (ProvenanceTag construction precondition); BC-2.11.007 {PC-001} (GuardrailEntry construction for append_guardrail_entry). TD-VSDD-060 sibling sweep: no prior constructors existed for either type; these are first constructors. records-lint exit 0."
   - "3.18 (DC-62/F-PDC62-03/2026-09-10, architect): F-PDC62-03 [MED] Architect adjudication — GuardrailJournal write path at-rest encryption obligation. The EncryptedSerializer is application-level (per-method call via DI seam), NOT database-level; BC-2.04.007 {INV-003} scoping to 'state blob or per-task write payload' (put/put_writes) means the guardrail-journal write path (init_guardrail_journal, append_guardrail_entry) is currently OUTSIDE the encryption boundary as specified — inheritance is NOT automatic. Explicit obligation added: (1) init_guardrail_journal and append_guardrail_entry doc comments extended with # Encryption sections — concrete CheckpointSaver implementors MUST call self.serializer.serialize(bytes) on these write paths when EncryptedSerializer is active; (2) CheckpointSaver BC anchor extended to include BC-2.04.007 {INV-003}/{INV-005} for guardrail journal write ops; (3) Serializer section description and BC anchor extended to name init_guardrail_journal/append_guardrail_entry as in-scope write ops. Sensitivity rationale: GuardrailEntry.result can carry Transform{new_content: IngressContent::ToolResult(ContentBlock)} — potentially sensitive content; CWE-312 at-rest exposure if unencrypted. Downstream routing: (a) PO to add BC-2.04.007 linkage + {INV-005} to BC-2.11.007; (b) S-1.29 needs new encryption AC (see adjudication report); (c) BC-2.04.007 {INV-003} needs scope extension (see adjudication report). TD-VSDD-060 sibling sweep: §Serializer BC anchor and description both updated. records-lint exit 0."
   - "3.17 (DC-61/F-PDC61-01/2026-09-09, architect): F-PDC61-01 [LOW] Add BoundaryType enum definition to §GuardrailHook — closes transitive-closure derive gap: ProvenanceTag.boundary_type: BoundaryType had no enum definition anywhere in the corpus (corpus-wide grep returned nothing). BoundaryType variants: ToolResult | RAGRetrieval | MemoryIngress (ingress-audit vocabulary; BC-2.11.001 PC1-PC3 / ProvenanceTag field comment canon). Derive set: #[non_exhaustive] #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)] — Copy+Eq appropriate for a fieldless C-like enum. BoundaryType is DISTINCT from IngressBoundary (StreamEvent wire vocabulary; IngressBoundary variants: ToolResult | RagChunk | MemoryItem). Transitive-closure audit completed: GuardrailEntry full closure walked — all architect-owned leaves OK after this fix. Cross-owner gap: ContentBlock (IngressContent::ToolResult payload) has no explicit derive block pinned in BC-2.01.001 or entities-graph.md; routed to orchestrator for product-owner dispatch. TD-VSDD-060 sibling sweep: BoundaryType was the sole missing leaf in the architect-owned GuardrailEntry derive closure."
   - "3.16 (DC-59/F-PDC59-01+OBS-PDC59-1+OBS-PDC59-2/2026-09-09, architect): F-PDC59-01 [HIGH] Cite concrete error codes in §CheckpointSaver guardrail journal # Errors sections — init_guardrail_journal + append_guardrail_entry: bare 'Err(PregolyaError { category: DURABILITY, .. })' → 'Err(E-CHKPT-012) — GuardrailJournalWriteFailed (DURABILITY) (BC-2.11.007 {EC-007})'; get_guardrail_journal: bare category citation → 'Err(E-CHKPT-013) — GuardrailJournalReadFailed (DURABILITY) (BC-2.11.007 {EC-008})'. Citation style matches sibling fts_search / get_next_version 'Err(E-CHKPT-NNN) — description' form for exact parity. OBS-PDC59-1 [LOW] Pin ProvenanceTag derive obligation — add canonical struct definition to §GuardrailHook (same family as IngressBoundary/GuardrailResult/GuardrailSeverity — interface-definitions.md is the correct home per field-type family precedent): #[non_exhaustive] #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)] on pub struct ProvenanceTag { boundary_type: BoundaryType, ingress_id: Uuid, sequence_position: usize }. Derive rationale: GuardrailEntry (provenance: ProvenanceTag field) derives the same set for checkpoint persistence and VP-2.11.007-A assertion equality; derives must propagate to all field types. entities-server.md §ProvenanceTag unchanged (L2 domain prose; no content change needed). OBS-PDC59-2 [LOW] Wire-enum parity fix (in-scope — trivial §StreamEvent annotation gap, no BC-2.06.001 body reconciliation needed): add #[non_exhaustive] + #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)] to GuardrailDecisionKind and GuardrailSeverityWire; matches the 5 §GuardrailHook types annotated in DC-58 (GuardrailResult/IngressContent/GuardrailSeverity/IngressBoundary/GuardrailEntry). TD-VSDD-060 sibling sweep: ProvenanceTag was the sole field-type gap in the GuardrailEntry family; GuardrailDecisionKind/GuardrailSeverityWire were the sole annotation gaps in the §StreamEvent family; all three gaps closed in this burst."
@@ -1007,6 +1008,20 @@ pub struct ProvenanceTag {
     pub sequence_position: usize,
 }
 
+impl ProvenanceTag {
+    /// Canonical constructor for [`ProvenanceTag`].
+    ///
+    /// Required for cross-crate construction of this `#[non_exhaustive]` struct —
+    /// struct literal syntax (`ProvenanceTag { .. }`) is forbidden outside the
+    /// defining crate (`pregolya-core`). Callers in `pregolya-checkpoint` tests
+    /// and any other external crate MUST use this constructor.
+    ///
+    /// BC authority: BC-2.11.001 PC1–PC3 (ProvenanceTag precondition for evaluate call).
+    pub fn new(boundary_type: BoundaryType, ingress_id: Uuid, sequence_position: usize) -> Self {
+        Self { boundary_type, ingress_id, sequence_position }
+    }
+}
+
 /// A single guardrail evaluation record appended to the checkpoint-backed
 /// `GuardrailJournal` (BC-2.11.007) after each successfully-returning
 /// `GuardrailHook::evaluate` call.
@@ -1039,6 +1054,26 @@ pub struct GuardrailEntry {
     /// Wall-clock timestamp of the evaluation in milliseconds since the Unix epoch.
     /// Monotone across entries within a run (BC-2.11.007 {INV-002}).
     pub timestamp_ms: u64,
+}
+
+impl GuardrailEntry {
+    /// Canonical constructor for [`GuardrailEntry`].
+    ///
+    /// Required for cross-crate construction of this `#[non_exhaustive]` struct —
+    /// struct literal syntax (`GuardrailEntry { .. }`) is forbidden outside the
+    /// defining crate (`pregolya-core`). Callers in `pregolya-checkpoint` tests,
+    /// `graph::provenance`, and any other external crate MUST use this constructor.
+    ///
+    /// BC authority: BC-2.11.007 {PC-001} (GuardrailEntry appended after each
+    /// successfully-returning `GuardrailHook::evaluate` call).
+    pub fn new(
+        boundary: IngressBoundary,
+        result: GuardrailResult,
+        provenance: ProvenanceTag,
+        timestamp_ms: u64,
+    ) -> Self {
+        Self { boundary, result, provenance, timestamp_ms }
+    }
 }
 ```
 

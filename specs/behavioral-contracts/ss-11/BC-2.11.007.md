@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.11.007
-version: "1.14"
+version: "1.15"
 status: draft
 producer: product-owner
 timestamp: 2026-09-10T00:00:00Z
@@ -38,6 +38,7 @@ changelog:
   - "1.12 (D-356/DC-57/2026-09-09, product-owner): F-PDC57-02 (LOW) — modified[] array reverted to [] for corpus-consistency. DF-030 modified-array population is a VP-file practice; BC files use []; the DC-56 [\"DC-56\"] value was the sole non-empty modified[] in the 149-BC corpus and therefore a corpus outlier. Orchestrator-adjudicated mechanical fix — no behavioral, postcondition, invariant, EC, TV, or anchor content changed."
   - "1.13 (D-356/DC-59/2026-09-09, product-owner): F-PDC59-01 [MED] resolution — durable-write-failure and read-failure edge cases added. {EC-007}: checkpoint store I/O failure on `init_guardrail_journal` or `append_guardrail_entry` — fail-closed, E-CHKPT-012 GuardrailJournalWriteFailed, no partial write observable by `get_guardrail_journal`, RetryHint Maybe; composes with {EC-003} (EC-003 fires when evaluate() itself panics/errors; EC-007 fires when evaluate() succeeds but the checkpoint write fails). {EC-008}: checkpoint store I/O failure on `get_guardrail_journal` at run-read time — E-CHKPT-013 GuardrailJournalReadFailed, no partial Vec returned as Ok, RetryHint Maybe. TV-006: write-failure fail-closed ({EC-007}). TV-007: read-failure ({EC-008}). EC count: 6→8. TV count: 5→7."
   - "1.14 (F-PDC62-03/DC-62/2026-09-10, product-owner): {INV-005} added — encryption at rest extends to guardrail journal ops: when EncryptedSerializer is active on the CheckpointSaver (BC-2.04.007 {INV-006} DI seam), GuardrailEntry bytes written via init_guardrail_journal and append_guardrail_entry MUST be encrypted before reaching SQLite; plaintext GuardrailEntry payloads (including Transform{new_content}/Fail{reason}) prohibited when EncryptedSerializer configured; obligation is NOT automatic and must be explicitly enforced by concrete CheckpointSaver implementor (CWE-312 motivation; architect-adjudicated F-PDC62-03/DC-62). TV-008 added for at-rest encryption via GuardrailJournal write ops. VP-2.11.007-B anchored (architect minting in parallel; P1 integration test; anchors {INV-005}). §Related BCs: BC-2.04.007 entry added."
+  - "1.15 (F-PDC63-03/F-PDC63-05/DC-63/2026-09-10, product-owner): F-PDC63-03 [MED] closed: {INV-005} DI-seam citation corrected — body text '(BC-2.04.007 {INV-006} DI seam)' changed to '(BC-2.04.007 {INV-005} DI seam)'; {INV-005} is the CheckpointSaver DI seam; {INV-006} is the ALL-WRITE-OPS coverage invariant (not the DI seam). Historical changelog 1.14 entry retains the erroneous phrasing as an immutable record (append-only); normative body is corrected. TV-008 all-write-ops {INV-006} reference in Category column retained (correct — that citation is the all-write-ops invariant, not the DI seam). F-PDC63-05 [MED] (part): TV-008 changed from vacuous Pass-only scenario to non-vacuous Fail scenario matching VP-2.11.007-B harness — input now uses GuardrailResult::Fail{reason: \"SENTINEL-GUARDRAIL-PLAINTEXT\", severity: GuardrailSeverity::High}; expected output asserts sentinel NOT present in raw at-rest ciphertext and deserializes to Fail{reason: \"SENTINEL-GUARDRAIL-PLAINTEXT\", severity: High} after decryption; Category updated to 'at-rest encryption non-vacuous (BC-2.04.007 {INV-003}/{INV-006} via GuardrailJournal write ops; VP-2.11.007-B)'. Sentinel token: \"SENTINEL-GUARDRAIL-PLAINTEXT\" (story-writer must use this exact token for AC-008/EC-009 alignment with VP-2.11.007-B)."
 modified: []
 extracted_from: null
 deprecated: null
@@ -154,7 +155,7 @@ content evaluation results.
   calls, but only no-hook has no record.
 
 - {INV-005} **Encryption at rest extends to guardrail journal ops:** When `EncryptedSerializer` is
-  active on the `CheckpointSaver` (BC-2.04.007 {INV-006} DI seam), `GuardrailEntry` bytes written
+  active on the `CheckpointSaver` (BC-2.04.007 {INV-005} DI seam), `GuardrailEntry` bytes written
   via `append_guardrail_entry` and the journal-record bytes written via `init_guardrail_journal`
   MUST be serialized (encrypted) before reaching the SQLite backend. Plaintext `GuardrailEntry`
   payloads — including `Transform{new_content: IngressContent}` and `Fail{reason: String}` — are
@@ -186,7 +187,7 @@ content evaluation results.
 | TV-005 | `GuardrailHook` registered; run completes with zero ingress boundaries crossed | Terminal-status run-read response: `guardrail_journal?` is `Some([])` (empty list, NOT `None`); journal record created by `init_guardrail_journal` at run start, checkpoint-backed (pregolya-checkpoint), zero entries appended via `append_guardrail_entry` ({EC-006}, {INV-004}) | hook-registered zero-ingress ({EC-006}) |
 | TV-006 | Checkpoint store injects I/O error on `append_guardrail_entry(run_id, entry)` after the first successful entry write (mid-run write failure, simulated via checkpoint store error injection) | Graph execution is aborted fail-closed; E-CHKPT-012 raised with `<op>=append_guardrail_entry`; `get_guardrail_journal(run_id)` returns only entries committed before the failure; no partial or uncommitted entry is visible; fail-closed semantics verified ({EC-007}) | write-failure fail-closed ({EC-007}) |
 | TV-007 | `get_guardrail_journal(run_id)` returns I/O error at run-read time (checkpoint store error injected after all entries committed successfully) | E-CHKPT-013 raised; `guardrail_journal?` absent from run-read response; no partial `Vec<GuardrailEntry>` returned as `Ok`; error propagates to the run-read caller ({EC-008}) | read-failure ({EC-008}) |
-| TV-008 | `EncryptedSerializer` active on `CheckpointSaver`; run with 1 Tool-result ingress (Pass result); inspect raw SQLite guardrail_journal bytes | Raw bytes are NOT valid plaintext `GuardrailEntry`; after decryption with active key, bytes deserialize to `{result: Pass, boundary: IngressBoundary::ToolResult, ...}` | at-rest encryption (BC-2.04.007 {INV-003}/{INV-006} via GuardrailJournal write ops) |
+| TV-008 | `EncryptedSerializer` active on `CheckpointSaver`; run with 1 Tool-result ingress producing `GuardrailResult::Fail{reason: "SENTINEL-GUARDRAIL-PLAINTEXT", severity: GuardrailSeverity::High}`; inspect raw SQLite `guardrail_journal` bytes | The sentinel string `"SENTINEL-GUARDRAIL-PLAINTEXT"` is NOT present in the raw at-rest bytes (ciphertext); after decryption with the active key, bytes deserialize to `{result: Fail{reason: "SENTINEL-GUARDRAIL-PLAINTEXT", severity: High}, boundary: IngressBoundary::ToolResult, ...}` | at-rest encryption non-vacuous (BC-2.04.007 {INV-003}/{INV-006} via GuardrailJournal write ops; VP-2.11.007-B) |
 
 ## Verification Properties
 
