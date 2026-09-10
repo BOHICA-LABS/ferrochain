@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.01.001
-version: "1.7"
+version: "1.9"
 status: active
 lifecycle_status: active
 introduced: v1.0.0-greenfield
@@ -13,7 +13,7 @@ capability: CAP-001
 wave: 0
 phase: 1a
 producer: product-owner
-timestamp: 2026-08-24T00:00:00Z
+timestamp: 2026-09-09T00:00:00Z
 changelog:
   - "1.1 (F-P96-01, 2026-07-17): Module field resolved from placeholder to pregolya-core per module-decomposition.md v1.10."
   - "1.2 (F-P111-01, 2026-07-18): Gate #33 Form 3 wrapper-form sweep. PC6 had `Err(PregolyaError { category: VAL, code: E-CORE-001 })` bare wrapper; E-CORE-001 has `<n>` (block position) and `<type>` (type tag) placeholders. Added inline `message:` template to PC6; added EC-006 with concrete placeholder values as the authoritative full-form site."
@@ -22,6 +22,8 @@ changelog:
   - "1.5 (M1/ADR-027/2026-08-23): stable clause anchors {PC/INV/PRE-NNN} added; purely additive, no content change."
   - "1.6 (M3b/ADR-027-escalation-1/2026-08-24): Added {INV-005} — ContentBlock #[non_exhaustive] clause; authoring missing production-grade invariant per CLAUDE.md workspace-wide mandate (S-1.03 AC-005 escalation)."
   - "1.7 (P2-bc-completeness-burst-B/SS-01..03/2026-08-26): Gap BC-2.01.001 MED — named the strict-vs-lenient deserialization entry mechanism: added {PRE-004} identifying `ContentBlock::from_value_strict()` as the strict-mode entry point vs the `serde::Deserialize` impl as the lenient path; updated PC-006 and EC-006 to reference the selecting API by name (reusing existing E-CORE-001)."
+  - "1.8 (DC-61/F-PDC61-ContentBlock/2026-09-09): {INV-005} expanded to pin full canonical derive set — Debug, Clone, PartialEq, Serialize, Deserialize — in addition to the existing #[non_exhaustive] annotation. Rationale: ContentBlock is the leaf type in the GuardrailEntry transitive closure (GuardrailResult::Transform{new_content: IngressContent} → IngressContent::ToolResult(ContentBlock)); the full derive set is required for checkpoint-backed persistence per D-357 GuardrailJournal cascade. Debug+Clone+PartialEq additionally required for harness assertion equality (VP-BC201001-01, VP-BC201001-02) and aggregation. Confirmed by architect DC-61 transitive-closure audit (interface-definitions.md §GuardrailHook). Records-only fix; no behavioral contract change."
+  - "1.9 (DC-61/F-PDC61-payload-closure/2026-09-09): {INV-006} added — pins canonical derive set (Debug, Clone, PartialEq, Serialize, Deserialize + #[non_exhaustive]) for all 13 ContentBlock variant payload structs: TextContentBlock, ReasoningContentBlock, ToolCallContentBlock, ToolCallChunkContentBlock, InvalidToolCallContentBlock, ImageContentBlock, VideoContentBlock, AudioContentBlock, PlainTextContentBlock, FileContentBlock, ServerToolCallContentBlock, ServerToolCallChunkContentBlock, ServerToolResultContentBlock. Annotation element type resolved: TextContentBlock.annotations is Vec<BlockAnnotation> (enum derived from Python [Citation|NonStandard] annotation union per semport/core/behavioral-intent.md §2. Messages + Content Blocks); BlockAnnotation and CitationAnnotation both pinned with same derive set. Transitive serialization closure confirmed fully pinned within BC-2.01.001 — all non-primitive field types are either pinned here or self-terminating external types (serde_json::Value). No leaf type exits to other BC ownership. Records-only fix; no behavioral contract change."
 traces_to:
   - domain-spec/capabilities-p0.md#CAP-001
   - domain-spec/invariants.md#DI-008
@@ -31,7 +33,7 @@ inputs:
   - .factory/specs/domain-spec/invariants.md
   - .factory/semport/core/behavioral-intent.md
   - .factory/semport/core/rust-translation-strategy.md
-input-hash: "e21c7f4"
+input-hash: "a262bd8"
 extracted_from: null
 modified: []
 deprecated: null
@@ -96,9 +98,79 @@ content from satisfying a typed-content parameter. This contract encodes the Lan
 - {INV-004} `MessageContent::Text(s)` and `MessageContent::Blocks(v)` are semantically equivalent views
   of the same information — transitioning from text to blocks via a normalization call must
   not lose content.
-- {INV-005} `ContentBlock` is annotated `#[non_exhaustive]`; external code matching on it must include
-  a wildcard arm (`_ => {}`). The attribute is required per the workspace-wide `#[non_exhaustive]`
-  mandate (CLAUDE.md §Code Conventions) and applies to every public enum in the API surface.
+- {INV-005} `ContentBlock` carries the full canonical annotation and derive set:
+  `#[non_exhaustive] #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]`.
+  - **`#[non_exhaustive]`** — required per workspace-wide mandate (CLAUDE.md §Code Conventions);
+    external match arms must include a wildcard (`_ => {}`); applies to all public API surface enums.
+  - **`Debug + Clone`** — required for harness assertions, aggregation patterns,
+    and general-use inspect/copy semantics.
+  - **`PartialEq`** — required for assert-equality in VP assertions (VP-BC201001-01,
+    VP-BC201001-02) and test harness comparisons.
+  - **`Serialize + Deserialize`** — required for round-trip checkpoint persistence.
+    `ContentBlock` is reachable from `GuardrailEntry` via
+    `GuardrailResult::Transform { new_content: IngressContent } → IngressContent::ToolResult(ContentBlock)`;
+    the full `GuardrailEntry` transitive closure must serialize/deserialize for checkpoint
+    durability (D-357 GuardrailJournal cascade). Confirmed by architect DC-61 transitive-closure
+    audit (interface-definitions.md §GuardrailHook).
+- {INV-006} **ContentBlock Payload Struct Derive Closure (Transitive Serialization Requirement):**
+  Every named variant payload struct wrapped by `ContentBlock` carries the same canonical derive
+  set as `ContentBlock` ({INV-005}):
+  `#[non_exhaustive] #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]`.
+
+  The full set of payload structs subject to this invariant:
+  - `TextContentBlock` — text block; has `text: String`, `annotations: Vec<BlockAnnotation>`,
+    and `#[serde(flatten)] extras: serde_json::Map<String, serde_json::Value>`
+  - `ReasoningContentBlock` — reasoning/thinking block; primitive fields only
+  - `ToolCallContentBlock` — tool invocation block; `id: String`, `name: String`,
+    `args: serde_json::Value`, plus extras
+  - `ToolCallChunkContentBlock` — streaming tool-call fragment; includes `index: Option<u32>`,
+    primitive/external fields only
+  - `InvalidToolCallContentBlock` — malformed tool-call record; `Option<String>` fields only
+  - `ImageContentBlock` — image data block (url or base64); primitive/external fields only
+  - `VideoContentBlock` — video data block; primitive/external fields only
+  - `AudioContentBlock` — audio data block; primitive/external fields only
+  - `PlainTextContentBlock` — plain-text data block (serde tag "text-plain"); primitive fields only
+  - `FileContentBlock` — file data block; primitive/external fields only
+  - `ServerToolCallContentBlock` — server-side tool-call block; primitive/external fields only
+  - `ServerToolCallChunkContentBlock` — server-side streaming tool-call fragment; primitive/external
+    fields only
+  - `ServerToolResultContentBlock` — server-side tool result block; primitive/external fields only
+
+  **Rationale:** `ContentBlock` derives `Serialize + Deserialize` for checkpoint persistence
+  (see {INV-005}). Serde requires every variant payload type to also implement `Serialize +
+  Deserialize`; a payload struct missing those derives causes a compile error on `ContentBlock`'s
+  own derives. `Debug + Clone + PartialEq` are additionally required for harness assertion equality
+  and aggregation, consistent with `ContentBlock`'s requirements. `#[non_exhaustive]` applies to all
+  13 structs per the workspace-wide public API surface mandate (CLAUDE.md §Code Conventions —
+  callers outside `pregolya-core` must use constructor functions, not struct-literal initialization).
+
+  **Annotation element type resolution:**
+  `TextContentBlock.annotations` is `Vec<BlockAnnotation>`. The canonical Rust name is
+  `BlockAnnotation` — derived from the Python `[Citation | NonStandard]` annotation union
+  (semport/core/behavioral-intent.md §2. Messages + Content Blocks). `BlockAnnotation` is a serde-tagged enum
+  in the content-block domain, owned by BC-2.01.001. It carries:
+  `#[non_exhaustive] #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]`.
+
+  `BlockAnnotation` variants:
+  - `Citation(CitationAnnotation)` — citation payload struct; see below
+  - `NonStandard { value: serde_json::Value }` — provider-specific annotation (inline struct
+    variant); `serde_json::Value` is an external type that unconditionally implements
+    `Serialize + Deserialize` — no further pin required
+
+  `CitationAnnotation` — a named payload struct carrying cited-text annotation metadata
+  (e.g., cited text content, source identifier, document range bounds). All fields are primitive
+  or standard-library types (`String`, `Option<String>`, numeric types); no named pregolya types
+  appear in its field set. `CitationAnnotation` carries:
+  `#[non_exhaustive] #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]`.
+
+  **Transitive closure terminus:** every non-primitive field type reachable from `ContentBlock`
+  — the 13 payload structs, `BlockAnnotation`, and `CitationAnnotation` — is either:
+  (a) explicitly pinned in this invariant ({INV-006}), or
+  (b) a self-terminating external type (`serde_json::Value`, `serde_json::Map<String, Value>`),
+      or
+  (c) a std/primitive type (`String`, `Option<T>`, `Vec<T>`, `bool`, `u32`, `u64`, `f64`).
+  The serialization closure is **fully pinned within BC-2.01.001**. No named pregolya type in
+  the closure is owned by a different BC or artifact.
 
 ## Edge Cases
 

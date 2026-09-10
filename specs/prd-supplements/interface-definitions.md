@@ -1,12 +1,14 @@
 ---
 document_type: prd-supplement-interface-definitions
 level: L3
-version: "3.16"
+version: "3.17"
 status: active
 producer: architect
 timestamp: 2026-09-09T00:00:00Z
 phase: 1d
+modified: [DC-61]
 changelog:
+  - "3.17 (DC-61/F-PDC61-01/2026-09-09, architect): F-PDC61-01 [LOW] Add BoundaryType enum definition to §GuardrailHook — closes transitive-closure derive gap: ProvenanceTag.boundary_type: BoundaryType had no enum definition anywhere in the corpus (corpus-wide grep returned nothing). BoundaryType variants: ToolResult | RAGRetrieval | MemoryIngress (ingress-audit vocabulary; BC-2.11.001 PC1-PC3 / ProvenanceTag field comment canon). Derive set: #[non_exhaustive] #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)] — Copy+Eq appropriate for a fieldless C-like enum. BoundaryType is DISTINCT from IngressBoundary (StreamEvent wire vocabulary; IngressBoundary variants: ToolResult | RagChunk | MemoryItem). Transitive-closure audit completed: GuardrailEntry full closure walked — all architect-owned leaves OK after this fix. Cross-owner gap: ContentBlock (IngressContent::ToolResult payload) has no explicit derive block pinned in BC-2.01.001 or entities-graph.md; routed to orchestrator for product-owner dispatch. TD-VSDD-060 sibling sweep: BoundaryType was the sole missing leaf in the architect-owned GuardrailEntry derive closure."
   - "3.16 (DC-59/F-PDC59-01+OBS-PDC59-1+OBS-PDC59-2/2026-09-09, architect): F-PDC59-01 [HIGH] Cite concrete error codes in §CheckpointSaver guardrail journal # Errors sections — init_guardrail_journal + append_guardrail_entry: bare 'Err(PregolyaError { category: DURABILITY, .. })' → 'Err(E-CHKPT-012) — GuardrailJournalWriteFailed (DURABILITY) (BC-2.11.007 {EC-007})'; get_guardrail_journal: bare category citation → 'Err(E-CHKPT-013) — GuardrailJournalReadFailed (DURABILITY) (BC-2.11.007 {EC-008})'. Citation style matches sibling fts_search / get_next_version 'Err(E-CHKPT-NNN) — description' form for exact parity. OBS-PDC59-1 [LOW] Pin ProvenanceTag derive obligation — add canonical struct definition to §GuardrailHook (same family as IngressBoundary/GuardrailResult/GuardrailSeverity — interface-definitions.md is the correct home per field-type family precedent): #[non_exhaustive] #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)] on pub struct ProvenanceTag { boundary_type: BoundaryType, ingress_id: Uuid, sequence_position: usize }. Derive rationale: GuardrailEntry (provenance: ProvenanceTag field) derives the same set for checkpoint persistence and VP-2.11.007-A assertion equality; derives must propagate to all field types. entities-server.md §ProvenanceTag unchanged (L2 domain prose; no content change needed). OBS-PDC59-2 [LOW] Wire-enum parity fix (in-scope — trivial §StreamEvent annotation gap, no BC-2.06.001 body reconciliation needed): add #[non_exhaustive] + #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)] to GuardrailDecisionKind and GuardrailSeverityWire; matches the 5 §GuardrailHook types annotated in DC-58 (GuardrailResult/IngressContent/GuardrailSeverity/IngressBoundary/GuardrailEntry). TD-VSDD-060 sibling sweep: ProvenanceTag was the sole field-type gap in the GuardrailEntry family; GuardrailDecisionKind/GuardrailSeverityWire were the sole annotation gaps in the §StreamEvent family; all three gaps closed in this burst."
   - "3.15 (DC-58/F-PDC58-01+OBS-PDC58-1/2026-09-09, architect): F-PDC58-01 [HIGH] Add three GuardrailJournal ops to §CheckpointSaver trait — init_guardrail_journal(run_id: Uuid), append_guardrail_entry(run_id: Uuid, entry: &GuardrailEntry), get_guardrail_journal(run_id: Uuid) -> Result<Option<Vec<GuardrailEntry>>, PregolyaError>. All three are async, #[async_trait]-desugared, and object-safe via Arc<dyn CheckpointSaver> (matching the VP-2.11.007-A §Proof Harness double-unwrap pattern). BC anchor updated to include BC-2.11.007. Gate #31 type note updated with GuardrailEntry resolution. Also add canonical GuardrailEntry struct definition (4 fields: boundary: IngressBoundary, result: GuardrailResult, provenance: ProvenanceTag, timestamp_ms: u64; O-PDC34-A no transform_applied; canonical location core::guardrail). OBS-PDC58-1 [LOW] Add explicit derive sets to GuardrailResult (#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]), IngressContent (same), GuardrailSeverity (#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]), IngressBoundary (same), and new GuardrailEntry (#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]). Also add #[non_exhaustive] to all five per CLAUDE.md API surface mandate. PartialEq + Debug: VP-2.11.007-A assert_eq!(journal[0].result, GuardrailResult::Pass); Serialize + Deserialize + Clone: checkpoint-backed persistence. Harness asymmetry (journal[0] assert_eq!/unit-variant vs journal[1]/[2] matches!/struct-variant) is intentional and correct — assert_eq! for Pass unit variant, matches!+if-let for Fail/Transform struct variants. No harness normalization needed. TD-VSDD-060 sibling sweep: IngressBoundary added as dependency type for GuardrailEntry.boundary."
   - "3.14 (round-62/F-P2A234-01+F-P2A234-02+F-P2A234-03+OBS-3/2026-09-01): §TrajectoryCompactor: doc comment updated from staging-table to per-run single-transaction DELETE mechanism (ADR-030 §Compaction Atomicity Decision). Error note: add E-TRAJ-006 TrajectoryIntegrityCheckFailed (DURABILITY, Never) for AES-GCM auth-tag mismatch during conflict-detection decrypt (F-P2A234-03). §TrajectoryRetentionPolicy promoted field: add semantics note — step_idx values in promoted are retained even if < retention_frontier (OBS-3). No signature changes."
@@ -923,6 +925,36 @@ pub enum GuardrailSeverity {
     Medium,
     /// Error block substituted at content position; run continues (BC-2.11.005 PC5).
     Low,
+}
+
+/// Ingress-audit boundary type stored in `ProvenanceTag.boundary_type`.
+///
+/// Classifies the ingress boundary at which a content unit was evaluated,
+/// using the audit-vocabulary names from BC-2.11.001.
+///
+/// **Distinct from `IngressBoundary`** (StreamEvent wire vocabulary stored in
+/// `GuardrailEntry.boundary`): `BoundaryType` uses audit names
+/// (`ToolResult | RAGRetrieval | MemoryIngress`) while `IngressBoundary` uses
+/// wire names (`ToolResult | RagChunk | MemoryItem`). Mapping documented in
+/// entities-server.md §GuardrailJournal (OBS-2).
+///
+/// BC authority: BC-2.11.001 PC1–PC3 (ProvenanceTag precondition for evaluate call).
+///
+/// # Derive rationale
+/// - `Copy + Eq`: all variants are fieldless — a C-like enum; Copy and Eq are sound
+///   and conventional.
+/// - `Debug, Clone, PartialEq, Serialize, Deserialize`: propagated from
+///   `ProvenanceTag` (and transitively from `GuardrailEntry`) — required for
+///   checkpoint-backed persistence and VP-2.11.007-A assertion equality.
+#[non_exhaustive]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum BoundaryType {
+    /// Tool-result ingress boundary (BC-2.11.002).
+    ToolResult,
+    /// RAG retrieval ingress boundary (BC-2.11.003).
+    RAGRetrieval,
+    /// Memory ingress boundary (BC-2.11.004).
+    MemoryIngress,
 }
 
 /// Ingress boundary context attached to content at evaluation time.
