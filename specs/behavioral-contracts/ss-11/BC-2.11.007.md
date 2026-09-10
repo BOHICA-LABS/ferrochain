@@ -2,10 +2,10 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.11.007
-version: "1.10"
+version: "1.11"
 status: draft
 producer: product-owner
-timestamp: 2026-09-08T00:00:00Z
+timestamp: 2026-09-09T00:00:00Z
 phase: 1a
 inputs:
   - .factory/specs/domain-spec/capabilities-p0.md
@@ -34,7 +34,8 @@ changelog:
   - "1.8 (D-356/DC-44/2026-09-09, product-owner): Architect-ruled journal-init mechanism applied. {PRE-001}: journal record created by init_guardrail_journal(run_id) at run start iff invocation_context.guardrail_hook().is_some(). {PC-002}: added init write at run start + explicit append_guardrail_entry call + run-read projection pattern. {INV-004}: discriminator rewritten as journal-RECORD existence (None=no record=no init; Some([])=record+0 entries; Some([N])=record+N entries) realized via init_guardrail_journal + get_guardrail_journal returning Option on record-existence. §Architecture Anchors graph::provenance bullet: added init_guardrail_journal at run start iff hook registered; pregolya-checkpoint bullet: added init_guardrail_journal(run_id) to op list with return-value semantics. {EC-004}: 'journal record never created' replaces 'journal never initialized'. {EC-006}: 'journal RECORD was created by init_guardrail_journal' replaces 'journal was initialized'. TV-002/TV-005: discriminator language updated to journal-record existence."
   - "1.9 (D-356/DC-48/2026-09-09, product-owner): F-PDC48-02: canonical module/path names applied per architect DC-48 ruling. `server::run_read_handler` → `server::handlers` at 5 normative body sites (§Description, {PC-002}, {EC-002}, §Architecture Anchors pregolya-checkpoint bullet, §Architecture Anchors server bullet header) and 1 Traceability row (Architecture Module column). Path `runs.rs` route (Traceability only; primary path fix in BC-2.12.003). No behavioral change — all projection semantics unchanged."
   - "1.10 (D-356/records-straggler/2026-09-09, product-owner): CLASS A-01: {PC-001} Rust pseudocode comment `(BC-2.06.001 §PC-002)` → `(BC-2.06.001 {PC-002})` — canonical item-anchor form per ADR-027. CLASS B-01: §Description 'Every call' → 'Every successfully-returning call'; add '{EC-003}: panicking or erroring call appends NO entry' carve-out. CLASS B-02: {PC-001} heading + body — heading 'Journal append on every evaluate() call' → 'Journal append on every successfully-returning evaluate() call ({EC-003}: panicking/erroring append NO entry)'; body body first sentence qualified with 'successfully-returning'; '{EC-003}' carve-out added at end of first sentence. Records-lint L9 exit 0."
-modified: []
+  - "1.11 (D-356/DC-56/2026-09-09, product-owner): {EC-005} successfully-returning qualifier — 'Each hook's evaluate() call appends one entry independently' → 'Each hook's successfully-returning evaluate() call appends one entry independently'; {EC-003} carve-out appended to Expected Behavior for parity with {PC-001}/{INV-002} write-obligation qualifier per DC-37/38/39+DC-55/56 cascade. In-file sweep (TD-VSDD-060): §Description (QUALIFIED), {PC-001} (QUALIFIED), {PC-002} (QUALIFIED), {INV-002} (QUALIFIED), §Architecture Anchors graph::provenance (QUALIFIED), §Architecture Anchors pregolya-checkpoint (QUALIFIED), VP-2.11.007-A (QUALIFIED), §VP Anchors (QUALIFIED) — {EC-005} was sole straggler. Records-lint exit 0."
+modified: ["DC-56"]
 extracted_from: null
 deprecated: null
 deprecated_by: null
@@ -157,7 +158,7 @@ content evaluation results.
 | {EC-002} | Run fails (transitions to `failed`) before all ingress boundaries are evaluated | Journal entries written up to the point of failure are durably persisted in the checkpoint store (pregolya-checkpoint); the partial journal is assembled by `server::handlers` at run-read time and is the authoritative record for that run |
 | {EC-003} | `GuardrailHook::evaluate()` throws an error or panics | The evaluate() error is propagated per BC-2.11.002/003/004 error handling; no `GuardrailEntry` is appended for a failed evaluate() call (entry written only on successful return of `GuardrailResult`) |
 | {EC-004} | No `GuardrailHook` registered (BC-2.11.006 path) | `guardrail_journal?` is `None` (null/omitted) on terminal-status run-read response; the journal RECORD was never created (`init_guardrail_journal` not called because no hook registered) — NOT because no evaluate() calls occurred (zero-ingress hook-registered runs also have zero evaluate() calls but yield `Some([])`, not `None`, because their init_guardrail_journal WAS called; see {EC-006}) |
-| {EC-005} | Two `GuardrailHook` instances composed in parallel (both evaluate the same content unit) | Each hook's evaluate() call appends one entry independently; the journal records both calls with their respective results. For a single content unit processed by 2 composed hooks, 2 entries appear |
+| {EC-005} | Two `GuardrailHook` instances composed in parallel (both evaluate the same content unit) | Each hook's **successfully-returning** evaluate() call appends one entry independently; the journal records both calls with their respective results. For a single content unit processed by 2 composed hooks, 2 entries appear (one per successfully-returning evaluate(); per {EC-003}, a panicking or erroring evaluate() on either hook appends no entry) |
 | {EC-006} | `GuardrailHook` registered; run executes and completes but zero ingress boundaries are crossed (e.g., a pure computation graph with no tool calls, RAG, or memory reads) | `guardrail_journal?` is `Some([])` — an empty list (not `None`); the journal RECORD was created by `init_guardrail_journal` at run start (hook was registered), checkpoint-backed (pregolya-checkpoint), but no entries were appended via `append_guardrail_entry`. Distinguishable from the no-hook case ({EC-004}) which yields `None` because no record was created |
 
 ## Canonical Test Vectors

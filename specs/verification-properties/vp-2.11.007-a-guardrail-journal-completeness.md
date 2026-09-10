@@ -3,7 +3,7 @@ document_type: verification-property
 level: L4
 id: VP-2.11.007-A
 title: "GuardrailJournal Completeness — One Entry Per Successfully-Returning evaluate() Call"
-version: "1.14"
+version: "1.15"
 status: draft
 producer: architect
 timestamp: 2026-09-09T00:00:00Z
@@ -22,7 +22,7 @@ proof_file_hash: null
 # Lifecycle fields (DF-030)
 lifecycle_status: active
 introduced: DC-33
-modified: [DC-34, DC-35, DC-36, DC-37, DC-38, DC-39, DC-40, DC-44, DC-55]
+modified: [DC-34, DC-35, DC-36, DC-37, DC-38, DC-39, DC-40, DC-44, DC-46, DC-48, DC-52, DC-55, DC-56]
 deprecated: null
 deprecated_by: null
 replacement: null
@@ -40,6 +40,7 @@ priority: P0
 harness_fn: "n/a (integration test)"
 file: vp-2.11.007-a-guardrail-journal-completeness.md
 changelog:
+  - "1.15 (DC-56/F-PDC56-01/F-PDC56-02/2026-09-09, architect): F-PDC56-01 (LOW) — frontmatter modified: array incomplete: DC-46, DC-48, DC-52 each edited the VP body but were omitted from the modified: array. Added DC-46 (v1.10 body edit: §Source Contract item anchor form fix — §INV-002 → {INV-002}), DC-48 (v1.11 body edit: phantom server::run_read_handler → server::handlers at §Property Statement NOTE + §Proof Harness SCOPE NOTE), DC-52 (v1.12 body edit: §PC-002 → {PC-002} at §Property Statement boundary field + §Proof Harness SCOPE NOTE), and DC-56. F-PDC56-02 (LOW) — §Source Contract {PC-001} bullet missing 'successfully-returning' qualifier: 'Every GuardrailHook::evaluate() call appends' → 'Every successfully-returning GuardrailHook::evaluate() call appends'. The {EC-003} carve-out citation already present — the parity fix aligns §Source Contract {PC-001} with §Formal Invariant PC-001, §Source Contract {INV-002}, and §BC Traceability Invariant row (all carry 'successfully-returning'). Exhaustive corpus sweep: all other live-body {PC-001} paraphrases in .factory/specs/ + .factory/stories/ confirmed qualified or changelog-context; one straggler in BC-2.11.007 {EC-005} ('each hook's evaluate() call appends one entry independently' — missing qualifier) is product-owner-owned, outside architect scope — reported to orchestrator per companion principle. input-hash unchanged (BC-2.11.007 input did not change)."
   - "1.14 (DC-55/F-PDC55-01/F-PDC55-02/2026-09-09, architect): F-PDC55-01 (HIGH) — §Proof Harness double-unwrap fix: get_guardrail_journal returns Result<Option<Vec<GuardrailEntry>>, PregolyaError>; single .expect() yields Option<Vec<GuardrailEntry>>, not Vec<GuardrailEntry> — .len() and index access on Option do not compile. Both harness functions (guardrail_journal_completeness_all_variants and guardrail_journal_completeness_zero_ingress_boundaries) now chain .expect(\"hook registered so journal record exists\") on the Option layer, after the Result-level .expect(). The Option-unwrap is safe because the init-op (init_guardrail_journal at run start, iff hook is registered) guarantees Some(...) is returned when a hook is registered; the .expect() message is self-documenting. Also corrects false DC-44 harness-compatibility closure (TD-VSDD-059): DC-44 delta note §Harness compatibility claim 'harness unchanged' / 'No harness changes needed' was provably wrong (single .expect() left the harness uncompilable); that section now carries a correction note. v1.9 changelog entry similarly annotated. F-PDC55-02 (LOW) — §BC Traceability Invariant row: 'every evaluate() call produces one entry' → 'every successfully-returning evaluate() call produces one entry' ({EC-003} qualifier; matches all other live-body sites swept in DC-37..DC-39 cascade). Sibling sweep: zero other VP files use the Result<Option<Vec<...>>> single-unwrap pattern; zero other live-body occurrences of the unqualified phrase found corpus-wide. input-hash updated 48d5a26→ca31e6b (BC-2.11.007 input drift)."
   - "1.13 (records-straggler/A-02/A-03/2026-09-09, architect): A-02 (LOW) — §Source Contract first bullet: BC-2.11.007 §PC-001 → BC-2.11.007 {PC-001} (ADR-027 stable clause anchor form). A-03 sibling: BC-2.06.001 §PC-002 already fixed in DC-52 (v1.12). input-hash unchanged (BC-2.11.007 input did not change)."
   - "1.12 (DC-52/F-PDC52-01/2026-09-09, architect): F-PDC52-01 (LOW) — §PC-002→{PC-002} at two live-body sites: (1) §Property Statement boundary field description; (2) §Proof Harness SCOPE-NOTE boundary comment. Canonical clause anchor form is {PC-002} (ADR-027 stable clause anchors); DC-46 swept §INV-002→{INV-002} but missed these two §PC-002 siblings. input-hash unchanged (BC-2.11.007 input did not change)."
@@ -79,7 +80,7 @@ F-PDC48-02/DC-48) outside this VP's scope. The journal write IS graph-side (chec
 
 ## Source Contract
 
-- BC-2.11.007 {PC-001}: Every `GuardrailHook::evaluate()` call appends a `GuardrailEntry`
+- BC-2.11.007 {PC-001}: Every successfully-returning `GuardrailHook::evaluate()` call appends a `GuardrailEntry`
   to the run's accumulated journal **after** `evaluate()` returns (the entry carries the
   returned `GuardrailResult`; append-before-return would be wrong — BC-2.11.007 {EC-003}).
 - BC-2.11.007 {INV-002}: Exactly one `GuardrailEntry` is appended to the checkpoint-backed
