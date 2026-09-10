@@ -2,7 +2,7 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.04.007
-version: "1.14"
+version: "1.15"
 status: active
 producer: product-owner
 timestamp: 2026-09-10T00:00:00Z
@@ -40,6 +40,7 @@ changelog:
   - "1.12 (F-PDC62-03/DC-62/2026-09-10, product-owner): {INV-006} added — encryption at rest covers ALL CheckpointSaver write ops: put, put_writes, init_guardrail_journal, and append_guardrail_entry all encrypt payload bytes before reaching SQLite backend when EncryptedSerializer is active; no CheckpointSaver write method may bypass the EncryptedSerializer (F-PDC62-03/DC-62). §Related BCs: BC-2.11.007 entry added (extends to guardrail journal write ops). input-hash refreshed (input drift resolved at burst F-PDC62-03)."
   - "1.13 (DC-64/F-PDC64-01/2026-09-10, product-owner): EC-003 retired — architect adjudication (DC-64): `EncryptedSerializer::new(key: &[u8; 32])` accepts a fixed-size array; the compiler enforces key length at compile time; an empty or wrong-length key cannot reach `new()`. EC-003 documented a runtime construction error that is UNREACHABLE under the `&[u8; 32]` parameter type. Empty-key TV row retired (it tested the EC-003 path). E-CORE-005 is NOT retired from error-taxonomy.md — it is a general-purpose validation code with primary taxonomy anchor BC-2.14.006 and is used by many other BCs; the error-taxonomy.md entry is unchanged. Census delta: BC-2.04.007 active EC count 4→3 (EC-003 retired); active TV count 4→3 (empty-key TV retired); global active EC count 147→146."
   - "1.14 (DC-65/F-PDC65-02/2026-09-10, product-owner): §Architecture Anchors stale module-name corrected — checkpoint::encryption → checkpoint::serializer (canonical per module-decomposition.md §checkpoint::serializer row renamed at DC-64; intra-BC consistency with {PRE-001}/{INV-005} which already cite checkpoint::serializer). No behavioral change."
+  - "1.15 (DC-68/F-PDC68-mirror/2026-09-10, product-owner): §VP Anchors — VP-2.11.007-B added as co-anchor for {INV-006} (at-rest encryption covers all CheckpointSaver write ops including GuardrailJournal ops; module checkpoint::serializer; integration, P1). Mirror-audit fix: BC-INDEX row lists VP-2.11.007-B (added DC-68 by state-manager) and BC-2.11.007 §VP Anchors lists it, but BC-2.04.007 §VP Anchors omitted it; body now consistent with BC-INDEX and VP-INDEX. No behavioral change."
 modified: []
 deprecated: null
 deprecated_by: null
@@ -164,3 +165,4 @@ S-1.10 — Encryption at rest
 - VP-2.04.007-A — no plaintext in storage (integration test)
 - VP-2.04.007-B — symmetric encryption coverage (unit test)
 - VP-2.04.007-C — error propagation (static analysis)
+- VP-2.11.007-B — at-rest encryption for GuardrailJournal write ops; co-anchors this BC's {INV-006} (all-CheckpointSaver-write-ops encryption); module checkpoint::serializer; integration, P1; registered in VP-INDEX
