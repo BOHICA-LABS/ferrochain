@@ -4964,3 +4964,17 @@ pregolya Phase-2 CONVERGED+gate-APPROVED (anchor 81d16ca); Phase-3 IN PROGRESS a
 
 ### DECISION-LOG DELTA (at DC-65 close)
 D-356/D-357/D-358/DC-65 (2026-09-10): DC-65 = 2HIGH+3MED, FULL CASCADE. ALL FINDINGS WERE DC-63/DC-64 PROPAGATION-LAG. Census UNCHANGED: BC 149 / VP 43 / EC 147 / TV 844. STRICT STREAK RESET 0/3. DC-66 = strict-streak pass 1.
+
+## Archived Session Checkpoint — DC-68-FOLLOWUP (replaced by CONVERGENCE at 2026-09-10)
+
+### RESUME IN ONE BREATH (at DC-68-FOLLOWUP close)
+pregolya Phase-2 CONVERGED+gate-APPROVED (anchor 81d16ca); Phase-3 IN PROGRESS at workspace-init. D-356 Phase-1 spec amendment COMPLETE. D-356/DC-01 through DC-68-FOLLOWUP ALL CLOSED. DC-68=1HIGH+1MED ALL CLOSED [VP-2.11.007-B not propagated to BC-catalog mirrors; BC-INDEX BC-2.04.007 VP col EMPTY→VP-2.11.007-B + BC-INDEX BC-2.11.007 VP col +VP-2.11.007-B + STORY-INDEX §Changelog +VP-2.11.007-B→S-1.29 row + sprint-state S-1.29 vps extended; S-1.10 §Changelog AC-020+serializer.rs task DI-seam-injected]. DC-68-FOLLOWUP: BC-2.04.007 (v1.14→v1.15) §VP Anchors +VP-2.11.007-B (last mirror site; corpus mirror set COMPLETE — all 10 sites carry VP-2.11.007-B); records-lint exit 0; census UNCHANGED; strict streak UNCHANGED 0/3 (not an adversary pass). Census: BC 149 / VP 43 / EC 147 / TV 844 / stories 53 / pts 377 / ADR 31 / SS 24 / crates 22. trajectory-tail →2M+2L→1M+2L→1H+1M→0[RECORDS-ONLY].
+
+### HEADS (at DC-68-FOLLOWUP close)
+- develop: `bfe0592` — LOCAL ONLY (DEVELOP-DIVERGENCE). factory-artifacts: HEAD d17c711 (DC-68-FOLLOWUP commit).
+
+### RESUME NEXT-ACTION (at DC-68-FOLLOWUP close)
+Dispatch DC-69 adversary pass (fresh-context, strict-streak pass 1, streak 0/3). BC-2.04.007 §VP Anchors mirror COMPLETE (v1.15; all 10 VP-2.11.007-B mirror sites confirmed).
+
+### DECISION-LOG DELTA (at DC-68-FOLLOWUP close)
+D-356/D-357/D-358/DC-68 (2026-09-10): DC-68 = 1HIGH+1MED, FULL CASCADE. VP-2.11.007-B BC-INDEX mirrors + STORY-INDEX + sprint-state; S-1.10 DI-seam. Census UNCHANGED. STRICT STREAK RESET 0/3. DC-69 = strict-streak pass 1.
