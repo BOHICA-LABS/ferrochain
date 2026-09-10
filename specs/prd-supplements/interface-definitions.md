@@ -1,13 +1,14 @@
 ---
 document_type: prd-supplement-interface-definitions
 level: L3
-version: "3.17"
+version: "3.18"
 status: active
 producer: architect
-timestamp: 2026-09-09T00:00:00Z
+timestamp: 2026-09-10T00:00:00Z
 phase: 1d
-modified: [DC-61]
+modified: [DC-62]
 changelog:
+  - "3.18 (DC-62/F-PDC62-03/2026-09-10, architect): F-PDC62-03 [MED] Architect adjudication — GuardrailJournal write path at-rest encryption obligation. The EncryptedSerializer is application-level (per-method call via DI seam), NOT database-level; BC-2.04.007 {INV-003} scoping to 'state blob or per-task write payload' (put/put_writes) means the guardrail-journal write path (init_guardrail_journal, append_guardrail_entry) is currently OUTSIDE the encryption boundary as specified — inheritance is NOT automatic. Explicit obligation added: (1) init_guardrail_journal and append_guardrail_entry doc comments extended with # Encryption sections — concrete CheckpointSaver implementors MUST call self.serializer.serialize(bytes) on these write paths when EncryptedSerializer is active; (2) CheckpointSaver BC anchor extended to include BC-2.04.007 {INV-003}/{INV-005} for guardrail journal write ops; (3) Serializer section description and BC anchor extended to name init_guardrail_journal/append_guardrail_entry as in-scope write ops. Sensitivity rationale: GuardrailEntry.result can carry Transform{new_content: IngressContent::ToolResult(ContentBlock)} — potentially sensitive content; CWE-312 at-rest exposure if unencrypted. Downstream routing: (a) PO to add BC-2.04.007 linkage + {INV-005} to BC-2.11.007; (b) S-1.29 needs new encryption AC (see adjudication report); (c) BC-2.04.007 {INV-003} needs scope extension (see adjudication report). TD-VSDD-060 sibling sweep: §Serializer BC anchor and description both updated. records-lint exit 0."
   - "3.17 (DC-61/F-PDC61-01/2026-09-09, architect): F-PDC61-01 [LOW] Add BoundaryType enum definition to §GuardrailHook — closes transitive-closure derive gap: ProvenanceTag.boundary_type: BoundaryType had no enum definition anywhere in the corpus (corpus-wide grep returned nothing). BoundaryType variants: ToolResult | RAGRetrieval | MemoryIngress (ingress-audit vocabulary; BC-2.11.001 PC1-PC3 / ProvenanceTag field comment canon). Derive set: #[non_exhaustive] #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)] — Copy+Eq appropriate for a fieldless C-like enum. BoundaryType is DISTINCT from IngressBoundary (StreamEvent wire vocabulary; IngressBoundary variants: ToolResult | RagChunk | MemoryItem). Transitive-closure audit completed: GuardrailEntry full closure walked — all architect-owned leaves OK after this fix. Cross-owner gap: ContentBlock (IngressContent::ToolResult payload) has no explicit derive block pinned in BC-2.01.001 or entities-graph.md; routed to orchestrator for product-owner dispatch. TD-VSDD-060 sibling sweep: BoundaryType was the sole missing leaf in the architect-owned GuardrailEntry derive closure."
   - "3.16 (DC-59/F-PDC59-01+OBS-PDC59-1+OBS-PDC59-2/2026-09-09, architect): F-PDC59-01 [HIGH] Cite concrete error codes in §CheckpointSaver guardrail journal # Errors sections — init_guardrail_journal + append_guardrail_entry: bare 'Err(PregolyaError { category: DURABILITY, .. })' → 'Err(E-CHKPT-012) — GuardrailJournalWriteFailed (DURABILITY) (BC-2.11.007 {EC-007})'; get_guardrail_journal: bare category citation → 'Err(E-CHKPT-013) — GuardrailJournalReadFailed (DURABILITY) (BC-2.11.007 {EC-008})'. Citation style matches sibling fts_search / get_next_version 'Err(E-CHKPT-NNN) — description' form for exact parity. OBS-PDC59-1 [LOW] Pin ProvenanceTag derive obligation — add canonical struct definition to §GuardrailHook (same family as IngressBoundary/GuardrailResult/GuardrailSeverity — interface-definitions.md is the correct home per field-type family precedent): #[non_exhaustive] #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)] on pub struct ProvenanceTag { boundary_type: BoundaryType, ingress_id: Uuid, sequence_position: usize }. Derive rationale: GuardrailEntry (provenance: ProvenanceTag field) derives the same set for checkpoint persistence and VP-2.11.007-A assertion equality; derives must propagate to all field types. entities-server.md §ProvenanceTag unchanged (L2 domain prose; no content change needed). OBS-PDC59-2 [LOW] Wire-enum parity fix (in-scope — trivial §StreamEvent annotation gap, no BC-2.06.001 body reconciliation needed): add #[non_exhaustive] + #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)] to GuardrailDecisionKind and GuardrailSeverityWire; matches the 5 §GuardrailHook types annotated in DC-58 (GuardrailResult/IngressContent/GuardrailSeverity/IngressBoundary/GuardrailEntry). TD-VSDD-060 sibling sweep: ProvenanceTag was the sole field-type gap in the GuardrailEntry family; GuardrailDecisionKind/GuardrailSeverityWire were the sole annotation gaps in the §StreamEvent family; all three gaps closed in this burst."
   - "3.15 (DC-58/F-PDC58-01+OBS-PDC58-1/2026-09-09, architect): F-PDC58-01 [HIGH] Add three GuardrailJournal ops to §CheckpointSaver trait — init_guardrail_journal(run_id: Uuid), append_guardrail_entry(run_id: Uuid, entry: &GuardrailEntry), get_guardrail_journal(run_id: Uuid) -> Result<Option<Vec<GuardrailEntry>>, PregolyaError>. All three are async, #[async_trait]-desugared, and object-safe via Arc<dyn CheckpointSaver> (matching the VP-2.11.007-A §Proof Harness double-unwrap pattern). BC anchor updated to include BC-2.11.007. Gate #31 type note updated with GuardrailEntry resolution. Also add canonical GuardrailEntry struct definition (4 fields: boundary: IngressBoundary, result: GuardrailResult, provenance: ProvenanceTag, timestamp_ms: u64; O-PDC34-A no transform_applied; canonical location core::guardrail). OBS-PDC58-1 [LOW] Add explicit derive sets to GuardrailResult (#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]), IngressContent (same), GuardrailSeverity (#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]), IngressBoundary (same), and new GuardrailEntry (#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]). Also add #[non_exhaustive] to all five per CLAUDE.md API surface mandate. PartialEq + Debug: VP-2.11.007-A assert_eq!(journal[0].result, GuardrailResult::Pass); Serialize + Deserialize + Clone: checkpoint-backed persistence. Harness asymmetry (journal[0] assert_eq!/unit-variant vs journal[1]/[2] matches!/struct-variant) is intentional and correct — assert_eq! for Pass unit variant, matches!+if-let for Fail/Transform struct variants. No harness normalization needed. TD-VSDD-060 sibling sweep: IngressBoundary added as dependency type for GuardrailEntry.boundary."
@@ -782,6 +783,18 @@ pub trait CheckpointSaver: Send + Sync {
     /// `GuardrailEntry` ∈ `core::guardrail` (`pregolya-core`); `checkpoint → core`
     /// dependency direction is permitted (F-PDC48-04/DC-48).
     ///
+    /// # Encryption
+    /// When `EncryptedSerializer` is active on this `CheckpointSaver`
+    /// (BC-2.04.007 {INV-005} DI seam), the journal-record bytes written by
+    /// `init_guardrail_journal` MUST be serialized via
+    /// `self.serializer.serialize(bytes)` before reaching the SQLite backend.
+    /// Plaintext journal-record bytes are never written to storage when
+    /// `EncryptedSerializer` is configured — same guarantee as BC-2.04.007
+    /// {INV-003} for `put` and `put_writes`. This inheritance is NOT automatic:
+    /// the concrete `CheckpointSaver` implementor MUST call the
+    /// `EncryptedSerializer` on this write path
+    /// (architect-adjudicated F-PDC62-03/DC-62).
+    ///
     /// # Errors
     /// - `Err(E-CHKPT-012)` — `GuardrailJournalWriteFailed` (DURABILITY) on checkpoint
     ///   storage failure (BC-2.11.007 {EC-007}).
@@ -796,6 +809,20 @@ pub trait CheckpointSaver: Send + Sync {
     /// `GuardrailHook::evaluate()` call, before graph execution continues at the
     /// ingress boundary (BC-2.11.007 {PC-001}/{INV-002}). Not called on panicking or
     /// erroring `evaluate()` calls ({EC-003}).
+    ///
+    /// # Encryption
+    /// When `EncryptedSerializer` is active on this `CheckpointSaver`
+    /// (BC-2.04.007 {INV-005} DI seam), `GuardrailEntry` bytes written by
+    /// `append_guardrail_entry` MUST be serialized via
+    /// `self.serializer.serialize(bytes)` before reaching the SQLite backend.
+    /// Plaintext `GuardrailEntry` bytes — including
+    /// `Transform{new_content: IngressContent::ToolResult(ContentBlock)}`
+    /// payloads and `Fail{reason: String}` payloads, which can carry sensitive
+    /// content (CWE-312) — are never written to storage when `EncryptedSerializer`
+    /// is configured. Same guarantee as BC-2.04.007 {INV-003} for `put` and
+    /// `put_writes`. This inheritance is NOT automatic: the concrete
+    /// `CheckpointSaver` implementor MUST call the `EncryptedSerializer` on this
+    /// write path (architect-adjudicated F-PDC62-03/DC-62).
     ///
     /// # Errors
     /// - `Err(E-CHKPT-012)` — `GuardrailJournalWriteFailed` (DURABILITY) on checkpoint
@@ -831,7 +858,7 @@ pub trait CheckpointSaver: Send + Sync {
 }
 ```
 
-**BC anchor:** BC-2.04.001 through BC-2.04.008, BC-2.11.007 (guardrail journal ops: `init_guardrail_journal`, `append_guardrail_entry`, `get_guardrail_journal`); `put` method: BC-2.04.002 PC4/EC-002, BC-2.04.001 EC-003, BC-2.04.006 PC2, BC-2.04.007 PC1+INV-1; `get_next_version` provided method: BC-2.04.003 PC1/PC5; `fts_search` method: BC-2.04.008 PC1/PC3–PC6, EC-001–006; guardrail journal methods: BC-2.11.007 {PRE-001}/{PC-001}/{PC-002}/{INV-002}/{INV-004}
+**BC anchor:** BC-2.04.001 through BC-2.04.008, BC-2.11.007 (guardrail journal ops: `init_guardrail_journal`, `append_guardrail_entry`, `get_guardrail_journal`); `put` method: BC-2.04.002 PC4/EC-002, BC-2.04.001 EC-003, BC-2.04.006 PC2, BC-2.04.007 PC1+INV-1; `get_next_version` provided method: BC-2.04.003 PC1/PC5; `fts_search` method: BC-2.04.008 PC1/PC3–PC6, EC-001–006; guardrail journal methods: BC-2.11.007 {PRE-001}/{PC-001}/{PC-002}/{INV-002}/{INV-004}, BC-2.04.007 {INV-003}/{INV-005} (guardrail-journal write ops — `init_guardrail_journal` and `append_guardrail_entry` — MUST encrypt via EncryptedSerializer DI seam when active; inheritance is NOT automatic; F-PDC62-03/DC-62 architect adjudication)
 
 > **Gate #31 type note — `CheckpointConfig`, `ChannelName`, `ChannelValue`, `TaskId`, `CheckpointTuple`, `Checkpoint`, `CheckpointMetadata`, `CheckpointId`, `FtsSearchConfig`, `FtsSearchResult`:** `CheckpointConfig` is the checkpoint-addressing config; not formally enumerated as a spec-level struct — logically derived from BC-2.04.006 triple-address invariant (`thread_id: Uuid`, `checkpoint_ns: NamespaceId`, `checkpoint_id: Option<LogicalClockId>`); flagged corpus-unresolved for architect. `ChannelName` and `ChannelValue` are defined in entities-graph.md §GraphState (`Map<ChannelName, ChannelValue>`). `TaskId` is defined in VP-001.md (Kani harness: `TaskId(i as u64)` newtype around u64). `CheckpointTuple` is defined in entities-graph.md §CheckpointTuple. `Checkpoint` and `CheckpointMetadata` are defined in entities-graph.md §Checkpoint (`Checkpoint` has fields `checkpoint_id: LogicalClockId`, `thread_id`, `checkpoint_ns: NamespaceId`, `parent_checkpoint_id: Option<LogicalClockId>`, `state: GraphState`, `metadata: CheckpointMetadata`, `pending_sends: Vec<Send>`; `CheckpointMetadata` is the inline metadata sub-type on `Checkpoint`). `CheckpointId` is a newtype over `u64` per ADR-005 / BC-2.04.003 Architecture Anchors (monotonic logical clock; `get_next_version` produces instances). `FtsSearchConfig` and `FtsSearchResult` are RESOLVED — defined in `pregolya-checkpoint/src/fts.rs` per BC-2.04.008 Architecture Anchors: `FtsSearchConfig { thread_id: Option<&str>, limit: usize }` (BC-2.04.008 PC3; `thread_id: Option<&str>` is legitimately `&str` not `Option<Uuid>` — FTS5 virtual table stores thread_ids as serialized strings; `FtsSearchResult.thread_id: String` confirms FTS operates in string space; OBS-P2A094-2 adjudication); `FtsSearchResult { checkpoint_id: CheckpointId, thread_id: String, checkpoint_ns: String, message_role: MessageRole, content_snippet: String, rank: f64 }` (BC-2.04.008 PC1; BM25 rank ascending = most relevant first). `GuardrailEntry` is RESOLVED — defined in §GuardrailHook below (added DC-58/F-PDC58-01): `{ boundary: IngressBoundary, result: GuardrailResult, provenance: ProvenanceTag, timestamp_ms: u64 }` (entities-server.md §GuardrailJournal; DC-34/O-PDC34-A — no `transform_applied`; canonical location `pregolya-core/src/guardrail.rs`). `run_id: Uuid` used directly in guardrail journal methods — consistent with `TrajectoryRecord.run_id: Uuid` / `TrajectoryReader::replay(run_id: Uuid)` precedent; `RunId` (StreamEvent wire field) is a distinct type from the `Uuid` used in checkpoint store ops.
 
@@ -3203,6 +3230,17 @@ serialized (encrypted) before storage and deserialized (decrypted) after retriev
 When `None`, storage is plaintext — this is the opt-in model; no fail-closed guard
 applies for the no-serializer case (ADR-030 at-rest confidentiality decision).
 
+The encryption obligation on `CheckpointSaver` extends to ALL write operations:
+`put`, `put_writes`, `init_guardrail_journal`, and `append_guardrail_entry` all
+MUST call `self.serializer.serialize(bytes)` when `EncryptedSerializer` is active.
+This scope is explicit — the EncryptedSerializer is application-level (called per
+method, NOT a transparent database-level encryption); BC-2.04.007 {INV-003}'s
+"state blob or per-task write payload" scoping does NOT automatically cover the
+guardrail-journal write path, so implementors MUST apply the same serialize call to
+`init_guardrail_journal` and `append_guardrail_entry`. Rationale: `GuardrailEntry`
+can carry `Transform{new_content: IngressContent}` and `Fail{reason}` — sensitive
+content (CWE-312) — requiring the same at-rest protection (F-PDC62-03/DC-62).
+
 ```rust
 // pregolya-core (core::serializer) — definitions only
 
@@ -3248,8 +3286,7 @@ that take `&self` and byte slices — no associated types, no generic parameters
 is valid and `Arc<dyn Serializer + Send + Sync>` satisfies the Arc-DI wiring requirement
 (CLAUDE.md §Arc-DI wiring per constructor).
 
-**BC anchor:** BC-2.04.007 {INV-003} (EncryptedSerializer via CheckpointSaver), BC-2.04.009
-{INV-002} (EncryptedSerializer via TrajectoryWriter at-rest encryption)
+**BC anchor:** BC-2.04.007 {INV-003} (EncryptedSerializer via CheckpointSaver — `put`, `put_writes`, `init_guardrail_journal`, `append_guardrail_entry`; F-PDC62-03/DC-62 confirmed scope extension to guardrail-journal write ops), BC-2.04.009 {INV-002} (EncryptedSerializer via TrajectoryWriter at-rest encryption)
 
 **Product-owner note:** BC-2.04.009 {INV-002} and BC-2.04.007 should both reference
 `Arc<dyn Serializer + Send + Sync>` as the DI seam (not just `EncryptedSerializer` directly)

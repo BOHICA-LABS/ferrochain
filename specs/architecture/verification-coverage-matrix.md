@@ -2,7 +2,7 @@
 document_type: architecture-section
 level: L3
 section: verification-coverage-matrix
-version: "3.48"
+version: "3.49"
 status: active
 producer: architect
 timestamp: 2026-09-09T00:00:00Z
@@ -11,9 +11,10 @@ inputs:
   - .factory/specs/verification-properties/VP-INDEX.md
   - .factory/specs/architecture/module-decomposition.md
   - .factory/specs/module-criticality.md
-input-hash: "ba41a4f"
+input-hash: "aad241e"
 traces_to: ARCH-INDEX.md
 changelog:
+  - "3.49 (DC-62/2026-09-10, architect): VP-2.11.007-B registered — GuardrailJournal encryption-at-rest integration P1 (BC-2.11.007 {INV-005} + BC-2.04.007 {INV-006}; DI-012; checkpoint::encryption; pregolya-checkpoint; Phase 3). VP-to-Module table: row added after VP-2.11.007-A. Totals: 42→43 VPs, integration 13→14. Per-Module Coverage Status: checkpoint::encryption row updated from 'yes | Payload coverage' to VP-2.11.007-B/yes + notes. Preamble arithmetic updated. input-hash updated (VP-INDEX.md v1.59 drift). Census 42→43."
   - "3.48 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog fix — server::debug_span definitions-only row added to Per-Module Coverage Status (verify-module-canonicality.sh set-diff closure: server::debug_span in-decomp-not-here). Preamble updated: 92→93 physical rows; distinct 90→91; definitions-only 8→9. input-hash updated 18ae2ac→ba41a4f. Census VPs UNCHANGED: 42 total."
   - "3.47 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog fix — 12 spa/components/ module path forms converted to spa_components:: namespace::module form (verify-module-canonicality.sh canonical pattern). input-hash updated 4a4559f→18ae2ac (content change). Census UNCHANGED: 42 total."
   - "3.46 (D-356/DC-39/F-PDC39-02/2026-09-09, architect): VP-2.11.007-A catalog row UNCHANGED (module graph::provenance, crate pregolya-graph, tool integration, BC-2.11.007 {PC-001}/{INV-002}, phase 3, draft — all correct from DC-34). input-hash updated f65fe21→4a4559f (VP-INDEX §Changelog and module-decomposition §Module-Decomposition input drift from this burst). Census UNCHANGED: 42 total."
@@ -90,7 +91,7 @@ changelog:
 ## [Section Content]
 
 > **VP-INDEX.md is the authoritative VP catalog.** This matrix derives from it.
-> Arithmetic invariant: VP total (42) = P0 (7) + P1 (35) = Kani (10) + proptest (10) + integration (13) + unit (8) + compile-fail (1). Status is updated per gate.
+> Arithmetic invariant: VP total (43) = P0 (7) + P1 (36) = Kani (10) + proptest (10) + integration (14) + unit (8) + compile-fail (1). Status is updated per gate.
 
 ## VP-to-Module Mapping
 
@@ -118,6 +119,7 @@ changelog:
 | VP-019 | Trajectory Compaction Crash Isolation | checkpoint::trajectory | pregolya-checkpoint | integration | BC-2.04.011 {INV-003} | 6 | draft |
 | VP-020 | PromoteRetireChannel Idempotency | graph::channels | pregolya-graph | proptest | BC-2.02.009 {INV-001}+{INV-002} | 3 | draft |
 | VP-2.11.007-A | GuardrailJournal Completeness — One Entry Per Successfully-Returning evaluate() Call | graph::provenance | pregolya-graph | integration | BC-2.11.007 {PC-001}/{INV-002} | 3 | draft |
+| VP-2.11.007-B | GuardrailJournal Encryption at Rest — Raw Bytes Are Not Valid Plaintext GuardrailEntry | checkpoint::encryption | pregolya-checkpoint | integration | BC-2.11.007 {INV-005} + BC-2.04.007 {INV-006} | 3 | draft |
 | VP-2.24.001-A | Console Server Lifecycle (unit) | console::server | pregolya-console | unit | BC-2.24.001 | 3 | draft |
 | VP-2.24.001-B | Console Server Zero-Cap Error (unit) | console::server | pregolya-console | unit | BC-2.24.001 | 3 | draft |
 | VP-2.24.001-C | Console Server Type Safety (compile-fail) | console::server | pregolya-console | compile-fail | BC-2.24.001 | 3 | draft |
@@ -156,7 +158,7 @@ changelog:
 
 > **[DC-38 correction, 2026-09-08, architect — F-PDC38-07]:** VP-2.11.007-A title updated — VP-to-Module table title cell: 'Every evaluate() Call Produces an Entry' → 'One Entry Per Successfully-Returning evaluate() Call'. Per-Module Coverage Status graph::provenance Notes cell updated: 'every evaluate() call produces exactly one GuardrailEntry' → 'one entry per successfully-returning evaluate() call'. Census UNCHANGED: 42 total. input-hash updated 517c921→f65fe21 (VP-INDEX.md v1.55 input drift).
 
-**Totals: 42 VPs | Kani: 10 | proptest: 10 | fuzz: 0 | integration: 13 | unit: 8 | compile-fail: 1**
+**Totals: 43 VPs | Kani: 10 | proptest: 10 | fuzz: 0 | integration: 14 | unit: 8 | compile-fail: 1**
 
 ## Per-Module Coverage Status
 
@@ -176,7 +178,7 @@ changelog:
 | checkpoint::session_index | pregolya-checkpoint | VP-002 | yes | — | yes | Core VP target |
 | checkpoint::clock | pregolya-checkpoint | — | yes | — | yes | Monotonic property |
 | checkpoint::lineage | pregolya-checkpoint | — | — | — | yes | Fork pointer |
-| checkpoint::encryption | pregolya-checkpoint | — | — | — | yes | Payload coverage |
+| checkpoint::encryption | pregolya-checkpoint | — | — | — | VP-2.11.007-B/yes | CRITICAL; SS-04; at-rest encryption for all checkpoint tables including guardrail_journal; VP-2.11.007-B integration P1 (BC-2.11.007 {INV-005} + BC-2.04.007 {INV-006}/DI-012); inspector-reads-raw-storage pattern; EncryptedSerializer wired via Option<Arc<dyn Serializer + Send + Sync>> DI seam |
 | checkpoint::sqlite | pregolya-checkpoint | — | — | yes (BC-2.17.002) | yes | Round-trip fuzz |
 | sandbox::path_guard | pregolya-sandbox | VP-003 | — | — | yes | Core VP target |
 | sandbox::policy | pregolya-sandbox | — | — | — | yes | Err(PolicyNotEnforceable) |

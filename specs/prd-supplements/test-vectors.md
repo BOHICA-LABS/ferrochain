@@ -1,19 +1,20 @@
 ---
 document_type: prd-supplement-test-vectors
 level: L3
-version: "3.27"
+version: "3.28"
 status: active
-producer: product-owner
-timestamp: 2026-09-09T00:00:00Z
+producer: state-manager
+timestamp: 2026-09-10T00:00:00Z
 phase: 1a
 inputs:
   - .factory/specs/prd.md
   - .factory/specs/behavioral-contracts/ss-01/BC-2.01.001.md
   - .factory/specs/behavioral-contracts/ss-07/BC-2.07.002.md
-input-hash: "2394e59"
+input-hash: "9e80e2f"
 traces_to: prd.md
 primary_consumers: [test-writer, holdout-evaluator]
 changelog:
+  - "3.28 (DC-62/2026-09-10, state-manager): F-PDC62-01 [HIGH] TV grand-total corrected — DC-46 v3.26 claimed +46 canonical TVs for SS-24 (BC-2.24.001..008) but body-authoritative count is +38 (verify-tv-registry-count confirmed); BC-2.11.007 TV-001..TV-005 (+5 TVs) were never rolled into declared total (DC-46 PG-DC46 pre-commit hook no-op); TV-008 added to BC-2.11.007 this burst (DC-62; encryption-at-rest guard per {INV-005}/VP-2.11.007-B/AC-008). Corrected declared total: 843→844 canonical; verify-tv-registry-count 844==844 PASS. F-PDC62-02 [MED] BC count corrected 150→149 (baseline 140 + 9 D-356 BCs: BC-2.24.001..008 + BC-2.11.007; '10 new BCs' was arithmetic error). BC-2.11.007 registry row TV Count 7→8 (+TV-008). Footer: 843→844 canonical, 854→855 total, 150→149 BCs (×2), +46→+38 SS-24 TVs (body-authoritative), +7→+8 BC-2.11.007 TVs, 10→9 new BCs. Grand total corrected 843+11=854 → 844+11=855."
   - "3.27 (DC-59/2026-09-09, state-manager): BC-2.11.007 TV count 5→7 (+2 TVs: TV-006 init_guardrail_journal → E-CHKPT-012 ({EC-007}); TV-007 get_guardrail_journal → E-CHKPT-013 ({EC-008}); F-PDC59-01 MED closed). BC-2.11.007 inventory row added. Grand total 841→843 canonical + 11 GTV = 852→854. EC count 145→147 (+E-CHKPT-012, +E-CHKPT-013)."
   - "3.26 (D-356/DC-46/2026-09-09, product-owner): B-PDC46: §Grand-Total corrected — D-356 SS-24 dev-console BCs (BC-2.24.001..008, +46 canonical TVs) and BC-2.11.007 (+5 canonical TVs) were never rolled into the grand-total (10 new BCs, PG-DC46 pre-commit hook was no-op). Canonical total 795→841 (+46 SS-24 + not yet individually subtotalled; validator basis). GTV count unchanged at 11. Total 806→852. BC count 140→150. verify-tv-registry-count.sh blocker cleared."
   - "3.25 (round-63/D-341/2026-09-01): BC-2.04.009 TV count 6→7 (+1 TV: TV-007 AES-GCM authentication failure — single-byte ciphertext tamper during conflict-detection decrypt → E-TRAJ-006; BC-local EC-006 path; F-P2A235-05). SS-04 subtotal +1. Grand total 794→795 canonical + 11 GTV = 805→806."
@@ -155,7 +156,7 @@ changelog:
 | BC-2.11.004 | SS-11 | 4 | — | table (unlabelled) | | GuardrailHook at memory ingress |
 | BC-2.11.005 | SS-11 | 4 | — | table (unlabelled) | | Rejected content never in model context |
 | BC-2.11.006 | SS-11 | 4 | — | table (unlabelled) | | No-hook default: WARNING LOG |
-| BC-2.11.007 | SS-11 | 7 | — | `TV-NNN` | | Guardrail evaluation results journaled; TV-006 init_guardrail_journal → E-CHKPT-012 ({EC-007}); TV-007 get_guardrail_journal → E-CHKPT-013 ({EC-008}); F-PDC59-01 |
+| BC-2.11.007 | SS-11 | 8 | — | `TV-NNN` | | Guardrail evaluation results journaled; TV-006 init_guardrail_journal → E-CHKPT-012 ({EC-007}); TV-007 get_guardrail_journal → E-CHKPT-013 ({EC-008}); TV-008 encryption-at-rest guard when EncryptedSerializer active ({INV-005}/VP-2.11.007-B/AC-008; DC-62); F-PDC59-01/F-PDC62-03 |
 | BC-2.12.001 | SS-12 | 9 | — | `TV-NNN` | | Thread CRUD |
 | BC-2.12.002 | SS-12 | 9 | — | `TV-NNN` | | Assistant CRUD |
 | BC-2.12.003 | SS-12 | 13 | — | `TV-NNN` | | Run lifecycle; TV-011 node-body-panic → E-GRAPH-019 STATIC ({INV-007}); TV-012 E-GRAPH-011 conditional-edge panic → static + source_node suppressed ({INV-007}; F-P2A197-01); TV-013 credential-in-Run.error.message → redact_credentials ({INV-008}; F-P2A197-02) |
@@ -215,7 +216,7 @@ changelog:
 | BC-2.23.005 | SS-23 | 8 | — | `TV-NNN` | | BashTool — sandboxed shell; non-lowerable Medium risk floor; 256 KiB cap; 30 s timeout (VP-013 Kani seed) |
 | BC-2.23.006 | SS-23 | 6 | — | `TV-NNN` | | GrepTool — in-process regex; linear-time `regex`; max_results 100 cap; PathGuard scope; E-TOOLS-001/006/008/009 (TV-006 traversal I/O error) |
 
-**Total vectors (150 authored BCs):** 843 canonical test vectors (TV Count column) + 11 golden test vectors (GTV Count column, BC-2.07.002 only) = **854 total vectors** across 150 BC files. (D-356 SS-24 dev-console BCs BC-2.24.001..008 contributed +46 canonical TVs; BC-2.11.007 contributed +7 canonical TVs including TV-006+TV-007 added in DC-59; 10 new BCs since v3.25 round-63.)
+**Total vectors (149 authored BCs):** 844 canonical test vectors (TV Count column) + 11 golden test vectors (GTV Count column, BC-2.07.002 only) = **855 total vectors** across 149 BC files. (D-356 SS-24 dev-console BCs BC-2.24.001..008 contributed +38 canonical TVs (body-authoritative per verify-tv-registry-count; DC-46 v3.26 claimed +46 which was overcounted); BC-2.11.007 contributed +8 canonical TVs including TV-006+TV-007 added in DC-59 and TV-008 (encryption-at-rest guard {INV-005}/VP-2.11.007-B) added in DC-62; 9 new BCs since v3.25 round-63. F-PDC62-01 corrected 843→844 canonical.)
 
 > **Ground-truth validation requirement:** The declared total above MUST equal the sum of TV Count values parsed from individual BC body files under `behavioral-contracts/ss-NN/BC-S.SS.NNN.md §Canonical Test Vectors`, counted as data rows with `^| TV-` prefix. A validator that only checks column arithmetic (sum of TV Count column == declared total) satisfies an internal identity, not a ground-truth comparison, and will not detect drift between BC bodies and this registry. The correct check is: `sum(BC body TV counts)` == `registry declared canonical total`. devops-engineer must implement this as a blocking gate before Phase 3.
 
@@ -366,6 +367,7 @@ delivery; no integration vectors exist at Phase 1a by design.
 
 | Version | Date | Change | Source |
 |---------|------|--------|--------|
+| 3.28 | 2026-09-10 | DC-62: F-PDC62-01 TV grand-total corrected 843→844 canonical (body-authoritative: SS-24 actual +38 TVs; BC-2.11.007 TV-008 added {INV-005}/VP-2.11.007-B). F-PDC62-02 BC count corrected 150→149. BC-2.11.007 registry row 7→8. Footer updated. (Note: v3.26/v3.27 were frontmatter-only updates; body table skips to 3.28 per Form-A authority.) | DC-62 state-manager |
 | 3.25 | 2026-09-01 | round-63/D-341: BC-2.04.009 TV count 6→7 (+TV-007 AES-GCM auth failure during conflict-detection decrypt → E-TRAJ-006; BC-local EC-006; F-P2A235-05). SS-04 subtotal +1. Grand total 794→795 canonical + 11 GTV = 806. | round-63 D-341 |
 | 3.24 | 2026-08-31 | round-52/F-P2A216-02+F-P2A217-01+F-P2A216-01+F-P2A219-01: BC-2.04.009 TV count 4→6 (+TV-005 encryption idempotency no-false-E-TRAJ-002; +TV-006 encryption conflict E-TRAJ-002). BC-2.04.011 TV count 5→4 (TV-003 removed: E-TRAJ-004 structurally unreachable). Net +1. Grand total 793→794 canonical + 11 GTV = 805. | round-52 F-P2A216-02+F-P2A217-01+F-P2A216-01+F-P2A219-01 |
 | 3.23 | 2026-08-31 | round-50/D-328: BC-2.04.009 TV count 3→4 (+TV-004 at-rest EncryptedSerializer plaintext-not-observable; CWE-311; F-P2A209-01). SS-04 subtotal +1. Grand total 792→793 canonical + 11 GTV = 804. | round-50/D-328 |

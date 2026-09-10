@@ -1,15 +1,16 @@
 ---
 document_type: bc-index
 level: L3
-version: "4.58"
+version: "4.59"
 status: active
 producer: state-manager
-timestamp: 2026-09-09T00:00:00Z
+timestamp: 2026-09-10T00:00:00Z
 project: pregolya
 cycle: v1.0.0-greenfield
 input-hash: "[live-index]"
 traces_to: .factory/specs/prd.md
 changelog:
+  - "4.59 (DC-62/2026-09-10, state-manager): DC-62 fix-burst CLOSED — F-PDC62-01 [HIGH] TV grand-total corrected (DC-46 v3.26 overcounted SS-24 TVs at +46; body-authoritative count +38; BC-2.11.007 TV-001..TV-005 never rolled in; TV-008 added this burst). TV 843→844. F-PDC62-02 [MED] BC count corrected 150→149 in test-vectors.md. F-PDC62-03 [MED] BC-2.11.007 {INV-005} encryption-at-rest obligation (architect-adjudicated; NOT automatic) + VP-2.11.007-B minted + S-1.29 AC-008 + TV-008. F-PDC62-04 [LOW] S-1.29 AC-001 boundary-source clarification. VP 42→43 (+VP-2.11.007-B integration P1, module checkpoint::encryption, crate pregolya-checkpoint, anchors BC-2.11.007 {INV-005}+BC-2.04.007 {INV-006}). Census: BC 149 / VP 43 / EC 147 / TV 844 / stories 53 / pts 377 / ADR 31 / SS 24 / crates 22. CLEAN(strict)=no CLEAN(PR-merge)=no. STRICT STREAK RESET 0/3 (HIGH+MED fixed + new HEAD; BC-5.39.001 frozen-HEAD rule). DC-63 gates new HEAD as strict-streak pass 1."
   - "4.58 (DC-59/2026-09-09, state-manager): DC-59 fix-burst CLOSED — F-PDC59-01[MED] guardrail-journal error-contract gap. BC-2.11.007 §Error-Contract: E-CHKPT-012 (GuardrailJournalWriteFailed) + E-CHKPT-013 (GuardrailJournalReadFailed) minted in error-taxonomy §Error-Codes; {EC-007}+{EC-008} edge cases added; TV-006+TV-007 rows added; interface-definitions.md §CheckpointSaver 3 # Errors sections cited. OBS-PDC59-1[LOW] ProvenanceTag derives homed; OBS-PDC59-2[LOW] GuardrailDecisionKind+GuardrailSeverityWire wire-enum parity (#[non_exhaustive]+derives) — ALL CLOSED. Census: EC 145→147 (+E-CHKPT-012, +E-CHKPT-013); TV 841→843 (+TV-006, +TV-007). BC 149 / VP 42 / stories 53 / pts 377 / ADR 31 / SS 24 / crates 22 UNCHANGED. CLEAN(strict)=no CLEAN(PR-merge)=no. Strict streak RESET 0/3 (MED fixed + new HEAD pushed; BC-5.39.001 frozen-HEAD rule). DC-60 gates new HEAD as strict-streak pass 1."
   - "4.57 (D-356/records-straggler/2026-09-09, state-manager): Records-straggler scrub (post-DC-52 exhaustive audit) — 14 LOW sites across 2 classes ALL CLOSED. CLASS A (clause-anchor §clause→{clause}): A-01 BC-2.11.007 {PC-001} Rust pseudocode comment citation corrected to {PC-002} canonical item-anchor form. A-05..A-09 BC-2.24.006 five §EC-003→{EC-003} cross-BC citations at {PRE-002} body, {PC-001}(a) body, {PC-002} node-boundary paragraph, TV-005 row, §Related BCs BC-2.12.007 entry. CLASS B (successfully-returning qualifier + {EC-003} carve-out): B-01 BC-2.11.007 §Description 'Every call'→'Every successfully-returning call' + {EC-003} carve-out sentence. B-02 BC-2.11.007 {PC-001} heading + body first sentence qualified with successfully-returning + {EC-003} carve-out. Census UNCHANGED: stories 53 / pts 377 / BC 149 / VP 42 / EC 145 / TV 841 / ADR 31 / SS 24 / crates 22. CLEAN(PR-merge)=yes CLEAN(strict)=no. Per TD-RECORDS-MICRO-BURST-001 strict streak NOT RESET (holds 0/3). DC-53 gates fully-scrubbed HEAD as pass 1."
   - "4.56 (D-356/DC-52/2026-09-09, state-manager): DC-52 RECORDS-ONLY CLOSED (TD-RECORDS-MICRO-BURST-001). F-PDC52-03[LOW] BC-2.24.004 §Description split: live-run (SSE StreamEvents) vs completed-run (run-read + trace spans; no stored StreamEvent list per ADR-030 §Decision 2); consistent with {PC-006}/{PRE-004}. Census UNCHANGED: stories 53 / pts 377 / BC 149 / VP 42 / EC 145 / TV 841 / ADR 31 / SS 24 / crates 22. CLEAN(PR-merge)=yes CLEAN(strict)=no. Per TD-RECORDS-MICRO-BURST-001 strict streak NOT RESET (holds at 0/3). DC-53 gates new HEAD as strict-streak pass 1."
@@ -178,13 +179,13 @@ changelog:
 
 # BC-INDEX: pregolya Behavioral Contracts
 
-> **149 BCs total — 52 P0 / 94 P1 / 3 P2 | 11 Red Gate | 18 VP Seed | 42 VPs registered**
+> **149 BCs total — 52 P0 / 94 P1 / 3 P2 | 11 Red Gate | 18 VP Seed | 43 VPs registered**
 >
 > Subsystem IDs: SS-01 through SS-17 assigned by architect at Phase 1 Step D (2026-07-14).
 > SS-18 through SS-22 added D21 ecosystem-parity expansion (2026-07-20).
 > SS-23 (First-Party Tools) added D23 first-class approval hook + compaction expansion (2026-07-22).
 > All BCs reside under `specs/behavioral-contracts/ss-NN/` per ARCH-INDEX Subsystem Registry.
-> VP-INDEX: 42 VPs registered (VP-001–VP-003 Kani P0, VP-004–VP-005 integration P1,
+> VP-INDEX: 43 VPs registered (VP-001–VP-003 Kani P0, VP-004–VP-005 integration P1,
 > VP-006–VP-010 assigned in VP-INDEX (burst-223, 2026-07-21) and authored — VP-006.md–VP-010.md all complete;
 > VP-006-B proptest P1 seeded SEC-review-adjudication burst and authored — vp-006-b-injection-guard-multipair-fewshot.md complete;
 > VP-011–VP-013 seeds assigned D23 burst-232 and authored — VP-011.md–VP-013.md all complete;
@@ -250,7 +251,7 @@ changelog:
 | VP-018 | BC-2.04.011 {INV-001} | Trajectory Compaction Isolation | proptest | DI-002 (compaction retention-integrity; harness `trajectory_compaction_retention_integrity`) |
 | VP-020 | BC-2.02.009 {INV-001}+{INV-002} | PromoteRetireChannel Promote/Retire Lifecycle | proptest | DI-001 (PromoteRetireChannel idempotency/ordering; harness `promote_retire_channel_idempotency`) |
 
-_VP-004 and VP-005 are integration VPs (from BC-2.09.004/005); registered in VP-INDEX but not formal verification seeds. VP-019 is an integration VP (BC-2.04.011 {INV-003}; crash-isolation WAL durability via pregolya-checkpoint integration test); registered in VP-INDEX but not a formal verification seed. VP-006/007/008/009/010 seeds assigned burst-222 (2026-07-21); VP-006-B seeded SEC-review-adjudication burst (2026-08-26); VP-011/012/013 seeds assigned burst-231 (2026-07-22); VP-014 seeded burst-302b (2026-08-17); VP-015 seeded BC-completeness-propagation burst (2026-08-26); VP-016 seeded GAP-01/ADR-029 burst (2026-08-26); VP-017/VP-018 seeded D-327 praxist authoring burst (2026-08-31); VP-019 seeded round-50 cascade (crash-isolation; BC-2.04.011 {INV-003}; integration P1); VP-020 seeded round-62 cascade (PromoteRetireChannel idempotency/ordering; BC-2.02.009 {INV-001}+{INV-002}; proptest P1); VP-2.24.001..008 A/B/C/D family (19 VPs) seeded D-356/DC-01 SS-24 Developer Console; VP-2.11.007-A seeded D-356/DC-33 GuardrailJournal completeness. All 42 VP body files exist as of D-356/DC-33._
+_VP-004 and VP-005 are integration VPs (from BC-2.09.004/005); registered in VP-INDEX but not formal verification seeds. VP-019 is an integration VP (BC-2.04.011 {INV-003}; crash-isolation WAL durability via pregolya-checkpoint integration test); registered in VP-INDEX but not a formal verification seed. VP-006/007/008/009/010 seeds assigned burst-222 (2026-07-21); VP-006-B seeded SEC-review-adjudication burst (2026-08-26); VP-011/012/013 seeds assigned burst-231 (2026-07-22); VP-014 seeded burst-302b (2026-08-17); VP-015 seeded BC-completeness-propagation burst (2026-08-26); VP-016 seeded GAP-01/ADR-029 burst (2026-08-26); VP-017/VP-018 seeded D-327 praxist authoring burst (2026-08-31); VP-019 seeded round-50 cascade (crash-isolation; BC-2.04.011 {INV-003}; integration P1); VP-020 seeded round-62 cascade (PromoteRetireChannel idempotency/ordering; BC-2.02.009 {INV-001}+{INV-002}; proptest P1); VP-2.24.001..008 A/B/C/D family (19 VPs) seeded D-356/DC-01 SS-24 Developer Console; VP-2.11.007-A seeded D-356/DC-33 GuardrailJournal completeness; VP-2.11.007-B seeded DC-62 encryption-at-rest guard. All 43 VP body files exist as of DC-62._
 
 ## Full BC Catalog
 

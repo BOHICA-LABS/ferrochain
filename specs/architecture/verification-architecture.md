@@ -2,7 +2,7 @@
 document_type: architecture-section
 level: L3
 section: verification-architecture
-version: "2.55"
+version: "2.56"
 status: active
 producer: architect
 timestamp: 2026-09-07T00:00:00Z
@@ -29,10 +29,12 @@ inputs:
   - .factory/specs/behavioral-contracts/ss-09/BC-2.09.008.md
   - .factory/specs/behavioral-contracts/ss-04/BC-2.04.011.md
   - .factory/specs/behavioral-contracts/ss-11/BC-2.11.007.md
-input-hash: "8f1fed5"
+  - .factory/specs/behavioral-contracts/ss-04/BC-2.04.007.md
+input-hash: "01961b2"
 traces_to: ARCH-INDEX.md
 decisions: [D17, D21, D23, D356]
 changelog:
+  - "2.56 (DC-62/2026-09-10, architect): VP-2.11.007-B minted — GuardrailJournal encryption-at-rest integration P1 (BC-2.11.007 {INV-005} + BC-2.04.007 {INV-006}; DI-012; checkpoint::encryption; pregolya-checkpoint; Phase 3). Preamble twenty-two→twenty-three; Forty-two→Forty-three. Committed VP Obligations table row added. VP total 42→43, P1 35→36, integration ×13→×14. §P1 catalog entry added. BC-2.04.007.md added to inputs. Census 42→43. input-hash updated (BC-2.04.007.md added as input)."
   - "2.55 (DC-52/A-03/2026-09-09, architect): A-03 (LOW) — VP-2.11.007-A §P0 Must-Prove prose block: BC-2.06.001 §PC-002 → BC-2.06.001 {PC-002} (ADR-027 stable clause anchor form; records-straggler sweep). Census UNCHANGED: 42 total. input-hash unchanged (inputs did not change)."
   - "2.54 (D-356/DC-48/F-PDC48-02/2026-09-09, architect): F-PDC48-02 (MED) — phantom `server::run_read_handler` replaced with canonical `server::handlers` in VP-2.11.007-A NOTE block: 'assembled from the checkpoint store by server::run_read_handler' → 'assembled from the checkpoint store by the run-read handler in server::handlers'. server::run_read_handler is not a separate module (F-PDC48-02/DC-48). Census UNCHANGED: 42 total. input-hash unchanged (inputs did not change)."
   - "2.53 (D-356/DC-46/2026-09-09, architect): DC-46 gate-backlog fix — 13 spa/components/ module path forms converted to spa_components:: namespace::module form (verify-module-canonicality.sh canonical pattern). Census UNCHANGED: 42 total."
@@ -65,7 +67,7 @@ changelog:
 
 ## [Section Content]
 
-This file documents pregolya's verification architecture: the Kani async constraint (0.67.0 has no native async/.await support), the twenty-two committed VP obligations (VP-001–VP-020 + VP-006-B + VP-2.11.007-A), and the P0/P1 property catalog with proof harness skeleton patterns. VP-001..005 are the original five (three Kani P0 + two integration P1). VP-006..010 are the D21 ecosystem-parity expansion (three Kani P0/P1 + two proptest P1). VP-006-B is the SEC-003 multi-pair few-shot injection mandate (proptest P1 belt-and-suspenders for the VP-006 Arm 2 Kani harness). VP-011..013 are the D23 tools/budget layer (three Kani P0/P1). VP-014 is the burst-302b LCEL composition expansion (one proptest P1; D-170). VP-015 is the architect-reconcile-burst credential-redaction unit P1 (BC-2.09.007 {INV-003}; D-273 fix: tool was incorrectly listed as integration). VP-016 is the GAP-01/ADR-029 GraphAgentTool STATE-ISOLATION proptest P1 (BC-2.09.008 {INV-001}). VP-017 is the ADR-030 LedgerChannel dedup-idempotent append proptest P1 (BC-2.02.007 + BC-2.02.008 {DI-001}; praxist-pattern research orchestrator additive primitive; dual-anchored per first-appearance ordering obligation in BC-2.02.008). VP-018 is the BC-2.04.011 TrajectoryCompactor retention-integrity proptest P1 (BC-2.04.011 {INV-001}; no committed retained record lost or mutated by compaction; durable audit record integrity for the research orchestrator session trajectory; harness reworked round-50 with independent frontier-based oracle and negative mutation test). VP-019 is the BC-2.04.011 trajectory compaction crash-isolation integration P1 (BC-2.04.011 {INV-003}; SQLite BEGIN IMMEDIATE/COMMIT atomicity under SIGKILL; OS-level atomicity guarantee that VP-018 proptest explicitly excludes; Phase 6 integration test). VP-020 is the ADR-030 PromoteRetireChannel idempotency proptest P1 (BC-2.02.009 {INV-001}+{INV-002}; DI-001; structurally analogous to VP-017; closes the BC-2.02.009 unit-test-only coverage gap).
+This file documents pregolya's verification architecture: the Kani async constraint (0.67.0 has no native async/.await support), the twenty-three committed VP obligations (VP-001–VP-020 + VP-006-B + VP-2.11.007-A + VP-2.11.007-B), and the P0/P1 property catalog with proof harness skeleton patterns. VP-001..005 are the original five (three Kani P0 + two integration P1). VP-006..010 are the D21 ecosystem-parity expansion (three Kani P0/P1 + two proptest P1). VP-006-B is the SEC-003 multi-pair few-shot injection mandate (proptest P1 belt-and-suspenders for the VP-006 Arm 2 Kani harness). VP-011..013 are the D23 tools/budget layer (three Kani P0/P1). VP-014 is the burst-302b LCEL composition expansion (one proptest P1; D-170). VP-015 is the architect-reconcile-burst credential-redaction unit P1 (BC-2.09.007 {INV-003}; D-273 fix: tool was incorrectly listed as integration). VP-016 is the GAP-01/ADR-029 GraphAgentTool STATE-ISOLATION proptest P1 (BC-2.09.008 {INV-001}). VP-017 is the ADR-030 LedgerChannel dedup-idempotent append proptest P1 (BC-2.02.007 + BC-2.02.008 {DI-001}; praxist-pattern research orchestrator additive primitive; dual-anchored per first-appearance ordering obligation in BC-2.02.008). VP-018 is the BC-2.04.011 TrajectoryCompactor retention-integrity proptest P1 (BC-2.04.011 {INV-001}; no committed retained record lost or mutated by compaction; durable audit record integrity for the research orchestrator session trajectory; harness reworked round-50 with independent frontier-based oracle and negative mutation test). VP-019 is the BC-2.04.011 trajectory compaction crash-isolation integration P1 (BC-2.04.011 {INV-003}; SQLite BEGIN IMMEDIATE/COMMIT atomicity under SIGKILL; OS-level atomicity guarantee that VP-018 proptest explicitly excludes; Phase 6 integration test). VP-020 is the ADR-030 PromoteRetireChannel idempotency proptest P1 (BC-2.02.009 {INV-001}+{INV-002}; DI-001; structurally analogous to VP-017; closes the BC-2.02.009 unit-test-only coverage gap).
 
 ## Kani Async Constraint (Verified Kani 0.67.0)
 
@@ -97,7 +99,7 @@ on a `Future` will fail at verification time. Consequences:
 
 ## Committed VP Obligations (D17-Q7 + R11 + D21 + D23)
 
-Forty-two VPs committed before v1.0 release — VP-001..005 (original five) plus VP-006..010 (D21 ecosystem-parity expansion) plus VP-006-B (SEC-003 multi-pair few-shot mandate) plus VP-011..013 (D23 tools/budget layer) plus VP-014 (burst-302b LCEL composition expansion) plus VP-015 (architect-reconcile-burst MCP credential-redaction) plus VP-016 (GAP-01/ADR-029 GraphAgentTool state-isolation) plus VP-017 (ADR-030 LedgerChannel dedup-idempotency, dual-anchored BC-2.02.007 + BC-2.02.008) plus VP-018 (BC-2.04.011 TrajectoryCompactor retention-integrity) plus VP-019 (BC-2.04.011 {INV-003} trajectory compaction crash-isolation integration P1) plus VP-020 (ADR-030 PromoteRetireChannel idempotency proptest P1, BC-2.02.009 {INV-001}+{INV-002}) plus VP-2.11.007-A (DC-33 GuardrailJournal completeness integration P0, BC-2.11.007 {PC-001}/{INV-002}) plus VP-2.24.001-A through VP-2.24.008-B (D-356 SS-24 Developer Console SEED registrations, BC-2.24.001–008):
+Forty-three VPs committed before v1.0 release — VP-001..005 (original five) plus VP-006..010 (D21 ecosystem-parity expansion) plus VP-006-B (SEC-003 multi-pair few-shot mandate) plus VP-011..013 (D23 tools/budget layer) plus VP-014 (burst-302b LCEL composition expansion) plus VP-015 (architect-reconcile-burst MCP credential-redaction) plus VP-016 (GAP-01/ADR-029 GraphAgentTool state-isolation) plus VP-017 (ADR-030 LedgerChannel dedup-idempotency, dual-anchored BC-2.02.007 + BC-2.02.008) plus VP-018 (BC-2.04.011 TrajectoryCompactor retention-integrity) plus VP-019 (BC-2.04.011 {INV-003} trajectory compaction crash-isolation integration P1) plus VP-020 (ADR-030 PromoteRetireChannel idempotency proptest P1, BC-2.02.009 {INV-001}+{INV-002}) plus VP-2.11.007-A (DC-33 GuardrailJournal completeness integration P0, BC-2.11.007 {PC-001}/{INV-002}) plus VP-2.11.007-B (DC-62 GuardrailJournal encryption-at-rest integration P1, BC-2.11.007 {INV-005} + BC-2.04.007 {INV-006}) plus VP-2.24.001-A through VP-2.24.008-B (D-356 SS-24 Developer Console SEED registrations, BC-2.24.001–008):
 
 | VP | BC Anchor | DI | Module | Tool | Phase | Priority |
 |----|-----------|-----|--------|------|-------|---------|
@@ -123,6 +125,7 @@ Forty-two VPs committed before v1.0 release — VP-001..005 (original five) plus
 | VP-019 | BC-2.04.011 {INV-003} | DI-002 | `checkpoint::trajectory` | integration | 6 | P1 |
 | VP-020 | BC-2.02.009 {INV-001}+{INV-002} | DI-001 | `graph::channels` | proptest | 3 | P1 |
 | VP-2.11.007-A | BC-2.11.007 {PC-001}/{INV-002} | DI-012 | `graph::provenance` | integration | 3 | P0 |
+| VP-2.11.007-B | BC-2.11.007 {INV-005} + BC-2.04.007 {INV-006} | DI-012 | `checkpoint::encryption` | integration | 3 | P1 |
 | VP-2.24.001-A | BC-2.24.001 | DI-014 | `console::server` | unit | 3 | P1 |
 | VP-2.24.001-B | BC-2.24.001 | DI-014 | `console::server` | unit | 3 | P1 |
 | VP-2.24.001-C | BC-2.24.001 | DI-014 | `console::server` | compile-fail | 3 | P1 |
@@ -144,7 +147,7 @@ Forty-two VPs committed before v1.0 release — VP-001..005 (original five) plus
 | VP-2.24.008-A | BC-2.24.008 | DI-012 | `spa_components::guardrail_panel` | integration | 3 | P1 |
 | VP-2.24.008-B | BC-2.24.008 | DI-014 | `spa_components::guardrail_panel` | unit | 3 | P1 |
 
-**Total: 42 VPs — 7 P0 / 35 P1 | Tool breakdown: Kani ×10, proptest ×10, integration ×13, unit ×8, compile-fail ×1**
+**Total: 43 VPs — 7 P0 / 36 P1 | Tool breakdown: Kani ×10, proptest ×10, integration ×14, unit ×8, compile-fail ×1**
 
 > **D-273 VP-015 tool-type fix (GAP-01/2026-08-26):** VP-015 tool corrected from 'integration' to 'unit' — VP-015.md frontmatter is authoritative per CLAUDE.md rule 4 (VP file supersedes architecture doc).
 > **SEC-003 VP-006-B (SEC-review-adjudication/2026-08-26):** VP-006-B proptest P1 added for multi-pair few-shot injection mandate. Total 16→17 VPs; P1 10→11; proptest 4→5.
@@ -1109,6 +1112,38 @@ same wave as `PromoteRetireChannel` implementation under BC-2.02.009.
 
 See `vp-020-promote-retire-channel-idempotency.md` for the complete harness specification.
 
+**VP-2.11.007-B — GuardrailJournal Encryption at Rest** (`checkpoint::encryption`) `integration P1 Phase 3`
+
+Property: When `EncryptedSerializer` is active on `CheckpointSaverSqlite`, the raw bytes
+written to the `guardrail_journal` SQLite table by `init_guardrail_journal` and
+`append_guardrail_entry` are **not** valid plaintext-deserialized `GuardrailEntry` values.
+After decryption with the active key, those bytes deserialize to the original `GuardrailEntry`
+(boundary, result, provenance, timestamp_ms). NOTE: `transform_applied` is absent (O-PDC34-A).
+`EncryptedSerializer` is wired via `Option<Arc<dyn Serializer + Send + Sync>>` at
+`CheckpointSaverSqlite` construction (BC-2.04.007 {INV-005} DI seam).
+
+Formal statement (BC-2.11.007 {INV-005} + BC-2.04.007 {INV-006}):
+```
+∀ run_id: RunId, entry: GuardrailEntry,
+  let saver = CheckpointSaverSqlite::new(path, Some(Arc::new(EncryptedSerializer::new(key)))),
+  let () = saver.init_guardrail_journal(run_id),
+  let () = saver.append_guardrail_entry(run_id, entry.clone()),
+  let raw = sqlite_select_guardrail_journal_raw_bytes(run_id, seq=0):
+    rmp_serde::from_slice::<GuardrailEntry>(&raw).is_err()
+    ∧ ¬contains(&raw, legible_plaintext_sentinel)
+    ∧ EncryptedSerializer::decrypt(&raw).is_ok()
+    ∧ rmp_serde::from_slice::<GuardrailEntry>(&decrypt(&raw)).unwrap() == entry
+```
+
+Proof method: Integration test (inspector-reads-raw-storage pattern; mirror BC-2.04.007).
+Two test functions: encrypted-path (asserts NOT plaintext) + plaintext-baseline (asserts IS plaintext,
+confirming the encryption assertion is non-vacuous). `GuardrailResult::Fail` constructed as struct
+variant `Fail { reason: ..., severity: ... }` per DC-57 struct-variant discipline.
+See `vp-2.11.007-b-guardrail-journal-encryption-at-rest.md` §Proof Harness Skeleton.
+
+DI anchor: DI-012 (Guardrail Coverage at Ingress Boundaries — durable audit log must not
+be readable from raw storage; encryption at rest is part of the CAP-047 audit integrity guarantee).
+
 ## Test-Sufficient (No Kani)
 
 Modules where behavioral testing is the primary verification method:
@@ -1149,6 +1184,9 @@ Modules where behavioral testing is the primary verification method:
 
 | Version | Date | Author | Decision | Change |
 |---------|------|--------|----------|--------|
+| 2.56 | 2026-09-10 | architect | DC-62/2026-09-10 | VP-2.11.007-B minted — GuardrailJournal encryption-at-rest integration P1 (BC-2.11.007 {INV-005} + BC-2.04.007 {INV-006}; DI-012; checkpoint::encryption; pregolya-checkpoint; Phase 3). Preamble twenty-two→twenty-three; Forty-two→Forty-three. Committed VP Obligations table row added. VP total 42→43, P1 35→36, integration ×13→×14. §P1 catalog entry added. Census 42→43. BC-2.04.007.md added to inputs. |
+| 2.55 | 2026-09-09 | architect | DC-52/A-03/2026-09-09 | A-03 (LOW) — VP-2.11.007-A §P0 Must-Prove prose block: BC-2.06.001 §PC-002 → BC-2.06.001 {PC-002} (ADR-027 stable clause anchor form; records-straggler sweep). Census UNCHANGED: 42 total. |
+| 2.54 | 2026-09-09 | architect | D-356/DC-48/F-PDC48-02/2026-09-09 | F-PDC48-02 (MED) — phantom `server::run_read_handler` replaced with canonical `server::handlers` in VP-2.11.007-A NOTE block. server::run_read_handler is not a separate module (F-PDC48-02/DC-48). Census UNCHANGED: 42 total. |
 | 2.53 | 2026-09-09 | architect | D-356/DC-46/2026-09-09 | DC-46 gate-backlog fix — 13 `spa/components/` module path forms converted to `spa_components::` namespace::module form across VP catalog table and P0/P1 lists (verify-module-canonicality.sh canonical pattern). Census UNCHANGED: 42 total. |
 | 2.52 | 2026-09-09 | architect | D-356/DC-44/F-PDC44-02/2026-09-09 | F-PDC44-02 — body changelog row v2.51 date corrected from 2026-09-08 to 2026-09-09. Census UNCHANGED: 42 total. |
 | 2.51 | 2026-09-09 | architect | D-356/DC-39/2026-09-09 | F-PDC39-01 — VP-2.11.007-A §P0 catalog prose block fully rewritten: removed pre-DC-34 transform_applied residue, hook_identity mislabel, unqualified evaluate_calls, ServerTestFixture/SQLite RunStore/terminal-status framing; replaced with graph-side checkpoint-backed model per F-PDC39-02 ruling (EvidenceJournal analogy corrected). Census UNCHANGED: 42 total. |

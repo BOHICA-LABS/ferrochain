@@ -2,10 +2,10 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.11.007
-version: "1.13"
+version: "1.14"
 status: draft
 producer: product-owner
-timestamp: 2026-09-09T01:00:00Z
+timestamp: 2026-09-10T00:00:00Z
 phase: 1a
 inputs:
   - .factory/specs/domain-spec/capabilities-p0.md
@@ -37,6 +37,7 @@ changelog:
   - "1.11 (D-356/DC-56/2026-09-09, product-owner): {EC-005} successfully-returning qualifier — 'Each hook's evaluate() call appends one entry independently' → 'Each hook's successfully-returning evaluate() call appends one entry independently'; {EC-003} carve-out appended to Expected Behavior for parity with {PC-001}/{INV-002} write-obligation qualifier per DC-37/38/39+DC-55/56 cascade. In-file sweep (TD-VSDD-060): §Description (QUALIFIED), {PC-001} (QUALIFIED), {PC-002} (QUALIFIED), {INV-002} (QUALIFIED), §Architecture Anchors graph::provenance (QUALIFIED), §Architecture Anchors pregolya-checkpoint (QUALIFIED), VP-2.11.007-A (QUALIFIED), §VP Anchors (QUALIFIED) — {EC-005} was sole straggler. Records-lint exit 0."
   - "1.12 (D-356/DC-57/2026-09-09, product-owner): F-PDC57-02 (LOW) — modified[] array reverted to [] for corpus-consistency. DF-030 modified-array population is a VP-file practice; BC files use []; the DC-56 [\"DC-56\"] value was the sole non-empty modified[] in the 149-BC corpus and therefore a corpus outlier. Orchestrator-adjudicated mechanical fix — no behavioral, postcondition, invariant, EC, TV, or anchor content changed."
   - "1.13 (D-356/DC-59/2026-09-09, product-owner): F-PDC59-01 [MED] resolution — durable-write-failure and read-failure edge cases added. {EC-007}: checkpoint store I/O failure on `init_guardrail_journal` or `append_guardrail_entry` — fail-closed, E-CHKPT-012 GuardrailJournalWriteFailed, no partial write observable by `get_guardrail_journal`, RetryHint Maybe; composes with {EC-003} (EC-003 fires when evaluate() itself panics/errors; EC-007 fires when evaluate() succeeds but the checkpoint write fails). {EC-008}: checkpoint store I/O failure on `get_guardrail_journal` at run-read time — E-CHKPT-013 GuardrailJournalReadFailed, no partial Vec returned as Ok, RetryHint Maybe. TV-006: write-failure fail-closed ({EC-007}). TV-007: read-failure ({EC-008}). EC count: 6→8. TV count: 5→7."
+  - "1.14 (F-PDC62-03/DC-62/2026-09-10, product-owner): {INV-005} added — encryption at rest extends to guardrail journal ops: when EncryptedSerializer is active on the CheckpointSaver (BC-2.04.007 {INV-006} DI seam), GuardrailEntry bytes written via init_guardrail_journal and append_guardrail_entry MUST be encrypted before reaching SQLite; plaintext GuardrailEntry payloads (including Transform{new_content}/Fail{reason}) prohibited when EncryptedSerializer configured; obligation is NOT automatic and must be explicitly enforced by concrete CheckpointSaver implementor (CWE-312 motivation; architect-adjudicated F-PDC62-03/DC-62). TV-008 added for at-rest encryption via GuardrailJournal write ops. VP-2.11.007-B anchored (architect minting in parallel; P1 integration test; anchors {INV-005}). §Related BCs: BC-2.04.007 entry added."
 modified: []
 extracted_from: null
 deprecated: null
@@ -152,6 +153,15 @@ content evaluation results.
   exists with zero entries. Both the no-hook and zero-ingress cases have zero evaluate()
   calls, but only no-hook has no record.
 
+- {INV-005} **Encryption at rest extends to guardrail journal ops:** When `EncryptedSerializer` is
+  active on the `CheckpointSaver` (BC-2.04.007 {INV-006} DI seam), `GuardrailEntry` bytes written
+  via `append_guardrail_entry` and the journal-record bytes written via `init_guardrail_journal`
+  MUST be serialized (encrypted) before reaching the SQLite backend. Plaintext `GuardrailEntry`
+  payloads — including `Transform{new_content: IngressContent}` and `Fail{reason: String}` — are
+  never written to storage when `EncryptedSerializer` is configured. This obligation is NOT
+  automatic (`EncryptedSerializer` is application-level, per-method) and must be explicitly
+  enforced by the concrete `CheckpointSaver` implementor (architect-adjudicated F-PDC62-03/DC-62).
+
 ## Edge Cases
 
 | ID | Description | Expected Behavior |
@@ -176,12 +186,14 @@ content evaluation results.
 | TV-005 | `GuardrailHook` registered; run completes with zero ingress boundaries crossed | Terminal-status run-read response: `guardrail_journal?` is `Some([])` (empty list, NOT `None`); journal record created by `init_guardrail_journal` at run start, checkpoint-backed (pregolya-checkpoint), zero entries appended via `append_guardrail_entry` ({EC-006}, {INV-004}) | hook-registered zero-ingress ({EC-006}) |
 | TV-006 | Checkpoint store injects I/O error on `append_guardrail_entry(run_id, entry)` after the first successful entry write (mid-run write failure, simulated via checkpoint store error injection) | Graph execution is aborted fail-closed; E-CHKPT-012 raised with `<op>=append_guardrail_entry`; `get_guardrail_journal(run_id)` returns only entries committed before the failure; no partial or uncommitted entry is visible; fail-closed semantics verified ({EC-007}) | write-failure fail-closed ({EC-007}) |
 | TV-007 | `get_guardrail_journal(run_id)` returns I/O error at run-read time (checkpoint store error injected after all entries committed successfully) | E-CHKPT-013 raised; `guardrail_journal?` absent from run-read response; no partial `Vec<GuardrailEntry>` returned as `Ok`; error propagates to the run-read caller ({EC-008}) | read-failure ({EC-008}) |
+| TV-008 | `EncryptedSerializer` active on `CheckpointSaver`; run with 1 Tool-result ingress (Pass result); inspect raw SQLite guardrail_journal bytes | Raw bytes are NOT valid plaintext `GuardrailEntry`; after decryption with active key, bytes deserialize to `{result: Pass, boundary: IngressBoundary::ToolResult, ...}` | at-rest encryption (BC-2.04.007 {INV-003}/{INV-006} via GuardrailJournal write ops) |
 
 ## Verification Properties
 
 | VP-ID | Property | Proof Method |
 |-------|----------|-------------|
 | VP-2.11.007-A | `GuardrailJournal` contains exactly one entry per **successfully-returning** `GuardrailHook::evaluate()` call; entries are in evaluation order; panicking or erroring calls append no entry (per {EC-003}/{INV-002}); no missing evaluations from successful calls | Integration test — instrument evaluate() calls; assert journal entry count == successful evaluate() call count; verify ordering. Minted and registered in VP-INDEX; anchors {PC-001}/{INV-002} (write-obligation and DI-012 completeness) and module `graph::provenance`. Parallel to VP-BUDGET-03 (EvidenceJournal completeness). |
+| VP-2.11.007-B | When `EncryptedSerializer` is active on the `CheckpointSaver`, `GuardrailEntry` bytes written via `init_guardrail_journal` and `append_guardrail_entry` are NOT valid plaintext; after decryption with the active key, bytes are valid and deserialize to the original `GuardrailEntry` ({INV-005}) | Integration test — inspect raw SQLite guardrail_journal bytes with `EncryptedSerializer` active; verify ciphertext; verify decrypt-then-deserialize round-trip. Anchors {INV-005}. P1. F-PDC62-03/DC-62. Architect minting in parallel. |
 
 ## Related BCs
 
@@ -193,6 +205,7 @@ content evaluation results.
 - BC-2.10.002 — parallel: EvidenceJournal (budget PolicyDecision outcomes); same checkpoint-backed append-only pattern (pregolya-checkpoint SQLite), distinct governance dimension; MUST NOT be conflated
 - BC-2.12.003 — depends on: guardrail_journal? is projected on run-read response per {PC-013}
 - BC-2.24.008 — consumer: guardrail review panel reads guardrail_journal? for completed-run reconstruction per {PC-004}
+- BC-2.04.007 — composes with: GuardrailJournal write ops (init_guardrail_journal, append_guardrail_entry) transit the same EncryptedSerializer-capable CheckpointSaver SQLite backend as put/put_writes; when EncryptedSerializer is active, GuardrailEntry bytes MUST be encrypted before reaching SQLite — same guarantee as BC-2.04.007 {INV-003}; plaintext at-rest prohibited for GuardrailEntry (CWE-312: Transform{new_content}/Fail{reason} can carry sensitive content; F-PDC62-03/DC-62)
 
 ## Architecture Anchors
 
@@ -209,6 +222,7 @@ S-console-10 (roadmap, Wave 3 — guardrail review panel; declares BC-2.11.007 i
 ## VP Anchors
 
 - VP-2.11.007-A — GuardrailJournal completeness: 1 entry per successfully-returning evaluate() call (panicking/erroring calls append no entry per {EC-003}/{INV-002}), evaluation order (integration test). Minted and registered in VP-INDEX; anchors {PC-001}/{INV-002} (write-obligation and DI-012 completeness) and module `graph::provenance`. Parallel to VP-BUDGET-03.
+- VP-2.11.007-B — at-rest encryption for GuardrailJournal write ops: when `EncryptedSerializer` is active, `GuardrailEntry` bytes written via `init_guardrail_journal` and `append_guardrail_entry` are encrypted before reaching SQLite; anchors {INV-005} (integration test, P1). F-PDC62-03/DC-62. Architect minting in parallel.
 
 ## Traceability
 

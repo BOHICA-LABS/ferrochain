@@ -2,16 +2,16 @@
 document_type: behavioral-contract
 level: L3
 bc_id: BC-2.04.007
-version: "1.11"
+version: "1.12"
 status: active
 producer: product-owner
-timestamp: 2026-08-31T00:00:00Z
+timestamp: 2026-09-10T00:00:00Z
 phase: 1a
 inputs:
   - .factory/specs/domain-spec/L2-INDEX.md
   - .factory/specs/domain-spec/capabilities-p0.md
   - .factory/semport/graph/behavioral-intent.md
-input-hash: "acfed82"
+input-hash: "01b5f65"
 extracted_from: null
 modified: []
 deprecated: null
@@ -37,6 +37,7 @@ changelog:
   - "1.9 (M1/ADR-027/2026-08-23): stable clause anchors {PC/INV/PRE-NNN} added; purely additive, no content change."
   - "1.10 (F-P2A123-01/2026-08-28): §Story Anchor backfilled to S-1.10; §Architecture Module confirmed as pregolya-checkpoint — from STORY-INDEX forward map (SS-04 coverage map) and self §Architecture Anchors (module-decomposition.md §pregolya-checkpoint). No behavioral change."
   - "1.11 (round-52/F-P2A216-02/2026-08-31): DI seam applied to {PRE-001} and {INV-005} — `CheckpointSaver` accepts `Option<Arc<dyn Serializer + Send + Sync>>` at construction (the `core::serializer::Serializer` trait from `pregolya-core`); `EncryptedSerializer` (`checkpoint::serializer`, `pregolya-checkpoint`) is the canonical concrete implementor. No behavioral change — encryption coverage and error propagation semantics are unchanged."
+  - "1.12 (F-PDC62-03/DC-62/2026-09-10, product-owner): {INV-006} added — encryption at rest covers ALL CheckpointSaver write ops: put, put_writes, init_guardrail_journal, and append_guardrail_entry all encrypt payload bytes before reaching SQLite backend when EncryptedSerializer is active; no CheckpointSaver write method may bypass the EncryptedSerializer (F-PDC62-03/DC-62). §Related BCs: BC-2.11.007 entry added (extends to guardrail journal write ops). input-hash refreshed (input drift resolved at burst F-PDC62-03)."
 modified: []
 deprecated: null
 deprecated_by: null
@@ -98,6 +99,11 @@ swallowed or logged-only. This satisfies NE-11.
    (DI seam; the `core::serializer::Serializer` trait from `pregolya-core`); `EncryptedSerializer`
    (`checkpoint::serializer`, `pregolya-checkpoint`) is the canonical concrete implementor. Wiring the
    encryption layer does not require changes to the `CheckpointSaver` trait interface.
+6. {INV-006} **Encryption at rest covers ALL CheckpointSaver write ops:** When `EncryptedSerializer`
+   is active, EVERY write operation on the `CheckpointSaver` — `put`, `put_writes`,
+   `init_guardrail_journal`, and `append_guardrail_entry` — encrypts its payload bytes before writing
+   to the SQLite backend. No `CheckpointSaver` write method may bypass the `EncryptedSerializer`
+   (F-PDC62-03/DC-62).
 
 ## Edge Cases
 
@@ -141,6 +147,7 @@ swallowed or logged-only. This satisfies NE-11.
 
 - BC-2.04.001 — composes with: put_writes is one of the two methods that must be encrypted
 - BC-2.04.002 — composes with: all durability tiers that call put_writes mid-run require encryption coverage
+- BC-2.11.007 — extends to: guardrail journal write ops (init_guardrail_journal, append_guardrail_entry) are in scope for BC-2.04.007 {INV-003}/{INV-006} at-rest encryption; F-PDC62-03/DC-62
 
 ## Architecture Anchors
 
